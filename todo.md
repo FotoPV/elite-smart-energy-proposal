@@ -110,3 +110,11 @@
 - [x] Add getSlideHtml API endpoint
 - [x] Unit tests for slide generator (15 tests passing)
 - [x] 50 total unit tests passing
+
+
+## New Features (Feb 6 - Part 3)
+- [x] Add edit/change/replace option for uploaded documents
+- [x] Add PDF export using Puppeteer for branded slide exports
+- [x] Add AI switchboard analysis using LLM vision to extract circuit details
+- [x] Implement auto-seeding of VPP providers (13 providers)
+- [x] Implement auto-seeding of state rebates

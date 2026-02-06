@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useParams } from "wouter";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { 
   ArrowLeft,
   Save,
   FileText,
   Upload,
-  Trash2,
+  RefreshCw,
   MapPin,
   Mail,
   Phone,
@@ -62,6 +62,14 @@ export default function CustomerDetail() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadingType, setUploadingType] = useState<DocumentType | null>(null);
   const [dragOver, setDragOver] = useState<DocumentType | null>(null);
+  const [replacingDocId, setReplacingDocId] = useState<number | null>(null);
+  
+  // Refs for file inputs
+  const switchboardInputRef = useRef<HTMLInputElement | null>(null);
+  const meterInputRef = useRef<HTMLInputElement | null>(null);
+  const roofInputRef = useRef<HTMLInputElement | null>(null);
+  const propertyInputRef = useRef<HTMLInputElement | null>(null);
+  const solarPdfInputRef = useRef<HTMLInputElement | null>(null);
   
   const { data: customer, isLoading, refetch } = trpc.customers.get.useQuery(
     { id: customerId },
@@ -117,13 +125,13 @@ export default function CustomerDetail() {
       toast.success("Document uploaded successfully");
       refetchDocuments();
       setUploadingType(null);
+      setReplacingDocId(null);
     },
     onError: (error) => toast.error(error.message)
   });
 
   const deleteDocument = trpc.documents.delete.useMutation({
     onSuccess: () => {
-      toast.success("Document deleted");
       refetchDocuments();
     }
   });
@@ -142,8 +150,13 @@ export default function CustomerDetail() {
     reader.readAsDataURL(file);
   };
 
-  const handleDocumentUpload = useCallback(async (docType: DocumentType, file: File) => {
+  const handleDocumentUpload = useCallback(async (docType: DocumentType, file: File, replaceDocId?: number) => {
     setUploadingType(docType);
+    if (replaceDocId) {
+      setReplacingDocId(replaceDocId);
+      // Delete the old document first
+      await deleteDocument.mutateAsync({ id: replaceDocId });
+    }
     const reader = new FileReader();
     reader.onload = async (e) => {
       const base64 = (e.target?.result as string).split(',')[1];
@@ -156,7 +169,7 @@ export default function CustomerDetail() {
       });
     };
     reader.readAsDataURL(file);
-  }, [customerId, uploadDocument]);
+  }, [customerId, uploadDocument, deleteDocument]);
 
   const handleDrop = useCallback((docType: DocumentType, e: React.DragEvent) => {
     e.preventDefault();
@@ -191,6 +204,104 @@ export default function CustomerDetail() {
 
   const getDocumentsByType = (type: DocumentType) => {
     return documents?.filter(d => d.documentType === type) || [];
+  };
+
+  // Helper to render a photo upload section with change functionality
+  const renderPhotoSection = (
+    docType: DocumentType,
+    label: string,
+    inputRef: React.RefObject<HTMLInputElement | null>,
+    inputId: string,
+    IconComponent: typeof Camera | typeof FileImage
+  ) => {
+    const docs = getDocumentsByType(docType);
+    const isUploading = uploadingType === docType;
+    
+    return (
+      <div>
+        <Label className="mb-2 block">{label}</Label>
+        {docs.length > 0 ? (
+          <div className="space-y-2">
+            {docs.map(doc => (
+              <div key={doc.id} className="relative group">
+                <img 
+                  src={doc.fileUrl} 
+                  alt={label} 
+                  className="w-full h-40 object-cover rounded-lg cursor-pointer"
+                  onClick={() => setPreviewUrl(doc.fileUrl)}
+                />
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => setPreviewUrl(doc.fileUrl)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    title="Change photo"
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={inputRef}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleDocumentUpload(docType, file, doc.id);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div 
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              dragOver === docType ? 'border-primary bg-primary/10' : 'border-border'
+            }`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(docType); }}
+            onDragLeave={() => setDragOver(null)}
+            onDrop={(e) => handleDrop(docType, e)}
+          >
+            <IconComponent className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground mb-3">
+              {isUploading ? 'Uploading...' : 'Drag & drop or click to upload'}
+            </p>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id={inputId}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleDocumentUpload(docType, file);
+                e.target.value = '';
+              }}
+            />
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={isUploading}
+              onClick={() => document.getElementById(inputId)?.click()}
+            >
+              Select Photo
+            </Button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -286,34 +397,65 @@ export default function CustomerDetail() {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox id="hasGas" name="hasGas" defaultChecked={customer.hasGas || false} />
-                        <Label htmlFor="hasGas">Has Gas Connection</Label>
+                        <Label htmlFor="hasGas" className="flex items-center gap-2">
+                          <Flame className="h-4 w-4 text-orange-500" />
+                          Has Gas Connection
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox id="hasPool" name="hasPool" defaultChecked={customer.hasPool || false} />
                         <Label htmlFor="hasPool">Has Pool</Label>
                       </div>
+                      {customer.hasPool && (
+                        <div className="space-y-2">
+                          <Label htmlFor="poolVolume">Pool Volume (L)</Label>
+                          <Input id="poolVolume" name="poolVolume" type="number" defaultValue={customer.poolVolume || ""} />
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <Checkbox id="hasEV" name="hasEV" defaultChecked={customer.hasEV || false} />
-                        <Label htmlFor="hasEV">Has Electric Vehicle</Label>
+                        <Label htmlFor="hasEV">Has/Interested in EV</Label>
                       </div>
+                      {customer.hasEV && (
+                        <div className="space-y-2">
+                          <Label htmlFor="evInterest">EV Status</Label>
+                          <Select name="evInterest" defaultValue={customer.evInterest || "none"}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="interested">Interested</SelectItem>
+                              <SelectItem value="owns">Owns EV</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <Checkbox id="hasExistingSolar" name="hasExistingSolar" defaultChecked={customer.hasExistingSolar || false} />
-                        <Label htmlFor="hasExistingSolar">Has Existing Solar</Label>
+                        <Label htmlFor="hasExistingSolar" className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-yellow-500" />
+                          Has Existing Solar
+                        </Label>
                       </div>
+                      {customer.hasExistingSolar && (
+                        <div className="space-y-2">
+                          <Label htmlFor="existingSolarSize">Existing Solar Size (kW)</Label>
+                          <Input id="existingSolarSize" name="existingSolarSize" type="number" step="0.1" defaultValue={customer.existingSolarSize || ""} />
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="border-t border-border pt-6">
                     <Label htmlFor="notes">Notes</Label>
-                    <Textarea id="notes" name="notes" defaultValue={customer.notes || ""} rows={4} />
+                    <Textarea id="notes" name="notes" defaultValue={customer.notes || ""} className="mt-2" rows={4} />
                   </div>
 
-                  <div className="flex justify-end gap-3">
-                    <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={updateCustomer.isPending}>
-                      <Save className="mr-2 h-4 w-4" />
-                      {updateCustomer.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </Button>
                 </CardContent>
               </Card>
             </form>
@@ -321,131 +463,133 @@ export default function CustomerDetail() {
 
           {/* Bills Tab */}
           <TabsContent value="bills">
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Electricity Bill */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Electricity Bills */}
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5 text-primary" />
-                    Electricity Bill
+                    Electricity Bills
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {bills?.find(b => b.billType === 'electricity') ? (
-                    <div className="space-y-4">
-                      {bills.filter(b => b.billType === 'electricity').map(bill => (
-                        <div key={bill.id} className="p-4 rounded-lg bg-muted/50 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{bill.fileName}</p>
-                              <p className="text-sm text-muted-foreground">{bill.retailer || "Processing..."}</p>
-                            </div>
-                            <Button variant="ghost" size="icon" onClick={() => deleteBill.mutate({ id: bill.id })}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                          {bill.totalUsageKwh && (
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Usage:</span>
-                                <span className="ml-2">{bill.totalUsageKwh} kWh</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Amount:</span>
-                                <span className="ml-2">${bill.totalAmount}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                  {bills?.filter(b => b.billType === 'electricity').map(bill => (
+                    <div key={bill.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 mb-2">
+                      <div>
+                        <p className="font-medium">{bill.retailer || 'Unknown Retailer'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {bill.billingPeriodStart && bill.billingPeriodEnd 
+                            ? `${new Date(bill.billingPeriodStart).toLocaleDateString()} - ${new Date(bill.billingPeriodEnd).toLocaleDateString()}`
+                            : bill.fileName}
+                        </p>
+                        {bill.totalUsageKwh && (
+                          <p className="text-sm text-primary">{parseFloat(bill.totalUsageKwh).toFixed(0)} kWh</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => bill.fileUrl && window.open(bill.fileUrl, '_blank')}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Replace this bill?')) {
+                              deleteBill.mutate({ id: bill.id });
+                            }
+                          }}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">Upload electricity bill (PDF)</p>
-                      <Input
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        id="electricity-upload"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload('electricity', file);
-                        }}
-                      />
-                      <Button variant="outline" onClick={() => document.getElementById('electricity-upload')?.click()}>
-                        Select File
-                      </Button>
-                    </div>
-                  )}
+                  ))}
+                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center mt-4">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Upload electricity bill (PDF)</p>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      id="elec-bill-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('electricity', file);
+                      }}
+                    />
+                    <Button variant="outline" onClick={() => document.getElementById('elec-bill-upload')?.click()}>
+                      Select File
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Gas Bill */}
+              {/* Gas Bills */}
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Flame className="h-5 w-5 text-accent" />
-                    Gas Bill
+                    <Flame className="h-5 w-5 text-orange-500" />
+                    Gas Bills
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {bills?.find(b => b.billType === 'gas') ? (
-                    <div className="space-y-4">
-                      {bills.filter(b => b.billType === 'gas').map(bill => (
-                        <div key={bill.id} className="p-4 rounded-lg bg-muted/50 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{bill.fileName}</p>
-                              <p className="text-sm text-muted-foreground">{bill.retailer || "Processing..."}</p>
-                            </div>
-                            <Button variant="ghost" size="icon" onClick={() => deleteBill.mutate({ id: bill.id })}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                          {bill.gasUsageMj && (
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Usage:</span>
-                                <span className="ml-2">{bill.gasUsageMj} MJ</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Amount:</span>
-                                <span className="ml-2">${bill.totalAmount}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                  {bills?.filter(b => b.billType === 'gas').map(bill => (
+                    <div key={bill.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 mb-2">
+                      <div>
+                        <p className="font-medium">{bill.retailer || 'Unknown Retailer'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {bill.billingPeriodStart && bill.billingPeriodEnd 
+                            ? `${new Date(bill.billingPeriodStart).toLocaleDateString()} - ${new Date(bill.billingPeriodEnd).toLocaleDateString()}`
+                            : bill.fileName}
+                        </p>
+                        {(bill as any).totalUsageMj && (
+                          <p className="text-sm text-orange-500">{parseFloat((bill as any).totalUsageMj).toFixed(0)} MJ</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => bill.fileUrl && window.open(bill.fileUrl, '_blank')}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Replace this bill?')) {
+                              deleteBill.mutate({ id: bill.id });
+                            }
+                          }}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">Upload gas bill (PDF)</p>
-                      <Input
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        id="gas-upload"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload('gas', file);
-                        }}
-                      />
-                      <Button variant="outline" onClick={() => document.getElementById('gas-upload')?.click()}>
-                        Select File
-                      </Button>
-                    </div>
-                  )}
+                  ))}
+                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center mt-4">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Upload gas bill (PDF)</p>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      id="gas-bill-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('gas', file);
+                      }}
+                    />
+                    <Button variant="outline" onClick={() => document.getElementById('gas-bill-upload')?.click()}>
+                      Select File
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* Documents Tab - NEW */}
+          {/* Documents Tab */}
           <TabsContent value="documents">
             <div className="space-y-6">
-              {/* Photo Uploads Section */}
+              {/* Electrical Photos Section */}
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -455,145 +599,8 @@ export default function CustomerDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {/* Switchboard Photo */}
-                    <div>
-                      <Label className="mb-2 block">Switchboard Photo</Label>
-                      {getDocumentsByType('switchboard_photo').length > 0 ? (
-                        <div className="space-y-2">
-                          {getDocumentsByType('switchboard_photo').map(doc => (
-                            <div key={doc.id} className="relative group">
-                              <img 
-                                src={doc.fileUrl} 
-                                alt="Switchboard" 
-                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                onClick={() => setPreviewUrl(doc.fileUrl)}
-                              />
-                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="secondary" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => setPreviewUrl(doc.fileUrl)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="destructive" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div 
-                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                            dragOver === 'switchboard_photo' ? 'border-primary bg-primary/10' : 'border-border'
-                          }`}
-                          onDragOver={(e) => { e.preventDefault(); setDragOver('switchboard_photo'); }}
-                          onDragLeave={() => setDragOver(null)}
-                          onDrop={(e) => handleDrop('switchboard_photo', e)}
-                        >
-                          <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {uploadingType === 'switchboard_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
-                          </p>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id="switchboard-upload"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleDocumentUpload('switchboard_photo', file);
-                            }}
-                          />
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            disabled={uploadingType === 'switchboard_photo'}
-                            onClick={() => document.getElementById('switchboard-upload')?.click()}
-                          >
-                            Select Photo
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Meter Photo */}
-                    <div>
-                      <Label className="mb-2 block">Meter Photo</Label>
-                      {getDocumentsByType('meter_photo').length > 0 ? (
-                        <div className="space-y-2">
-                          {getDocumentsByType('meter_photo').map(doc => (
-                            <div key={doc.id} className="relative group">
-                              <img 
-                                src={doc.fileUrl} 
-                                alt="Meter" 
-                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                onClick={() => setPreviewUrl(doc.fileUrl)}
-                              />
-                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="secondary" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => setPreviewUrl(doc.fileUrl)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="destructive" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div 
-                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                            dragOver === 'meter_photo' ? 'border-primary bg-primary/10' : 'border-border'
-                          }`}
-                          onDragOver={(e) => { e.preventDefault(); setDragOver('meter_photo'); }}
-                          onDragLeave={() => setDragOver(null)}
-                          onDrop={(e) => handleDrop('meter_photo', e)}
-                        >
-                          <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {uploadingType === 'meter_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
-                          </p>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id="meter-upload"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleDocumentUpload('meter_photo', file);
-                            }}
-                          />
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            disabled={uploadingType === 'meter_photo'}
-                            onClick={() => document.getElementById('meter-upload')?.click()}
-                          >
-                            Select Photo
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    {renderPhotoSection('switchboard_photo', 'Switchboard Photo', switchboardInputRef, 'switchboard-upload', Camera)}
+                    {renderPhotoSection('meter_photo', 'Meter Photo', meterInputRef, 'meter-upload', Camera)}
                   </div>
                 </CardContent>
               </Card>
@@ -608,145 +615,8 @@ export default function CustomerDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {/* Roof Photo */}
-                    <div>
-                      <Label className="mb-2 block">Roof Photo</Label>
-                      {getDocumentsByType('roof_photo').length > 0 ? (
-                        <div className="space-y-2">
-                          {getDocumentsByType('roof_photo').map(doc => (
-                            <div key={doc.id} className="relative group">
-                              <img 
-                                src={doc.fileUrl} 
-                                alt="Roof" 
-                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                onClick={() => setPreviewUrl(doc.fileUrl)}
-                              />
-                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="secondary" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => setPreviewUrl(doc.fileUrl)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="destructive" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div 
-                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                            dragOver === 'roof_photo' ? 'border-primary bg-primary/10' : 'border-border'
-                          }`}
-                          onDragOver={(e) => { e.preventDefault(); setDragOver('roof_photo'); }}
-                          onDragLeave={() => setDragOver(null)}
-                          onDrop={(e) => handleDrop('roof_photo', e)}
-                        >
-                          <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {uploadingType === 'roof_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
-                          </p>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id="roof-upload"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleDocumentUpload('roof_photo', file);
-                            }}
-                          />
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            disabled={uploadingType === 'roof_photo'}
-                            onClick={() => document.getElementById('roof-upload')?.click()}
-                          >
-                            Select Photo
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Property Photo */}
-                    <div>
-                      <Label className="mb-2 block">Property Photo</Label>
-                      {getDocumentsByType('property_photo').length > 0 ? (
-                        <div className="space-y-2">
-                          {getDocumentsByType('property_photo').map(doc => (
-                            <div key={doc.id} className="relative group">
-                              <img 
-                                src={doc.fileUrl} 
-                                alt="Property" 
-                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                onClick={() => setPreviewUrl(doc.fileUrl)}
-                              />
-                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="secondary" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => setPreviewUrl(doc.fileUrl)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="destructive" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div 
-                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                            dragOver === 'property_photo' ? 'border-primary bg-primary/10' : 'border-border'
-                          }`}
-                          onDragOver={(e) => { e.preventDefault(); setDragOver('property_photo'); }}
-                          onDragLeave={() => setDragOver(null)}
-                          onDrop={(e) => handleDrop('property_photo', e)}
-                        >
-                          <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {uploadingType === 'property_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
-                          </p>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            id="property-upload"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleDocumentUpload('property_photo', file);
-                            }}
-                          />
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            disabled={uploadingType === 'property_photo'}
-                            onClick={() => document.getElementById('property-upload')?.click()}
-                          >
-                            Select Photo
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    {renderPhotoSection('roof_photo', 'Roof Photo', roofInputRef, 'roof-upload', FileImage)}
+                    {renderPhotoSection('property_photo', 'Property Photo', propertyInputRef, 'property-upload', FileImage)}
                   </div>
                 </CardContent>
               </Card>
@@ -784,11 +654,25 @@ export default function CustomerDetail() {
                             </Button>
                             <Button 
                               variant="ghost" 
-                              size="icon"
-                              onClick={() => deleteDocument.mutate({ id: doc.id })}
+                              size="sm"
+                              title="Change PDF"
+                              onClick={() => solarPdfInputRef.current?.click()}
                             >
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <RefreshCw className="h-4 w-4" />
                             </Button>
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              className="hidden"
+                              ref={solarPdfInputRef}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleDocumentUpload('solar_proposal_pdf', file, doc.id);
+                                }
+                                e.target.value = '';
+                              }}
+                            />
                           </div>
                         </div>
                       ))}
@@ -862,7 +746,7 @@ export default function CustomerDetail() {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           proposal.status === 'generated' ? 'bg-green-500/20 text-green-400' :
                           proposal.status === 'draft' ? 'bg-yellow-500/20 text-yellow-400' :
-                          proposal.status === 'exported' ? 'bg-blue-500/20 text-blue-400' :
+                          proposal.status === 'exported' ? 'bg-primary/20 text-primary' :
                           'bg-gray-500/20 text-gray-400'
                         }`}>{proposal.status}</span>
                       </div>

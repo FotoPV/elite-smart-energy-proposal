@@ -600,6 +600,99 @@ export const appRouter = router({
           fileName,
         };
       }),
+    
+    exportPdf: protectedProcedure
+      .input(z.object({
+        proposalId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        const customer = await db.getCustomerById(proposal.customerId);
+        if (!customer) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        }
+        
+        if (!proposal.calculations) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Run calculations first' });
+        }
+        
+        const calc = proposal.calculations as ProposalCalculations;
+        
+        // Build ProposalData from customer and calculations
+        const proposalData: ProposalData = {
+          customerName: customer.fullName,
+          address: customer.address || '',
+          state: customer.state,
+          retailer: 'Current Retailer',
+          dailyUsageKwh: calc.dailyAverageKwh || 0,
+          annualUsageKwh: calc.yearlyUsageKwh || 0,
+          supplyChargeCentsPerDay: 100,
+          usageRateCentsPerKwh: 30,
+          feedInTariffCentsPerKwh: 5,
+          annualCost: calc.projectedAnnualCost || 0,
+          hasGas: !!proposal.gasBillId,
+          gasAnnualMJ: calc.gasKwhEquivalent ? calc.gasKwhEquivalent * 3.6 : undefined,
+          gasAnnualCost: calc.gasAnnualCost,
+          solarSizeKw: calc.recommendedSolarKw || 10,
+          panelCount: calc.solarPanelCount || 20,
+          panelWattage: 500,
+          panelBrand: 'AIKO Neostar',
+          batterySizeKwh: calc.recommendedBatteryKwh || 15,
+          batteryBrand: 'Sigenergy SigenStor',
+          inverterSizeKw: 8,
+          inverterBrand: 'Sigenergy',
+          systemCost: calc.totalInvestment || 25000,
+          rebateAmount: calc.totalRebates || 3000,
+          netInvestment: calc.netInvestment || 22000,
+          annualSavings: calc.totalAnnualSavings || 3000,
+          paybackYears: calc.paybackYears || 7,
+          tenYearSavings: (calc.totalAnnualSavings || 3000) * 10,
+          vppProvider: typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE',
+          vppProgram: 'VPP Advantage',
+          vppAnnualValue: calc.vppAnnualValue || 300,
+          hasGasBundle: true,
+          hasEV: customer.hasEV ?? false,
+          evAnnualKm: (customer as any).evAnnualKm || 10000,
+          evAnnualSavings: calc.evAnnualSavings,
+          hasPoolPump: customer.hasPool ?? false,
+          poolPumpSavings: calc.poolHeatPumpSavings,
+          hasHeatPump: !!proposal.gasBillId,
+          heatPumpSavings: calc.hotWaterSavings,
+          co2ReductionTonnes: calc.co2ReductionTonnes || 5,
+        };
+        
+        const slides = generateSlides(proposalData);
+        
+        // Generate PDF using Puppeteer
+        const { generateProposalPdf } = await import('./pdfExport');
+        const pdfBuffer = await generateProposalPdf(
+          slides.map(s => ({
+            title: s.title,
+            subtitle: s.subtitle,
+            content: generateSlideHTML(s),
+            type: s.type,
+          })),
+          customer.fullName,
+          proposal.title || 'Electrification Proposal'
+        );
+        
+        // Upload PDF to S3
+        const fileName = `proposal-${proposal.id}-${customer.fullName.replace(/\s+/g, '_')}-${Date.now()}.pdf`;
+        const { url } = await storagePut(`exports/${fileName}`, pdfBuffer, 'application/pdf');
+        
+        // Update proposal status
+        await db.updateProposal(input.proposalId, { status: 'exported' });
+        
+        return {
+          success: true,
+          fileUrl: url,
+          fileName,
+        };
+      }),
   }),
 
   // ============================================
@@ -720,6 +813,36 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteCustomerDocument(input.id);
         return { success: true };
+      }),
+    
+    analyzeSwitchboard: protectedProcedure
+      .input(z.object({ documentId: z.number() }))
+      .mutation(async ({ input }) => {
+        const doc = await db.getDocumentById(input.documentId);
+        if (!doc) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
+        }
+        
+        if (doc.documentType !== 'switchboard_photo') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Document is not a switchboard photo' });
+        }
+        
+        // Analyze the switchboard photo using LLM vision
+        const { analyzeSwitchboardPhoto, generateSwitchboardReport } = await import('./switchboardAnalysis');
+        const analysis = await analyzeSwitchboardPhoto(doc.fileUrl);
+        const report = generateSwitchboardReport(analysis);
+        
+        // Store the analysis in the document
+        await db.updateCustomerDocument(input.documentId, {
+          extractedData: JSON.stringify(analysis),
+          description: report,
+        });
+        
+        return {
+          success: true,
+          analysis,
+          report,
+        };
       }),
   }),
 
