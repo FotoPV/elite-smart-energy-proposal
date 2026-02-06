@@ -76,7 +76,7 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="flex flex-col items-center gap-4">
             <img 
-              src="/LightningEnergy_Logo_Icon_Aqua.png" 
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/xoEnSiyrnDIFkppW.png" 
               alt="Lightning Energy" 
               className="h-20 w-20"
             />
@@ -197,7 +197,7 @@ function DashboardLayoutContent({
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none"
               >
                 <img 
-                  src="/LightningEnergy_Logo_Icon_Aqua.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/xoEnSiyrnDIFkppW.png" 
                   alt="Lightning Energy" 
                   className="h-8 w-8 shrink-0"
                 />
@@ -314,7 +314,7 @@ function DashboardLayoutContent({
               <SidebarTrigger className="h-9 w-9 rounded-lg" />
               <div className="flex items-center gap-2">
                 <img 
-                  src="/LightningEnergy_Logo_Icon_Aqua.png" 
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/xoEnSiyrnDIFkppW.png" 
                   alt="Lightning Energy" 
                   className="h-6 w-6"
                 />

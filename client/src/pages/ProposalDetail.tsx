@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { SlideViewer } from "@/components/SlideViewer";
 
 export default function ProposalDetail() {
   const params = useParams<{ id: string }>();
@@ -296,31 +297,17 @@ export default function ProposalDetail() {
           </>
         )}
 
-        {/* Slides Preview */}
-        {proposal.slidesData && (
+        {/* Slides Preview - Professional Lightning Energy Design */}
+        {calculations && (
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle>Generated Slides ({proposal.slideCount})</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-[#00EAD3]" />
+                Proposal Slides
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                {(proposal.slidesData as any[]).filter(s => s.isIncluded).map((slide, index) => (
-                  <div 
-                    key={index}
-                    className="p-4 rounded-lg bg-muted/50 border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{slide.title}</p>
-                        <p className="text-xs text-muted-foreground">{slide.slideType}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <SlideViewer proposalId={proposalId} />
             </CardContent>
           </Card>
         )}

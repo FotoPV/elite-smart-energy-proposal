@@ -78,7 +78,9 @@
 - [x] Responsive design
 - [x] Unit tests for calculations (27 tests)
 - [x] Auth logout test (1 test)
-- [x] All 28 tests passing
+- [x] Document tests (7 tests)
+- [x] Slide generator tests (15 tests)
+- [x] All 50 tests passing
 - [ ] Analytics dashboard (Coming soon placeholder)
 
 
@@ -94,3 +96,17 @@
 ## New Features (Feb 6 - Part 2)
 - [x] Add Solar Proposal PDF upload to New Proposal wizard (Bills step)
 - [x] Add Switchboard Photo upload to New Proposal wizard (Bills step)
+
+
+## Branding Update (Feb 6)
+- [x] Upload Lightning Energy logo to S3 CDN
+- [x] Upload custom fonts to S3 CDN (GeneralSans, NextSphere, Urbanist)
+- [x] Update CSS with exact brand colors (Aqua #00EAD3, Orange #f36710, Ash #808285, White #FFFFFF)
+- [x] Configure custom fonts in CSS (@font-face)
+- [x] Update logo references throughout application
+- [x] Apply brand colors sparingly (aqua for logo/graphs only)
+- [x] Create professional slide generator matching example PDF design
+- [x] Add SlideViewer component with navigation and fullscreen
+- [x] Add getSlideHtml API endpoint
+- [x] Unit tests for slide generator (15 tests passing)
+- [x] 50 total unit tests passing
