@@ -254,3 +254,13 @@
 ## Bug Fix - Dashboard Analytics SQL Error (Feb 6)
 - [x] Fix DATE() function error in getAggregateAnalytics query
 - [x] Use DATE_FORMAT('%Y-%m-%d') compatible with TiDB/MySQL
+
+
+## Remove Share with Customer & Fix Fonts (Feb 6)
+- [x] Remove "Share with Customer" button from ProposalDetail page
+- [x] Upload all brand fonts (GeneralSans-Regular, NextSphere-ExtraBold, Urbanist-SemiBold, Urbanist-SemiBoldItalic) to CDN
+- [x] Update CSS to use NextSphere-ExtraBold for headings ONLY
+- [x] Update CSS to use GeneralSans-Regular for body text and numbers
+- [x] Update CSS to use Urbanist-SemiBold for UI elements/buttons
+- [x] Ensure fonts load correctly across entire dashboard
+- [x] Go light on aqua - only logo and graph bars

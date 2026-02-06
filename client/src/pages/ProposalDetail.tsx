@@ -368,133 +368,7 @@ function PublishPDFButton({ proposalId, customerName }: { proposalId: number; cu
   );
 }
 
-// Share Link Button Component - Generates a shareable link for customer portal
-function ShareLinkButton({ proposalId, customerName }: { proposalId: number; customerName: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [shareLink, setShareLink] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  
-  const createLinkMutation = trpc.proposals.createShareLink.useMutation({
-    onSuccess: (data) => {
-      const fullUrl = `${window.location.origin}/portal/${data.token}`;
-      setShareLink(fullUrl);
-      setIsGenerating(false);
-    },
-    onError: (error) => {
-      toast.error(`Failed to create link: ${error.message}`);
-      setIsGenerating(false);
-    }
-  });
-  
-  const handleGenerateLink = () => {
-    setIsGenerating(true);
-    createLinkMutation.mutate({ proposalId, expiresInDays: 30 });
-  };
-  
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareLink).then(() => {
-      toast.success('Link copied to clipboard!');
-    });
-  };
-  
-  return (
-    <>
-      <Button
-        variant="outline"
-        onClick={() => setIsOpen(true)}
-        className="border-primary/30 hover:border-primary text-primary"
-      >
-        <Share2 className="mr-2 h-4 w-4" />
-        Share with Customer
-      </Button>
-      
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Link className="h-5 w-5 text-primary" />
-              Share Proposal with Customer
-            </DialogTitle>
-            <DialogDescription>
-              Generate a secure link for {customerName} to view their proposal online.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 pt-4">
-            {!shareLink ? (
-              <div className="text-center space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  This will create a secure, time-limited link (30 days) that allows the customer to view their proposal and download the PDF.
-                </p>
-                <Button
-                  onClick={handleGenerateLink}
-                  disabled={isGenerating}
-                  className="lightning-button-primary"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Link className="mr-2 h-4 w-4" />
-                      Generate Share Link
-                    </>
-                  )}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Share Link</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      value={shareLink} 
-                      readOnly 
-                      className="bg-background font-mono text-xs"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleCopyLink}
-                      className="shrink-0"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => window.open(shareLink, '_blank')}
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Open Portal
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleCopyLink}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy Link
-                  </Button>
-                </div>
-                
-                <p className="text-xs text-muted-foreground text-center">
-                  This link expires in 30 days. The customer can view slides and download the PDF.
-                </p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
+
 
 // Proposal Analytics Component
 function ProposalAnalytics({ proposalId }: { proposalId: number }) {
@@ -741,10 +615,7 @@ export default function ProposalDetailPage() {
           
           <div className="flex items-center gap-2 flex-wrap">
             {proposal.status === 'generated' && (
-              <>
-                <PublishPDFButton proposalId={proposalId} customerName={customerName} />
-                <ShareLinkButton proposalId={proposalId} customerName={customerName} />
-              </>
+              <PublishPDFButton proposalId={proposalId} customerName={customerName} />
             )}
             <UpdateAndPublishButton 
               proposalId={proposalId} 

@@ -9,7 +9,7 @@
 
 @font-face {
   font-family: 'NextSphere';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/fDWnLBVLJyJFBrRy.ttf') format('truetype');
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KyJiGtCWZEOyRutS.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: 'GeneralSans';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YSFjHCBWICJbGOby.otf') format('opentype');
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YXyQKtNsWXINxhqz.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -25,9 +25,17 @@
 
 @font-face {
   font-family: 'Urbanist';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/LJSEEfJnAkXTDzyf.ttf') format('truetype');
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/IwTijsrkypfLpHZK.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/zIpydVeIeSysfLZE.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -143,6 +151,22 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'NextSphere', 'GeneralSans', system-ui, sans-serif;
     @apply font-extrabold tracking-tight;
+  }
+  
+  /* Numbers and data use GeneralSans */
+  .font-mono {
+    font-family: 'GeneralSans', system-ui, sans-serif !important;
+  }
+  
+  /* UI elements (buttons, labels, nav) use Urbanist */
+  button, [role="button"], nav, .nav-item, label,
+  .sidebar-item, [data-sidebar] a, [data-sidebar] button {
+    font-family: 'Urbanist', 'GeneralSans', system-ui, sans-serif;
+  }
+  
+  /* Ensure inputs and form elements use GeneralSans */
+  input, textarea, select {
+    font-family: 'GeneralSans', system-ui, sans-serif;
   }
   
   button:not(:disabled),
