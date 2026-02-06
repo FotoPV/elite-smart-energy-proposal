@@ -389,13 +389,9 @@ export const appRouter = router({
     generate: protectedProcedure
       .input(z.object({ proposalId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const proposal = await db.getProposalById(input.proposalId);
+        let proposal = await db.getProposalById(input.proposalId);
         if (!proposal) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
-        }
-        
-        if (!proposal.calculations) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Run calculations first' });
         }
         
         const customer = await db.getCustomerById(proposal.customerId);
@@ -403,8 +399,31 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
         }
         
-        // Generate slides data structure
-        const slidesData = generateSlidesData(customer, proposal.calculations, proposal.gasBillId !== null);
+        // Auto-calculate if calculations are missing
+        if (!proposal.calculations) {
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          let gasBill = null;
+          if (proposal.gasBillId) {
+            gasBill = await db.getBillById(proposal.gasBillId);
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
+        }
+        
+        // Generate slides data structure (calculations guaranteed to exist after auto-calculate above)
+        const slidesData = generateSlidesData(customer, proposal.calculations!, proposal.gasBillId !== null);
         
         await db.updateProposal(input.proposalId, {
           slidesData,
@@ -472,7 +491,7 @@ export const appRouter = router({
         slideIndex: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        const proposal = await db.getProposalById(input.proposalId);
+        let proposal = await db.getProposalById(input.proposalId);
         if (!proposal) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
         }
@@ -482,8 +501,27 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
         }
         
+        // Auto-calculate if calculations are missing
         if (!proposal.calculations) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Run calculations first' });
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          let gasBill = null;
+          if (proposal.gasBillId) {
+            gasBill = await db.getBillById(proposal.gasBillId);
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
         }
         
         const calc = proposal.calculations as ProposalCalculations;
@@ -619,7 +657,7 @@ export const appRouter = router({
         proposalId: z.number(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const proposal = await db.getProposalById(input.proposalId);
+        let proposal = await db.getProposalById(input.proposalId);
         if (!proposal) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
         }
@@ -629,8 +667,27 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
         }
         
+        // Auto-calculate if calculations are missing
         if (!proposal.calculations) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Run calculations first' });
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          let gasBill = null;
+          if (proposal.gasBillId) {
+            gasBill = await db.getBillById(proposal.gasBillId);
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
         }
         
         const calc = proposal.calculations as ProposalCalculations;

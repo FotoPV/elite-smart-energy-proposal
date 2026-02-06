@@ -449,7 +449,7 @@ export default function ProposalDetailPage() {
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
   const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
     { proposalId },
-    { enabled: !!proposal && proposal.status === 'generated' }
+    { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') }
   );
   
   const calculateMutation = trpc.proposals.calculate.useMutation({
@@ -636,28 +636,15 @@ export default function ProposalDetailPage() {
               No Slides Generated Yet
             </h3>
             <p className="text-[#808285] mb-6" style={{ fontFamily: "'General Sans', sans-serif" }}>
-              Run calculations and generate slides to create the bill analysis.
+              Click below to automatically calculate and generate the bill analysis slides.
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
-                onClick={() => calculateMutation.mutate({ proposalId })}
-                disabled={calculateMutation.isPending}
-                variant="outline"
-                className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10"
-              >
-                {calculateMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Calculator className="mr-2 h-4 w-4" />
-                )}
-                Calculate
-              </Button>
-              <Button
                 onClick={() => generateMutation.mutate({ proposalId })}
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || calculateMutation.isPending}
                 className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
               >
-                {generateMutation.isPending ? (
+                {(generateMutation.isPending || calculateMutation.isPending) ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />

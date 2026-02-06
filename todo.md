@@ -362,3 +362,11 @@
 - [x] references/slide-structure.md - 25-slide breakdown, HTML patterns, CSS design specs
 - [x] templates/ - All brand fonts, logo, colour palette image, cover page PDF
 - [x] Skill validated successfully
+
+
+## Bug Fix - "Run calculations first" Error (Feb 6)
+- [x] Fix proposal detail page throwing "Run calculations first" when generating slides
+- [x] Ensure calculations run automatically before slide generation
+- [x] Auto-calculate in generate, getSlideHtml, and exportPdf server procedures
+- [x] Simplified empty state to single "Generate Slides" button (auto-calculates)
+- [x] All 68 tests passing
