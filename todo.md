@@ -67,7 +67,7 @@
 ## Design & Branding
 - [x] Dark theme with black background (#000000)
 - [x] Aqua accent color (#00EAD3)
-- [x] Burnt orange secondary (#F36710)
+- [x] Burnt orange secondary (#E8731A)
 - [x] Custom fonts integration
 - [x] Lightning Energy logo placement
 - [x] Copyright footer: "COPYRIGHT Lightning Energy - Architect George Fotopoulos"
@@ -121,7 +121,7 @@
 
 
 ## Bug Fix (Feb 6)
-- [ ] Remove all orange colors from dashboard UI (orange only for exported slides)
+- [x] Remove all orange colors from dashboard UI (orange only for exported slides)
 
 
 ## Bug Fix (Feb 6)
@@ -240,8 +240,8 @@
 
 
 ## Bug Fix - Dashboard Analytics SQL Error (Feb 6)
-- [ ] Fix DATE() function error in getAggregateAnalytics query
-- [ ] Use raw SQL compatible with TiDB/MySQL for date grouping
+- [x] Fix DATE() function error in getAggregateAnalytics query
+- [x] Use raw SQL compatible with TiDB/MySQL for date grouping
 
 
 ## Critical Fix - PDF Export in Production (Feb 6)
@@ -264,3 +264,19 @@
 - [x] Update CSS to use Urbanist-SemiBold for UI elements/buttons
 - [x] Ensure fonts load correctly across entire dashboard
 - [x] Go light on aqua - only logo and graph bars
+
+
+## CRITICAL: Match Best Example PDF Design (Feb 6)
+- [x] Dashboard: Replace solid aqua engagement cards with thin aqua-bordered cards on black bg
+- [x] Dashboard: Fix stat cards to use thin aqua borders, grey labels uppercase, aqua numbers
+- [x] Dashboard: Fix quick action cards to use thin grey borders
+- [x] Dashboard: Ensure all fonts match (NextSphere headings, GeneralSans body, Urbanist UI)
+- [x] Dashboard: Go light on aqua - borders only, no solid fills
+- [x] Slides: Complete rewrite of all 25 slide HTML generators to match Paul Stokes best example
+- [x] Slides: Right-aligned aqua italic subtitles, thin aqua line separators
+- [x] Slides: Insight cards with colored left borders on dark grey bg
+- [x] Slides: Correct color usage (aqua #00EAD3 savings, orange #E8731A costs, grey #808285 labels)
+- [x] Slides: Proper font hierarchy (NextSphere headings, GeneralSans body, Urbanist labels)
+- [x] Fix pdfUpload module error in server
+- [x] Updated BRAND orange color from #f36710 to #E8731A to match best example
+- [x] All 68 tests passing

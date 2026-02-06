@@ -133,7 +133,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'executive_summary',
     title: 'EXECUTIVE SUMMARY',
-    subtitle: 'Key Metrics at a Glance',
+    subtitle: 'Your Energy Transformation at a Glance',
     content: {
       currentAnnualCost: data.annualCost,
       projectedAnnualCost: data.annualCost - data.annualSavings,
@@ -169,13 +169,15 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'usage_analysis',
     title: 'MONTHLY USAGE ANALYSIS',
-    subtitle: 'Consumption Patterns',
+    subtitle: 'Your Energy Consumption Pattern',
     content: {
       annualUsageKwh: data.annualUsageKwh,
       dailyAverageKwh: data.dailyUsageKwh,
       monthlyAverageKwh: data.annualUsageKwh / 12,
       peakMonth: findPeakMonth(data.monthlyUsageData),
       monthlyData: data.monthlyUsageData || [],
+      usageRate: data.usageRateCentsPerKwh,
+      feedInTariff: data.feedInTariffCentsPerKwh,
     }
   });
   
@@ -184,7 +186,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'yearly_projection',
     title: 'YEARLY COST PROJECTION',
-    subtitle: '25-Year Cumulative Outlook',
+    subtitle: 'Annual Analysis & 25-Year Outlook',
     content: {
       currentAnnualCost: data.annualCost,
       projectedAnnualCost: data.annualCost - data.annualSavings,
@@ -195,7 +197,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 6: Current Gas Footprint (CONDITIONAL - only if gas bill provided)
+  // Slide 6: Current Gas Footprint (CONDITIONAL)
   if (data.hasGas && data.gasAnnualCost) {
     slides.push({
       id: slideId++,
@@ -213,7 +215,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 7: Gas Appliance Inventory (CONDITIONAL - only if gas appliances data)
+  // Slide 7: Gas Appliance Inventory (CONDITIONAL)
   if (data.hasGas && data.gasAppliances) {
     slides.push({
       id: slideId++,
@@ -238,22 +240,21 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'strategic_assessment',
     title: 'STRATEGIC ASSESSMENT',
-    subtitle: 'Pros & Cons of Solar Battery Investment',
+    subtitle: 'Battery Storage Investment',
     content: {
       advantages: [
-        { icon: 'zap', title: 'ENERGY INDEPENDENCE', description: 'Reduce grid reliance from 100% to near-zero during outages.' },
-        { icon: 'dollar', title: 'VPP INCOME', description: `Earn $${data.vppAnnualValue}-${data.vppAnnualValue + 150}/year through Virtual Power Plant participation.` },
-        { icon: 'car', title: 'FUTURE-PROOFING', description: 'Ready for EV charging and time-of-use tariffs.' },
-        { icon: 'trending-up', title: 'PEAK SHIFTING', description: 'Store cheap solar energy for expensive peak periods (6-9pm).' },
-        { icon: 'shield', title: 'BLACKOUT PROTECTION', description: `Partial home backup with ${data.batteryBrand} system.` },
-        { icon: 'leaf', title: 'ENVIRONMENTAL', description: `Reduce ${data.co2ReductionTonnes.toFixed(1)} tonnes CO2 annually.` },
+        { icon: '⚡', title: 'ENERGY INDEPENDENCE', description: 'Reduce grid reliance from 100% to near-zero during outages.' },
+        { icon: '💰', title: 'VPP INCOME', description: `Earn $${data.vppAnnualValue}-${data.vppAnnualValue + 150}/year through Virtual Power Plant participation.` },
+        { icon: '🚗', title: 'FUTURE-PROOFING', description: 'Ready for EV charging and time-of-use tariffs.' },
+        { icon: '📈', title: 'PEAK SHIFTING', description: 'Store cheap solar energy for expensive peak periods (6-9pm).' },
+        { icon: '🛡', title: 'BLACKOUT PROTECTION', description: `Partial home backup with ${data.batteryBrand} system.` },
       ],
       considerations: [
-        { icon: 'dollar-sign', title: 'UPFRONT COST', description: `$${data.netInvestment.toLocaleString()} investment (after rebates).` },
-        { icon: 'hourglass', title: 'PAYBACK PERIOD', description: `${data.paybackYears.toFixed(1)} years for battery component alone.` },
-        { icon: 'cpu', title: 'TECHNOLOGY EVOLUTION', description: 'Battery technology is improving rapidly.' },
-        { icon: 'box', title: 'SPACE REQUIREMENTS', description: 'Floor-mounted unit requires dedicated garage space.' },
-        { icon: 'battery', title: 'DEGRADATION', description: 'Battery capacity reduces over time (approx. 0.35%/year).' },
+        { icon: '💵', title: 'UPFRONT COST', description: `$${data.netInvestment.toLocaleString()} investment (after rebates).` },
+        { icon: '⏳', title: 'PAYBACK PERIOD', description: `${data.paybackYears.toFixed(1)} years for battery component alone.` },
+        { icon: '🖥', title: 'TECHNOLOGY EVOLUTION', description: 'Battery technology is improving rapidly.' },
+        { icon: '📦', title: 'SPACE REQUIREMENTS', description: 'Floor-mounted unit requires dedicated garage space.' },
+        { icon: '🔋', title: 'DEGRADATION', description: 'Battery capacity reduces over time (approx. 0.35%/year).' },
       ],
     }
   });
@@ -291,28 +292,24 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       panelCount: data.panelCount,
       panelPower: data.panelWattage,
       panelBrand: data.panelBrand,
-      expectedGeneration: data.solarSizeKw * 4 * 365, // Approx 4 kWh per kW per day
-      selfConsumptionRatio: 70,
-      exportRatio: 30,
-      whyThisBrand: 'Ranked #1 for module efficiency globally. The ABC technology eliminates front grid lines, absorbing 100% of incident light for maximum energy generation per square meter.',
+      whyThisBrand: `${data.panelBrand} panels deliver industry-leading efficiency with superior shade performance, maximizing energy harvest from your roof.`,
       features: [
-        { icon: 'panel', title: 'Full Black Design', description: 'Premium all-black appearance integrates seamlessly with modern rooflines.' },
-        { icon: 'shield', title: '25-Year Warranty', description: 'Comprehensive coverage for both product defects and performance output.' },
-        { icon: 'chart', title: 'Shade Optimization', description: 'Advanced partial shading optimization ensures maximum output even in challenging conditions.' },
+        { icon: '●', title: '25-Year Warranty', description: 'Full product and performance guarantee' },
+        { icon: '●', title: 'Full Black Design', description: 'Premium aesthetic integration with your roof' },
+        { icon: '●', title: 'Shade Optimization', description: 'Advanced cell technology for partial shade conditions' },
       ],
     }
   });
   
-  // Slide 11: VPP Provider Comparison (All 13 Providers)
+  // Slide 11: VPP Provider Comparison
   slides.push({
     id: slideId++,
     type: 'vpp_comparison',
     title: 'VPP PROVIDER COMPARISON',
-    subtitle: 'Evaluating All 13 Market Leaders',
+    subtitle: `Evaluating Market Leaders${data.hasGasBundle ? ' for Gas & Elec Bundles' : ''}`,
     content: {
-      providers: getVPPProviders(data.state, data.hasGas),
+      providers: getVPPProviders(data.state, data.hasGasBundle).slice(0, 5),
       recommendedProvider: data.vppProvider,
-      gasBundleRequired: data.hasGas,
     }
   });
   
@@ -326,174 +323,134 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       provider: data.vppProvider,
       program: data.vppProgram,
       annualValue: data.vppAnnualValue,
-      hasGasBundle: data.hasGasBundle,
       features: [
-        { icon: 'layers', title: 'INTEGRATED BUNDLE', description: data.hasGasBundle ? 'The only top-tier VPP provider offering a seamless Gas & Electricity bundle, simplifying your administration.' : 'Streamlined electricity management with competitive rates.' },
-        { icon: 'chart', title: 'FINANCIAL CERTAINTY', description: 'Provides guaranteed fixed credits for battery access, protecting you from market volatility while ensuring steady returns.' },
-        { icon: 'target', title: 'STRATEGIC FIT', description: 'Perfectly aligned with your usage profile, maximizing self-consumption value while monetizing excess capacity.' },
+        { icon: '≡', title: 'INTEGRATED BUNDLE', description: `Gas & Electricity combined for maximum savings with ${data.vppProvider}.` },
+        { icon: '↗', title: 'FINANCIAL CERTAINTY', description: 'Fixed daily credits plus variable event payments provide predictable income.' },
+        { icon: '⊕', title: 'STRATEGIC FIT', description: `Optimized for your ${data.batterySizeKwh}kWh battery and ${data.solarSizeKw}kW solar system.` },
       ],
     }
   });
   
-  // Slide 13: Hot Water Electrification (CONDITIONAL - only if gas)
-  if (data.hasGas && data.heatPumpSavings) {
+  // Slide 13: Hot Water Electrification (CONDITIONAL)
+  if (data.hasGas && data.gasAppliances?.hotWater) {
     slides.push({
       id: slideId++,
       type: 'hot_water_electrification',
       title: 'HOT WATER ELECTRIFICATION',
-      subtitle: 'Heat Pump Hot Water System',
+      subtitle: 'Heat Pump Upgrade Analysis',
       content: {
-        currentSystem: data.gasAppliances?.hotWater?.type || 'Gas Storage',
+        currentSystem: data.gasAppliances.hotWater.type || 'Gas Storage Hot Water',
         recommendedSystem: data.heatPumpBrand || 'Reclaim Energy CO2 Heat Pump',
-        annualGasCost: data.gasAppliances?.hotWater?.annualCost || 600,
-        annualHeatPumpCost: 150,
-        annualSavings: data.heatPumpSavings,
+        annualGasCost: data.gasAppliances.hotWater.annualCost || 600,
+        annualHeatPumpCost: Math.round((data.gasAppliances.hotWater.annualCost || 600) * 0.25),
+        annualSavings: data.heatPumpSavings || 800,
         installCost: data.heatPumpCost || 3500,
         rebates: 1000,
         netCost: (data.heatPumpCost || 3500) - 1000,
-        cop: 4.0,
-        features: [
-          'Uses ambient air to heat water - 4x more efficient than gas',
-          'Eligible for VEU rebates up to $1,000',
-          'Eliminates gas supply charge allocation',
-          '10-year warranty on compressor',
-        ],
+        features: ['COP 4.0+ efficiency rating', 'Works in temperatures -10°C to 43°C', 'Quiet operation (37dB)', 'Smart timer integration with solar'],
       }
     });
   }
   
-  // Slide 14: Heating & Cooling Upgrade (CONDITIONAL - only if gas heating)
-  if (data.hasGas && data.heatingCoolingSavings) {
+  // Slide 14: Heating & Cooling (CONDITIONAL)
+  if (data.hasGas && data.gasAppliances?.heating) {
     slides.push({
       id: slideId++,
       type: 'heating_cooling',
       title: 'HEATING & COOLING UPGRADE',
-      subtitle: 'Reverse Cycle Air Conditioning',
+      subtitle: 'Reverse Cycle AC Analysis',
       content: {
-        currentSystem: data.gasAppliances?.heating?.type || 'Gas Ducted',
-        recommendedSystem: data.acBrand || 'Daikin US7 Reverse Cycle',
-        annualGasCost: data.gasAppliances?.heating?.annualCost || 800,
-        annualACCost: 200,
-        annualSavings: data.heatingCoolingSavings,
+        currentSystem: data.gasAppliances.heating.type || 'Gas Ducted Heating',
+        recommendedSystem: data.acBrand || 'Daikin Reverse Cycle Split System',
+        annualGasCost: data.gasAppliances.heating.annualCost || 1200,
+        annualACCost: Math.round((data.gasAppliances.heating.annualCost || 1200) * 0.3),
+        annualSavings: data.heatingCoolingSavings || 600,
         installCost: data.heatingCoolingCost || 8000,
         rebates: 1500,
         netCost: (data.heatingCoolingCost || 8000) - 1500,
-        cop: 5.5,
-        features: [
-          'Provides both heating AND cooling from one system',
-          '5-6x more efficient than gas heating',
-          'Eligible for VEU certificates',
-          'Zoned control for individual room comfort',
-        ],
+        cop: 4.5,
+        features: ['Heating AND cooling in one system', 'Zone control for individual rooms', 'Wi-Fi smart control', 'Pairs with solar for free operation'],
       }
     });
   }
   
-  // Slide 15: Induction Cooking Upgrade (CONDITIONAL - only if gas cooktop)
-  if (data.hasGas && data.inductionSavings) {
+  // Slide 15: Induction Cooking (CONDITIONAL)
+  if (data.hasGas && data.gasAppliances?.cooktop) {
     slides.push({
       id: slideId++,
       type: 'induction_cooking',
       title: 'INDUCTION COOKING UPGRADE',
-      subtitle: 'Modern Electric Cooking',
+      subtitle: 'Gas Cooktop Replacement',
       content: {
-        currentSystem: data.gasAppliances?.cooktop?.type || 'Gas Cooktop',
-        recommendedSystem: data.inductionBrand || 'Fisher & Paykel Induction',
-        annualGasCost: data.gasAppliances?.cooktop?.annualCost || 150,
-        annualInductionCost: 50,
-        annualSavings: data.inductionSavings,
+        currentSystem: data.gasAppliances.cooktop.type || 'Gas Cooktop',
+        recommendedSystem: data.inductionBrand || 'Bosch Induction Cooktop',
+        annualGasCost: data.gasAppliances.cooktop.annualCost || 200,
+        annualInductionCost: Math.round((data.gasAppliances.cooktop.annualCost || 200) * 0.4),
+        annualSavings: data.inductionSavings || 200,
         installCost: data.inductionCost || 2500,
-        features: [
-          'Instant heat control - faster than gas',
-          'Safer - no open flame, cool surface',
-          'Easier to clean - flat surface',
-          'More efficient - 90% vs 40% for gas',
-          'Better indoor air quality - no combustion',
-        ],
+        features: ['90% energy efficiency (vs 40% gas)', 'Instant heat control', 'Safer - no open flame', 'Easy to clean flat surface'],
       }
     });
   }
   
-  // Slide 16: EV Analysis (CONDITIONAL - only if EV)
-  if (data.hasEV && data.evAnnualKm) {
+  // Slide 16: EV Analysis (CONDITIONAL)
+  if (data.hasEV) {
     slides.push({
       id: slideId++,
       type: 'ev_analysis',
       title: 'EV ANALYSIS',
-      subtitle: `${data.evAnnualKm.toLocaleString()} km Annual Usage Scenario`,
+      subtitle: `${(data.evAnnualKm || 15000).toLocaleString()} km Annual Usage Scenario`,
       content: {
-        annualKm: data.evAnnualKm,
-        petrolCostPer100km: 20.00,
-        evGridCostPer100km: 4.50,
-        evSolarCostPer100km: 0,
-        petrolAnnualCost: (data.evAnnualKm / 100) * 20,
-        evGridAnnualCost: (data.evAnnualKm / 100) * 4.50,
-        evSolarAnnualCost: 0,
-        annualSavings: data.evAnnualSavings || (data.evAnnualKm / 100) * 20,
-        co2Avoided: (data.evAnnualKm / 10000) * 2.3,
+        annualKm: data.evAnnualKm || 15000,
+        annualSavings: data.evAnnualSavings || 2000,
+        co2Avoided: ((data.evAnnualKm || 15000) / 100) * 0.23,
         comparison: [
-          { scenario: 'Petrol Vehicle', costPer100km: 20.00, annualCost: (data.evAnnualKm / 100) * 20 },
-          { scenario: 'EV (Grid Charging)', costPer100km: 4.50, annualCost: (data.evAnnualKm / 100) * 4.50 },
-          { scenario: 'EV (Solar Charging)', costPer100km: 0, annualCost: 0 },
+          { scenario: 'Petrol SUV (10L/100km)', costPer100km: 20.00, annualCost: Math.round((data.evAnnualKm || 15000) / 100 * 20) },
+          { scenario: 'EV (Grid Charge)', costPer100km: 4.50, annualCost: Math.round((data.evAnnualKm || 15000) / 100 * 4.5) },
+          { scenario: 'EV (Solar Charge)', costPer100km: 0.00, annualCost: 0 },
         ],
       }
     });
   }
   
-  // Slide 17: EV Charger Recommendation (CONDITIONAL - only if EV)
+  // Slide 17: EV Charger Recommendation (CONDITIONAL)
   if (data.hasEV) {
     slides.push({
       id: slideId++,
       type: 'ev_charger',
       title: 'EV CHARGER RECOMMENDATION',
-      subtitle: 'Smart Home Charging Solution',
+      subtitle: 'Smart Charging Solution',
       content: {
-        recommendedCharger: data.evChargerBrand || 'Sigenergy 7kW Smart Charger',
-        chargingSpeed: '7kW (32A single phase)',
-        installCost: data.evChargerCost || 1800,
-        features: [
-          'Solar-only charging mode - charge only from excess solar',
-          'Scheduled charging - charge during off-peak periods',
-          'Load balancing - prevents circuit overload',
-          'App control - monitor and control from anywhere',
-          'Integrated with battery system for optimal energy flow',
-        ],
-        solarChargingBenefits: [
-          'Zero fuel cost when charging from solar',
-          'Maximize self-consumption of solar generation',
-          'Reduce grid dependence and peak demand charges',
-        ],
+        recommendedCharger: data.evChargerBrand || 'Sigenergy EV Charger',
+        chargingSpeed: '7.4kW / 32A Single Phase',
+        installCost: data.evChargerCost || 2500,
+        features: ['Solar-aware charging mode', 'Scheduled charging for off-peak', 'App control & monitoring', 'Load management integration'],
+        solarChargingBenefits: ['Charge from excess solar for $0/km', 'Battery-to-EV overnight transfer', 'Smart scheduling around VPP events'],
       }
     });
   }
   
-  // Slide 18: Pool Heat Pump (CONDITIONAL - only if pool)
-  if (data.hasPoolPump && data.poolPumpSavings) {
+  // Slide 18: Pool Heat Pump (CONDITIONAL)
+  if (data.hasPoolPump) {
     slides.push({
       id: slideId++,
       type: 'pool_heat_pump',
       title: 'POOL HEAT PUMP',
       subtitle: 'Efficient Pool Heating Solution',
       content: {
-        currentSystem: data.gasAppliances?.poolHeater?.type || 'Gas Pool Heater',
-        recommendedSystem: data.poolHeatPumpBrand || 'Madimack Elite V3 Inverter',
+        currentSystem: 'Gas Pool Heater',
+        recommendedSystem: data.poolHeatPumpBrand || 'Madimack InverECO Pool Heat Pump',
         annualGasCost: data.gasAppliances?.poolHeater?.annualCost || 1200,
-        annualHeatPumpCost: 300,
-        annualSavings: data.poolPumpSavings,
+        annualHeatPumpCost: Math.round((data.gasAppliances?.poolHeater?.annualCost || 1200) * 0.2),
+        annualSavings: data.poolPumpSavings || 500,
         installCost: data.poolHeatPumpCost || 4500,
         cop: 6.0,
-        features: [
-          'COP of 6.0 - 6x more efficient than gas',
-          'Inverter technology for quiet operation',
-          'Extends swimming season by 4-6 months',
-          'Can be powered by excess solar',
-          'Wi-Fi control and scheduling',
-        ],
+        features: ['COP 6.0 - 6x more efficient than gas', 'Extends swimming season year-round', 'Quiet inverter operation', 'Solar-powered for near-zero running cost'],
       }
     });
   }
   
-  // Slide 19: Full Electrification Investment (CONDITIONAL - only if gas)
+  // Slide 19: Full Electrification Investment (CONDITIONAL)
   if (data.hasGas && data.electrificationTotalCost) {
     slides.push({
       id: slideId++,
@@ -525,14 +482,12 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     content: {
       totalAnnualBenefit: data.annualSavings,
       breakdown: [
-        { category: 'Solar Self-Consumption', value: Math.round((data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0)) * 0.6), color: 'aqua' },
-        { category: 'Battery Peak Shifting', value: Math.round((data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0)) * 0.4), color: 'white' },
+        { category: 'Solar & Battery', value: Math.round((data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0)) * 1), color: 'aqua' },
+        data.hasEV ? { category: 'EV Integration', value: data.evAnnualSavings || 0, color: 'white' } : null,
         { category: 'VPP Credits', value: data.vppAnnualValue, color: 'orange' },
-        data.hasEV ? { category: 'EV Fuel Savings', value: data.evAnnualSavings || 0, color: 'aqua' } : null,
         data.hasGas ? { category: 'Gas Elimination', value: data.gasAnnualCost || 0, color: 'orange' } : null,
-      ].filter(Boolean),
+      ].filter(Boolean) as Array<{ category: string; value: number; color: string }>,
       taxFree: true,
-      note: 'All savings are tax-free as they represent reduced household expenses.',
     }
   });
   
@@ -568,9 +523,9 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       energyIndependenceScore: data.energyIndependenceScore || 85,
       twentyFiveYearCO2: data.co2ReductionTonnes * 25,
       benefits: [
-        { icon: 'leaf', title: 'CARBON REDUCTION', description: `${data.co2ReductionTonnes.toFixed(1)} tonnes CO2 avoided annually` },
-        { icon: 'tree', title: 'TREE EQUIVALENT', description: `Equivalent to planting ${data.treesEquivalent || Math.round(data.co2ReductionTonnes * 45)} trees per year` },
-        { icon: 'zap', title: 'ENERGY INDEPENDENCE', description: `${data.energyIndependenceScore || 85}% energy self-sufficiency achieved` },
+        { icon: '🌿', title: 'CARBON REDUCTION', description: `${data.co2ReductionTonnes.toFixed(1)} tonnes CO2 avoided annually` },
+        { icon: '🌳', title: 'TREE EQUIVALENT', description: `Equivalent to planting ${data.treesEquivalent || Math.round(data.co2ReductionTonnes * 45)} trees per year` },
+        { icon: '⚡', title: 'ENERGY INDEPENDENCE', description: `${data.energyIndependenceScore || 85}% energy self-sufficiency achieved` },
       ],
     }
   });
@@ -584,10 +539,10 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     content: {
       steps: [
         { number: '01', title: 'APPROVAL & FINANCE', description: 'Sign proposal and submit finance application. Secure rebates.', timeline: 'WEEK 1', color: 'aqua' },
-        { number: '02', title: 'INSTALLATION', description: `Installation of ${data.panelBrand} panels, ${data.inverterBrand} inverter, and battery modules. System commissioning.`, timeline: 'WEEK 3-4', color: 'aqua' },
+        { number: '02', title: 'INSTALLATION', description: `Installation of ${data.panelBrand} panels, ${data.inverterBrand} inverter, and battery modules.`, timeline: 'WEEK 3-4', color: 'aqua' },
         { number: '03', title: 'VPP ACTIVATION', description: `Switch to ${data.vppProvider} ${data.vppProgram}. Configure battery for VPP events.`, timeline: 'WEEK 5', color: 'aqua' },
-        { number: '04', title: 'EV INTEGRATION', description: 'Install EV charger. Set up solar-only charging logic to maximize savings.', timeline: 'MONTH 2+', color: 'orange' },
-        data.hasGas ? { number: '05', title: 'ELECTRIFICATION', description: 'Phase out gas appliances. Install heat pump hot water, reverse cycle AC, and induction cooktop.', timeline: 'MONTH 3-6', color: 'orange' } : null,
+        { number: '04', title: 'EV INTEGRATION', description: 'Install EV charger. Set up solar-only charging logic.', timeline: 'MONTH 2+', color: 'orange' },
+        data.hasGas ? { number: '05', title: 'ELECTRIFICATION', description: 'Phase out gas appliances. Install heat pump, AC, and induction.', timeline: 'MONTH 3-6', color: 'orange' } : null,
       ].filter(Boolean),
     }
   });
@@ -597,12 +552,12 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'conclusion',
     title: 'CONCLUSION',
-    subtitle: 'Key Benefits Summary',
+    subtitle: 'Executive Summary',
     content: {
       features: [
-        { icon: 'chart', title: 'MAXIMIZE RETURNS', description: `Turn a $${Math.round(data.annualCost / 12)} monthly bill into a $${data.annualSavings.toLocaleString()} annual profit center through smart solar, battery, and VPP integration.`, border: 'aqua' },
-        { icon: 'shield', title: 'SECURE POWER', description: `Gain independence from grid instability and rising costs with a ${data.batterySizeKwh}kWh battery backup system.`, border: 'white' },
-        { icon: 'zap', title: 'FUTURE READY', description: 'Prepare your home for EV charging and full electrification, eliminating petrol and gas costs forever.', border: 'orange' },
+        { icon: '📈', title: 'MAXIMIZE RETURNS', description: `Turn a $${Math.round(data.annualCost / 12)} monthly bill into a $${data.annualSavings.toLocaleString()} annual profit center through smart solar, battery, and VPP integration.`, border: 'aqua' },
+        { icon: '🛡', title: 'SECURE POWER', description: `Gain independence from grid instability and rising costs with a ${data.batterySizeKwh}kWh battery backup system.`, border: 'white' },
+        { icon: '⚡', title: 'FUTURE READY', description: 'Prepare your home for EV charging and full electrification, eliminating petrol and gas costs forever.', border: 'orange' },
       ],
       quote: '"THIS SOLUTION TRANSFORMS YOUR HOME FROM AN ENERGY CONSUMER INTO A CLEAN POWER STATION."',
       callToAction: 'Recommended Action: Approve Proposal to Secure Rebates',
@@ -637,48 +592,34 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   return slides;
 }
 
-// Helper function to generate yearly projection data
+// Helper functions
 function generateYearlyProjection(currentCost: number, annualSavings: number, years: number): Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }> {
   const projection = [];
   let cumulativeSavings = 0;
-  const inflationRate = 0.035; // 3.5% annual electricity price increase
-  
+  const inflationRate = 0.035;
   for (let i = 1; i <= years; i++) {
     const inflatedCost = currentCost * Math.pow(1 + inflationRate, i);
     const withSolar = Math.max(0, inflatedCost - annualSavings);
     cumulativeSavings += inflatedCost - withSolar;
-    
-    projection.push({
-      year: i,
-      withoutSolar: Math.round(inflatedCost),
-      withSolar: Math.round(withSolar),
-      cumulativeSavings: Math.round(cumulativeSavings),
-    });
+    projection.push({ year: i, withoutSolar: Math.round(inflatedCost), withSolar: Math.round(withSolar), cumulativeSavings: Math.round(cumulativeSavings) });
   }
-  
   return projection;
 }
 
-// Helper functions
 function findPeakMonth(monthlyData?: { month: string; kwh: number }[]): { month: string; kwh: number } | null {
   if (!monthlyData || monthlyData.length === 0) return null;
   return monthlyData.reduce((max, curr) => curr.kwh > max.kwh ? curr : max, monthlyData[0]);
 }
 
 function calculateBatteryModules(totalKwh: number): string {
-  const moduleSize = 8.06; // Sigenergy module size
+  const moduleSize = 8.06;
   const count = Math.ceil(totalKwh / moduleSize);
   return `${count} x ${moduleSize} KWH`;
 }
 
 function getVPPProviders(state: string, hasGas: boolean): Array<{
-  provider: string;
-  program: string;
-  gasBundle: boolean;
-  annualValue: string;
-  strategicFit: 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'COMPLEX';
+  provider: string; program: string; gasBundle: boolean; annualValue: string; strategicFit: 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'COMPLEX';
 }> {
-  // All 13 VPP providers as per Lightning Energy specifications
   const providers = [
     { provider: 'ENGIE', program: 'VPP Advantage', gasBundle: true, annualValue: '$450+', strategicFit: 'EXCELLENT' as const },
     { provider: 'ORIGIN', program: 'Loop VPP', gasBundle: true, annualValue: '~$300', strategicFit: 'GOOD' as const },
@@ -694,10 +635,7 @@ function getVPPProviders(state: string, hasGas: boolean): Array<{
     { provider: 'TANGO ENERGY', program: 'VPP Rewards', gasBundle: false, annualValue: '~$180', strategicFit: 'MODERATE' as const },
     { provider: 'GLOBIRD ENERGY', program: 'Battery Connect', gasBundle: false, annualValue: '~$190', strategicFit: 'MODERATE' as const },
   ];
-  
-  // Filter based on gas requirement - show all providers but highlight gas bundle availability
   if (hasGas) {
-    // Sort to show gas bundle providers first
     return providers.sort((a, b) => {
       if (a.gasBundle && !b.gasBundle) return -1;
       if (!a.gasBundle && b.gasBundle) return 1;
@@ -707,292 +645,399 @@ function getVPPProviders(state: string, hasGas: boolean): Array<{
   return providers;
 }
 
-// Generate HTML for a single slide
-export function generateSlideHTML(slide: SlideContent): string {
-  const styles = `
-    <style>
-      @import url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/fRacvGdPvRdejhxR.ttf');
-      @import url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/FlnvYEaVCWLmtgQE.otf');
-      @import url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/ifpxpyNGTnspcxRL.ttf');
-      
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      
-      .slide {
-        width: 1920px;
-        height: 1080px;
-        background: #000000;
-        color: #FFFFFF;
-        font-family: 'GeneralSans', sans-serif;
-        padding: 60px 80px;
-        position: relative;
-      }
-      
-      .slide-title {
-        font-family: 'NextSphere', sans-serif;
-        font-size: 72px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 10px;
-      }
-      
-      .slide-subtitle {
-        font-family: 'Urbanist', sans-serif;
-        font-size: 28px;
-        color: #00EAD3;
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        margin-bottom: 40px;
-      }
-      
-      .logo {
-        position: absolute;
-        top: 40px;
-        right: 60px;
-        width: 80px;
-        height: 80px;
-      }
-      
-      .hero-number {
-        font-family: 'NextSphere', sans-serif;
-        font-size: 120px;
-        font-weight: 800;
-        color: #00EAD3;
-      }
-      
-      .hero-number.white { color: #FFFFFF; }
-      .hero-number.orange { color: #f36710; }
-      
-      .label {
-        font-family: 'Urbanist', sans-serif;
-        font-size: 14px;
-        color: #808285;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-      }
-      
-      .card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid #333;
-        border-radius: 8px;
-        padding: 24px;
-      }
-      
-      .card.aqua-border { border-color: #00EAD3; }
-      .card.orange-border { border-color: #f36710; }
-      
-      .badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      
-      .badge.excellent { background: #00EAD3; color: #000; }
-      .badge.good { background: #22c55e; color: #000; }
-      .badge.moderate { background: #f36710; color: #000; }
-      .badge.complex { background: #666; color: #fff; }
-      
-      .copyright {
-        position: absolute;
-        bottom: 30px;
-        left: 80px;
-        font-size: 12px;
-        color: #808285;
-      }
-      
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      
-      th {
-        font-family: 'Urbanist', sans-serif;
-        font-size: 12px;
-        color: #808285;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        text-align: left;
-        padding: 12px 16px;
-        border-bottom: 1px solid #333;
-      }
-      
-      td {
-        padding: 16px;
-        border-bottom: 1px solid #222;
-      }
-      
-      .highlight-row {
-        background: rgba(0, 234, 211, 0.1);
-        border-left: 3px solid #00EAD3;
-      }
-      
-      .aqua { color: #00EAD3; }
-      .orange { color: #f36710; }
-      .gray { color: #808285; }
-    </style>
-  `;
+// ============================================================
+// HTML SLIDE GENERATORS - Matching Paul Stokes Best Example
+// ============================================================
+
+const SLIDE_STYLES = `
+<style>
+  @font-face { font-family: 'NextSphere'; src: url('${BRAND.fontUrls.nextSphere}') format('truetype'); font-weight: 800; }
+  @font-face { font-family: 'GeneralSans'; src: url('${BRAND.fontUrls.generalSans}') format('opentype'); font-weight: 400; }
+  @font-face { font-family: 'Urbanist'; src: url('${BRAND.fontUrls.urbanist}') format('truetype'); font-weight: 600; }
+  @font-face { font-family: 'UrbanistItalic'; src: url('${BRAND.fontUrls.urbanistItalic}') format('truetype'); font-weight: 600; font-style: italic; }
   
-  // Generate content based on slide type
-  let content = '';
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   
-  switch (slide.type) {
-    case 'cover':
-      content = generateCoverSlide(slide);
-      break;
-    case 'executive_summary':
-      content = generateExecutiveSummarySlide(slide);
-      break;
-    case 'bill_analysis':
-      content = generateBillAnalysisSlide(slide);
-      break;
-    case 'annual_expenditure':
-      content = generateExpenditureSlide(slide);
-      break;
-    case 'usage_analysis':
-      content = generateUsageSlide(slide);
-      break;
-    case 'yearly_projection':
-      content = generateYearlyProjectionSlide(slide);
-      break;
-    case 'gas_footprint':
-      content = generateGasFootprintSlide(slide);
-      break;
-    case 'gas_appliances':
-      content = generateGasAppliancesSlide(slide);
-      break;
-    case 'strategic_assessment':
-      content = generateStrategicSlide(slide);
-      break;
-    case 'battery_recommendation':
-      content = generateBatterySlide(slide);
-      break;
-    case 'solar_system':
-      content = generateSolarSlide(slide);
-      break;
-    case 'vpp_comparison':
-      content = generateVPPComparisonSlide(slide);
-      break;
-    case 'vpp_recommendation':
-      content = generateVPPRecommendationSlide(slide);
-      break;
-    case 'hot_water_electrification':
-      content = generateHotWaterSlide(slide);
-      break;
-    case 'heating_cooling':
-      content = generateHeatingCoolingSlide(slide);
-      break;
-    case 'induction_cooking':
-      content = generateInductionSlide(slide);
-      break;
-    case 'ev_analysis':
-      content = generateEVAnalysisSlide(slide);
-      break;
-    case 'ev_charger':
-      content = generateEVChargerSlide(slide);
-      break;
-    case 'pool_heat_pump':
-      content = generatePoolHeatPumpSlide(slide);
-      break;
-    case 'electrification_investment':
-      content = generateElectrificationInvestmentSlide(slide);
-      break;
-    case 'savings_summary':
-      content = generateSavingsSummarySlide(slide);
-      break;
-    case 'financial_summary':
-      content = generateFinancialSlide(slide);
-      break;
-    case 'environmental_impact':
-      content = generateEnvironmentalSlide(slide);
-      break;
-    case 'roadmap':
-      content = generateRoadmapSlide(slide);
-      break;
-    case 'conclusion':
-      content = generateConclusionSlide(slide);
-      break;
-    case 'contact':
-      content = generateContactSlide(slide);
-      break;
-    default:
-      content = generateGenericSlide(slide);
+  .slide {
+    width: 1920px;
+    height: 1080px;
+    background: #000000;
+    color: #FFFFFF;
+    font-family: 'GeneralSans', sans-serif;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
   }
   
-  return `<!DOCTYPE html><html><head>${styles}</head><body>${content}</body></html>`;
+  /* Header area with title left, subtitle right */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 8px;
+  }
+  
+  .slide-title {
+    font-family: 'NextSphere', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #FFFFFF;
+    line-height: 1.1;
+  }
+  
+  .slide-subtitle {
+    font-family: 'UrbanistItalic', 'Urbanist', sans-serif;
+    font-size: 22px;
+    color: #00EAD3;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    text-align: right;
+    white-space: nowrap;
+  }
+  
+  /* Thin aqua line separator under heading */
+  .aqua-line {
+    width: 100%;
+    height: 1px;
+    background: #00EAD3;
+    margin-bottom: 36px;
+  }
+  
+  .logo {
+    position: absolute;
+    top: 40px;
+    right: 60px;
+    width: 60px;
+    height: 60px;
+  }
+  
+  /* Hero numbers */
+  .hero-num {
+    font-family: 'NextSphere', sans-serif;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .hero-num.aqua { color: #00EAD3; }
+  .hero-num.white { color: #FFFFFF; }
+  .hero-num.orange { color: #E8731A; }
+  
+  /* Labels */
+  .lbl {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 12px;
+    color: #808285;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+  
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .card.aqua-b { border-color: #00EAD3; }
+  .card.orange-b { border-color: #E8731A; }
+  .card.white-b { border-color: #FFFFFF; }
+  
+  /* Insight cards - dark grey bg with colored left border */
+  .insight-card {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 24px 28px;
+    border-left: 4px solid #00EAD3;
+  }
+  .insight-card.orange { border-left-color: #E8731A; }
+  .insight-card .insight-title {
+    font-family: 'NextSphere', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #00EAD3;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .insight-card.orange .insight-title { color: #E8731A; }
+  .insight-card p { color: #808285; font-size: 14px; line-height: 1.6; }
+  .insight-card .hl-aqua { color: #00EAD3; font-weight: 600; }
+  .insight-card .hl-orange { color: #E8731A; font-weight: 600; }
+  .insight-card .hl-white { color: #FFFFFF; font-weight: 600; }
+  
+  /* Badges */
+  .badge { display: inline-block; padding: 4px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge.excellent { background: #00EAD3; color: #000; }
+  .badge.good { background: #22c55e; color: #000; }
+  .badge.moderate { background: #E8731A; color: #000; }
+  .badge.complex { background: #555; color: #fff; }
+  .badge.high { background: #ef4444; color: #fff; }
+  .badge.medium { background: #E8731A; color: #000; }
+  .badge.low { background: #22c55e; color: #000; }
+  
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 11px;
+    color: #00EAD3;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid #333;
+  }
+  td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; }
+  .highlight-row { background: rgba(0, 234, 211, 0.08); border-left: 3px solid #00EAD3; }
+  
+  /* Colors */
+  .aqua { color: #00EAD3; }
+  .orange { color: #E8731A; }
+  .gray { color: #808285; }
+  .white { color: #FFFFFF; }
+  
+  /* Copyright */
+  .copyright {
+    position: absolute;
+    bottom: 28px;
+    left: 80px;
+    font-size: 11px;
+    color: #808285;
+    font-family: 'GeneralSans', sans-serif;
+  }
+</style>
+`;
+
+function slideHeader(title: string, subtitle?: string): string {
+  return `
+    <div class="slide-header">
+      <h1 class="slide-title">${title}</h1>
+      ${subtitle ? `<p class="slide-subtitle">${subtitle}</p>` : ''}
+    </div>
+    <div class="aqua-line"></div>
+  `;
 }
 
-// Individual slide generators
-function generateCoverSlide(slide: SlideContent): string {
+export function generateSlideHTML(slide: SlideContent): string {
+  let content = '';
+  switch (slide.type) {
+    case 'cover': content = genCover(slide); break;
+    case 'executive_summary': content = genExecutiveSummary(slide); break;
+    case 'bill_analysis': content = genBillAnalysis(slide); break;
+    case 'usage_analysis': content = genUsageAnalysis(slide); break;
+    case 'yearly_projection': content = genYearlyProjection(slide); break;
+    case 'gas_footprint': content = genGasFootprint(slide); break;
+    case 'gas_appliances': content = genGasAppliances(slide); break;
+    case 'strategic_assessment': content = genStrategic(slide); break;
+    case 'battery_recommendation': content = genBattery(slide); break;
+    case 'solar_system': content = genSolar(slide); break;
+    case 'vpp_comparison': content = genVPPComparison(slide); break;
+    case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
+    case 'hot_water_electrification': content = genHotWater(slide); break;
+    case 'heating_cooling': content = genHeatingCooling(slide); break;
+    case 'induction_cooking': content = genInduction(slide); break;
+    case 'ev_analysis': content = genEVAnalysis(slide); break;
+    case 'ev_charger': content = genEVCharger(slide); break;
+    case 'pool_heat_pump': content = genPoolHeatPump(slide); break;
+    case 'electrification_investment': content = genElectrificationInvestment(slide); break;
+    case 'savings_summary': content = genSavingsSummary(slide); break;
+    case 'financial_summary': content = genFinancial(slide); break;
+    case 'environmental_impact': content = genEnvironmental(slide); break;
+    case 'roadmap': content = genRoadmap(slide); break;
+    case 'conclusion': content = genConclusion(slide); break;
+    case 'contact': content = genContact(slide); break;
+    default: content = genGeneric(slide);
+  }
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${content}</body></html>`;
+}
+
+// ---- SLIDE 1: COVER ----
+function genCover(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
-    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-      <img src="${c.logoUrl}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title" style="font-size: 96px; margin-bottom: 20px;">${slide.title}</h1>
-      <p class="slide-subtitle" style="font-size: 36px; margin-bottom: 40px;">${slide.subtitle}</p>
-      <p style="color: #808285; font-size: 18px;">${c.address}</p>
-      <div class="copyright">Prepared by ${c.preparedBy} | ${c.company}</div>
+    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 60px;">
+        <img src="${c.logoUrl}" style="width: 50px; height: 50px;" alt="LE" />
+        <span style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; letter-spacing: 0.15em;">LIGHTNING ENERGY</span>
+      </div>
+      <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 900px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
+      <div style="position: absolute; bottom: 80px; left: 80px; display: flex; align-items: flex-start; gap: 16px;">
+        <div style="width: 4px; height: 50px; background: #E8731A; border-radius: 2px;"></div>
+        <div>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 20px; color: #00EAD3; font-weight: 600;">${slide.title}</p>
+          <p style="font-family: 'GeneralSans', sans-serif; font-size: 16px; color: #00EAD3;">${c.address}</p>
+        </div>
+      </div>
+      <div style="position: absolute; bottom: 28px; left: 80px; right: 80px; height: 1px; background: #00EAD3;"></div>
+      <div style="position: absolute; bottom: 10px; left: 80px; font-size: 11px; color: #808285;">Prepared by ${c.preparedBy} | ${c.company}</div>
     </div>
   `;
 }
 
-function generateExpenditureSlide(slide: SlideContent): string {
+// ---- SLIDE 2: EXECUTIVE SUMMARY ----
+function genExecutiveSummary(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 80px; margin-top: 40px;">
-        <div>
-          <p class="label">PROJECTED ANNUAL COST</p>
-          <p class="hero-number">$${(c.annualCost as number).toLocaleString()}</p>
-          <p style="color: #808285; margin-top: 10px;">Based on current usage patterns</p>
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 0; margin-top: 20px;">
+        <div style="flex: 1; text-align: center; border-right: 1px solid #333; padding: 20px;">
+          <p class="lbl">CURRENT ANNUAL BILL</p>
+          <p class="hero-num white" style="font-size: 56px;">$${(c.currentAnnualCost as number).toLocaleString()}</p>
+          <p class="gray" style="font-size: 13px; margin-top: 8px;">With existing setup</p>
         </div>
-        <div style="flex: 1;">
+        <div style="flex: 1; text-align: center; border-right: 1px solid #333; padding: 20px;">
+          <p class="lbl">PROJECTED ANNUAL BILL</p>
+          <p class="hero-num white" style="font-size: 56px;">$${Math.round(c.projectedAnnualCost as number).toLocaleString()}</p>
+          <p class="gray" style="font-size: 13px; margin-top: 8px;">With new system</p>
+        </div>
+        <div style="flex: 1; text-align: center; border-right: 1px solid #333; padding: 20px;">
+          <p class="lbl">TOTAL ANNUAL SAVINGS</p>
+          <p class="hero-num aqua" style="font-size: 56px;">$${(c.totalAnnualSavings as number).toLocaleString()}</p>
+          <p class="gray" style="font-size: 13px; margin-top: 8px;">Incl. VPP + EV</p>
+        </div>
+        <div style="flex: 1; text-align: center; padding: 20px;">
+          <p class="lbl">SYSTEM PAYBACK</p>
+          <p class="hero-num orange" style="font-size: 56px;">${(c.paybackYears as number).toFixed(1)}</p>
+          <p class="gray" style="font-size: 13px; margin-top: 8px;">Years</p>
+        </div>
+      </div>
+      <div class="insight-card" style="margin-top: 40px;">
+        <p style="color: #FFFFFF; font-size: 15px; line-height: 1.7;">This comprehensive analysis evaluates your current energy expenditure and presents a tailored solar + battery solution designed to deliver <span class="hl-aqua">$${(c.totalAnnualSavings as number).toLocaleString()} in annual savings</span>. The proposed ${c.systemSize}kW solar system paired with a ${c.batterySize}kWh battery and ${c.vppProvider} VPP partnership achieves payback in <span class="hl-orange">${(c.paybackYears as number).toFixed(1)} years</span>.</p>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 3: BILL ANALYSIS ----
+function genBillAnalysis(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.2;">
           <table>
-            <tr><th>COMPONENT</th><th style="text-align: right;">ANNUAL COST</th></tr>
-            <tr><td>Usage Charges</td><td style="text-align: right;" class="orange">$${Math.round(c.usageCost as number).toLocaleString()}</td></tr>
-            <tr><td>Supply Charges</td><td style="text-align: right;">$${Math.round(c.supplyCost as number).toLocaleString()}</td></tr>
-            <tr class="highlight-row"><td><strong>TOTAL</strong></td><td style="text-align: right;" class="aqua"><strong>$${(c.annualCost as number).toLocaleString()}</strong></td></tr>
+            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #E8731A;">AMOUNT</th></tr>
+            <tr><td>General Usage</td><td class="gray">${(c.annualCost as number / (c.usageRate as number / 100)).toFixed(0)} kWh @ $${(c.usageRate as number / 100).toFixed(4)}/kWh</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.usageCost as number).toLocaleString()}</td></tr>
+            <tr><td>Daily Supply Charge</td><td class="gray">365 days @ $${(c.supplyCharge as number / 100).toFixed(4)}/day</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.supplyCost as number).toLocaleString()}</td></tr>
+            <tr><td>Solar Feed-in Credit</td><td class="gray">@ ${c.feedInTariff}¢/kWh</td><td style="text-align: right; color: #00EAD3;">Credit</td></tr>
+            <tr class="highlight-row"><td style="font-weight: 700; color: #00EAD3;">NET ANNUAL BILL</td><td></td><td style="text-align: right; font-weight: 700; color: #00EAD3; font-size: 20px;">$${(c.annualCost as number).toLocaleString()}</td></tr>
           </table>
         </div>
+        <div style="flex: 0.8;">
+          <div class="insight-card orange" style="margin-bottom: 24px;">
+            <p class="insight-title">KEY INSIGHT</p>
+            <p>Your current feed-in tariff of <span class="hl-aqua">${c.feedInTariff}¢/kWh</span> is significantly below the usage rate of <span class="hl-orange">${c.usageRate}¢/kWh</span>. Self-consumption with battery storage will capture the full value of your solar generation.</p>
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">USAGE RATE</p>
+              <p style="font-size: 28px; color: #E8731A; font-weight: 600;">${c.usageRate}¢</p>
+              <p class="gray" style="font-size: 11px;">per kWh</p>
+            </div>
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">FEED-IN</p>
+              <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">${c.feedInTariff}¢</p>
+              <p class="gray" style="font-size: 11px;">per kWh</p>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
 }
 
-function generateUsageSlide(slide: SlideContent): string {
+// ---- SLIDE 4: USAGE ANALYSIS ----
+function genUsageAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
+  const daily = c.dailyAverageKwh as number;
+  const benchmarks = [
+    { label: 'Your Usage', kwh: daily, color: '#00EAD3' },
+    { label: 'Small Home', kwh: 7.49, color: '#333' },
+    { label: 'Medium Home', kwh: 12.70, color: '#333' },
+    { label: 'Large Home', kwh: 14.71, color: '#333' },
+  ];
+  const maxKwh = Math.max(...benchmarks.map(b => b.kwh), 16);
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 2;">
-          <div style="display: flex; gap: 40px; margin-bottom: 40px;">
-            <div class="card">
-              <p class="label">ANNUAL USAGE</p>
-              <p class="hero-number" style="font-size: 64px;">${Math.round(c.annualUsageKwh as number).toLocaleString()}<span style="font-size: 24px; color: #808285;"> kWh</span></p>
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.2;">
+          <p class="lbl" style="margin-bottom: 16px;">DAILY ENERGY USAGE COMPARISON (kWh)</p>
+          <div style="display: flex; align-items: flex-end; height: 320px; gap: 30px; padding: 0 20px;">
+            ${benchmarks.map(b => `
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
+                <p style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: ${b.color === '#00EAD3' ? '#00EAD3' : '#FFFFFF'};">${b.kwh.toFixed(1)}</p>
+                <div style="width: 100%; height: ${(b.kwh / maxKwh) * 260}px; background: ${b.color}; border-radius: 4px 4px 0 0;"></div>
+                <p style="font-size: 11px; color: #808285; margin-top: 8px; text-align: center;">${b.label}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div style="flex: 0.8;">
+          <p class="lbl" style="margin-bottom: 16px;">COMPARISON TABLE</p>
+          ${benchmarks.map(b => `
+            <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1a1a1a;">
+              <span style="color: #808285;">${b.label}</span>
+              <span style="font-weight: 600; color: ${b.color === '#00EAD3' ? '#00EAD3' : '#FFFFFF'};">${b.kwh.toFixed(2)} KWH</span>
             </div>
-            <div class="card">
-              <p class="label">DAILY AVERAGE</p>
-              <p class="hero-number white" style="font-size: 64px;">${(c.dailyAverageKwh as number).toFixed(1)}<span style="font-size: 24px; color: #808285;"> kWh</span></p>
-            </div>
+          `).join('')}
+          <div class="insight-card orange" style="margin-top: 24px;">
+            <p class="insight-title">EFFICIENCY INSIGHT</p>
+            <p>Your daily usage of <span class="hl-aqua">${daily.toFixed(1)} kWh</span> is <span class="hl-orange">${Math.round((1 - daily / 12.7) * 100)}%</span> below the medium household average, indicating an energy-efficient home.</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 5: YEARLY PROJECTION ----
+function genYearlyProjection(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const projection = (c.yearlyProjection as Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }>) || [];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <table>
+            <tr><th>PERIOD</th><th style="text-align: right;">GRID USAGE</th><th style="text-align: right;">SOLAR EXPORT</th><th style="text-align: right;">NET COST</th></tr>
+            <tr><td>Monthly Avg</td><td style="text-align: right;">${Math.round((c.currentAnnualCost as number) / 12)} kWh</td><td style="text-align: right;">Est.</td><td style="text-align: right; font-weight: 600;">$${Math.round((c.currentAnnualCost as number) / 12).toLocaleString()}</td></tr>
+            <tr><td>Annual Total</td><td style="text-align: right;">Est.</td><td style="text-align: right;">Est.</td><td style="text-align: right; font-weight: 600;">$${(c.currentAnnualCost as number).toLocaleString()}</td></tr>
+          </table>
+          <div class="insight-card" style="margin-top: 24px;">
+            <p class="insight-title">KEY FINDING</p>
+            <p>With the proposed system, your projected annual cost drops from <span class="hl-orange">$${(c.currentAnnualCost as number).toLocaleString()}</span> to <span class="hl-aqua">$${Math.round(c.projectedAnnualCost as number).toLocaleString()}</span>, delivering cumulative savings of <span class="hl-aqua">$${(c.tenYearSavings as number).toLocaleString()}</span> over 10 years.</p>
           </div>
         </div>
         <div style="flex: 1;">
-          <div class="card">
-            <p class="label">USAGE RATE</p>
-            <p style="font-size: 32px; color: #f36710;">${c.usageRate}¢/kWh</p>
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 16px;">25-YEAR CUMULATIVE FINANCIAL OUTLOOK</p>
+          <div style="height: 320px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #333; padding: 10px;">
+            ${projection.filter((_, i) => i % 5 === 0 || i === projection.length - 1).map((p, i, arr) => {
+              const maxVal = (c.twentyFiveYearSavings as number) * 1.2;
+              const x = (p.year / 25) * 100;
+              const yOrange = 100 - ((p.withoutSolar * p.year * 0.5) / maxVal) * 100;
+              const yAqua = 100 - (p.cumulativeSavings / maxVal) * 100;
+              return `
+                <div style="position: absolute; left: ${x}%; bottom: 0; width: 2px; height: 100%; border-left: 1px dashed #1a1a1a;"></div>
+                <div style="position: absolute; left: ${x}%; bottom: ${100 - yAqua}%; width: 8px; height: 8px; background: #00EAD3; border-radius: 50%; transform: translate(-4px, 4px);"></div>
+                <div style="position: absolute; left: ${x}%; bottom: ${100 - yOrange}%; width: 8px; height: 8px; background: #E8731A; border-radius: 50%; transform: translate(-4px, 4px);"></div>
+              `;
+            }).join('')}
           </div>
-          <div class="card" style="margin-top: 20px;">
-            <p class="label">FEED-IN TARIFF</p>
-            <p style="font-size: 32px; color: #00EAD3;">${c.feedInTariff}¢/kWh</p>
+          <div style="display: flex; gap: 24px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #E8731A; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Bill Cost (Current)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Total Benefit (Proposed)</span></div>
           </div>
         </div>
       </div>
@@ -1001,35 +1046,107 @@ function generateUsageSlide(slide: SlideContent): string {
   `;
 }
 
-function generateStrategicSlide(slide: SlideContent): string {
+// ---- SLIDE 6: GAS FOOTPRINT ----
+function genGasFootprint(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <div class="card orange-b" style="text-align: center; padding: 36px; margin-bottom: 20px;">
+            <p class="lbl">ANNUAL GAS COST</p>
+            <p class="hero-num orange" style="font-size: 64px;">$${(c.annualCost as number).toLocaleString()}</p>
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <div class="card" style="flex: 1; text-align: center;"><p class="lbl">ANNUAL USAGE</p><p style="font-size: 22px;">${(c.annualMJ as number).toLocaleString()} MJ</p></div>
+            <div class="card" style="flex: 1; text-align: center;"><p class="lbl">kWh EQUIVALENT</p><p style="font-size: 22px;">${Math.round(c.kwhEquivalent as number).toLocaleString()} kWh</p></div>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <div class="card" style="margin-bottom: 20px;">
+            <p class="lbl">CO2 EMISSIONS FROM GAS</p>
+            <p class="hero-num orange" style="font-size: 48px;">${(c.co2Emissions as number).toFixed(1)}<span style="font-size: 18px; color: #808285;"> tonnes/year</span></p>
+          </div>
+          <div class="insight-card">
+            <p class="insight-title">ELECTRIFICATION OPPORTUNITY</p>
+            <p>By replacing gas appliances with efficient electric alternatives, you can eliminate <span class="hl-orange">$${(c.annualCost as number).toLocaleString()}/year</span> in gas costs and <span class="hl-aqua">${(c.co2Emissions as number).toFixed(1)} tonnes</span> of CO2 emissions entirely.</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 7: GAS APPLIANCES ----
+function genGasAppliances(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const priorities = (c.electrificationPriority as Array<{ name: string; type: string; priority: string; savings: number }>) || [];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <table style="margin-top: 10px;">
+        <tr><th>APPLIANCE</th><th>CURRENT TYPE</th><th>PRIORITY</th><th style="text-align: right;">EST. ANNUAL SAVINGS</th></tr>
+        ${priorities.map(p => `
+          <tr>
+            <td style="font-weight: 600;">${p.name}</td>
+            <td class="gray">${p.type}</td>
+            <td><span class="badge ${p.priority.toLowerCase()}">${p.priority}</span></td>
+            <td style="text-align: right; color: #00EAD3; font-weight: 600;">$${p.savings.toLocaleString()}</td>
+          </tr>
+        `).join('')}
+      </table>
+      <div class="insight-card" style="margin-top: 30px;">
+        <p class="insight-title">TOTAL GAS ELIMINATION POTENTIAL</p>
+        <p>Annual Gas Cost: <span class="hl-orange">$${(c.totalGasCost as number).toLocaleString()}</span> → <span class="hl-aqua">$0</span> through complete electrification of all gas appliances.</p>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 8: STRATEGIC ASSESSMENT ----
+function genStrategic(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const advantages = c.advantages as Array<{ icon: string; title: string; description: string }>;
   const considerations = c.considerations as Array<{ icon: string; title: string; description: string }>;
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 30px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
-          <h3 style="color: #00EAD3; font-size: 24px; margin-bottom: 20px;">✓ KEY ADVANTAGES</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            ${advantages.slice(0, 6).map(a => `
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="color: #00EAD3; font-size: 24px;">✓</span>
+            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #00EAD3;">KEY ADVANTAGES</span>
+          </div>
+          <div style="border-bottom: 2px solid #00EAD3; margin-bottom: 20px;"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            ${advantages.map(a => `
               <div>
-                <p style="color: #00EAD3; font-weight: 600; font-size: 14px; text-transform: uppercase;">${a.title}</p>
-                <p style="color: #808285; font-size: 13px; margin-top: 4px;">${a.description}</p>
+                <p style="font-size: 20px; margin-bottom: 6px;">${a.icon}</p>
+                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${a.title}</p>
+                <p style="color: #808285; font-size: 12px; line-height: 1.5;">${a.description}</p>
               </div>
             `).join('')}
           </div>
         </div>
+        <div style="width: 1px; background: #333;"></div>
         <div style="flex: 1;">
-          <h3 style="color: #f36710; font-size: 24px; margin-bottom: 20px;">⚠ CONSIDERATIONS</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            ${considerations.slice(0, 5).map(c => `
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="color: #E8731A; font-size: 24px;">⚠</span>
+            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #E8731A;">CONSIDERATIONS</span>
+          </div>
+          <div style="border-bottom: 2px solid #E8731A; margin-bottom: 20px;"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            ${considerations.map(co => `
               <div>
-                <p style="color: #f36710; font-weight: 600; font-size: 14px; text-transform: uppercase;">${c.title}</p>
-                <p style="color: #808285; font-size: 13px; margin-top: 4px;">${c.description}</p>
+                <p style="font-size: 20px; margin-bottom: 6px;">${co.icon}</p>
+                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${co.title}</p>
+                <p style="color: #808285; font-size: 12px; line-height: 1.5;">${co.description}</p>
               </div>
             `).join('')}
           </div>
@@ -1040,44 +1157,49 @@ function generateStrategicSlide(slide: SlideContent): string {
   `;
 }
 
-function generateBatterySlide(slide: SlideContent): string {
+// ---- SLIDE 9: BATTERY RECOMMENDATION ----
+function genBattery(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const capacity = c.whyThisCapacity as { home: number; evCharge: number; vppTrade: number };
-  
+  const cap = c.whyThisCapacity as { home: number; evCharge: number; vppTrade: number };
+  const total = c.totalCapacity as number;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
-          <div class="card aqua-border" style="text-align: center; padding: 40px;">
-            <p class="label">TOTAL USABLE CAPACITY</p>
-            <p class="hero-number">${c.totalCapacity}<span style="font-size: 36px;"> KWH</span></p>
+          <div style="text-align: center; margin-bottom: 30px;">
+            <p class="lbl">TOTAL USABLE CAPACITY</p>
+            <p class="hero-num aqua" style="font-size: 96px;">${total}<span style="font-size: 28px; color: #FFFFFF;"> KWH</span></p>
           </div>
-          <div style="display: flex; gap: 20px; margin-top: 20px;">
-            <div class="card" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">INVERTER</p>
-              <p style="font-size: 24px;">${c.inverterSize} KW<br/>${c.inverterType}</p>
+          <div style="display: flex; gap: 16px;">
+            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
+              <p class="lbl" style="color: #00EAD3;">INVERTER</p>
+              <p style="font-size: 20px; font-weight: 600;">${c.inverterSize} KW ${c.inverterType}</p>
             </div>
-            <div class="card" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">MODULES</p>
-              <p style="font-size: 24px;">${c.modules}</p>
+            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
+              <p class="lbl" style="color: #00EAD3;">MODULES</p>
+              <p style="font-size: 20px; font-weight: 600;">${c.modules}</p>
             </div>
-            <div class="card" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">TECHNOLOGY</p>
-              <p style="font-size: 24px;">${c.technology}</p>
+            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
+              <p class="lbl" style="color: #00EAD3;">TECHNOLOGY</p>
+              <p style="font-size: 20px; font-weight: 600;">${c.technology}</p>
             </div>
           </div>
         </div>
         <div style="flex: 1;">
-          <p style="font-size: 20px; margin-bottom: 20px;">Why this capacity?</p>
-          <div style="display: flex; height: 40px; border-radius: 4px; overflow: hidden;">
-            <div style="width: ${(capacity.home / (c.totalCapacity as number)) * 100}%; background: #808285; display: flex; align-items: center; justify-content: center; font-size: 12px;">HOME ~${capacity.home.toFixed(0)}kWh</div>
-            ${capacity.evCharge > 0 ? `<div style="width: ${(capacity.evCharge / (c.totalCapacity as number)) * 100}%; background: #00EAD3; color: #000; display: flex; align-items: center; justify-content: center; font-size: 12px;">EV CHARGE ~${capacity.evCharge}kWh</div>` : ''}
-            <div style="width: ${(capacity.vppTrade / (c.totalCapacity as number)) * 100}%; background: #f36710; color: #000; display: flex; align-items: center; justify-content: center; font-size: 12px;">VPP TRADE ~${capacity.vppTrade.toFixed(0)}kWh</div>
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 20px;">WHY THIS CAPACITY?</p>
+          <div style="display: flex; height: 44px; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
+            <div style="width: ${(cap.home / total) * 100}%; background: #808285; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">HOME ~${cap.home.toFixed(0)}kWh</div>
+            ${cap.evCharge > 0 ? `<div style="width: ${(cap.evCharge / total) * 100}%; background: #00EAD3; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">EV CHARGE ~${cap.evCharge}kWh</div>` : ''}
+            <div style="width: ${(cap.vppTrade / total) * 100}%; background: #E8731A; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">VPP TRADE ~${cap.vppTrade.toFixed(0)}kWh</div>
           </div>
-          <p style="color: #808285; font-size: 14px; margin-top: 20px;">${c.explanation}</p>
+          <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #808285; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Home Overnight</span></div>
+            ${cap.evCharge > 0 ? `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">EV Charging</span></div>` : ''}
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #E8731A; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">VPP Trading</span></div>
+          </div>
+          <p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>
         </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
@@ -1085,43 +1207,42 @@ function generateBatterySlide(slide: SlideContent): string {
   `;
 }
 
-function generateSolarSlide(slide: SlideContent): string {
+// ---- SLIDE 10: SOLAR SYSTEM ----
+function genSolar(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 40px; margin-top: 30px;">
-        <div class="card" style="text-align: center;">
-          <p class="label">SYSTEM SIZE</p>
-          <p class="hero-number white" style="font-size: 80px;">${c.systemSize}<span style="font-size: 24px; color: #808285;">KW</span></p>
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 30px; margin-top: 10px;">
+        <div class="card" style="flex: 1; text-align: center; padding: 30px;">
+          <p class="lbl">SYSTEM SIZE</p>
+          <p class="hero-num white" style="font-size: 72px;">${c.systemSize}<span style="font-size: 20px; color: #808285;"> KW</span></p>
         </div>
-        <div class="card" style="text-align: center;">
-          <p class="label">PANEL COUNT</p>
-          <p class="hero-number" style="font-size: 80px; color: #00EAD3;">${c.panelCount}<span style="font-size: 24px; color: #808285;">UNITS</span></p>
+        <div class="card" style="flex: 1; text-align: center; padding: 30px;">
+          <p class="lbl">PANEL COUNT</p>
+          <p class="hero-num white" style="font-size: 72px;">${c.panelCount}<span style="font-size: 20px; color: #00EAD3;"> UNITS</span></p>
         </div>
-        <div class="card" style="text-align: center;">
-          <p class="label" style="color: #f36710;">HARDWARE TECHNOLOGY</p>
-          <p class="hero-number orange" style="font-size: 80px;">${c.panelPower}<span style="font-size: 24px; color: #808285;">W</span></p>
-          <p style="color: #808285; font-size: 14px;">${c.panelBrand}</p>
+        <div class="card orange-b" style="flex: 1; text-align: center; padding: 30px; background: rgba(232,115,26,0.05);">
+          <p class="lbl" style="color: #E8731A;">HARDWARE TECHNOLOGY</p>
+          <p class="hero-num orange" style="font-size: 72px;">${c.panelPower}<span style="font-size: 20px; color: #808285;"> W</span></p>
+          <p class="gray" style="font-size: 13px; margin-top: 8px;">${c.panelBrand}</p>
         </div>
       </div>
-      <div style="display: flex; gap: 40px; margin-top: 30px;">
-        <div class="card aqua-border" style="flex: 1;">
-          <p style="color: #00EAD3; font-weight: 600; margin-bottom: 10px;">WHY ${(c.panelBrand as string).split(' ')[0].toUpperCase()}?</p>
-          <p style="color: #808285; font-size: 14px;">${c.whyThisBrand}</p>
+      <div style="display: flex; gap: 30px; margin-top: 24px;">
+        <div class="insight-card" style="flex: 1;">
+          <p class="insight-title">WHY ${(c.panelBrand as string).split(' ')[0].toUpperCase()}?</p>
+          <p>${c.whyThisBrand}</p>
         </div>
         <div style="flex: 1;">
-          <p style="color: #f36710; font-weight: 600; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #E8731A; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
           ${features.map(f => `
-            <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
-              <span style="color: #00EAD3;">●</span>
+            <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
+              <span style="color: #00EAD3; font-size: 10px; margin-top: 4px;">●</span>
               <div>
                 <p style="font-weight: 600; font-size: 14px;">${f.title}</p>
-                <p style="color: #808285; font-size: 13px;">${f.description}</p>
+                <p style="color: #808285; font-size: 12px;">${f.description}</p>
               </div>
             </div>
           `).join('')}
@@ -1132,29 +1253,22 @@ function generateSolarSlide(slide: SlideContent): string {
   `;
 }
 
-function generateVPPComparisonSlide(slide: SlideContent): string {
+// ---- SLIDE 11: VPP COMPARISON ----
+function genVPPComparison(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const providers = c.providers as Array<{ provider: string; program: string; gasBundle: boolean; annualValue: string; strategicFit: string }>;
-  const recommended = c.recommendedProvider as string;
-  
+  const rec = c.recommendedProvider as string;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <table style="margin-top: 30px;">
-        <tr>
-          <th>PROVIDER</th>
-          <th>VPP MODEL</th>
-          <th>GAS BUNDLE</th>
-          <th>EST. ANNUAL VALUE</th>
-          <th>STRATEGIC FIT</th>
-        </tr>
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <table style="margin-top: 10px;">
+        <tr><th>PROVIDER</th><th>VPP MODEL</th><th>GAS BUNDLE</th><th>EST. ANNUAL VALUE</th><th>STRATEGIC FIT</th></tr>
         ${providers.map(p => `
-          <tr class="${p.provider === recommended ? 'highlight-row' : ''}">
-            <td style="font-weight: 600;">${p.provider}${p.provider === recommended ? '<br/><span style="color: #00EAD3; font-size: 12px;">Recommended</span>' : ''}</td>
-            <td><span style="color: #f36710;">${p.program}</span><br/><span style="color: #808285; font-size: 12px;">Variable event payments</span></td>
-            <td>${p.gasBundle ? '<span style="color: #00EAD3;">✓ Yes</span>' : '<span style="color: #808285;">✗ No</span>'}</td>
+          <tr class="${p.provider === rec ? 'highlight-row' : ''}">
+            <td style="font-weight: 600;">${p.provider}${p.provider === rec ? '<br/><span style="color: #E8731A; font-size: 11px;">Recommended</span>' : ''}</td>
+            <td><span style="color: #E8731A;">${p.program}</span></td>
+            <td>${p.gasBundle ? '<span style="color: #00EAD3;">✓ Yes</span>' : '<span class="gray">✗ No</span>'}</td>
             <td style="font-weight: 600;">${p.annualValue}</td>
             <td><span class="badge ${p.strategicFit.toLowerCase()}">${p.strategicFit}</span></td>
           </tr>
@@ -1165,343 +1279,86 @@ function generateVPPComparisonSlide(slide: SlideContent): string {
   `;
 }
 
-function generateVPPRecommendationSlide(slide: SlideContent): string {
+// ---- SLIDE 12: VPP RECOMMENDATION ----
+function genVPPRecommendation(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="text-align: center; margin-top: 40px;">
-        <p class="label">SELECTED PARTNER</p>
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="text-align: center; margin-top: 20px;">
+        <p class="lbl">SELECTED PARTNER</p>
         <p style="font-family: 'NextSphere', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider}</p>
-        <p style="color: #00EAD3; font-size: 24px;">${c.program}</p>
+        <p style="color: #00EAD3; font-size: 22px; font-family: 'Urbanist', sans-serif;">${c.program}</p>
       </div>
-      <div style="display: flex; gap: 30px; margin-top: 40px;">
-        ${features.map((f, i) => `
-          <div class="card ${i === 0 ? 'aqua-border' : ''}" style="flex: 1; text-align: center;">
-            <p style="color: ${i === 0 ? '#f36710' : i === 1 ? '#00EAD3' : '#f36710'}; font-size: 32px; margin-bottom: 10px;">${i === 0 ? '≡' : i === 1 ? '↗' : '⊕'}</p>
-            <p style="font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">${f.title}</p>
-            <p style="color: #808285; font-size: 14px;">${f.description}</p>
-          </div>
-        `).join('')}
-      </div>
-      <div style="display: flex; align-items: center; gap: 20px; margin-top: 40px;">
-        <div style="width: 4px; height: 60px; background: #00EAD3;"></div>
-        <div>
-          <p class="label">Estimated Annual Value (Credits + Bundle Savings)</p>
-          <p class="hero-number" style="font-size: 72px;">~$${c.annualValue}<span style="font-size: 24px;"> / YEAR</span></p>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateSavingsSummarySlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const breakdown = c.breakdown as Array<{ category: string; value: number; color: string }>;
-  const total = c.totalAnnualBenefit as number;
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div style="height: 400px; display: flex; flex-direction: column; justify-content: flex-end;">
-            ${breakdown.map(b => `
-              <div style="height: ${(b.value / total) * 100}%; background: ${b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF'}; display: flex; align-items: center; justify-content: center;">
-                <span style="color: #000; font-weight: 600;">${b.category}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card aqua-border" style="text-align: center; padding: 40px; margin-bottom: 30px;">
-            <p class="label" style="color: #00EAD3;">TOTAL ANNUAL BENEFIT</p>
-            <p class="hero-number white" style="font-size: 96px;">$${total.toLocaleString()}</p>
-            <p style="color: #808285;">Tax-Free Savings</p>
-          </div>
-          ${breakdown.map(b => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 16px; height: 16px; background: ${b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF'};"></div>
-                <span>${b.category}</span>
-              </div>
-              <span style="font-weight: 600;">$${b.value.toLocaleString()}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateFinancialSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <p class="label" style="margin-bottom: 20px;">INVESTMENT BREAKDOWN</p>
-          <div style="display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #333;">
-            <span>Solar & Battery System</span>
-            <span style="font-weight: 600;">$${(c.systemCost as number).toLocaleString()}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #333;">
-            <span>Govt. Rebates & Incentives</span>
-            <span style="font-weight: 600; color: #00EAD3;">-$${(c.rebates as number).toLocaleString()}</span>
-          </div>
-          <div class="card orange-border" style="margin-top: 20px;">
-            <p class="label" style="color: #f36710;">NET INVESTMENT</p>
-            <p class="hero-number white" style="font-size: 72px;">$${(c.netInvestment as number).toLocaleString()}</p>
-            <p style="color: #808285; font-size: 14px;">Fully Installed (Inc. GST)</p>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <p class="label" style="margin-bottom: 20px;">PROJECTED RETURNS</p>
-          <div style="display: flex; gap: 20px;">
-            <div class="card aqua-border" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">ANNUAL BENEFIT</p>
-              <p class="hero-number white" style="font-size: 48px;">$${(c.annualBenefit as number).toLocaleString()}</p>
-              <p style="color: #808285; font-size: 12px;">Combined Savings & Income</p>
-            </div>
-            <div class="card aqua-border" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">PAYBACK PERIOD</p>
-              <p class="hero-number white" style="font-size: 48px;">${(c.paybackYears as number).toFixed(1)} YRS</p>
-              <p style="color: #808285; font-size: 12px;">Accelerated by ${c.acceleratedBy}</p>
-            </div>
-          </div>
-          <div class="card" style="margin-top: 20px; text-align: center;">
-            <p style="font-size: 24px; font-weight: 600;">10-YEAR TOTAL SAVINGS: <span class="aqua">~$${(c.tenYearSavings as number).toLocaleString()}</span></p>
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateRoadmapSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const steps = c.steps as Array<{ number: string; title: string; description: string; timeline: string; color: string }>;
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="margin-top: 40px;">
-        <div style="display: flex; align-items: center; margin-bottom: 30px;">
-          ${steps.map((s, i) => `
-            <div style="display: flex; align-items: center;">
-              <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}; background: transparent;"></div>
-              ${i < steps.length - 1 ? `<div style="width: 200px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}, ${steps[i + 1].color === 'aqua' ? '#00EAD3' : '#f36710'});"></div>` : ''}
-            </div>
-          `).join('')}
-        </div>
-        <div style="display: flex; gap: 20px;">
-          ${steps.map(s => `
-            <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};">
-              <p style="font-size: 48px; color: #333; font-weight: 800;">${s.number}</p>
-              <p style="font-weight: 600; text-transform: uppercase; color: ${s.color === 'aqua' ? '#FFFFFF' : '#f36710'}; margin: 10px 0;">${s.title}</p>
-              <p style="color: #808285; font-size: 13px; margin-bottom: 16px;">${s.description}</p>
-              <p style="color: #00EAD3; font-size: 12px;">⏱ ${s.timeline}</p>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateConclusionSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = c.features as Array<{ icon: string; title: string; description: string; border: string }>;
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 30px; margin-top: 40px;">
+      <div style="display: flex; gap: 24px; margin-top: 36px;">
         ${features.map(f => `
-          <div class="card ${f.border}-border" style="flex: 1; text-align: center;">
-            <p style="color: ${f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#f36710' : '#FFFFFF'}; font-size: 40px; margin-bottom: 16px;">${f.icon === 'chart' ? '↗' : f.icon === 'shield' ? '🛡' : '⚡'}</p>
-            <p style="font-weight: 600; text-transform: uppercase; margin-bottom: 12px;">${f.title}</p>
-            <p style="color: #808285; font-size: 14px;">${f.description}</p>
+          <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #E8731A;">
+            <p style="color: #E8731A; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
+            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${f.description}</p>
           </div>
         `).join('')}
       </div>
-      <div style="text-align: center; margin-top: 60px;">
-        <p style="font-family: 'NextSphere', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.4;">${c.quote}</p>
-        <p style="color: #00EAD3; font-size: 20px; margin-top: 30px;">${c.callToAction}</p>
+      <div style="display: flex; align-items: center; gap: 20px; margin-top: 36px;">
+        <div style="width: 4px; height: 60px; background: #00EAD3; border-radius: 2px;"></div>
+        <div>
+          <p class="lbl">Estimated Annual Value (Credits + Bundle Savings)</p>
+          <p class="hero-num aqua" style="font-size: 64px;">~$${c.annualValue}<span style="font-size: 22px;"> / YEAR</span></p>
+        </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
 }
 
-function generateGenericSlide(slide: SlideContent): string {
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      ${slide.subtitle ? `<p class="slide-subtitle">${slide.subtitle}</p>` : ''}
-      <div style="margin-top: 40px;">
-        <pre style="color: #808285; font-size: 14px;">${JSON.stringify(slide.content, null, 2)}</pre>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-
-// New slide generators for full 25-slide structure
-
-function generateExecutiveSummarySlide(slide: SlideContent): string {
+// ---- SLIDE 13-15: ELECTRIFICATION SLIDES (Hot Water, Heating, Induction) ----
+function genElectrificationSlide(slide: SlideContent, type: string): string {
   const c = slide.content as Record<string, unknown>;
+  const features = (c.features as string[]) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin-top: 40px;">
-        <div class="card aqua-border" style="text-align: center;">
-          <p class="label">CURRENT ANNUAL COST</p>
-          <p class="hero-number orange" style="font-size: 48px;">$${(c.currentAnnualCost as number).toLocaleString()}</p>
-        </div>
-        <div class="card aqua-border" style="text-align: center;">
-          <p class="label">PROJECTED ANNUAL COST</p>
-          <p class="hero-number" style="font-size: 48px;">$${Math.round(c.projectedAnnualCost as number).toLocaleString()}</p>
-        </div>
-        <div class="card aqua-border" style="text-align: center;">
-          <p class="label">TOTAL ANNUAL SAVINGS</p>
-          <p class="hero-number white" style="font-size: 48px;">$${(c.totalAnnualSavings as number).toLocaleString()}</p>
-        </div>
-        <div class="card aqua-border" style="text-align: center;">
-          <p class="label">PAYBACK PERIOD</p>
-          <p class="hero-number" style="font-size: 48px;">${(c.paybackYears as number).toFixed(1)}<span style="font-size: 20px;">YRS</span></p>
-        </div>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin-top: 30px;">
-        <div class="card" style="text-align: center;">
-          <p class="label">SOLAR SYSTEM</p>
-          <p style="font-size: 32px; color: #f36710;">${c.systemSize}kW</p>
-        </div>
-        <div class="card" style="text-align: center;">
-          <p class="label">BATTERY</p>
-          <p style="font-size: 32px; color: #f36710;">${c.batterySize}kWh</p>
-        </div>
-        <div class="card" style="text-align: center;">
-          <p class="label">VPP PARTNER</p>
-          <p style="font-size: 24px; color: #00EAD3;">${c.vppProvider}</p>
-        </div>
-        <div class="card" style="text-align: center;">
-          <p class="label">CO2 REDUCTION</p>
-          <p style="font-size: 32px; color: #00EAD3;">${(c.co2Reduction as number).toFixed(1)}t</p>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateBillAnalysisSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
-          <div class="card orange-border" style="margin-bottom: 20px;">
-            <p class="label">CURRENT RETAILER</p>
-            <p style="font-size: 36px; font-weight: 600;">${c.retailer}</p>
+          <div class="card" style="margin-bottom: 20px;">
+            <p class="lbl">CURRENT SYSTEM</p>
+            <p style="font-size: 22px; color: #E8731A; font-weight: 600;">${c.currentSystem}</p>
+            <p class="gray" style="margin-top: 8px;">Annual Cost: <span class="orange">$${c[type === 'hot_water' ? 'annualGasCost' : type === 'heating' ? 'annualGasCost' : 'annualGasCost']}/year</span></p>
           </div>
-          <div class="card aqua-border">
-            <p class="label">ANNUAL ELECTRICITY COST</p>
-            <p class="hero-number" style="font-size: 72px;">$${(c.annualCost as number).toLocaleString()}</p>
+          <div class="card aqua-b">
+            <p class="lbl" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
+            <p style="font-size: 22px; font-weight: 600;">${c.recommendedSystem}</p>
+            ${c.cop ? `<p style="color: #00EAD3; margin-top: 8px;">COP: ${c.cop} (${c.cop}x more efficient)</p>` : ''}
           </div>
         </div>
         <div style="flex: 1;">
-          <table>
-            <tr><th>RATE TYPE</th><th style="text-align: right;">VALUE</th></tr>
-            <tr><td>Usage Rate</td><td style="text-align: right;" class="orange">${c.usageRate}¢/kWh</td></tr>
-            <tr><td>Supply Charge</td><td style="text-align: right;">${c.supplyCharge}¢/day</td></tr>
-            <tr><td>Feed-in Tariff</td><td style="text-align: right;" class="aqua">${c.feedInTariff}¢/kWh</td></tr>
-            ${c.controlledLoadRate ? `<tr><td>Controlled Load</td><td style="text-align: right;">${c.controlledLoadRate}¢/kWh</td></tr>` : ''}
-          </table>
-          <div style="margin-top: 30px;">
-            <p class="label">COST BREAKDOWN</p>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333;">
-              <span>Usage Charges</span>
-              <span class="orange">$${Math.round(c.usageCost as number).toLocaleString()}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333;">
-              <span>Supply Charges</span>
-              <span>$${Math.round(c.supplyCost as number).toLocaleString()}</span>
-            </div>
+          <div class="card orange-b" style="text-align: center; margin-bottom: 20px; padding: 30px;">
+            <p class="lbl">ANNUAL SAVINGS</p>
+            <p class="hero-num aqua" style="font-size: 56px;">$${c.annualSavings}</p>
           </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateYearlyProjectionSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const projection = (c.yearlyProjection as Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }>) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 40px; margin-top: 30px;">
-        <div style="flex: 2;">
-          <div style="display: flex; align-items: flex-end; height: 350px; gap: 4px;">
-            ${projection.slice(0, 25).map((p, i) => `
-              <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 100%; height: ${(p.withoutSolar / (c.currentAnnualCost as number * 2.5)) * 300}px; background: #f36710; opacity: 0.3;"></div>
-                <div style="width: 100%; height: ${(p.withSolar / (c.currentAnnualCost as number * 2.5)) * 300}px; background: #00EAD3; margin-top: -${(p.withSolar / (c.currentAnnualCost as number * 2.5)) * 300}px;"></div>
-                ${i % 5 === 0 ? `<span style="font-size: 10px; color: #808285; margin-top: 4px;">Y${p.year}</span>` : ''}
+          <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">INSTALL COST</p>
+              <p style="font-size: 20px;">$${(c.installCost as number).toLocaleString()}</p>
+            </div>
+            ${c.rebates !== undefined ? `
+              <div class="card" style="flex: 1; text-align: center;">
+                <p class="lbl" style="color: #00EAD3;">REBATES</p>
+                <p style="font-size: 20px; color: #00EAD3;">-$${(c.rebates as number).toLocaleString()}</p>
               </div>
-            `).join('')}
+              <div class="card aqua-b" style="flex: 1; text-align: center;">
+                <p class="lbl">NET COST</p>
+                <p style="font-size: 20px;">$${(c.netCost as number).toLocaleString()}</p>
+              </div>
+            ` : ''}
           </div>
-          <div style="display: flex; gap: 20px; margin-top: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 16px; height: 16px; background: #f36710; opacity: 0.3;"></div>
-              <span style="font-size: 12px; color: #808285;">Without Solar</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 16px; height: 16px; background: #00EAD3;"></div>
-              <span style="font-size: 12px; color: #808285;">With Solar</span>
-            </div>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card aqua-border" style="margin-bottom: 20px;">
-            <p class="label">10-YEAR SAVINGS</p>
-            <p class="hero-number white" style="font-size: 48px;">$${(c.tenYearSavings as number).toLocaleString()}</p>
-          </div>
-          <div class="card orange-border">
-            <p class="label">25-YEAR SAVINGS</p>
-            <p class="hero-number" style="font-size: 48px;">$${(c.twentyFiveYearSavings as number).toLocaleString()}</p>
-          </div>
-          <p style="color: #808285; font-size: 12px; margin-top: 16px;">* Assumes ${c.inflationRate}% annual electricity price inflation</p>
+          ${features.length > 0 ? `
+            <p class="lbl" style="margin-bottom: 10px;">KEY BENEFITS</p>
+            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 6px;">✓ ${f}</p>`).join('')}
+          ` : ''}
         </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
@@ -1509,262 +1366,45 @@ function generateYearlyProjectionSlide(slide: SlideContent): string {
   `;
 }
 
-function generateGasFootprintSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div class="card orange-border" style="text-align: center; padding: 40px;">
-            <p class="label">ANNUAL GAS COST</p>
-            <p class="hero-number orange" style="font-size: 72px;">$${(c.annualCost as number).toLocaleString()}</p>
-          </div>
-          <div style="display: flex; gap: 20px; margin-top: 20px;">
-            <div class="card" style="flex: 1;">
-              <p class="label">ANNUAL USAGE</p>
-              <p style="font-size: 24px;">${(c.annualMJ as number).toLocaleString()} MJ</p>
-            </div>
-            <div class="card" style="flex: 1;">
-              <p class="label">kWh EQUIVALENT</p>
-              <p style="font-size: 24px;">${Math.round(c.kwhEquivalent as number).toLocaleString()} kWh</p>
-            </div>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <p class="label" style="margin-bottom: 20px;">ENVIRONMENTAL IMPACT</p>
-          <div class="card" style="margin-bottom: 20px;">
-            <p style="font-size: 20px;">CO2 Emissions from Gas</p>
-            <p class="hero-number orange" style="font-size: 48px;">${(c.co2Emissions as number).toFixed(1)}<span style="font-size: 20px;"> tonnes/year</span></p>
-          </div>
-          <div class="card aqua-border">
-            <p style="color: #00EAD3; font-weight: 600; margin-bottom: 10px;">ELECTRIFICATION OPPORTUNITY</p>
-            <p style="color: #808285; font-size: 14px;">By replacing gas appliances with efficient electric alternatives, you can eliminate this carbon footprint entirely while reducing costs.</p>
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
+function genHotWater(slide: SlideContent): string { return genElectrificationSlide(slide, 'hot_water'); }
+function genHeatingCooling(slide: SlideContent): string { return genElectrificationSlide(slide, 'heating'); }
+function genInduction(slide: SlideContent): string { return genElectrificationSlide(slide, 'induction'); }
 
-function generateGasAppliancesSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const priorities = (c.electrificationPriority as Array<{ name: string; type: string; priority: string; savings: number }>) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="margin-top: 40px;">
-        <table>
-          <tr>
-            <th>APPLIANCE</th>
-            <th>CURRENT TYPE</th>
-            <th>PRIORITY</th>
-            <th style="text-align: right;">EST. ANNUAL SAVINGS</th>
-          </tr>
-          ${priorities.map(p => `
-            <tr>
-              <td style="font-weight: 600;">${p.name}</td>
-              <td style="color: #808285;">${p.type}</td>
-              <td><span class="badge ${p.priority.toLowerCase()}">${p.priority}</span></td>
-              <td style="text-align: right; color: #00EAD3; font-weight: 600;">$${p.savings.toLocaleString()}</td>
-            </tr>
-          `).join('')}
-        </table>
-        <div class="card aqua-border" style="margin-top: 30px;">
-          <p style="color: #00EAD3; font-weight: 600; margin-bottom: 10px;">TOTAL GAS ELIMINATION POTENTIAL</p>
-          <p style="font-size: 24px;">Annual Cost: <span class="orange">$${(c.totalGasCost as number).toLocaleString()}</span> → <span class="aqua">$0</span></p>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateHotWaterSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = (c.features as string[]) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">CURRENT SYSTEM</p>
-            <p style="font-size: 24px; color: #f36710;">${c.currentSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualGasCost}/year</p>
-          </div>
-          <div class="card aqua-border">
-            <p class="label" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
-            <p style="font-size: 24px;">${c.recommendedSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualHeatPumpCost}/year</p>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card orange-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${c.annualSavings}</p>
-          </div>
-          <div style="display: flex; gap: 20px;">
-            <div class="card" style="flex: 1;">
-              <p class="label">INSTALL COST</p>
-              <p style="font-size: 20px;">$${(c.installCost as number).toLocaleString()}</p>
-            </div>
-            <div class="card" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">REBATES</p>
-              <p style="font-size: 20px; color: #00EAD3;">-$${(c.rebates as number).toLocaleString()}</p>
-            </div>
-            <div class="card aqua-border" style="flex: 1;">
-              <p class="label">NET COST</p>
-              <p style="font-size: 20px;">$${(c.netCost as number).toLocaleString()}</p>
-            </div>
-          </div>
-          <div style="margin-top: 20px;">
-            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateHeatingCoolingSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = (c.features as string[]) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">CURRENT SYSTEM</p>
-            <p style="font-size: 24px; color: #f36710;">${c.currentSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualGasCost}/year</p>
-          </div>
-          <div class="card aqua-border">
-            <p class="label" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
-            <p style="font-size: 24px;">${c.recommendedSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualACCost}/year</p>
-            <p style="color: #00EAD3; margin-top: 10px;">COP: ${c.cop} (${c.cop}x more efficient)</p>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card orange-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${c.annualSavings}</p>
-          </div>
-          <div style="display: flex; gap: 20px;">
-            <div class="card" style="flex: 1;">
-              <p class="label">INSTALL COST</p>
-              <p style="font-size: 20px;">$${(c.installCost as number).toLocaleString()}</p>
-            </div>
-            <div class="card" style="flex: 1;">
-              <p class="label" style="color: #00EAD3;">REBATES</p>
-              <p style="font-size: 20px; color: #00EAD3;">-$${(c.rebates as number).toLocaleString()}</p>
-            </div>
-            <div class="card aqua-border" style="flex: 1;">
-              <p class="label">NET COST</p>
-              <p style="font-size: 20px;">$${(c.netCost as number).toLocaleString()}</p>
-            </div>
-          </div>
-          <div style="margin-top: 20px;">
-            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateInductionSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = (c.features as string[]) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">CURRENT SYSTEM</p>
-            <p style="font-size: 24px; color: #f36710;">${c.currentSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualGasCost}/year</p>
-          </div>
-          <div class="card aqua-border">
-            <p class="label" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
-            <p style="font-size: 24px;">${c.recommendedSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualInductionCost}/year</p>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card orange-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${c.annualSavings}</p>
-          </div>
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">INSTALL COST</p>
-            <p style="font-size: 24px;">$${(c.installCost as number).toLocaleString()}</p>
-          </div>
-          <div style="margin-top: 20px;">
-            <p class="label" style="margin-bottom: 12px;">KEY BENEFITS</p>
-            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
-}
-
-function generateEVAnalysisSlide(slide: SlideContent): string {
+// ---- SLIDE 16: EV ANALYSIS ----
+function genEVAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const comparison = (c.comparison as Array<{ scenario: string; costPer100km: number; annualCost: number }>) || [];
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
           <table>
-            <tr>
-              <th>SCENARIO</th>
-              <th style="text-align: right;">COST/100KM</th>
-              <th style="text-align: right;">ANNUAL COST</th>
-            </tr>
+            <tr><th>VEHICLE TYPE</th><th style="text-align: right;">COST / 100KM</th><th style="text-align: right;">ANNUAL COST</th></tr>
             ${comparison.map((comp, i) => `
               <tr class="${i === 2 ? 'highlight-row' : ''}">
                 <td>${comp.scenario}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'};">$${comp.costPer100km.toFixed(2)}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'};">$${comp.annualCost.toLocaleString()}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#E8731A' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#E8731A' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
               </tr>
             `).join('')}
           </table>
         </div>
         <div style="flex: 1;">
-          <div class="card aqua-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL FUEL SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${(c.annualSavings as number).toLocaleString()}</p>
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+            <div style="width: 4px; height: 60px; background: #00EAD3; border-radius: 2px;"></div>
+            <div>
+              <p class="lbl" style="color: #00EAD3;">POTENTIAL ANNUAL SAVINGS</p>
+              <p class="hero-num white" style="font-size: 64px;">$${(c.annualSavings as number).toLocaleString()}</p>
+            </div>
           </div>
-          <div class="card" style="text-align: center;">
-            <p class="label">CO2 AVOIDED</p>
-            <p style="font-size: 36px; color: #00EAD3;">${(c.co2Avoided as number).toFixed(1)} tonnes/year</p>
+          <div class="insight-card">
+            <p style="color: #808285; font-size: 14px; line-height: 1.6;">Solar-charged EV driving eliminates fuel costs entirely. With your proposed solar system, every kilometre driven is effectively <span class="hl-aqua">free</span>.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+            <span style="color: #22c55e;">🌿</span>
+            <p class="gray" style="font-size: 13px;">Environmental Impact: Avoid <span class="hl-aqua">${(c.co2Avoided as number).toFixed(1)} tonnes</span> of CO2 emissions annually.</p>
           </div>
         </div>
       </div>
@@ -1773,32 +1413,31 @@ function generateEVAnalysisSlide(slide: SlideContent): string {
   `;
 }
 
-function generateEVChargerSlide(slide: SlideContent): string {
+// ---- SLIDE 17: EV CHARGER ----
+function genEVCharger(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const features = (c.features as string[]) || [];
   const benefits = (c.solarChargingBenefits as string[]) || [];
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
-          <div class="card aqua-border" style="margin-bottom: 20px;">
-            <p class="label" style="color: #00EAD3;">RECOMMENDED CHARGER</p>
-            <p style="font-size: 28px; font-weight: 600;">${c.recommendedCharger}</p>
-            <p style="color: #808285; margin-top: 10px;">${c.chargingSpeed}</p>
+          <div class="card aqua-b" style="margin-bottom: 20px;">
+            <p class="lbl" style="color: #00EAD3;">RECOMMENDED CHARGER</p>
+            <p style="font-size: 24px; font-weight: 600;">${c.recommendedCharger}</p>
+            <p class="gray" style="margin-top: 8px;">${c.chargingSpeed}</p>
           </div>
-          <div class="card orange-border">
-            <p class="label">INSTALLED COST</p>
-            <p class="hero-number white" style="font-size: 48px;">$${(c.installCost as number).toLocaleString()}</p>
+          <div class="card orange-b" style="text-align: center; padding: 30px;">
+            <p class="lbl">INSTALLED COST</p>
+            <p class="hero-num white" style="font-size: 48px;">$${(c.installCost as number).toLocaleString()}</p>
           </div>
         </div>
         <div style="flex: 1;">
-          <p class="label" style="margin-bottom: 16px;">SMART FEATURES</p>
+          <p class="lbl" style="margin-bottom: 14px;">SMART FEATURES</p>
           ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          <p class="label" style="margin-top: 24px; margin-bottom: 16px; color: #00EAD3;">SOLAR CHARGING BENEFITS</p>
+          <p class="lbl" style="margin-top: 24px; margin-bottom: 14px; color: #00EAD3;">SOLAR CHARGING BENEFITS</p>
           ${benefits.map(b => `<p style="color: #00EAD3; font-size: 13px; margin-bottom: 8px;">⚡ ${b}</p>`).join('')}
         </div>
       </div>
@@ -1807,66 +1446,23 @@ function generateEVChargerSlide(slide: SlideContent): string {
   `;
 }
 
-function generatePoolHeatPumpSlide(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = (c.features as string[]) || [];
-  
-  return `
-    <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">CURRENT SYSTEM</p>
-            <p style="font-size: 24px; color: #f36710;">${c.currentSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualGasCost}/year</p>
-          </div>
-          <div class="card aqua-border">
-            <p class="label" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
-            <p style="font-size: 24px;">${c.recommendedSystem}</p>
-            <p style="color: #808285; margin-top: 10px;">Annual Cost: $${c.annualHeatPumpCost}/year</p>
-            <p style="color: #00EAD3; margin-top: 10px;">COP: ${c.cop} (${c.cop}x more efficient)</p>
-          </div>
-        </div>
-        <div style="flex: 1;">
-          <div class="card orange-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${c.annualSavings}</p>
-          </div>
-          <div class="card" style="margin-bottom: 20px;">
-            <p class="label">INSTALL COST</p>
-            <p style="font-size: 24px;">$${(c.installCost as number).toLocaleString()}</p>
-          </div>
-          <div style="margin-top: 20px;">
-            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
-    </div>
-  `;
+// ---- SLIDE 18: POOL HEAT PUMP ----
+function genPoolHeatPump(slide: SlideContent): string {
+  return genElectrificationSlide(slide, 'pool');
 }
 
-function generateElectrificationInvestmentSlide(slide: SlideContent): string {
+// ---- SLIDE 19: ELECTRIFICATION INVESTMENT ----
+function genElectrificationInvestment(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const items = (c.items as Array<{ item: string; cost: number; rebate: number }>) || [];
-  
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
-        <div style="flex: 1;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.2;">
           <table>
-            <tr>
-              <th>UPGRADE ITEM</th>
-              <th style="text-align: right;">COST</th>
-              <th style="text-align: right;">REBATE</th>
-              <th style="text-align: right;">NET</th>
-            </tr>
+            <tr><th>UPGRADE ITEM</th><th style="text-align: right;">COST</th><th style="text-align: right;">REBATE</th><th style="text-align: right;">NET</th></tr>
             ${items.map(item => `
               <tr>
                 <td>${item.item}</td>
@@ -1876,21 +1472,21 @@ function generateElectrificationInvestmentSlide(slide: SlideContent): string {
               </tr>
             `).join('')}
             <tr class="highlight-row">
-              <td><strong>TOTAL</strong></td>
-              <td style="text-align: right;"><strong>$${(c.totalCost as number).toLocaleString()}</strong></td>
-              <td style="text-align: right; color: #00EAD3;"><strong>-$${(c.totalRebates as number).toLocaleString()}</strong></td>
-              <td style="text-align: right;"><strong>$${(c.netInvestment as number).toLocaleString()}</strong></td>
+              <td style="font-weight: 700;">TOTAL</td>
+              <td style="text-align: right; font-weight: 700;">$${(c.totalCost as number).toLocaleString()}</td>
+              <td style="text-align: right; color: #00EAD3; font-weight: 700;">-$${(c.totalRebates as number).toLocaleString()}</td>
+              <td style="text-align: right; font-weight: 700;">$${(c.netInvestment as number).toLocaleString()}</td>
             </tr>
           </table>
         </div>
-        <div style="flex: 1;">
-          <div class="card aqua-border" style="text-align: center; margin-bottom: 20px;">
-            <p class="label">ANNUAL GAS SAVINGS</p>
-            <p class="hero-number" style="font-size: 64px;">$${(c.annualGasSavings as number).toLocaleString()}</p>
+        <div style="flex: 0.8;">
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 20px; padding: 30px;">
+            <p class="lbl" style="color: #00EAD3;">ANNUAL GAS SAVINGS</p>
+            <p class="hero-num aqua" style="font-size: 56px;">$${(c.annualGasSavings as number).toLocaleString()}</p>
           </div>
           <div class="card" style="text-align: center;">
-            <p class="label">GAS SUPPLY CHARGE SAVED</p>
-            <p style="font-size: 36px; color: #00EAD3;">$${Math.round(c.gasSupplyChargeSaved as number).toLocaleString()}/year</p>
+            <p class="lbl">GAS SUPPLY CHARGE SAVED</p>
+            <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">$${Math.round(c.gasSupplyChargeSaved as number).toLocaleString()}/year</p>
           </div>
         </div>
       </div>
@@ -1899,47 +1495,147 @@ function generateElectrificationInvestmentSlide(slide: SlideContent): string {
   `;
 }
 
-function generateEnvironmentalSlide(slide: SlideContent): string {
+// ---- SLIDE 20: SAVINGS SUMMARY ----
+function genSavingsSummary(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const benefits = (c.benefits as Array<{ icon: string; title: string; description: string }>) || [];
-  
+  const breakdown = c.breakdown as Array<{ category: string; value: number; color: string }>;
+  const total = c.totalAnnualBenefit as number;
+  const maxVal = Math.max(...breakdown.map(b => b.value));
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="Lightning Energy" />
-      <h1 class="slide-title">${slide.title}</h1>
-      <p class="slide-subtitle">${slide.subtitle}</p>
-      <div style="display: flex; gap: 60px; margin-top: 40px;">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div class="card aqua-border" style="text-align: center;">
-              <p class="label">ANNUAL CO2 REDUCTION</p>
-              <p class="hero-number" style="font-size: 48px;">${(c.co2ReductionTonnes as number).toFixed(1)}<span style="font-size: 20px;">t</span></p>
+          <div style="height: 380px; display: flex; align-items: flex-end; justify-content: center;">
+            <div style="width: 200px; display: flex; flex-direction: column;">
+              ${breakdown.map(b => {
+                const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+                return `<div style="height: ${(b.value / total) * 300}px; background: ${col}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: 600;">${b.category}</div>`;
+              }).join('')}
             </div>
-            <div class="card" style="text-align: center;">
-              <p class="label">25-YEAR CO2 REDUCTION</p>
-              <p class="hero-number white" style="font-size: 48px;">${(c.twentyFiveYearCO2 as number).toFixed(0)}<span style="font-size: 20px;">t</span></p>
+          </div>
+          <div style="display: flex; gap: 16px; margin-top: 16px; justify-content: center;">
+            ${breakdown.map(b => {
+              const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+              return `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: ${col};"></div><span style="font-size: 11px; color: #808285;">${b.category}</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <div class="card aqua-b" style="text-align: center; padding: 36px; margin-bottom: 24px;">
+            <p class="lbl" style="color: #00EAD3;">TOTAL ANNUAL BENEFIT</p>
+            <p class="hero-num white" style="font-size: 80px;">$${total.toLocaleString()}</p>
+            <p class="gray" style="margin-top: 8px;">Tax-Free Savings</p>
+          </div>
+          ${breakdown.map(b => {
+            const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1a1a1a;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 14px; height: 14px; background: ${col};"></div>
+                  <span>${b.category}</span>
+                </div>
+                <span style="font-weight: 600;">$${b.value.toLocaleString()}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 21: FINANCIAL SUMMARY ----
+function genFinancial(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <p class="lbl" style="margin-bottom: 16px;">INVESTMENT BREAKDOWN</p>
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #333;">
+            <span>Solar & Battery System</span>
+            <span style="font-weight: 600; font-style: italic;">$${(c.systemCost as number).toLocaleString()}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #333;">
+            <span>Govt. Rebates & Incentives</span>
+            <span style="font-weight: 600; color: #00EAD3; font-style: italic;">-$${(c.rebates as number).toLocaleString()}</span>
+          </div>
+          <div class="card orange-b" style="margin-top: 20px; padding: 30px;">
+            <p class="lbl" style="color: #E8731A;">NET INVESTMENT</p>
+            <p class="hero-num white" style="font-size: 64px;">$${(c.netInvestment as number).toLocaleString()}</p>
+            <p class="gray" style="font-size: 13px; margin-top: 8px;">Fully Installed (Inc. GST)</p>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <p class="lbl" style="margin-bottom: 16px;">PROJECTED RETURNS</p>
+          <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+            <div class="card aqua-b" style="flex: 1; text-align: center; padding: 24px;">
+              <p class="lbl" style="color: #00EAD3;">ANNUAL BENEFIT</p>
+              <p style="font-size: 36px; font-weight: 700;">$${(c.annualBenefit as number).toLocaleString()}</p>
+              <p class="gray" style="font-size: 11px;">Combined Savings & Income</p>
             </div>
-            <div class="card" style="text-align: center;">
-              <p class="label">TREES EQUIVALENT</p>
-              <p style="font-size: 36px; color: #00EAD3;">${c.treesEquivalent} trees/year</p>
+            <div class="card aqua-b" style="flex: 1; text-align: center; padding: 24px;">
+              <p class="lbl" style="color: #00EAD3;">PAYBACK PERIOD</p>
+              <p style="font-size: 36px; font-weight: 700;">${(c.paybackYears as number).toFixed(1)} YRS</p>
+              <p class="gray" style="font-size: 11px;">Accelerated by ${c.acceleratedBy}</p>
             </div>
-            <div class="card" style="text-align: center;">
-              <p class="label">CARS OFF ROAD</p>
-              <p style="font-size: 36px; color: #f36710;">${c.carsOffRoad} cars</p>
+          </div>
+          <div class="card" style="text-align: center; padding: 24px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 22px; font-weight: 800;">10-YEAR TOTAL SAVINGS: <span class="aqua">~$${(c.tenYearSavings as number).toLocaleString()}</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 22: ENVIRONMENTAL IMPACT ----
+function genEnvironmental(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="card aqua-b" style="text-align: center; padding: 24px;">
+              <p class="lbl">ANNUAL CO2 REDUCTION</p>
+              <p class="hero-num aqua" style="font-size: 48px;">${(c.co2ReductionTonnes as number).toFixed(1)}<span style="font-size: 18px;">t</span></p>
+            </div>
+            <div class="card" style="text-align: center; padding: 24px;">
+              <p class="lbl">25-YEAR CO2 REDUCTION</p>
+              <p class="hero-num white" style="font-size: 48px;">${(c.twentyFiveYearCO2 as number).toFixed(0)}<span style="font-size: 18px;">t</span></p>
+            </div>
+            <div class="card" style="text-align: center; padding: 24px;">
+              <p class="lbl">TREES EQUIVALENT</p>
+              <p style="font-size: 32px; color: #00EAD3; font-weight: 600;">${c.treesEquivalent}</p>
+              <p class="gray" style="font-size: 11px;">trees/year</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 24px;">
+              <p class="lbl">CARS OFF ROAD</p>
+              <p style="font-size: 32px; color: #E8731A; font-weight: 600;">${c.carsOffRoad}</p>
+              <p class="gray" style="font-size: 11px;">equivalent</p>
             </div>
           </div>
         </div>
         <div style="flex: 1;">
-          <div class="card aqua-border" style="text-align: center; margin-bottom: 30px;">
-            <p class="label">ENERGY INDEPENDENCE SCORE</p>
-            <p class="hero-number" style="font-size: 72px;">${c.energyIndependenceScore}%</p>
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 24px; padding: 30px;">
+            <p class="lbl">ENERGY INDEPENDENCE SCORE</p>
+            <p class="hero-num aqua" style="font-size: 72px;">${c.energyIndependenceScore}%</p>
           </div>
-          ${benefits.map(b => `
+          ${(c.benefits as Array<{ icon: string; title: string; description: string }>).map(b => `
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-              <span style="color: #00EAD3; font-size: 24px;">${b.icon === 'leaf' ? '🌿' : b.icon === 'tree' ? '🌳' : '⚡'}</span>
+              <span style="font-size: 22px;">${b.icon}</span>
               <div>
-                <p style="font-weight: 600; text-transform: uppercase; font-size: 14px;">${b.title}</p>
-                <p style="color: #808285; font-size: 13px;">${b.description}</p>
+                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase;">${b.title}</p>
+                <p style="color: #808285; font-size: 12px;">${b.description}</p>
               </div>
             </div>
           `).join('')}
@@ -1950,45 +1646,118 @@ function generateEnvironmentalSlide(slide: SlideContent): string {
   `;
 }
 
-function generateContactSlide(slide: SlideContent): string {
+// ---- SLIDE 23: ROADMAP ----
+function genRoadmap(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const steps = c.steps as Array<{ number: string; title: string; description: string; timeline: string; color: string }>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
+        ${steps.map((s, i) => `
+          <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'};"></div>
+            ${i < steps.length - 1 ? `<div style="width: ${800 / steps.length}px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'}, ${steps[i + 1].color === 'aqua' ? '#00EAD3' : '#E8731A'});"></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      <div style="display: flex; gap: 16px;">
+        ${steps.map(s => `
+          <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'};">
+            <p style="font-size: 40px; color: #333; font-weight: 800; font-family: 'NextSphere', sans-serif;">${s.number}</p>
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#E8731A'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
+            <p style="color: #808285; font-size: 12px; line-height: 1.5; margin-bottom: 14px;">${s.description}</p>
+            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'}; font-size: 12px; font-family: 'Urbanist', sans-serif;">⏱ ${s.timeline}</p>
+          </div>
+        `).join('')}
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 24: CONCLUSION ----
+function genConclusion(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const features = c.features as Array<{ icon: string; title: string; description: string; border: string }>;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 24px; margin-top: 10px;">
+        ${features.map(f => {
+          const borderCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#E8731A' : '#FFFFFF';
+          const iconCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#E8731A' : '#FFFFFF';
+          return `
+            <div class="card" style="flex: 1; text-align: center; border-top: 3px solid ${borderCol}; padding: 30px;">
+              <p style="color: ${iconCol}; font-size: 36px; margin-bottom: 14px;">${f.icon}</p>
+              <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#E8731A' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
+              <p style="color: #808285; font-size: 13px; line-height: 1.6;">${f.description}</p>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div style="text-align: center; margin-top: 40px;">
+        <p style="font-family: 'NextSphere', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.4; max-width: 1200px; margin: 0 auto;">${c.quote}</p>
+        <div style="width: 200px; height: 2px; background: #00EAD3; margin: 24px auto;"></div>
+        <p style="color: #00EAD3; font-size: 18px; font-family: 'Urbanist', sans-serif;">${c.callToAction}</p>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SLIDE 25: CONTACT ----
+function genContact(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const nextSteps = (c.nextSteps as string[]) || [];
-  
   return `
     <div class="slide" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-      <img src="${c.logoUrl}" style="width: 120px; height: 120px; margin-bottom: 40px;" alt="Lightning Energy" />
-      <h1 class="slide-title" style="font-size: 72px; margin-bottom: 20px;">${slide.title}</h1>
-      <p class="slide-subtitle" style="font-size: 28px; margin-bottom: 40px;">${slide.subtitle}</p>
-      
-      <div style="display: flex; gap: 60px; margin-bottom: 40px;">
+      <img src="${c.logoUrl}" style="width: 100px; height: 100px; margin-bottom: 30px;" alt="LE" />
+      <h1 class="slide-title" style="font-size: 64px; margin-bottom: 16px;">${slide.title}</h1>
+      <p class="slide-subtitle" style="font-size: 24px; margin-bottom: 40px; text-align: center;">${slide.subtitle}</p>
+      <div style="display: flex; gap: 60px; margin-bottom: 36px;">
         <div style="text-align: left;">
-          <p class="label" style="margin-bottom: 10px;">PREPARED BY</p>
-          <p style="font-size: 24px; font-weight: 600;">${c.preparedBy}</p>
-          <p style="color: #00EAD3;">${c.title}</p>
-          <p style="color: #808285; margin-top: 10px;">${c.company}</p>
+          <p class="lbl" style="margin-bottom: 8px;">PREPARED BY</p>
+          <p style="font-size: 22px; font-weight: 600;">${c.preparedBy}</p>
+          <p style="color: #00EAD3; font-family: 'Urbanist', sans-serif;">${c.title}</p>
+          <p class="gray" style="margin-top: 8px;">${c.company}</p>
         </div>
         <div style="text-align: left;">
-          <p class="label" style="margin-bottom: 10px;">CONTACT</p>
-          <p style="color: #808285;">📞 ${c.phone}</p>
-          <p style="color: #808285;">✉️ ${c.email}</p>
+          <p class="lbl" style="margin-bottom: 8px;">CONTACT</p>
+          <p class="gray">📞 ${c.phone}</p>
+          <p class="gray">✉️ ${c.email}</p>
           <p style="color: #00EAD3;">🌐 ${c.website}</p>
         </div>
         <div style="text-align: left;">
-          <p class="label" style="margin-bottom: 10px;">LOCATION</p>
-          <p style="color: #808285;">${c.address}</p>
+          <p class="lbl" style="margin-bottom: 8px;">LOCATION</p>
+          <p class="gray">${c.address}</p>
         </div>
       </div>
-      
-      <div class="card aqua-border" style="max-width: 800px; text-align: left; padding: 30px;">
-        <p class="label" style="color: #00EAD3; margin-bottom: 16px;">YOUR NEXT STEPS</p>
+      <div class="card aqua-b" style="max-width: 800px; text-align: left; padding: 28px;">
+        <p class="lbl" style="color: #00EAD3; margin-bottom: 14px;">YOUR NEXT STEPS</p>
         ${nextSteps.map((step, i) => `
-          <p style="color: #FFFFFF; font-size: 16px; margin-bottom: 12px;">
-            <span style="color: #f36710; font-weight: 600;">${i + 1}.</span> ${step}
+          <p style="font-size: 15px; margin-bottom: 10px;">
+            <span style="color: #E8731A; font-weight: 700;">${i + 1}.</span> ${step}
           </p>
         `).join('')}
       </div>
-      
       <div class="copyright">${c.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- GENERIC FALLBACK ----
+function genGeneric(slide: SlideContent): string {
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="margin-top: 20px;">
+        <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
 }

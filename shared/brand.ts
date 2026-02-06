@@ -10,7 +10,7 @@ export const BRAND = {
   // Colors (exact hex values from brand guide)
   colors: {
     aqua: '#00EAD3',      // Primary accent - use sparingly (logo, graphs, highlights)
-    orange: '#f36710',    // Secondary accent - headings, key numbers, chart bars
+    orange: '#E8731A',    // Burnt Orange - costs, alerts, accent borders
     white: '#FFFFFF',     // Body text
     ash: '#808285',       // Secondary text, labels
     black: '#000000',     // Background
