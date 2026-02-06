@@ -1,5 +1,4 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
@@ -44,7 +43,7 @@ export default function Proposals() {
   
   const deleteProposal = trpc.proposals.delete.useMutation({
     onSuccess: () => {
-      toast.success("Proposal deleted");
+      toast.success("Proposal moved to bin");
       refetch();
     },
     onError: (error) => toast.error(error.message)
@@ -56,35 +55,42 @@ export default function Proposals() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">
-              <span className="lightning-text-gradient">Proposals</span>
+            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+              Proposals
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage electrification proposals
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+              All processed customer proposals
             </p>
           </div>
-          <Button 
+          <button 
             onClick={() => setLocation("/proposals/new")}
-            className="lightning-button-primary"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
+            style={{ 
+              fontFamily: "'Urbanist', sans-serif",
+              fontWeight: 600,
+              backgroundColor: '#00EAD3',
+              color: '#000000'
+            }}
           >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Proposal
-          </Button>
+            <PlusCircle className="h-4 w-4" />
+            NEW PROPOSAL
+          </button>
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#808285' }} />
             <Input
               placeholder="Search proposals..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              style={{ fontFamily: "'GeneralSans', sans-serif" }}
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" style={{ fontFamily: "'Urbanist', sans-serif" }}>
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -94,117 +100,122 @@ export default function Proposals() {
               <SelectItem value="calculating">Calculating</SelectItem>
               <SelectItem value="generated">Generated</SelectItem>
               <SelectItem value="exported">Exported</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Proposals List */}
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         ) : proposals && proposals.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {proposals.map((proposal) => (
-              <Card 
+              <div 
                 key={proposal.id} 
-                className="bg-card border-border hover:border-primary/30 transition-all cursor-pointer group"
+                className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all group"
+                style={{ 
+                  border: '1px solid rgba(128,130,133,0.2)',
+                  backgroundColor: 'rgba(255,255,255,0.02)'
+                }}
                 onClick={() => setLocation(`/proposals/${proposal.id}`)}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,234,211,0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(128,130,133,0.2)';
+                }}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{proposal.title}</h3>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(proposal.createdAt).toLocaleDateString()}
-                          </span>
-                          {proposal.slideCount && (
-                            <span>{proposal.slideCount} slides</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <span className={`status-badge ${proposal.status}`}>
-                        {proposal.status}
+                <div className="flex items-center gap-4">
+                  <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(0,234,211,0.3)' }}>
+                    <FileText className="h-5 w-5" style={{ color: '#00EAD3' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white" style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                      {proposal.title}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="flex items-center gap-1 text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                        <Calendar className="h-3 w-3" />
+                        {new Date(proposal.createdAt).toLocaleDateString('en-AU')}
                       </span>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation();
-                            setLocation(`/proposals/${proposal.id}`);
-                          }}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                          </DropdownMenuItem>
-                          {proposal.status === 'generated' && (
-                            <DropdownMenuItem onClick={(e) => {
-                              e.stopPropagation();
-                              toast.info("Export feature coming soon");
-                            }}>
-                              <Download className="mr-2 h-4 w-4" />
-                              Export
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm("Are you sure you want to delete this proposal?")) {
-                                deleteProposal.mutate({ id: proposal.id });
-                              }
-                            }}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {proposal.slideCount && (
+                        <span className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                          {proposal.slideCount} slides
+                        </span>
+                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className={`status-badge ${proposal.status}`}>
+                    {proposal.status}
+                  </span>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/proposals/${proposal.id}`);
+                      }} style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Move this proposal to the bin?")) {
+                            deleteProposal.mutate({ id: proposal.id });
+                          }
+                        }}
+                        style={{ fontFamily: "'Urbanist', sans-serif" }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Move to Bin
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card className="bg-card border-border">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <FileText className="h-16 w-16 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No proposals found</h3>
-              <p className="text-muted-foreground text-center mb-6">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Try adjusting your filters" 
-                  : "Create your first proposal to get started"}
-              </p>
-              {!searchTerm && statusFilter === "all" && (
-                <Button onClick={() => setLocation("/proposals/new")} className="lightning-button-primary">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  New Proposal
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
+            <FileText className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
+            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+              {searchTerm || statusFilter !== "all" ? "No matching proposals" : "No proposals yet"}
+            </h3>
+            <p className="text-sm text-center mb-6" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+              {searchTerm || statusFilter !== "all" 
+                ? "Try adjusting your filters" 
+                : "Create your first proposal to get started"}
+            </p>
+            {!searchTerm && statusFilter === "all" && (
+              <button 
+                onClick={() => setLocation("/proposals/new")} 
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
+                style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+              >
+                <PlusCircle className="mr-1 h-4 w-4" />
+                NEW PROPOSAL
+              </button>
+            )}
+          </div>
         )}
 
         {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          COPYRIGHT Lightning Energy - Architect George Fotopoulos
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+          © Lightning Energy — Architect George Fotopoulos
         </div>
       </div>
     </DashboardLayout>

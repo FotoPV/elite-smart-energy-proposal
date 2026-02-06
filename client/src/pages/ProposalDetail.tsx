@@ -19,19 +19,7 @@ import {
   Sun,
   Loader2,
   Edit,
-  Upload,
-  Share2,
-  Copy,
-  Link,
-  ExternalLink,
-  BarChart3,
-  Eye,
-  Users,
-  Timer,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Globe
+  Upload
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -370,174 +358,11 @@ function PublishPDFButton({ proposalId, customerName }: { proposalId: number; cu
 
 
 
-// Proposal Analytics Component
-function ProposalAnalytics({ proposalId }: { proposalId: number }) {
-  const { data: analytics, isLoading } = trpc.analytics.getProposalAnalytics.useQuery({ proposalId });
-  
-  const formatDuration = (seconds: number) => {
-    if (!seconds) return '0s';
-    if (seconds < 60) return `${seconds}s`;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-  };
-
-  const getDeviceIcon = (type: string) => {
-    switch (type) {
-      case 'mobile': return <Smartphone className="h-3.5 w-3.5" />;
-      case 'tablet': return <Tablet className="h-3.5 w-3.5" />;
-      case 'desktop': return <Monitor className="h-3.5 w-3.5" />;
-      default: return <Globe className="h-3.5 w-3.5" />;
-    }
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
-  }
-  
-  if (!analytics || analytics.totalViews === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <Eye className="h-12 w-12 mx-auto mb-3 opacity-30" />
-        <p>No views yet</p>
-        <p className="text-xs mt-1">Share this proposal with the customer to start tracking engagement</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="space-y-6">
-      {/* Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="bg-background rounded-xl p-4 border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Eye className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Views</p>
-              <p className="text-2xl font-bold font-mono">{analytics.totalViews}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-background rounded-xl p-4 border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Unique Visitors</p>
-              <p className="text-2xl font-bold font-mono">{analytics.uniqueVisitors}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-background rounded-xl p-4 border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Timer className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Avg. Duration</p>
-              <p className="text-2xl font-bold font-mono">{formatDuration(analytics.avgDurationSeconds)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-background rounded-xl p-4 border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <BarChart3 className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Slides Viewed</p>
-              <p className="text-2xl font-bold font-mono">{analytics.slideEngagement?.length || 0}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Device Breakdown */}
-      {analytics.deviceBreakdown && analytics.deviceBreakdown.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Device Breakdown</h4>
-          <div className="flex gap-4">
-            {analytics.deviceBreakdown.map((device: any) => (
-              <div key={device.deviceType} className="flex items-center gap-2 bg-background rounded-lg px-4 py-2 border border-border">
-                {getDeviceIcon(device.deviceType)}
-                <span className="text-sm capitalize">{device.deviceType || 'Unknown'}</span>
-                <span className="text-sm font-bold font-mono text-primary">{device.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Slide Engagement */}
-      {analytics.slideEngagement && analytics.slideEngagement.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Slide Engagement</h4>
-          <div className="space-y-2">
-            {analytics.slideEngagement.map((slide: any) => {
-              const maxTime = Math.max(...analytics.slideEngagement.map((s: any) => s.avgTimeSpent || 0), 1);
-              const barWidth = Math.max(((slide.avgTimeSpent || 0) / maxTime) * 100, 5);
-              return (
-                <div key={slide.slideIndex} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-8 text-right">#{slide.slideIndex + 1}</span>
-                  <span className="text-xs w-32 truncate">{slide.slideType}</span>
-                  <div className="flex-1 h-6 bg-background rounded-full overflow-hidden border border-border">
-                    <div 
-                      className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full transition-all duration-500"
-                      style={{ width: `${barWidth}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-mono w-16 text-right">{formatDuration(Math.round(slide.avgTimeSpent || 0))}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      
-      {/* Recent Views */}
-      {analytics.recentViews && analytics.recentViews.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Recent Views</h4>
-          <div className="space-y-2">
-            {analytics.recentViews.map((view: any) => (
-              <div key={view.id} className="flex items-center justify-between bg-background rounded-lg px-4 py-3 border border-border">
-                <div className="flex items-center gap-3">
-                  {getDeviceIcon(view.deviceType)}
-                  <div>
-                    <p className="text-sm">{view.browser || 'Unknown'} on {view.os || 'Unknown'}</p>
-                    <p className="text-xs text-muted-foreground">{view.ipAddress}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-mono">{formatDuration(view.durationSeconds || 0)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {view.viewedAt ? new Date(view.viewedAt).toLocaleDateString('en-AU', {
-                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                    }) : 'Unknown'}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const proposalId = parseInt(params.id || '0');
-  const [activeTab, setActiveTab] = useState<'overview' | 'slides' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'slides'>('overview');
   
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
   const calculateMutation = trpc.proposals.calculate.useMutation({
@@ -627,7 +452,7 @@ export default function ProposalDetailPage() {
         
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border">
-          {(['overview', 'slides', 'analytics'] as const).map((tab) => (
+          {(['overview', 'slides'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -637,7 +462,6 @@ export default function ProposalDetailPage() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tab === 'analytics' && <BarChart3 className="inline h-4 w-4 mr-1" />}
               {tab}
             </button>
           ))}
@@ -790,9 +614,7 @@ export default function ProposalDetailPage() {
           <SlideViewer proposalId={proposalId} />
         )}
         
-        {activeTab === 'analytics' && (
-          <ProposalAnalytics proposalId={proposalId} />
-        )}
+
         
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">

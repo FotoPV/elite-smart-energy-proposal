@@ -291,3 +291,34 @@
 - [x] Add "Empty Bin" button with confirmation dialog
 - [x] Filter deleted proposals from main proposals list
 - [x] All 68 tests passing
+
+
+## MAJOR REDESIGN - Strip to Core Purpose (Feb 6)
+
+### REMOVED (Bloat Features)
+- [x] Remove Dashboard analytics overview (engagement stats, views trends, device breakdown)
+- [x] Remove Proposal expiry notifications
+- [x] Remove Customer Portal page and share link functionality
+- [x] Remove Analytics tracking endpoints from routers
+- [x] Remove Aggregate analytics endpoints
+- [x] Remove Quick action cards from dashboard
+- [x] Remove "Share with Customer" related code
+- [x] Remove engagement analytics from ProposalDetail page
+- [x] Remove Customers page, CustomerDetail page, Settings page
+- [x] Delete unused page files
+
+### KEPT (Core Features)
+- [x] Customer entry form with bill uploads (electricity + optional gas)
+- [x] Proposal generation engine (25 slides, 13 VPP providers, all calculations)
+- [x] Clean proposal database list
+- [x] PDF export (Publish PDF button)
+- [x] Bin for deleted items
+- [x] Slide HTML generators (core product)
+
+### REBUILT (Clean Design)
+- [x] Rebuild sidebar: New Proposal, Proposals, Bin (3 items only)
+- [x] Home page redirects to New Proposal when authenticated
+- [x] Clean ProposalDetail page - overview + slides tabs + Publish PDF
+- [x] All fonts strictly follow brand (NextSphere headings, GeneralSans body, Urbanist UI)
+- [x] Black background, thin aqua borders, no solid fills
+- [x] All 68 tests passing

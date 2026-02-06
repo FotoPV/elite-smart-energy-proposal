@@ -1,6 +1,6 @@
+import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2, RotateCcw, AlertTriangle, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProposalBin() {
   const utils = trpc.useUtils();
@@ -26,9 +27,7 @@ export default function ProposalBin() {
       utils.proposals.list.invalidate();
       toast.success("Proposal restored");
     },
-    onError: (err) => {
-      toast.error(err.message);
-    },
+    onError: (err) => toast.error(err.message),
   });
   
   const permanentDeleteMutation = trpc.proposals.permanentDelete.useMutation({
@@ -36,167 +35,155 @@ export default function ProposalBin() {
       utils.proposals.getBinItems.invalidate();
       toast.success("Permanently deleted");
     },
-    onError: (err) => {
-      toast.error(err.message);
-    },
+    onError: (err) => toast.error(err.message),
   });
   
   const emptyBinMutation = trpc.proposals.emptyBin.useMutation({
     onSuccess: (data) => {
       utils.proposals.getBinItems.invalidate();
-      toast.success(`Bin emptied - ${data.count} proposal(s) permanently deleted`);
+      toast.success(`Bin emptied — ${data.count} proposal(s) permanently deleted`);
     },
-    onError: (err) => {
-      toast.error(err.message);
-    },
+    onError: (err) => toast.error(err.message),
   });
 
   const formatDate = (date: string | Date | null) => {
     if (!date) return "—";
     return new Date(date).toLocaleDateString("en-AU", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      day: "numeric", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
     });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-extrabold tracking-tight">Bin</h1>
-          <p className="text-sm text-muted-foreground font-body mt-1">
-            Deleted proposals are stored here. Restore or permanently delete them.
-          </p>
-        </div>
-        
-        {binItems && binItems.length > 0 && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                disabled={emptyBinMutation.isPending}
-              >
-                {emptyBinMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-2 h-4 w-4" />
-                )}
-                Empty Bin
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  Empty Bin?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete all {binItems.length} proposal(s) in the bin. 
-                  This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => emptyBinMutation.mutate()}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Permanently Delete All
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </div>
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : !binItems || binItems.length === 0 ? (
-        <Card className="border border-border/50">
-          <CardContent className="flex flex-col items-center justify-center py-20">
-            <Trash2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-heading font-bold text-muted-foreground">Bin is empty</h3>
-            <p className="text-sm text-muted-foreground/70 mt-1 font-body">
-              Deleted proposals will appear here.
+    <DashboardLayout>
+      <div className="space-y-6 animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+              Bin
+            </h1>
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+              Deleted proposals — restore or permanently remove
             </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {binItems.map((item) => (
-            <Card key={item.id} className="border border-border/50 hover:border-border transition-colors">
-              <CardContent className="flex items-center justify-between p-4">
+          </div>
+          
+          {binItems && binItems.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all"
+                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444' }}
+                  disabled={emptyBinMutation.isPending}
+                >
+                  {emptyBinMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  EMPTY BIN
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'NextSphere', sans-serif" }}>
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    Empty Bin?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                    This will permanently delete all {binItems.length} proposal(s). This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel style={{ fontFamily: "'Urbanist', sans-serif" }}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => emptyBinMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  >
+                    Permanently Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        ) : !binItems || binItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
+            <Trash2 className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
+            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+              Bin is empty
+            </h3>
+            <p className="text-sm text-center" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+              Deleted proposals will appear here
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {binItems.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-4 rounded-xl transition-all"
+                style={{ border: '1px solid rgba(128,130,133,0.15)', backgroundColor: 'rgba(255,255,255,0.02)' }}
+              >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                  <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(128,130,133,0.2)' }}>
+                    <FileText className="h-5 w-5" style={{ color: '#808285' }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-ui font-semibold text-sm truncate">
+                    <p className="text-sm text-white truncate" style={{ fontFamily: "'GeneralSans', sans-serif" }}>
                       {item.title || `Proposal #${item.id}`}
                     </p>
-                    <p className="text-xs text-muted-foreground font-body">
-                      {item.customerName || "Unknown Customer"} · Deleted {formatDate(item.deletedAt)}
+                    <p className="text-xs mt-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      {item.customerName || "Unknown"} · Deleted {formatDate(item.deletedAt)}
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2 shrink-0 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={() => restoreMutation.mutate({ id: item.id })}
                     disabled={restoreMutation.isPending}
-                    className="text-primary border-primary/30 hover:bg-primary/10"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+                    style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#00EAD3' }}
                   >
-                    {restoreMutation.isPending ? (
-                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                    )}
+                    {restoreMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                     Restore
-                  </Button>
+                  </button>
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                      <button
                         disabled={permanentDeleteMutation.isPending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+                        style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}
                       >
-                        {permanentDeleteMutation.isPending ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                        )}
+                        {permanentDeleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         Delete
-                      </Button>
+                      </button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'NextSphere', sans-serif" }}>
                           <AlertTriangle className="h-5 w-5 text-destructive" />
                           Permanently Delete?
                         </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete "{item.title || `Proposal #${item.id}`}". 
-                          This action cannot be undone.
+                        <AlertDialogDescription style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                          This will permanently delete "{item.title || `Proposal #${item.id}`}". This cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel style={{ fontFamily: "'Urbanist', sans-serif" }}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => permanentDeleteMutation.mutate({ id: item.id })}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          style={{ fontFamily: "'Urbanist', sans-serif" }}
                         >
                           Permanently Delete
                         </AlertDialogAction>
@@ -204,11 +191,16 @@ export default function ProposalBin() {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+          © Lightning Energy — Architect George Fotopoulos
         </div>
-      )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
