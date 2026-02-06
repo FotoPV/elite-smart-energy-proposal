@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useParams } from "wouter";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { 
   ArrowLeft,
   Save,
@@ -15,7 +15,12 @@ import {
   Mail,
   Phone,
   Zap,
-  Flame
+  Flame,
+  Camera,
+  FileImage,
+  File,
+  X,
+  Eye
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
@@ -30,13 +35,33 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const AUSTRALIAN_STATES = ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "NT", "ACT"];
+
+const DOCUMENT_TYPES = [
+  { value: 'switchboard_photo', label: 'Switchboard Photo', icon: Camera, accept: 'image/*' },
+  { value: 'meter_photo', label: 'Meter Photo', icon: Camera, accept: 'image/*' },
+  { value: 'roof_photo', label: 'Roof Photo', icon: FileImage, accept: 'image/*' },
+  { value: 'property_photo', label: 'Property Photo', icon: FileImage, accept: 'image/*' },
+  { value: 'solar_proposal_pdf', label: 'Solar Proposal PDF', icon: FileText, accept: '.pdf' },
+  { value: 'other', label: 'Other Document', icon: File, accept: '*' },
+] as const;
+
+type DocumentType = typeof DOCUMENT_TYPES[number]['value'];
 
 export default function CustomerDetail() {
   const params = useParams<{ id: string }>();
   const customerId = parseInt(params.id || "0");
   const [, setLocation] = useLocation();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadingType, setUploadingType] = useState<DocumentType | null>(null);
+  const [dragOver, setDragOver] = useState<DocumentType | null>(null);
   
   const { data: customer, isLoading, refetch } = trpc.customers.get.useQuery(
     { id: customerId },
@@ -47,6 +72,10 @@ export default function CustomerDetail() {
     { enabled: customerId > 0 }
   );
   const { data: proposals } = trpc.proposals.getByCustomer.useQuery(
+    { customerId },
+    { enabled: customerId > 0 }
+  );
+  const { data: documents, refetch: refetchDocuments } = trpc.documents.list.useQuery(
     { customerId },
     { enabled: customerId > 0 }
   );
@@ -83,6 +112,22 @@ export default function CustomerDetail() {
     }
   });
 
+  const uploadDocument = trpc.documents.upload.useMutation({
+    onSuccess: () => {
+      toast.success("Document uploaded successfully");
+      refetchDocuments();
+      setUploadingType(null);
+    },
+    onError: (error) => toast.error(error.message)
+  });
+
+  const deleteDocument = trpc.documents.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Document deleted");
+      refetchDocuments();
+    }
+  });
+
   const handleFileUpload = async (billType: 'electricity' | 'gas', file: File) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -96,6 +141,31 @@ export default function CustomerDetail() {
     };
     reader.readAsDataURL(file);
   };
+
+  const handleDocumentUpload = useCallback(async (docType: DocumentType, file: File) => {
+    setUploadingType(docType);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = (e.target?.result as string).split(',')[1];
+      await uploadDocument.mutateAsync({
+        customerId,
+        documentType: docType,
+        fileData: base64,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+      });
+    };
+    reader.readAsDataURL(file);
+  }, [customerId, uploadDocument]);
+
+  const handleDrop = useCallback((docType: DocumentType, e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(null);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleDocumentUpload(docType, file);
+    }
+  }, [handleDocumentUpload]);
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -117,6 +187,10 @@ export default function CustomerDetail() {
       existingSolarSize: formData.get("existingSolarSize") ? parseFloat(formData.get("existingSolarSize") as string) : undefined,
       notes: formData.get("notes") as string || undefined,
     });
+  };
+
+  const getDocumentsByType = (type: DocumentType) => {
+    return documents?.filter(d => d.documentType === type) || [];
   };
 
   if (isLoading) {
@@ -163,6 +237,7 @@ export default function CustomerDetail() {
           <TabsList>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="bills">Bills ({bills?.length || 0})</TabsTrigger>
+            <TabsTrigger value="documents">Documents ({documents?.length || 0})</TabsTrigger>
             <TabsTrigger value="proposals">Proposals ({proposals?.length || 0})</TabsTrigger>
           </TabsList>
 
@@ -234,7 +309,7 @@ export default function CustomerDetail() {
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button type="submit" className="lightning-button-primary" disabled={updateCustomer.isPending}>
+                    <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={updateCustomer.isPending}>
                       <Save className="mr-2 h-4 w-4" />
                       {updateCustomer.isPending ? "Saving..." : "Save Changes"}
                     </Button>
@@ -367,6 +442,395 @@ export default function CustomerDetail() {
             </div>
           </TabsContent>
 
+          {/* Documents Tab - NEW */}
+          <TabsContent value="documents">
+            <div className="space-y-6">
+              {/* Photo Uploads Section */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="h-5 w-5 text-primary" />
+                    Electrical Photos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* Switchboard Photo */}
+                    <div>
+                      <Label className="mb-2 block">Switchboard Photo</Label>
+                      {getDocumentsByType('switchboard_photo').length > 0 ? (
+                        <div className="space-y-2">
+                          {getDocumentsByType('switchboard_photo').map(doc => (
+                            <div key={doc.id} className="relative group">
+                              <img 
+                                src={doc.fileUrl} 
+                                alt="Switchboard" 
+                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
+                                onClick={() => setPreviewUrl(doc.fileUrl)}
+                              />
+                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  variant="secondary" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => setPreviewUrl(doc.fileUrl)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                            dragOver === 'switchboard_photo' ? 'border-primary bg-primary/10' : 'border-border'
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setDragOver('switchboard_photo'); }}
+                          onDragLeave={() => setDragOver(null)}
+                          onDrop={(e) => handleDrop('switchboard_photo', e)}
+                        >
+                          <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {uploadingType === 'switchboard_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
+                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="switchboard-upload"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('switchboard_photo', file);
+                            }}
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            disabled={uploadingType === 'switchboard_photo'}
+                            onClick={() => document.getElementById('switchboard-upload')?.click()}
+                          >
+                            Select Photo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Meter Photo */}
+                    <div>
+                      <Label className="mb-2 block">Meter Photo</Label>
+                      {getDocumentsByType('meter_photo').length > 0 ? (
+                        <div className="space-y-2">
+                          {getDocumentsByType('meter_photo').map(doc => (
+                            <div key={doc.id} className="relative group">
+                              <img 
+                                src={doc.fileUrl} 
+                                alt="Meter" 
+                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
+                                onClick={() => setPreviewUrl(doc.fileUrl)}
+                              />
+                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  variant="secondary" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => setPreviewUrl(doc.fileUrl)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                            dragOver === 'meter_photo' ? 'border-primary bg-primary/10' : 'border-border'
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setDragOver('meter_photo'); }}
+                          onDragLeave={() => setDragOver(null)}
+                          onDrop={(e) => handleDrop('meter_photo', e)}
+                        >
+                          <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {uploadingType === 'meter_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
+                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="meter-upload"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('meter_photo', file);
+                            }}
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            disabled={uploadingType === 'meter_photo'}
+                            onClick={() => document.getElementById('meter-upload')?.click()}
+                          >
+                            Select Photo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Property Photos Section */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileImage className="h-5 w-5 text-primary" />
+                    Property Photos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* Roof Photo */}
+                    <div>
+                      <Label className="mb-2 block">Roof Photo</Label>
+                      {getDocumentsByType('roof_photo').length > 0 ? (
+                        <div className="space-y-2">
+                          {getDocumentsByType('roof_photo').map(doc => (
+                            <div key={doc.id} className="relative group">
+                              <img 
+                                src={doc.fileUrl} 
+                                alt="Roof" 
+                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
+                                onClick={() => setPreviewUrl(doc.fileUrl)}
+                              />
+                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  variant="secondary" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => setPreviewUrl(doc.fileUrl)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                            dragOver === 'roof_photo' ? 'border-primary bg-primary/10' : 'border-border'
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setDragOver('roof_photo'); }}
+                          onDragLeave={() => setDragOver(null)}
+                          onDrop={(e) => handleDrop('roof_photo', e)}
+                        >
+                          <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {uploadingType === 'roof_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
+                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="roof-upload"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('roof_photo', file);
+                            }}
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            disabled={uploadingType === 'roof_photo'}
+                            onClick={() => document.getElementById('roof-upload')?.click()}
+                          >
+                            Select Photo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Property Photo */}
+                    <div>
+                      <Label className="mb-2 block">Property Photo</Label>
+                      {getDocumentsByType('property_photo').length > 0 ? (
+                        <div className="space-y-2">
+                          {getDocumentsByType('property_photo').map(doc => (
+                            <div key={doc.id} className="relative group">
+                              <img 
+                                src={doc.fileUrl} 
+                                alt="Property" 
+                                className="w-full h-40 object-cover rounded-lg cursor-pointer"
+                                onClick={() => setPreviewUrl(doc.fileUrl)}
+                              />
+                              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  variant="secondary" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => setPreviewUrl(doc.fileUrl)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => deleteDocument.mutate({ id: doc.id })}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 truncate">{doc.fileName}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                            dragOver === 'property_photo' ? 'border-primary bg-primary/10' : 'border-border'
+                          }`}
+                          onDragOver={(e) => { e.preventDefault(); setDragOver('property_photo'); }}
+                          onDragLeave={() => setDragOver(null)}
+                          onDrop={(e) => handleDrop('property_photo', e)}
+                        >
+                          <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {uploadingType === 'property_photo' ? 'Uploading...' : 'Drag & drop or click to upload'}
+                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="property-upload"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('property_photo', file);
+                            }}
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            disabled={uploadingType === 'property_photo'}
+                            onClick={() => document.getElementById('property-upload')?.click()}
+                          >
+                            Select Photo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Solar Proposal PDFs Section */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-accent" />
+                    Solar Proposal PDFs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {getDocumentsByType('solar_proposal_pdf').length > 0 ? (
+                    <div className="space-y-3">
+                      {getDocumentsByType('solar_proposal_pdf').map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-8 w-8 text-accent" />
+                            <div>
+                              <p className="font-medium">{doc.fileName}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : 'PDF Document'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => window.open(doc.fileUrl, '_blank')}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => deleteDocument.mutate({ id: doc.id })}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors mt-4 ${
+                      dragOver === 'solar_proposal_pdf' ? 'border-accent bg-accent/10' : 'border-border'
+                    }`}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver('solar_proposal_pdf'); }}
+                    onDragLeave={() => setDragOver(null)}
+                    onDrop={(e) => handleDrop('solar_proposal_pdf', e)}
+                  >
+                    <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {uploadingType === 'solar_proposal_pdf' ? 'Uploading...' : 'Drag & drop Solar Proposal PDF here or click to upload'}
+                    </p>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      id="solar-proposal-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload('solar_proposal_pdf', file);
+                      }}
+                    />
+                    <Button 
+                      variant="outline"
+                      disabled={uploadingType === 'solar_proposal_pdf'}
+                      onClick={() => document.getElementById('solar-proposal-upload')?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Select PDF
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           {/* Proposals Tab */}
           <TabsContent value="proposals">
             <Card className="bg-card border-border">
@@ -374,7 +838,7 @@ export default function CustomerDetail() {
                 <CardTitle>Customer Proposals</CardTitle>
                 <Button 
                   onClick={() => setLocation(`/proposals/new?customerId=${customerId}`)}
-                  className="lightning-button-primary"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   New Proposal
@@ -395,7 +859,12 @@ export default function CustomerDetail() {
                             {new Date(proposal.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <span className={`status-badge ${proposal.status}`}>{proposal.status}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          proposal.status === 'generated' ? 'bg-green-500/20 text-green-400' :
+                          proposal.status === 'draft' ? 'bg-yellow-500/20 text-yellow-400' :
+                          proposal.status === 'exported' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-gray-500/20 text-gray-400'
+                        }`}>{proposal.status}</span>
                       </div>
                     ))}
                   </div>
@@ -410,6 +879,18 @@ export default function CustomerDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Image Preview</DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <img src={previewUrl} alt="Preview" className="w-full h-auto rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

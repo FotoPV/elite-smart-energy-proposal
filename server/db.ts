@@ -6,7 +6,8 @@ import {
   bills, InsertBill, Bill,
   proposals, InsertProposal, Proposal,
   vppProviders, InsertVppProvider, VppProvider,
-  stateRebates, InsertStateRebate, StateRebate
+  stateRebates, InsertStateRebate, StateRebate,
+  customerDocuments, InsertCustomerDocument, CustomerDocument
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -339,6 +340,67 @@ export async function upsertStateRebate(rebate: InsertStateRebate): Promise<void
   await db.insert(stateRebates).values(rebate).onDuplicateKeyUpdate({
     set: rebate,
   });
+}
+
+// ============================================
+// CUSTOMER DOCUMENT QUERIES
+// ============================================
+
+export async function createCustomerDocument(doc: InsertCustomerDocument): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(customerDocuments).values(doc);
+  return Number(result[0].insertId);
+}
+
+export async function getDocumentById(id: number): Promise<CustomerDocument | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(customerDocuments).where(eq(customerDocuments.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getDocumentsByCustomerId(customerId: number): Promise<CustomerDocument[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(customerDocuments)
+    .where(eq(customerDocuments.customerId, customerId))
+    .orderBy(desc(customerDocuments.createdAt));
+}
+
+export async function getDocumentsByType(
+  customerId: number, 
+  documentType: string
+): Promise<CustomerDocument[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(customerDocuments)
+    .where(and(
+      eq(customerDocuments.customerId, customerId),
+      eq(customerDocuments.documentType, documentType as any)
+    ))
+    .orderBy(desc(customerDocuments.createdAt));
+}
+
+export async function updateCustomerDocument(
+  id: number, 
+  data: Partial<InsertCustomerDocument>
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(customerDocuments).set(data).where(eq(customerDocuments.id, id));
+}
+
+export async function deleteCustomerDocument(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(customerDocuments).where(eq(customerDocuments.id, id));
 }
 
 // ============================================

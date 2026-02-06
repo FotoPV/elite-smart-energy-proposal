@@ -200,6 +200,43 @@ export type StateRebate = typeof stateRebates.$inferSelect;
 export type InsertStateRebate = typeof stateRebates.$inferInsert;
 
 // ============================================
+// CUSTOMER DOCUMENTS TABLE (Photos & PDFs)
+// ============================================
+export const customerDocuments = mysqlTable("customerDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  customerId: int("customerId").notNull(),
+  userId: int("userId").notNull(), // Uploaded by user
+  
+  // Document Type
+  documentType: mysqlEnum("documentType", [
+    "switchboard_photo",
+    "meter_photo", 
+    "roof_photo",
+    "property_photo",
+    "solar_proposal_pdf",
+    "other"
+  ]).notNull(),
+  
+  // File Storage
+  fileUrl: varchar("fileUrl", { length: 512 }).notNull(),
+  fileKey: varchar("fileKey", { length: 255 }).notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSize: int("fileSize"), // bytes
+  mimeType: varchar("mimeType", { length: 100 }),
+  
+  // Metadata
+  description: text("description"),
+  extractedData: json("extractedData"), // For AI-extracted info from photos/PDFs
+  
+  // Timestamps
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomerDocument = typeof customerDocuments.$inferSelect;
+export type InsertCustomerDocument = typeof customerDocuments.$inferInsert;
+
+// ============================================
 // TYPE DEFINITIONS FOR JSON FIELDS
 // ============================================
 

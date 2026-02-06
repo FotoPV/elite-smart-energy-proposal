@@ -80,3 +80,13 @@
 - [x] Auth logout test (1 test)
 - [x] All 28 tests passing
 - [ ] Analytics dashboard (Coming soon placeholder)
+
+
+## New Features (Feb 6)
+- [x] Fix API error returning HTML instead of JSON on dashboard
+- [x] Add photo upload for electrical switchboards (switchboard, meter, roof, property photos)
+- [x] Add PDF upload for solar proposals
+- [x] Add Documents tab to Customer Detail page
+- [x] Add drag-and-drop upload functionality
+- [x] Add image preview dialog
+- [x] Add customer documents database table

@@ -539,6 +539,101 @@ export const appRouter = router({
   }),
 
   // ============================================
+  // CUSTOMER DOCUMENTS ROUTES
+  // ============================================
+  documents: router({
+    list: protectedProcedure
+      .input(z.object({ customerId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getDocumentsByCustomerId(input.customerId);
+      }),
+    
+    listByType: protectedProcedure
+      .input(z.object({
+        customerId: z.number(),
+        documentType: z.enum([
+          'switchboard_photo',
+          'meter_photo',
+          'roof_photo',
+          'property_photo',
+          'solar_proposal_pdf',
+          'other'
+        ]),
+      }))
+      .query(async ({ input }) => {
+        return db.getDocumentsByType(input.customerId, input.documentType);
+      }),
+    
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return db.getDocumentById(input.id);
+      }),
+    
+    upload: protectedProcedure
+      .input(z.object({
+        customerId: z.number(),
+        documentType: z.enum([
+          'switchboard_photo',
+          'meter_photo',
+          'roof_photo',
+          'property_photo',
+          'solar_proposal_pdf',
+          'other'
+        ]),
+        fileData: z.string(), // Base64 encoded file data
+        fileName: z.string(),
+        mimeType: z.string(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Decode base64 and upload to S3
+        const buffer = Buffer.from(input.fileData, 'base64');
+        const fileKey = `documents/${input.customerId}/${nanoid()}-${input.fileName}`;
+        
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        // Create document record
+        const docId = await db.createCustomerDocument({
+          customerId: input.customerId,
+          userId: ctx.user.id,
+          documentType: input.documentType,
+          fileUrl: url,
+          fileKey: fileKey,
+          fileName: input.fileName,
+          fileSize: buffer.length,
+          mimeType: input.mimeType,
+          description: input.description,
+        });
+        
+        return {
+          success: true,
+          documentId: docId,
+          fileUrl: url,
+        };
+      }),
+    
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        description: z.string().optional(),
+        extractedData: z.any().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateCustomerDocument(id, data);
+        return { success: true };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteCustomerDocument(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ============================================
   // ADMIN ROUTES
   // ============================================
   admin: router({
