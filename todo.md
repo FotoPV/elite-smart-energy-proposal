@@ -90,3 +90,7 @@
 - [x] Add drag-and-drop upload functionality
 - [x] Add image preview dialog
 - [x] Add customer documents database table
+
+## New Features (Feb 6 - Part 2)
+- [x] Add Solar Proposal PDF upload to New Proposal wizard (Bills step)
+- [x] Add Switchboard Photo upload to New Proposal wizard (Bills step)

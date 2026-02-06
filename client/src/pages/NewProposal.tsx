@@ -14,7 +14,11 @@ import {
   Flame,
   CheckCircle,
   FileText,
-  Loader2
+  Loader2,
+  Camera,
+  File,
+  X,
+  Eye
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,6 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function NewProposal() {
   const [, setLocation] = useLocation();
@@ -40,6 +50,12 @@ export default function NewProposal() {
   const [electricityBillId, setElectricityBillId] = useState<number | null>(null);
   const [gasBillId, setGasBillId] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingType, setUploadingType] = useState<string | null>(null);
+  
+  // Document upload states
+  const [switchboardPhotoUrl, setSwitchboardPhotoUrl] = useState<string | null>(null);
+  const [solarProposalPdfUrl, setSolarProposalPdfUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const { data: customers } = trpc.customers.list.useQuery({});
   const { data: selectedCustomer } = trpc.customers.get.useQuery(
@@ -50,9 +66,14 @@ export default function NewProposal() {
     { customerId: selectedCustomerId || 0 },
     { enabled: !!selectedCustomerId }
   );
+  const { data: existingDocuments, refetch: refetchDocuments } = trpc.documents.list.useQuery(
+    { customerId: selectedCustomerId || 0 },
+    { enabled: !!selectedCustomerId }
+  );
   
   const uploadBill = trpc.bills.upload.useMutation();
   const extractBill = trpc.bills.extract.useMutation();
+  const uploadDocument = trpc.documents.upload.useMutation();
   const createProposal = trpc.proposals.create.useMutation({
     onSuccess: (data) => {
       toast.success("Proposal created");
@@ -61,7 +82,7 @@ export default function NewProposal() {
     onError: (error) => toast.error(error.message)
   });
 
-  // Auto-select existing bills
+  // Auto-select existing bills and documents
   useEffect(() => {
     if (existingBills) {
       const elecBill = existingBills.find(b => b.billType === 'electricity');
@@ -70,6 +91,15 @@ export default function NewProposal() {
       if (gasBill) setGasBillId(gasBill.id);
     }
   }, [existingBills]);
+
+  useEffect(() => {
+    if (existingDocuments) {
+      const switchboard = existingDocuments.find(d => d.documentType === 'switchboard_photo');
+      const solarPdf = existingDocuments.find(d => d.documentType === 'solar_proposal_pdf');
+      if (switchboard) setSwitchboardPhotoUrl(switchboard.fileUrl);
+      if (solarPdf) setSolarProposalPdfUrl(solarPdf.fileUrl);
+    }
+  }, [existingDocuments]);
 
   // Auto-set proposal title
   useEffect(() => {
@@ -82,6 +112,7 @@ export default function NewProposal() {
     if (!selectedCustomerId) return;
     
     setIsUploading(true);
+    setUploadingType(billType);
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -110,11 +141,50 @@ export default function NewProposal() {
         
         refetchBills();
         setIsUploading(false);
+        setUploadingType(null);
       };
       reader.readAsDataURL(file);
     } catch (error) {
       toast.error("Failed to upload bill");
       setIsUploading(false);
+      setUploadingType(null);
+    }
+  };
+
+  const handleDocumentUpload = async (docType: 'switchboard_photo' | 'solar_proposal_pdf', file: File) => {
+    if (!selectedCustomerId) return;
+    
+    setIsUploading(true);
+    setUploadingType(docType);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = (e.target?.result as string).split(',')[1];
+        const result = await uploadDocument.mutateAsync({
+          customerId: selectedCustomerId,
+          documentType: docType,
+          fileData: base64,
+          fileName: file.name,
+          mimeType: file.type || 'application/octet-stream',
+        });
+        
+        toast.success(`${docType === 'switchboard_photo' ? 'Switchboard photo' : 'Solar proposal PDF'} uploaded`);
+        
+        if (docType === 'switchboard_photo') {
+          setSwitchboardPhotoUrl(result.fileUrl);
+        } else {
+          setSolarProposalPdfUrl(result.fileUrl);
+        }
+        
+        refetchDocuments();
+        setIsUploading(false);
+        setUploadingType(null);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error("Failed to upload document");
+      setIsUploading(false);
+      setUploadingType(null);
     }
   };
 
@@ -216,7 +286,7 @@ export default function NewProposal() {
                 <Button 
                   onClick={() => setStep(2)} 
                   disabled={!selectedCustomerId}
-                  className="lightning-button-primary"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Next
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -226,7 +296,7 @@ export default function NewProposal() {
           </Card>
         )}
 
-        {/* Step 2: Upload Bills */}
+        {/* Step 2: Upload Bills & Documents */}
         {step === 2 && (
           <Card className="bg-card border-border">
             <CardHeader>
@@ -268,7 +338,7 @@ export default function NewProposal() {
                       onClick={() => document.getElementById('electricity-upload')?.click()}
                       disabled={isUploading}
                     >
-                      {isUploading ? (
+                      {uploadingType === 'electricity' ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Uploading...
@@ -312,13 +382,141 @@ export default function NewProposal() {
                       onClick={() => document.getElementById('gas-upload')?.click()}
                       disabled={isUploading}
                     >
-                      {isUploading ? (
+                      {uploadingType === 'gas' ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Uploading...
                         </>
                       ) : (
                         "Select File"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-border pt-6">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">ADDITIONAL DOCUMENTS (Optional)</h3>
+              </div>
+
+              {/* Switchboard Photo */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Camera className="h-4 w-4 text-primary" />
+                  Switchboard Photo (Optional)
+                </Label>
+                {switchboardPhotoUrl ? (
+                  <div className="relative">
+                    <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                      <img 
+                        src={switchboardPhotoUrl} 
+                        alt="Switchboard" 
+                        className="h-20 w-20 object-cover rounded-lg cursor-pointer"
+                        onClick={() => setPreviewUrl(switchboardPhotoUrl)}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                          <span className="text-green-400 font-medium">Switchboard photo uploaded</span>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="mt-2 text-muted-foreground"
+                          onClick={() => setPreviewUrl(switchboardPhotoUrl)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Full Size
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                    <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-4">Upload switchboard photo for assessment</p>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="switchboard-upload"
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload('switchboard_photo', file);
+                      }}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById('switchboard-upload')?.click()}
+                      disabled={isUploading}
+                    >
+                      {uploadingType === 'switchboard_photo' ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Select Photo"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Solar Proposal PDF */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <File className="h-4 w-4 text-accent" />
+                  Solar Proposal PDF (Optional)
+                </Label>
+                {solarProposalPdfUrl ? (
+                  <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                    <FileText className="h-10 w-10 text-accent" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-400" />
+                        <span className="text-green-400 font-medium">Solar proposal PDF uploaded</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-2 text-muted-foreground"
+                        onClick={() => window.open(solarProposalPdfUrl, '_blank')}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View PDF
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                    <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground mb-4">Upload existing solar proposal for reference</p>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      id="solar-proposal-upload"
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload('solar_proposal_pdf', file);
+                      }}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById('solar-proposal-upload')?.click()}
+                      disabled={isUploading}
+                    >
+                      {uploadingType === 'solar_proposal_pdf' ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Select PDF"
                       )}
                     </Button>
                   </div>
@@ -333,7 +531,7 @@ export default function NewProposal() {
                 <Button 
                   onClick={() => setStep(3)} 
                   disabled={!electricityBillId}
-                  className="lightning-button-primary"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Next
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -384,6 +582,18 @@ export default function NewProposal() {
                       {gasBillId ? "Uploaded" : "Not provided"}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Switchboard Photo:</span>
+                    <span className={switchboardPhotoUrl ? "text-green-400" : "text-muted-foreground"}>
+                      {switchboardPhotoUrl ? "Uploaded" : "Not provided"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Solar Proposal PDF:</span>
+                    <span className={solarProposalPdfUrl ? "text-green-400" : "text-muted-foreground"}>
+                      {solarProposalPdfUrl ? "Uploaded" : "Not provided"}
+                    </span>
+                  </div>
                 </div>
               </div>
               
@@ -395,7 +605,7 @@ export default function NewProposal() {
                 <Button 
                   onClick={handleCreateProposal}
                   disabled={createProposal.isPending}
-                  className="lightning-button-primary"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {createProposal.isPending ? (
                     <>
@@ -419,6 +629,18 @@ export default function NewProposal() {
           COPYRIGHT Lightning Energy - Architect George Fotopoulos
         </div>
       </div>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Switchboard Photo</DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <img src={previewUrl} alt="Switchboard Preview" className="w-full h-auto rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
