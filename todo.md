@@ -322,3 +322,7 @@
 - [x] All fonts strictly follow brand (NextSphere headings, GeneralSans body, Urbanist UI)
 - [x] Black background, thin aqua borders, no solid fills
 - [x] All 68 tests passing
+
+
+## Bug Fix - /dashboard 404 Error (Feb 6)
+- [x] Add /dashboard redirect route to /proposals/new in App.tsx
