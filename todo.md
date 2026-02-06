@@ -132,3 +132,7 @@
 - [x] Add "Publish PDF" button to proposal detail page
 - [x] Update slide generator to match Paul Stokes SA example exactly
 - [x] Generate professional PDF with correct branding and layout
+
+
+## Layout Fix (Feb 6)
+- [x] Position all bottom tabs on the left-hand side
