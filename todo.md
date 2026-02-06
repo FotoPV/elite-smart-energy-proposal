@@ -370,3 +370,47 @@
 - [x] Auto-calculate in generate, getSlideHtml, and exportPdf server procedures
 - [x] Simplified empty state to single "Generate Slides" button (auto-calculates)
 - [x] All 68 tests passing
+
+
+## Follow-up Improvements (Feb 6)
+- [x] Test the auto-calculate fix on /proposals/60002
+- [ ] Add multi-step progress indicator (Calculating → Generating → Done) to Generate Slides flow
+- [x] Auto-generate slides on proposal creation so users land on completed slides view
+
+
+## Bug Fix - Missing Bill Data in Slides (Feb 6)
+- [x] Fix missing monthly/yearly usage data in slides
+- [x] Fix missing bill charges breakdown (tariff rates, supply charges) in slides
+- [x] Carry full bill extraction data through calculations → ProposalData → slide generator
+
+
+## In-Depth Analysis Enhancement (Feb 6)
+- [x] Carry full bill extraction data (all tariff rates, charges, billing period) into ProposalData
+- [x] Show daily/monthly/yearly usage breakdowns in Usage Analysis slide
+- [x] Show peak/off-peak/shoulder usage split with rates in Bill Breakdown slide
+- [x] Show detailed supply charges, usage charges, solar credits in charges breakdown
+- [x] Show gas MJ→kWh conversion details in Gas Analysis slide
+- [x] Show detailed heat pump COP calculations in Hot Water slide
+- [x] Show detailed RC AC vs gas heating comparison in Heating/Cooling slide
+- [x] Show VPP provider comparison with daily credits, event payments, bundle discounts
+- [x] Show EV charging cost calculations with km/year assumptions
+- [x] Show 25-year projection with year-by-year savings detail
+- [x] Add multi-step progress indicator for generate flow (via export dropdown)
+- [x] Auto-generate slides on proposal creation
+- [x] Enforce strict font rules: NextSphere HEADINGS ONLY, GeneralSans for body/numbers, Urbanist for labels
+- [x] Audit every slide HTML generator for font compliance
+
+
+## Slides-Only Delivery Pivot (Feb 6)
+- [x] Replace HTML slide rendering with three native output formats
+- [x] Build PowerPoint (.pptx) generator with pptxgenjs + embedded brand fonts
+- [x] Build Direct PDF generator with pdfkit + embedded brand fonts (bypass HTML)
+- [ ] Build Manus Slides (image mode) content markdown for pixel-perfect rendering
+- [x] Wire up export endpoints: exportPptx, exportNativePdf
+- [x] Add UI Export dropdown with PDF, PowerPoint, HTML PDF options
+- [x] Enforce strict font rules: NextSphere HEADINGS ONLY, GeneralSans body/numbers, Urbanist labels
+- [x] Enforce colour palette: Black bg, Aqua (#00EAD3) light usage, Orange (#f36710) minimal accent
+- [x] Include Lightning Energy aqua logo on every slide
+- [x] Full in-depth data tables: bill charges, tariff rates, usage breakdown, gas analysis
+- [x] Each visualization on its own page for clarity
+- [x] Professional tone for HIGH LEVEL OF EDUCATED PUBLICS audience

@@ -244,51 +244,133 @@ export type InsertCustomerDocument = typeof customerDocuments.$inferInsert;
 // ============================================
 
 export interface ProposalCalculations {
-  // Usage Projections
+  // ========== RAW BILL DATA ==========
+  // Electricity Bill Details
+  billRetailer?: string;
+  billPeriodStart?: string;
+  billPeriodEnd?: string;
+  billDays?: number;
+  billTotalAmount?: number;
+  billDailySupplyCharge?: number;
+  billTotalUsageKwh?: number;
+  billPeakUsageKwh?: number;
+  billOffPeakUsageKwh?: number;
+  billShoulderUsageKwh?: number;
+  billSolarExportsKwh?: number;
+  billPeakRateCents?: number;
+  billOffPeakRateCents?: number;
+  billShoulderRateCents?: number;
+  billFeedInTariffCents?: number;
+  
+  // Gas Bill Details (if applicable)
+  gasBillRetailer?: string;
+  gasBillPeriodStart?: string;
+  gasBillPeriodEnd?: string;
+  gasBillDays?: number;
+  gasBillTotalAmount?: number;
+  gasBillDailySupplyCharge?: number;
+  gasBillUsageMj?: number;
+  gasBillRateCentsMj?: number;
+  
+  // ========== USAGE PROJECTIONS ==========
   dailyAverageKwh: number;
   monthlyUsageKwh: number;
   yearlyUsageKwh: number;
   projectedAnnualCost: number;
+  dailyAverageCost?: number;
   
-  // Gas Analysis (if applicable)
+  // Calculated charge breakdowns
+  annualSupplyCharge?: number;
+  annualUsageCharge?: number;
+  annualSolarCredit?: number;
+  
+  // ========== GAS ANALYSIS ==========
   gasAnnualCost?: number;
   gasKwhEquivalent?: number;
   gasCo2Emissions?: number;
+  gasDailyGasCost?: number;
+  gasAnnualSupplyCharge?: number;
   
-  // Battery Recommendation
+  // ========== ELECTRIFICATION DETAIL ==========
+  // Hot Water
+  hotWaterSavings?: number;
+  hotWaterCurrentGasCost?: number;
+  hotWaterHeatPumpCost?: number;
+  hotWaterDailySupplySaved?: number;
+  
+  // Heating & Cooling
+  heatingCoolingSavings?: number;
+  heatingCurrentGasCost?: number;
+  heatingRcAcCost?: number;
+  
+  // Cooking
+  cookingSavings?: number;
+  cookingCurrentGasCost?: number;
+  cookingInductionCost?: number;
+  
+  // Pool
+  poolHeatPumpSavings?: number;
+  poolRecommendedKw?: number;
+  poolAnnualOperatingCost?: number;
+  
+  // ========== BATTERY ==========
   recommendedBatteryKwh: number;
   batteryProduct?: string;
   batteryPaybackYears?: number;
+  batteryEstimatedCost?: number;
   
-  // Solar Recommendation (if no existing)
+  // ========== SOLAR ==========
   recommendedSolarKw?: number;
   solarPanelCount?: number;
   solarAnnualGeneration?: number;
+  solarEstimatedCost?: number;
   
-  // VPP Analysis
+  // ========== VPP ==========
   selectedVppProvider?: string;
   vppAnnualValue?: number;
+  vppDailyCreditAnnual?: number;
+  vppEventPaymentsAnnual?: number;
+  vppBundleDiscount?: number;
   vppProviderComparison?: VppComparisonItem[];
   
-  // Electrification Savings
-  hotWaterSavings?: number;
-  heatingCoolingSavings?: number;
-  cookingSavings?: number;
-  poolHeatPumpSavings?: number;
-  
-  // EV Analysis
+  // ========== EV ==========
   evPetrolCost?: number;
   evGridChargeCost?: number;
   evSolarChargeCost?: number;
   evAnnualSavings?: number;
+  evKmPerYear?: number;
+  evConsumptionPer100km?: number;
+  evPetrolPricePerLitre?: number;
   
-  // Total Summary
+  // ========== CO2 ==========
+  co2ReductionTonnes?: number;
+  co2CurrentTonnes?: number;
+  co2ProjectedTonnes?: number;
+  co2ReductionPercent?: number;
+  
+  // ========== REBATES DETAIL ==========
+  solarRebateAmount?: number;
+  batteryRebateAmount?: number;
+  heatPumpHwRebateAmount?: number;
+  heatPumpAcRebateAmount?: number;
+  
+  // ========== INVESTMENT DETAIL ==========
+  investmentSolar?: number;
+  investmentBattery?: number;
+  investmentHeatPumpHw?: number;
+  investmentRcAc?: number;
+  investmentInduction?: number;
+  investmentEvCharger?: number;
+  investmentPoolHeatPump?: number;
+  
+  // ========== TOTAL SUMMARY ==========
   totalAnnualSavings: number;
   totalInvestment: number;
   totalRebates: number;
   netInvestment: number;
   paybackYears: number;
-  co2ReductionTonnes?: number;
+  tenYearSavings?: number;
+  twentyFiveYearSavings?: number;
 }
 
 export interface VppComparisonItem {

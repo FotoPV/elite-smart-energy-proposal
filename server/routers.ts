@@ -9,6 +9,8 @@ import { storagePut } from "./storage";
 import { extractElectricityBillData, extractGasBillData, validateElectricityBillData, validateGasBillData } from "./billExtraction";
 import { generateFullCalculations } from "./calculations";
 import { generateSlides, generateSlideHTML, ProposalData } from "./slideGenerator";
+import { generatePptx } from "./pptxGenerator";
+import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
 
 
@@ -325,6 +327,43 @@ export const appRouter = router({
           status: 'draft',
         });
         
+        // Auto-generate: if electricity bill is provided, auto-calculate and generate slides
+        if (input.electricityBillId) {
+          try {
+            const electricityBill = await db.getBillById(input.electricityBillId);
+            if (electricityBill) {
+              let gasBill = null;
+              if (input.gasBillId) {
+                gasBill = await db.getBillById(input.gasBillId);
+              }
+              const vppProviders = await db.getVppProvidersByState(customer.state);
+              const rebates = await db.getRebatesByState(customer.state);
+              const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+              
+              const proposalData = buildProposalData(customer, calculations, !!input.gasBillId);
+              const slides = generateSlides(proposalData);
+              const slideData = slides.map((s, i) => ({
+                slideNumber: i + 1,
+                slideType: s.type,
+                title: s.title,
+                isConditional: false,
+                isIncluded: true,
+                content: s as unknown as Record<string, unknown>,
+              }));
+              
+              await db.updateProposal(id, {
+                calculations,
+                slidesData: slideData,
+                slideCount: slideData.length,
+                status: 'generated',
+              });
+            }
+          } catch (e) {
+            // Auto-generate is best-effort; don't fail the create
+            console.error('Auto-generate failed:', e);
+          }
+        }
+        
         return { id };
       }),
     
@@ -525,49 +564,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        
-        // Build ProposalData from customer and calculations
-        const proposalData: ProposalData = {
-          customerName: customer.fullName,
-          address: customer.address || '',
-          state: customer.state,
-          retailer: 'Current Retailer',
-          dailyUsageKwh: calc.dailyAverageKwh || 0,
-          annualUsageKwh: calc.yearlyUsageKwh || 0,
-          supplyChargeCentsPerDay: 100,
-          usageRateCentsPerKwh: 30,
-          feedInTariffCentsPerKwh: 5,
-          annualCost: calc.projectedAnnualCost || 0,
-          hasGas: !!proposal.gasBillId,
-          gasAnnualMJ: calc.gasKwhEquivalent ? calc.gasKwhEquivalent * 3.6 : undefined,
-          gasAnnualCost: calc.gasAnnualCost,
-          solarSizeKw: calc.recommendedSolarKw || 10,
-          panelCount: calc.solarPanelCount || 20,
-          panelWattage: 500,
-          panelBrand: 'AIKO Neostar',
-          batterySizeKwh: calc.recommendedBatteryKwh || 15,
-          batteryBrand: 'Sigenergy SigenStor',
-          inverterSizeKw: 8,
-          inverterBrand: 'Sigenergy',
-          systemCost: calc.totalInvestment || 25000,
-          rebateAmount: calc.totalRebates || 3000,
-          netInvestment: calc.netInvestment || 22000,
-          annualSavings: calc.totalAnnualSavings || 3000,
-          paybackYears: calc.paybackYears || 7,
-          tenYearSavings: (calc.totalAnnualSavings || 3000) * 10,
-          vppProvider: typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE',
-          vppProgram: 'VPP Advantage',
-          vppAnnualValue: calc.vppAnnualValue || 300,
-          hasGasBundle: true,
-          hasEV: customer.hasEV ?? false,
-          evAnnualKm: (customer as any).evAnnualKm || 10000,
-          evAnnualSavings: calc.evAnnualSavings,
-          hasPoolPump: customer.hasPool ?? false,
-          poolPumpSavings: calc.poolHeatPumpSavings,
-          hasHeatPump: !!proposal.gasBillId,
-          heatPumpSavings: calc.hotWaterSavings,
-          co2ReductionTonnes: calc.co2ReductionTonnes || 5,
-        };
+        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
         
         const slides = generateSlides(proposalData);
         
@@ -691,49 +688,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        
-        // Build ProposalData from customer and calculations
-        const proposalData: ProposalData = {
-          customerName: customer.fullName,
-          address: customer.address || '',
-          state: customer.state,
-          retailer: 'Current Retailer',
-          dailyUsageKwh: calc.dailyAverageKwh || 0,
-          annualUsageKwh: calc.yearlyUsageKwh || 0,
-          supplyChargeCentsPerDay: 100,
-          usageRateCentsPerKwh: 30,
-          feedInTariffCentsPerKwh: 5,
-          annualCost: calc.projectedAnnualCost || 0,
-          hasGas: !!proposal.gasBillId,
-          gasAnnualMJ: calc.gasKwhEquivalent ? calc.gasKwhEquivalent * 3.6 : undefined,
-          gasAnnualCost: calc.gasAnnualCost,
-          solarSizeKw: calc.recommendedSolarKw || 10,
-          panelCount: calc.solarPanelCount || 20,
-          panelWattage: 500,
-          panelBrand: 'AIKO Neostar',
-          batterySizeKwh: calc.recommendedBatteryKwh || 15,
-          batteryBrand: 'Sigenergy SigenStor',
-          inverterSizeKw: 8,
-          inverterBrand: 'Sigenergy',
-          systemCost: calc.totalInvestment || 25000,
-          rebateAmount: calc.totalRebates || 3000,
-          netInvestment: calc.netInvestment || 22000,
-          annualSavings: calc.totalAnnualSavings || 3000,
-          paybackYears: calc.paybackYears || 7,
-          tenYearSavings: (calc.totalAnnualSavings || 3000) * 10,
-          vppProvider: typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE',
-          vppProgram: 'VPP Advantage',
-          vppAnnualValue: calc.vppAnnualValue || 300,
-          hasGasBundle: true,
-          hasEV: customer.hasEV ?? false,
-          evAnnualKm: (customer as any).evAnnualKm || 10000,
-          evAnnualSavings: calc.evAnnualSavings,
-          hasPoolPump: customer.hasPool ?? false,
-          poolPumpSavings: calc.poolHeatPumpSavings,
-          hasHeatPump: !!proposal.gasBillId,
-          heatPumpSavings: calc.hotWaterSavings,
-          co2ReductionTonnes: calc.co2ReductionTonnes || 5,
-        };
+        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
         
         const slides = generateSlides(proposalData);
         
@@ -763,7 +718,122 @@ export const appRouter = router({
           fileName,
         };
       }),
-    
+
+    // Export as native PowerPoint (.pptx) with embedded brand fonts
+    exportPptx: protectedProcedure
+      .input(z.object({
+        proposalId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        const customer = await db.getCustomerById(proposal.customerId);
+        if (!customer) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        }
+        
+        // Auto-calculate if calculations are missing
+        if (!proposal.calculations) {
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          let gasBill = null;
+          if (proposal.gasBillId) {
+            gasBill = await db.getBillById(proposal.gasBillId);
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
+        }
+        
+        const calc = proposal.calculations as ProposalCalculations;
+        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        
+        // Generate PPTX with embedded brand fonts
+        const pptxBuffer = await generatePptx(proposalData);
+        
+        // Upload to S3
+        const fileName = `proposal-${proposal.id}-${customer.fullName.replace(/\s+/g, '_')}-${Date.now()}.pptx`;
+        const { url } = await storagePut(`exports/${fileName}`, pptxBuffer, 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+        
+        await db.updateProposal(input.proposalId, { status: 'exported' });
+        
+        return {
+          success: true,
+          fileUrl: url,
+          fileName,
+        };
+      }),
+
+    // Export as native PDF with embedded brand fonts (no HTML/Puppeteer)
+    exportNativePdf: protectedProcedure
+      .input(z.object({
+        proposalId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        const customer = await db.getCustomerById(proposal.customerId);
+        if (!customer) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        }
+        
+        // Auto-calculate if calculations are missing
+        if (!proposal.calculations) {
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          let gasBill = null;
+          if (proposal.gasBillId) {
+            gasBill = await db.getBillById(proposal.gasBillId);
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
+        }
+        
+        const calc = proposal.calculations as ProposalCalculations;
+        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        
+        // Generate native PDF with embedded brand fonts
+        const pdfBuffer = await generateNativePdf(proposalData);
+        
+        // Upload to S3
+        const fileName = `proposal-${proposal.id}-${customer.fullName.replace(/\s+/g, '_')}-${Date.now()}.pdf`;
+        const { url } = await storagePut(`exports/${fileName}`, pdfBuffer, 'application/pdf');
+        
+        await db.updateProposal(input.proposalId, { status: 'exported' });
+        
+        return {
+          success: true,
+          fileUrl: url,
+          fileName,
+        };
+      }),
 
   }),
 
@@ -996,19 +1066,132 @@ export type AppRouter = typeof appRouter;
 
 import { ProposalCalculations, SlideData } from "../drizzle/schema";
 
+function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGas: boolean): ProposalData {
+  const vppName = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE';
+  const vppProgram = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName || 'VPP Advantage' : 'VPP Advantage';
+  return {
+    customerName: customer.fullName,
+    address: customer.address || '',
+    state: customer.state,
+    retailer: calc.billRetailer || 'Current Retailer',
+    dailyUsageKwh: calc.dailyAverageKwh || 0,
+    annualUsageKwh: calc.yearlyUsageKwh || 0,
+    supplyChargeCentsPerDay: (calc.billDailySupplyCharge || 1.20) * 100,
+    usageRateCentsPerKwh: calc.billPeakRateCents || 30,
+    feedInTariffCentsPerKwh: calc.billFeedInTariffCents || 5,
+    controlledLoadRateCentsPerKwh: calc.billOffPeakRateCents,
+    annualCost: calc.projectedAnnualCost || 0,
+    billPeriodStart: calc.billPeriodStart,
+    billPeriodEnd: calc.billPeriodEnd,
+    billDays: calc.billDays,
+    billTotalAmount: calc.billTotalAmount,
+    billTotalUsageKwh: calc.billTotalUsageKwh,
+    billPeakUsageKwh: calc.billPeakUsageKwh,
+    billOffPeakUsageKwh: calc.billOffPeakUsageKwh,
+    billShoulderUsageKwh: calc.billShoulderUsageKwh,
+    billSolarExportsKwh: calc.billSolarExportsKwh,
+    billPeakRateCents: calc.billPeakRateCents,
+    billOffPeakRateCents: calc.billOffPeakRateCents,
+    billShoulderRateCents: calc.billShoulderRateCents,
+    dailyAverageCost: calc.dailyAverageCost,
+    annualSupplyCharge: calc.annualSupplyCharge,
+    annualUsageCharge: calc.annualUsageCharge,
+    annualSolarCredit: calc.annualSolarCredit,
+    monthlyUsageKwh: calc.monthlyUsageKwh,
+    hasGas,
+    gasAnnualMJ: calc.gasBillUsageMj ? (calc.gasBillUsageMj / (calc.gasBillDays || 90)) * 365 : undefined,
+    gasAnnualCost: calc.gasAnnualCost,
+    gasDailySupplyCharge: calc.gasBillDailySupplyCharge,
+    gasUsageRate: calc.gasBillRateCentsMj,
+    gasCO2Emissions: calc.gasCo2Emissions,
+    gasBillRetailer: calc.gasBillRetailer,
+    gasBillPeriodStart: calc.gasBillPeriodStart,
+    gasBillPeriodEnd: calc.gasBillPeriodEnd,
+    gasBillDays: calc.gasBillDays,
+    gasBillTotalAmount: calc.gasBillTotalAmount,
+    gasBillUsageMj: calc.gasBillUsageMj,
+    gasBillRateCentsMj: calc.gasBillRateCentsMj,
+    gasDailyGasCost: calc.gasDailyGasCost,
+    gasAnnualSupplyCharge: calc.gasAnnualSupplyCharge,
+    gasKwhEquivalent: calc.gasKwhEquivalent,
+    gasAppliances: customer.gasAppliances as any,
+    solarSizeKw: calc.recommendedSolarKw || 10,
+    panelCount: calc.solarPanelCount || 20,
+    panelWattage: 500,
+    panelBrand: 'AIKO Neostar',
+    batterySizeKwh: calc.recommendedBatteryKwh || 15,
+    batteryBrand: 'Sigenergy SigenStor',
+    inverterSizeKw: 8,
+    inverterBrand: 'Sigenergy',
+    systemCost: calc.totalInvestment || 25000,
+    rebateAmount: calc.totalRebates || 3000,
+    netInvestment: calc.netInvestment || 22000,
+    annualSavings: calc.totalAnnualSavings || 3000,
+    paybackYears: calc.paybackYears || 7,
+    tenYearSavings: calc.tenYearSavings || (calc.totalAnnualSavings || 3000) * 10,
+    twentyFiveYearSavings: calc.twentyFiveYearSavings,
+    vppProvider: vppName,
+    vppProgram,
+    vppAnnualValue: calc.vppAnnualValue || 300,
+    hasGasBundle: true,
+    vppDailyCreditAnnual: calc.vppDailyCreditAnnual,
+    vppEventPaymentsAnnual: calc.vppEventPaymentsAnnual,
+    vppBundleDiscount: calc.vppBundleDiscount,
+    hasEV: customer.hasEV ?? false,
+    evAnnualKm: calc.evKmPerYear || 10000,
+    evAnnualSavings: calc.evAnnualSavings,
+    evPetrolCost: calc.evPetrolCost,
+    evGridChargeCost: calc.evGridChargeCost,
+    evSolarChargeCost: calc.evSolarChargeCost,
+    evConsumptionPer100km: calc.evConsumptionPer100km,
+    evPetrolPricePerLitre: calc.evPetrolPricePerLitre,
+    hasPoolPump: customer.hasPool ?? false,
+    poolPumpSavings: calc.poolHeatPumpSavings,
+    poolRecommendedKw: calc.poolRecommendedKw,
+    poolAnnualOperatingCost: calc.poolAnnualOperatingCost,
+    hasHeatPump: hasGas,
+    heatPumpSavings: calc.hotWaterSavings,
+    hotWaterCurrentGasCost: calc.hotWaterCurrentGasCost,
+    hotWaterHeatPumpCost: calc.hotWaterHeatPumpCost,
+    hotWaterDailySupplySaved: calc.hotWaterDailySupplySaved,
+    heatingCoolingSavings: calc.heatingCoolingSavings,
+    heatingCurrentGasCost: calc.heatingCurrentGasCost,
+    heatingRcAcCost: calc.heatingRcAcCost,
+    inductionSavings: calc.cookingSavings,
+    cookingCurrentGasCost: calc.cookingCurrentGasCost,
+    cookingInductionCost: calc.cookingInductionCost,
+    investmentSolar: calc.investmentSolar,
+    investmentBattery: calc.investmentBattery,
+    investmentHeatPumpHw: calc.investmentHeatPumpHw,
+    investmentRcAc: calc.investmentRcAc,
+    investmentInduction: calc.investmentInduction,
+    investmentEvCharger: calc.investmentEvCharger,
+    investmentPoolHeatPump: calc.investmentPoolHeatPump,
+    solarRebateAmount: calc.solarRebateAmount,
+    batteryRebateAmount: calc.batteryRebateAmount,
+    heatPumpHwRebateAmount: calc.heatPumpHwRebateAmount,
+    heatPumpAcRebateAmount: calc.heatPumpAcRebateAmount,
+    electrificationTotalCost: calc.totalInvestment,
+    electrificationTotalRebates: calc.totalRebates,
+    electrificationNetCost: calc.netInvestment,
+    co2ReductionTonnes: calc.co2ReductionTonnes || 5,
+    co2CurrentTonnes: calc.co2CurrentTonnes,
+    co2ProjectedTonnes: calc.co2ProjectedTonnes,
+    co2ReductionPercent: calc.co2ReductionPercent,
+  };
+}
+
 function generateSlidesData(
   customer: Customer,
   calculations: ProposalCalculations,
   hasGasBill: boolean
 ): SlideData[] {
+  const c = calculations; // shorthand
   const slides: SlideData[] = [
     // Slide 1: Cover Page
     {
-      slideNumber: 1,
-      slideType: 'cover',
-      title: 'Cover Page',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 1, slideType: 'cover', title: 'Cover Page',
+      isConditional: false, isIncluded: true,
       content: {
         customerName: customer.fullName,
         customerAddress: customer.address,
@@ -1017,306 +1200,343 @@ function generateSlidesData(
     },
     // Slide 2: Executive Summary
     {
-      slideNumber: 2,
-      slideType: 'executive_summary',
-      title: 'Executive Summary',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 2, slideType: 'executive_summary', title: 'Executive Summary',
+      isConditional: false, isIncluded: true,
       content: {
-        currentAnnualCost: calculations.projectedAnnualCost,
-        totalAnnualSavings: calculations.totalAnnualSavings,
-        paybackYears: calculations.paybackYears,
-        netInvestment: calculations.netInvestment,
+        currentAnnualCost: c.projectedAnnualCost,
+        gasAnnualCost: c.gasAnnualCost,
+        totalAnnualSavings: c.totalAnnualSavings,
+        paybackYears: c.paybackYears,
+        netInvestment: c.netInvestment,
+        totalInvestment: c.totalInvestment,
+        totalRebates: c.totalRebates,
+        co2ReductionTonnes: c.co2ReductionTonnes,
+        twentyFiveYearSavings: c.twentyFiveYearSavings,
+        hasGas: hasGasBill,
       },
     },
     // Slide 3: Current Bill Analysis
     {
-      slideNumber: 3,
-      slideType: 'bill_analysis',
-      title: 'Current Bill Analysis',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 3, slideType: 'bill_analysis', title: 'Current Bill Analysis',
+      isConditional: false, isIncluded: true,
       content: {
-        dailyAverageKwh: calculations.dailyAverageKwh,
-        monthlyUsageKwh: calculations.monthlyUsageKwh,
-        yearlyUsageKwh: calculations.yearlyUsageKwh,
-        projectedAnnualCost: calculations.projectedAnnualCost,
+        retailer: c.billRetailer,
+        periodStart: c.billPeriodStart,
+        periodEnd: c.billPeriodEnd,
+        billingDays: c.billDays,
+        totalAmount: c.billTotalAmount,
+        dailySupplyCharge: c.billDailySupplyCharge,
+        totalUsageKwh: c.billTotalUsageKwh,
+        peakUsageKwh: c.billPeakUsageKwh,
+        offPeakUsageKwh: c.billOffPeakUsageKwh,
+        shoulderUsageKwh: c.billShoulderUsageKwh,
+        solarExportsKwh: c.billSolarExportsKwh,
+        peakRateCents: c.billPeakRateCents,
+        offPeakRateCents: c.billOffPeakRateCents,
+        shoulderRateCents: c.billShoulderRateCents,
+        feedInTariffCents: c.billFeedInTariffCents,
+        dailyAverageKwh: c.dailyAverageKwh,
+        dailyAverageCost: c.dailyAverageCost,
       },
     },
     // Slide 4: Monthly Usage Analysis
     {
-      slideNumber: 4,
-      slideType: 'monthly_usage',
-      title: 'Monthly Usage Analysis',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 4, slideType: 'monthly_usage', title: 'Monthly Usage Analysis',
+      isConditional: false, isIncluded: true,
       content: {
-        dailyAverageKwh: calculations.dailyAverageKwh,
-        monthlyUsageKwh: calculations.monthlyUsageKwh,
+        dailyAverageKwh: c.dailyAverageKwh,
+        monthlyUsageKwh: c.monthlyUsageKwh,
+        yearlyUsageKwh: c.yearlyUsageKwh,
+        peakUsageKwh: c.billPeakUsageKwh,
+        offPeakUsageKwh: c.billOffPeakUsageKwh,
+        shoulderUsageKwh: c.billShoulderUsageKwh,
+        billingDays: c.billDays,
       },
     },
     // Slide 5: Yearly Cost Projection
     {
-      slideNumber: 5,
-      slideType: 'yearly_projection',
-      title: 'Yearly Cost Projection',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 5, slideType: 'yearly_projection', title: 'Yearly Cost Projection',
+      isConditional: false, isIncluded: true,
       content: {
-        yearlyUsageKwh: calculations.yearlyUsageKwh,
-        projectedAnnualCost: calculations.projectedAnnualCost,
+        yearlyUsageKwh: c.yearlyUsageKwh,
+        projectedAnnualCost: c.projectedAnnualCost,
+        annualSupplyCharge: c.annualSupplyCharge,
+        annualUsageCharge: c.annualUsageCharge,
+        annualSolarCredit: c.annualSolarCredit,
+        dailyAverageCost: c.dailyAverageCost,
+        peakRateCents: c.billPeakRateCents,
+        offPeakRateCents: c.billOffPeakRateCents,
+        shoulderRateCents: c.billShoulderRateCents,
+        feedInTariffCents: c.billFeedInTariffCents,
+        dailySupplyCharge: c.billDailySupplyCharge,
+        gasAnnualCost: c.gasAnnualCost,
       },
     },
     // Slide 6: Current Gas Footprint (Conditional)
     {
-      slideNumber: 6,
-      slideType: 'gas_footprint',
-      title: 'Current Gas Footprint',
-      isConditional: true,
-      isIncluded: hasGasBill,
+      slideNumber: 6, slideType: 'gas_footprint', title: 'Current Gas Footprint',
+      isConditional: true, isIncluded: hasGasBill,
       content: {
-        gasAnnualCost: calculations.gasAnnualCost,
-        gasKwhEquivalent: calculations.gasKwhEquivalent,
-        gasCo2Emissions: calculations.gasCo2Emissions,
+        gasBillRetailer: c.gasBillRetailer,
+        gasBillPeriodStart: c.gasBillPeriodStart,
+        gasBillPeriodEnd: c.gasBillPeriodEnd,
+        gasBillDays: c.gasBillDays,
+        gasBillTotalAmount: c.gasBillTotalAmount,
+        gasBillDailySupplyCharge: c.gasBillDailySupplyCharge,
+        gasBillUsageMj: c.gasBillUsageMj,
+        gasBillRateCentsMj: c.gasBillRateCentsMj,
+        gasAnnualCost: c.gasAnnualCost,
+        gasKwhEquivalent: c.gasKwhEquivalent,
+        gasCo2Emissions: c.gasCo2Emissions,
+        gasDailyGasCost: c.gasDailyGasCost,
+        gasAnnualSupplyCharge: c.gasAnnualSupplyCharge,
       },
     },
     // Slide 7: Gas Appliance Inventory (Conditional)
     {
-      slideNumber: 7,
-      slideType: 'gas_appliances',
-      title: 'Gas Appliance Inventory',
-      isConditional: true,
-      isIncluded: hasGasBill && (customer.gasAppliances?.length ?? 0) > 0,
+      slideNumber: 7, slideType: 'gas_appliances', title: 'Gas Appliance Inventory',
+      isConditional: true, isIncluded: hasGasBill && (customer.gasAppliances?.length ?? 0) > 0,
       content: {
         appliances: customer.gasAppliances,
+        gasAnnualCost: c.gasAnnualCost,
+        gasKwhEquivalent: c.gasKwhEquivalent,
       },
     },
     // Slide 8: Strategic Assessment
     {
-      slideNumber: 8,
-      slideType: 'strategic_assessment',
-      title: 'Strategic Assessment',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 8, slideType: 'strategic_assessment', title: 'Strategic Assessment',
+      isConditional: false, isIncluded: true,
       content: {
-        pros: ['Reduce electricity costs', 'Energy independence', 'VPP income potential', 'Environmental benefits'],
-        cons: ['Upfront investment', 'Payback period', 'Technology maintenance'],
+        totalAnnualSavings: c.totalAnnualSavings,
+        paybackYears: c.paybackYears,
+        netInvestment: c.netInvestment,
+        co2ReductionTonnes: c.co2ReductionTonnes,
+        hasGas: hasGasBill,
+        hasEV: customer.hasEV,
+        hasPool: customer.hasPool,
+        hasExistingSolar: customer.hasExistingSolar,
       },
     },
     // Slide 9: Recommended Battery Size
     {
-      slideNumber: 9,
-      slideType: 'battery_recommendation',
-      title: 'Recommended Battery Size',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 9, slideType: 'battery_recommendation', title: 'Recommended Battery Size',
+      isConditional: false, isIncluded: true,
       content: {
-        recommendedBatteryKwh: calculations.recommendedBatteryKwh,
-        batteryProduct: calculations.batteryProduct,
+        recommendedBatteryKwh: c.recommendedBatteryKwh,
+        batteryProduct: c.batteryProduct,
+        batteryEstimatedCost: c.batteryEstimatedCost,
+        dailyAverageKwh: c.dailyAverageKwh,
+        hasEV: customer.hasEV,
       },
     },
     // Slide 10: Proposed Solar PV System (Conditional)
     {
-      slideNumber: 10,
-      slideType: 'solar_recommendation',
-      title: 'Proposed Solar PV System',
-      isConditional: true,
-      isIncluded: !customer.hasExistingSolar,
+      slideNumber: 10, slideType: 'solar_recommendation', title: 'Proposed Solar PV System',
+      isConditional: true, isIncluded: !customer.hasExistingSolar,
       content: {
-        recommendedSolarKw: calculations.recommendedSolarKw,
-        solarPanelCount: calculations.solarPanelCount,
-        solarAnnualGeneration: calculations.solarAnnualGeneration,
+        recommendedSolarKw: c.recommendedSolarKw,
+        solarPanelCount: c.solarPanelCount,
+        solarAnnualGeneration: c.solarAnnualGeneration,
+        solarEstimatedCost: c.solarEstimatedCost,
+        yearlyUsageKwh: c.yearlyUsageKwh,
       },
     },
     // Slide 11: VPP Provider Comparison
     {
-      slideNumber: 11,
-      slideType: 'vpp_comparison',
-      title: 'VPP Provider Comparison',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 11, slideType: 'vpp_comparison', title: 'VPP Provider Comparison',
+      isConditional: false, isIncluded: true,
       content: {
-        providers: calculations.vppProviderComparison,
+        providers: c.vppProviderComparison,
+        state: customer.state,
+        hasGas: hasGasBill,
       },
     },
     // Slide 12: VPP Recommendation
     {
-      slideNumber: 12,
-      slideType: 'vpp_recommendation',
-      title: 'VPP Recommendation',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 12, slideType: 'vpp_recommendation', title: 'VPP Recommendation',
+      isConditional: false, isIncluded: true,
       content: {
-        selectedVppProvider: calculations.selectedVppProvider,
-        vppAnnualValue: calculations.vppAnnualValue,
+        selectedVppProvider: c.selectedVppProvider,
+        vppAnnualValue: c.vppAnnualValue,
+        vppDailyCreditAnnual: c.vppDailyCreditAnnual,
+        vppEventPaymentsAnnual: c.vppEventPaymentsAnnual,
+        vppBundleDiscount: c.vppBundleDiscount,
+        recommendedBatteryKwh: c.recommendedBatteryKwh,
       },
     },
     // Slide 13: Hot Water Electrification (Conditional)
     {
-      slideNumber: 13,
-      slideType: 'hot_water',
-      title: 'Hot Water Electrification',
-      isConditional: true,
-      isIncluded: hasGasBill,
+      slideNumber: 13, slideType: 'hot_water', title: 'Hot Water Electrification',
+      isConditional: true, isIncluded: hasGasBill,
       content: {
-        hotWaterSavings: calculations.hotWaterSavings,
+        hotWaterSavings: c.hotWaterSavings,
+        hotWaterCurrentGasCost: c.hotWaterCurrentGasCost,
+        hotWaterHeatPumpCost: c.hotWaterHeatPumpCost,
+        hotWaterDailySupplySaved: c.hotWaterDailySupplySaved,
+        investmentHeatPumpHw: c.investmentHeatPumpHw,
+        heatPumpHwRebateAmount: c.heatPumpHwRebateAmount,
       },
     },
     // Slide 14: Heating & Cooling Upgrade (Conditional)
     {
-      slideNumber: 14,
-      slideType: 'heating_cooling',
-      title: 'Heating & Cooling Upgrade',
-      isConditional: true,
-      isIncluded: hasGasBill,
+      slideNumber: 14, slideType: 'heating_cooling', title: 'Heating & Cooling Upgrade',
+      isConditional: true, isIncluded: hasGasBill,
       content: {
-        heatingCoolingSavings: calculations.heatingCoolingSavings,
+        heatingCoolingSavings: c.heatingCoolingSavings,
+        heatingCurrentGasCost: c.heatingCurrentGasCost,
+        heatingRcAcCost: c.heatingRcAcCost,
+        investmentRcAc: c.investmentRcAc,
+        heatPumpAcRebateAmount: c.heatPumpAcRebateAmount,
       },
     },
     // Slide 15: Induction Cooking Upgrade (Conditional)
     {
-      slideNumber: 15,
-      slideType: 'induction_cooking',
-      title: 'Induction Cooking Upgrade',
-      isConditional: true,
-      isIncluded: hasGasBill,
+      slideNumber: 15, slideType: 'induction_cooking', title: 'Induction Cooking Upgrade',
+      isConditional: true, isIncluded: hasGasBill,
       content: {
-        cookingSavings: calculations.cookingSavings,
+        cookingSavings: c.cookingSavings,
+        cookingCurrentGasCost: c.cookingCurrentGasCost,
+        cookingInductionCost: c.cookingInductionCost,
+        investmentInduction: c.investmentInduction,
       },
     },
     // Slide 16: EV Analysis
     {
-      slideNumber: 16,
-      slideType: 'ev_analysis',
-      title: 'EV Analysis - Low KM Vehicle',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 16, slideType: 'ev_analysis', title: 'EV Analysis - Low KM Vehicle',
+      isConditional: false, isIncluded: true,
       content: {
-        evPetrolCost: calculations.evPetrolCost,
-        evGridChargeCost: calculations.evGridChargeCost,
-        evSolarChargeCost: calculations.evSolarChargeCost,
-        evAnnualSavings: calculations.evAnnualSavings,
+        evPetrolCost: c.evPetrolCost,
+        evGridChargeCost: c.evGridChargeCost,
+        evSolarChargeCost: c.evSolarChargeCost,
+        evAnnualSavings: c.evAnnualSavings,
+        evKmPerYear: c.evKmPerYear,
+        evConsumptionPer100km: c.evConsumptionPer100km,
+        evPetrolPricePerLitre: c.evPetrolPricePerLitre,
+        peakRateCents: c.billPeakRateCents,
       },
     },
     // Slide 17: EV Charger Recommendation
     {
-      slideNumber: 17,
-      slideType: 'ev_charger',
-      title: 'EV Charger Recommendation',
+      slideNumber: 17, slideType: 'ev_charger', title: 'EV Charger Recommendation',
       isConditional: false,
       isIncluded: (customer.hasEV ?? false) || customer.evInterest === 'interested' || customer.evInterest === 'owns',
       content: {
         hasEV: customer.hasEV,
         evInterest: customer.evInterest,
+        investmentEvCharger: c.investmentEvCharger,
+        evAnnualSavings: c.evAnnualSavings,
       },
     },
     // Slide 18: Pool Heat Pump (Conditional)
     {
-      slideNumber: 18,
-      slideType: 'pool_heat_pump',
-      title: 'Pool Heat Pump',
-      isConditional: true,
-      isIncluded: customer.hasPool ?? false,
+      slideNumber: 18, slideType: 'pool_heat_pump', title: 'Pool Heat Pump',
+      isConditional: true, isIncluded: customer.hasPool ?? false,
       content: {
         poolVolume: customer.poolVolume,
-        poolHeatPumpSavings: calculations.poolHeatPumpSavings,
+        poolHeatPumpSavings: c.poolHeatPumpSavings,
+        poolRecommendedKw: c.poolRecommendedKw,
+        poolAnnualOperatingCost: c.poolAnnualOperatingCost,
+        investmentPoolHeatPump: c.investmentPoolHeatPump,
       },
     },
     // Slide 19: Full Electrification Investment (Conditional)
     {
-      slideNumber: 19,
-      slideType: 'electrification_investment',
-      title: 'Full Electrification Investment',
-      isConditional: true,
-      isIncluded: hasGasBill,
+      slideNumber: 19, slideType: 'electrification_investment', title: 'Full Electrification Investment',
+      isConditional: true, isIncluded: hasGasBill,
       content: {
-        totalInvestment: calculations.totalInvestment,
-        totalRebates: calculations.totalRebates,
-        netInvestment: calculations.netInvestment,
+        totalInvestment: c.totalInvestment,
+        totalRebates: c.totalRebates,
+        netInvestment: c.netInvestment,
+        investmentSolar: c.investmentSolar,
+        investmentBattery: c.investmentBattery,
+        investmentHeatPumpHw: c.investmentHeatPumpHw,
+        investmentRcAc: c.investmentRcAc,
+        investmentInduction: c.investmentInduction,
+        investmentEvCharger: c.investmentEvCharger,
+        investmentPoolHeatPump: c.investmentPoolHeatPump,
+        solarRebateAmount: c.solarRebateAmount,
+        batteryRebateAmount: c.batteryRebateAmount,
+        heatPumpHwRebateAmount: c.heatPumpHwRebateAmount,
+        heatPumpAcRebateAmount: c.heatPumpAcRebateAmount,
       },
     },
     // Slide 20: Total Savings Summary
     {
-      slideNumber: 20,
-      slideType: 'savings_summary',
-      title: 'Total Savings Summary',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 20, slideType: 'savings_summary', title: 'Total Savings Summary',
+      isConditional: false, isIncluded: true,
       content: {
-        totalAnnualSavings: calculations.totalAnnualSavings,
-        hotWaterSavings: calculations.hotWaterSavings,
-        heatingCoolingSavings: calculations.heatingCoolingSavings,
-        cookingSavings: calculations.cookingSavings,
-        evAnnualSavings: calculations.evAnnualSavings,
-        vppAnnualValue: calculations.vppAnnualValue,
+        totalAnnualSavings: c.totalAnnualSavings,
+        projectedAnnualCost: c.projectedAnnualCost,
+        gasAnnualCost: c.gasAnnualCost,
+        hotWaterSavings: c.hotWaterSavings,
+        heatingCoolingSavings: c.heatingCoolingSavings,
+        cookingSavings: c.cookingSavings,
+        evAnnualSavings: c.evAnnualSavings,
+        vppAnnualValue: c.vppAnnualValue,
+        poolHeatPumpSavings: c.poolHeatPumpSavings,
       },
     },
     // Slide 21: Financial Summary & Payback
     {
-      slideNumber: 21,
-      slideType: 'financial_summary',
-      title: 'Financial Summary & Payback',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 21, slideType: 'financial_summary', title: 'Financial Summary & Payback',
+      isConditional: false, isIncluded: true,
       content: {
-        totalInvestment: calculations.totalInvestment,
-        totalRebates: calculations.totalRebates,
-        netInvestment: calculations.netInvestment,
-        totalAnnualSavings: calculations.totalAnnualSavings,
-        paybackYears: calculations.paybackYears,
+        totalInvestment: c.totalInvestment,
+        totalRebates: c.totalRebates,
+        netInvestment: c.netInvestment,
+        totalAnnualSavings: c.totalAnnualSavings,
+        paybackYears: c.paybackYears,
+        tenYearSavings: c.tenYearSavings,
+        twentyFiveYearSavings: c.twentyFiveYearSavings,
       },
     },
     // Slide 22: Environmental Impact
     {
-      slideNumber: 22,
-      slideType: 'environmental_impact',
-      title: 'Environmental Impact',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 22, slideType: 'environmental_impact', title: 'Environmental Impact',
+      isConditional: false, isIncluded: true,
       content: {
-        co2ReductionTonnes: calculations.co2ReductionTonnes,
+        co2ReductionTonnes: c.co2ReductionTonnes,
+        co2CurrentTonnes: c.co2CurrentTonnes,
+        co2ProjectedTonnes: c.co2ProjectedTonnes,
+        co2ReductionPercent: c.co2ReductionPercent,
       },
     },
     // Slide 23: Recommended Roadmap
     {
-      slideNumber: 23,
-      slideType: 'roadmap',
-      title: 'Recommended Roadmap',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 23, slideType: 'roadmap', title: 'Recommended Roadmap',
+      isConditional: false, isIncluded: true,
       content: {
         milestones: [
           { phase: 1, title: 'Solar & Battery Installation', timeline: 'Month 1-2' },
           { phase: 2, title: 'VPP Enrollment', timeline: 'Month 2' },
-          { phase: 3, title: 'Hot Water Upgrade', timeline: 'Month 3-4' },
-          { phase: 4, title: 'HVAC Upgrade', timeline: 'Month 4-6' },
-          { phase: 5, title: 'EV Charger Installation', timeline: 'Month 6' },
+          ...(hasGasBill ? [
+            { phase: 3, title: 'Hot Water Upgrade', timeline: 'Month 3-4' },
+            { phase: 4, title: 'HVAC Upgrade', timeline: 'Month 4-6' },
+          ] : []),
+          ...((customer.hasEV || customer.evInterest === 'interested') ? [
+            { phase: hasGasBill ? 5 : 3, title: 'EV Charger Installation', timeline: hasGasBill ? 'Month 6' : 'Month 3' },
+          ] : []),
         ],
+        totalAnnualSavings: c.totalAnnualSavings,
+        paybackYears: c.paybackYears,
       },
     },
     // Slide 24: Conclusion
     {
-      slideNumber: 24,
-      slideType: 'conclusion',
-      title: 'Conclusion',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 24, slideType: 'conclusion', title: 'Conclusion',
+      isConditional: false, isIncluded: true,
       content: {
-        keyBenefits: [
-          `Save $${calculations.totalAnnualSavings?.toLocaleString()} annually`,
-          `${calculations.paybackYears} year payback period`,
-          `Reduce CO2 by ${calculations.co2ReductionTonnes} tonnes/year`,
-          'Energy independence and price protection',
-        ],
+        totalAnnualSavings: c.totalAnnualSavings,
+        paybackYears: c.paybackYears,
+        co2ReductionTonnes: c.co2ReductionTonnes,
+        twentyFiveYearSavings: c.twentyFiveYearSavings,
+        netInvestment: c.netInvestment,
       },
     },
     // Slide 25: Contact Slide
     {
-      slideNumber: 25,
-      slideType: 'contact',
-      title: 'Contact',
-      isConditional: false,
-      isIncluded: true,
+      slideNumber: 25, slideType: 'contact', title: 'Contact',
+      isConditional: false, isIncluded: true,
       content: {
         preparedBy: 'George Fotopoulos',
         title: 'Renewables Strategist & Designer',

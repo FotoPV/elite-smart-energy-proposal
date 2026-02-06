@@ -14,6 +14,9 @@ import {
   RefreshCw,
   Calculator,
   MoreVertical,
+  FileDown,
+  Presentation,
+  ChevronDown,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -441,6 +444,172 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
 }
 
 
+// Export dropdown with PDF, PPTX, and HTML PDF options
+function ExportDropdown({ proposalId, customerName }: { proposalId: number; customerName: string }) {
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportType, setExportType] = useState<string>('');
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('');
+  
+  const exportPptxMutation = trpc.proposals.exportPptx.useMutation();
+  const exportNativePdfMutation = trpc.proposals.exportNativePdf.useMutation();
+  const utils = trpc.useUtils();
+  
+  const handleExportPptx = async () => {
+    setIsExporting(true);
+    setExportType('pptx');
+    setProgress(10);
+    setCurrentStep('Generating PowerPoint...');
+    try {
+      setProgress(30);
+      const result = await exportPptxMutation.mutateAsync({ proposalId });
+      setProgress(80);
+      setCurrentStep('Downloading...');
+      if (result.fileUrl) {
+        const link = document.createElement('a');
+        link.href = result.fileUrl;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      setProgress(100);
+      toast.success('PowerPoint exported successfully!');
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+  
+  const handleExportNativePdf = async () => {
+    setIsExporting(true);
+    setExportType('pdf');
+    setProgress(10);
+    setCurrentStep('Generating PDF...');
+    try {
+      setProgress(30);
+      const result = await exportNativePdfMutation.mutateAsync({ proposalId });
+      setProgress(80);
+      setCurrentStep('Downloading...');
+      if (result.fileUrl) {
+        const link = document.createElement('a');
+        link.href = result.fileUrl;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      setProgress(100);
+      toast.success('PDF exported successfully!');
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+  
+  const handleExportHtmlPdf = async () => {
+    setIsExporting(true);
+    setExportType('html-pdf');
+    setProgress(10);
+    setCurrentStep('Fetching slides...');
+    try {
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
+        throw new Error('No slides generated.');
+      }
+      setProgress(20);
+      const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
+      const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
+        setCurrentStep(step);
+        setProgress(20 + Math.round(pct * 0.7));
+      });
+      setProgress(90);
+      setCurrentStep('Preparing download...');
+      const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setProgress(100);
+      toast.success('PDF downloaded successfully!');
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+  
+  if (isExporting) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="space-y-1.5 min-w-[180px]">
+          <Button disabled className="bg-[#00EAD3] text-black font-semibold w-full">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {currentStep || 'Exporting...'}
+          </Button>
+          <Progress value={progress} className="h-1.5" />
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+          <ChevronDown className="ml-2 h-3 w-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-[#0a0a0a] border-[#1a1a1a] w-56">
+        <DropdownMenuItem
+          onClick={handleExportNativePdf}
+          className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
+        >
+          <FileDown className="mr-3 h-4 w-4 text-[#f36710]" />
+          <div>
+            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PDF</div>
+            <div className="text-[10px] text-[#808285]">Embedded brand fonts</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleExportPptx}
+          className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
+        >
+          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <div>
+            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PowerPoint</div>
+            <div className="text-[10px] text-[#808285]">Editable .pptx file</div>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleExportHtmlPdf}
+          className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
+        >
+          <FileText className="mr-3 h-4 w-4 text-[#808285]" />
+          <div>
+            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>HTML PDF</div>
+            <div className="text-[10px] text-[#808285]">Browser-rendered slides</div>
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
@@ -559,7 +728,6 @@ export default function ProposalDetailPage() {
                   variant="ghost"
                   className="text-[#00EAD3] hover:text-[#00EAD3] hover:bg-[#00EAD3]/10 font-semibold"
                   onClick={() => {
-                    // Open all slides in a new window for fullscreen viewing
                     const win = window.open('', '_blank');
                     if (win && slides[0]) {
                       win.document.write(`
@@ -584,9 +752,9 @@ export default function ProposalDetailPage() {
                 </Button>
               )}
               
-              {/* Download button - filled aqua */}
+              {/* Export dropdown - PDF, PPTX, HTML PDF */}
               {hasSlides && (
-                <DownloadPDFButton proposalId={proposalId} customerName={customerName} />
+                <ExportDropdown proposalId={proposalId} customerName={customerName} />
               )}
 
               {/* More options dropdown for admin actions */}

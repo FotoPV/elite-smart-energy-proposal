@@ -672,52 +672,148 @@ export function generateFullCalculations(
     gasBill !== null
   );
   
+  // Calculate charge breakdowns
+  const billingDays = electricityBill.billingDays || 90;
+  const dailySupply = Number(electricityBill.dailySupplyCharge) || CONSTANTS.DEFAULT_DAILY_SUPPLY_CHARGE;
+  const annualSupplyCharge = round(dailySupply * 365, 2);
+  const feedInTariff = Number(electricityBill.feedInTariffCents) || CONSTANTS.DEFAULT_FEED_IN_TARIFF_CENTS;
+  const solarExports = Number(electricityBill.solarExportsKwh) || 0;
+  const annualSolarCredit = round((solarExports * feedInTariff / 100) * (365 / billingDays), 2);
+  const annualUsageCharge = round(usage.projectedAnnualCost - annualSupplyCharge + annualSolarCredit, 2);
+  
+  // Gas supply charge annual
+  const gasAnnualSupplyCharge = gasBill ? round((Number(gasBill.dailySupplyCharge) || 0) * 365, 2) : undefined;
+  
+  // Investment amounts
+  const investSolar = solar?.estimatedCost;
+  const investBattery = battery.estimatedCost;
+  const investHeatPumpHw = gasBill ? 3500 : undefined;
+  const investRcAc = gasBill ? 8000 : undefined;
+  const investInduction = gasBill ? 2000 : undefined;
+  const investEvCharger = customer.hasEV ? 1500 : undefined;
+  const investPoolHeatPump = poolAnalysis ? 4000 : undefined;
+  
   return {
-    // Usage projections
+    // ========== RAW BILL DATA ==========
+    billRetailer: electricityBill.retailer || undefined,
+    billPeriodStart: electricityBill.billingPeriodStart?.toISOString().split('T')[0],
+    billPeriodEnd: electricityBill.billingPeriodEnd?.toISOString().split('T')[0],
+    billDays: electricityBill.billingDays || undefined,
+    billTotalAmount: Number(electricityBill.totalAmount) || undefined,
+    billDailySupplyCharge: Number(electricityBill.dailySupplyCharge) || undefined,
+    billTotalUsageKwh: Number(electricityBill.totalUsageKwh) || undefined,
+    billPeakUsageKwh: Number(electricityBill.peakUsageKwh) || undefined,
+    billOffPeakUsageKwh: Number(electricityBill.offPeakUsageKwh) || undefined,
+    billShoulderUsageKwh: Number(electricityBill.shoulderUsageKwh) || undefined,
+    billSolarExportsKwh: Number(electricityBill.solarExportsKwh) || undefined,
+    billPeakRateCents: Number(electricityBill.peakRateCents) || undefined,
+    billOffPeakRateCents: Number(electricityBill.offPeakRateCents) || undefined,
+    billShoulderRateCents: Number(electricityBill.shoulderRateCents) || undefined,
+    billFeedInTariffCents: Number(electricityBill.feedInTariffCents) || undefined,
+    
+    // Gas Bill Details
+    gasBillRetailer: gasBill?.retailer || undefined,
+    gasBillPeriodStart: gasBill?.billingPeriodStart?.toISOString().split('T')[0],
+    gasBillPeriodEnd: gasBill?.billingPeriodEnd?.toISOString().split('T')[0],
+    gasBillDays: gasBill?.billingDays || undefined,
+    gasBillTotalAmount: gasBill ? Number(gasBill.totalAmount) || undefined : undefined,
+    gasBillDailySupplyCharge: gasBill ? Number(gasBill.dailySupplyCharge) || undefined : undefined,
+    gasBillUsageMj: gasBill ? Number(gasBill.gasUsageMj) || undefined : undefined,
+    gasBillRateCentsMj: gasBill ? Number(gasBill.gasRateCentsMj) || undefined : undefined,
+    
+    // ========== USAGE PROJECTIONS ==========
     dailyAverageKwh: usage.dailyAverageKwh,
     monthlyUsageKwh: usage.monthlyUsageKwh,
     yearlyUsageKwh: usage.yearlyUsageKwh,
     projectedAnnualCost: usage.projectedAnnualCost,
+    dailyAverageCost: usage.dailyAverageCost,
+    annualSupplyCharge,
+    annualUsageCharge,
+    annualSolarCredit,
     
-    // Gas analysis
+    // ========== GAS ANALYSIS ==========
     gasAnnualCost: gasAnalysis?.annualGasCost,
     gasKwhEquivalent: gasAnalysis?.gasKwhEquivalent,
     gasCo2Emissions: gasAnalysis?.co2EmissionsKg,
+    gasDailyGasCost: gasAnalysis?.dailyGasCost,
+    gasAnnualSupplyCharge,
     
-    // Battery
+    // ========== ELECTRIFICATION DETAIL ==========
+    hotWaterSavings: hotWaterSavings?.annualSavings,
+    hotWaterCurrentGasCost: hotWaterSavings?.currentGasHwsCost,
+    hotWaterHeatPumpCost: hotWaterSavings?.heatPumpAnnualCost,
+    hotWaterDailySupplySaved: hotWaterSavings?.dailySupplySaved,
+    
+    heatingCoolingSavings: heatingCoolingSavings?.annualSavings,
+    heatingCurrentGasCost: heatingCoolingSavings?.currentGasHeatingCost,
+    heatingRcAcCost: heatingCoolingSavings?.rcAcAnnualCost,
+    
+    cookingSavings: cookingSavings?.annualSavings,
+    cookingCurrentGasCost: cookingSavings?.currentGasCookingCost,
+    cookingInductionCost: cookingSavings?.inductionAnnualCost,
+    
+    poolHeatPumpSavings: poolAnalysis?.estimatedSavingsVsGas,
+    poolRecommendedKw: poolAnalysis?.recommendedKw,
+    poolAnnualOperatingCost: poolAnalysis?.annualOperatingCost,
+    
+    // ========== BATTERY ==========
     recommendedBatteryKwh: battery.recommendedKwh,
     batteryProduct: "Sigenergy SigenStor",
     batteryPaybackYears: payback.paybackYears,
+    batteryEstimatedCost: battery.estimatedCost,
     
-    // Solar
+    // ========== SOLAR ==========
     recommendedSolarKw: solar?.recommendedKw,
     solarPanelCount: solar?.panelCount,
     solarAnnualGeneration: solar?.annualGeneration,
+    solarEstimatedCost: solar?.estimatedCost,
     
-    // VPP
+    // ========== VPP ==========
     selectedVppProvider: selectedVpp?.provider,
     vppAnnualValue: vppIncome?.totalAnnualValue,
+    vppDailyCreditAnnual: vppIncome?.dailyCreditAnnual,
+    vppEventPaymentsAnnual: vppIncome?.eventPaymentsAnnual,
+    vppBundleDiscount: vppIncome?.bundleDiscount,
     vppProviderComparison: vppComparison,
     
-    // Electrification savings
-    hotWaterSavings: hotWaterSavings?.annualSavings,
-    heatingCoolingSavings: heatingCoolingSavings?.annualSavings,
-    cookingSavings: cookingSavings?.annualSavings,
-    poolHeatPumpSavings: poolAnalysis?.estimatedSavingsVsGas,
-    
-    // EV
+    // ========== EV ==========
     evPetrolCost: evSavings?.petrolAnnualCost,
     evGridChargeCost: evSavings?.evGridChargeCost,
     evSolarChargeCost: evSavings?.evSolarChargeCost,
     evAnnualSavings: evSavings?.savingsWithSolar,
+    evKmPerYear: CONSTANTS.EV_KM_PER_YEAR,
+    evConsumptionPer100km: CONSTANTS.EV_CONSUMPTION_KWH_PER_100KM,
+    evPetrolPricePerLitre: CONSTANTS.PETROL_PRICE_PER_LITRE,
     
-    // Total summary
+    // ========== CO2 ==========
+    co2ReductionTonnes: co2.reductionTonnes,
+    co2CurrentTonnes: co2.currentCo2Tonnes,
+    co2ProjectedTonnes: co2.projectedCo2Tonnes,
+    co2ReductionPercent: co2.reductionPercent,
+    
+    // ========== REBATES DETAIL ==========
+    solarRebateAmount: solarRebate ? Number(solarRebate.amount) : undefined,
+    batteryRebateAmount: batteryRebate ? Number(batteryRebate.amount) : undefined,
+    heatPumpHwRebateAmount: heatPumpHwRebate ? Number(heatPumpHwRebate.amount) : undefined,
+    heatPumpAcRebateAmount: heatPumpAcRebate ? Number(heatPumpAcRebate.amount) : undefined,
+    
+    // ========== INVESTMENT DETAIL ==========
+    investmentSolar: investSolar,
+    investmentBattery: investBattery,
+    investmentHeatPumpHw: investHeatPumpHw,
+    investmentRcAc: investRcAc,
+    investmentInduction: investInduction,
+    investmentEvCharger: investEvCharger,
+    investmentPoolHeatPump: investPoolHeatPump,
+    
+    // ========== TOTAL SUMMARY ==========
     totalAnnualSavings: payback.totalAnnualBenefit,
     totalInvestment: payback.totalInvestment,
     totalRebates: payback.totalRebates,
     netInvestment: payback.netInvestment,
     paybackYears: payback.paybackYears,
-    co2ReductionTonnes: co2.reductionTonnes,
+    tenYearSavings: payback.tenYearSavings,
+    twentyFiveYearSavings: payback.twentyFiveYearSavings,
   };
 }
 

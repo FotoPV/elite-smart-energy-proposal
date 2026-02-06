@@ -9,7 +9,7 @@ export interface ProposalData {
   address: string;
   state: string;
   
-  // Bill Data
+  // Bill Data - Summary
   retailer: string;
   dailyUsageKwh: number;
   annualUsageKwh: number;
@@ -20,6 +20,25 @@ export interface ProposalData {
   annualCost: number;
   monthlyUsageData?: { month: string; kwh: number; cost: number }[];
   
+  // Bill Data - Detailed Breakdown (from extraction)
+  billPeriodStart?: string;
+  billPeriodEnd?: string;
+  billDays?: number;
+  billTotalAmount?: number;
+  billTotalUsageKwh?: number;
+  billPeakUsageKwh?: number;
+  billOffPeakUsageKwh?: number;
+  billShoulderUsageKwh?: number;
+  billSolarExportsKwh?: number;
+  billPeakRateCents?: number;
+  billOffPeakRateCents?: number;
+  billShoulderRateCents?: number;
+  dailyAverageCost?: number;
+  annualSupplyCharge?: number;
+  annualUsageCharge?: number;
+  annualSolarCredit?: number;
+  monthlyUsageKwh?: number;
+  
   // Gas Data (optional)
   hasGas: boolean;
   gasAnnualMJ?: number;
@@ -27,6 +46,18 @@ export interface ProposalData {
   gasDailySupplyCharge?: number;
   gasUsageRate?: number;
   gasCO2Emissions?: number;
+  
+  // Gas Bill - Detailed Breakdown
+  gasBillRetailer?: string;
+  gasBillPeriodStart?: string;
+  gasBillPeriodEnd?: string;
+  gasBillDays?: number;
+  gasBillTotalAmount?: number;
+  gasBillUsageMj?: number;
+  gasBillRateCentsMj?: number;
+  gasDailyGasCost?: number;
+  gasAnnualSupplyCharge?: number;
+  gasKwhEquivalent?: number;
   
   // Gas Appliances (optional)
   gasAppliances?: {
@@ -60,6 +91,9 @@ export interface ProposalData {
   vppProgram: string;
   vppAnnualValue: number;
   hasGasBundle: boolean;
+  vppDailyCreditAnnual?: number;
+  vppEventPaymentsAnnual?: number;
+  vppBundleDiscount?: number;
   
   // EV (optional)
   hasEV: boolean;
@@ -67,26 +101,55 @@ export interface ProposalData {
   evAnnualSavings?: number;
   evChargerCost?: number;
   evChargerBrand?: string;
+  evPetrolCost?: number;
+  evGridChargeCost?: number;
+  evSolarChargeCost?: number;
+  evConsumptionPer100km?: number;
+  evPetrolPricePerLitre?: number;
   
-  // Electrification (optional)
+  // Electrification - Pool
   hasPoolPump: boolean;
   poolPumpSavings?: number;
   poolHeatPumpCost?: number;
   poolHeatPumpBrand?: string;
+  poolRecommendedKw?: number;
+  poolAnnualOperatingCost?: number;
+  
+  // Electrification - Heat Pump
   hasHeatPump: boolean;
   heatPumpSavings?: number;
   heatPumpCost?: number;
   heatPumpBrand?: string;
+  hotWaterCurrentGasCost?: number;
+  hotWaterHeatPumpCost?: number;
+  hotWaterDailySupplySaved?: number;
   
   // Heating & Cooling
   heatingCoolingSavings?: number;
   heatingCoolingCost?: number;
   acBrand?: string;
+  heatingCurrentGasCost?: number;
+  heatingRcAcCost?: number;
   
   // Induction Cooking
   inductionSavings?: number;
   inductionCost?: number;
   inductionBrand?: string;
+  cookingCurrentGasCost?: number;
+  cookingInductionCost?: number;
+  
+  // Investment Details
+  investmentSolar?: number;
+  investmentBattery?: number;
+  investmentHeatPumpHw?: number;
+  investmentRcAc?: number;
+  investmentInduction?: number;
+  investmentEvCharger?: number;
+  investmentPoolHeatPump?: number;
+  solarRebateAmount?: number;
+  batteryRebateAmount?: number;
+  heatPumpHwRebateAmount?: number;
+  heatPumpAcRebateAmount?: number;
   
   // Full Electrification Investment
   electrificationTotalCost?: number;
@@ -97,6 +160,9 @@ export interface ProposalData {
   co2ReductionTonnes: number;
   treesEquivalent?: number;
   energyIndependenceScore?: number;
+  co2CurrentTonnes?: number;
+  co2ProjectedTonnes?: number;
+  co2ReductionPercent?: number;
 }
 
 export interface SlideContent {
