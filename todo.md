@@ -176,3 +176,8 @@
 - [x] Apply fonts consistently across all dashboard pages
 - [x] Complete customer portal share link button
 - [x] Test customer portal access flow
+
+
+## Production PDF Generation Fix (Feb 6)
+- [ ] Fix Update & Publish button for production environment
+- [ ] Ensure Chrome/Puppeteer works in deployed environment
