@@ -806,7 +806,7 @@ export async function getAggregateAnalytics(userId: number) {
   
   const viewsTrend = await db
     .select({
-      date: sql<string>`DATE(${proposalViews.viewedAt})`,
+      date: sql<string>`DATE_FORMAT(${proposalViews.viewedAt}, '%Y-%m-%d')`,
       count: sql<number>`count(*)`,
     })
     .from(proposalViews)
@@ -814,8 +814,8 @@ export async function getAggregateAnalytics(userId: number) {
       inArray(proposalViews.proposalId, proposalIds),
       gte(proposalViews.viewedAt, sevenDaysAgo)
     ))
-    .groupBy(sql`DATE(${proposalViews.viewedAt})`)
-    .orderBy(sql`DATE(${proposalViews.viewedAt})`);
+    .groupBy(sql`DATE_FORMAT(${proposalViews.viewedAt}, '%Y-%m-%d')`)
+    .orderBy(sql`DATE_FORMAT(${proposalViews.viewedAt}, '%Y-%m-%d')`);
   
   return {
     totalViews: Number(totalViewsResult?.count ?? 0),

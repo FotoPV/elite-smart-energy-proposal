@@ -237,3 +237,20 @@
 - [x] Add regenerate link shortcut from notification banner
 - [x] Write tests for expiry notification logic (7 tests)
 - [x] All 68 tests passing
+
+
+## Bug Fix - Dashboard Analytics SQL Error (Feb 6)
+- [ ] Fix DATE() function error in getAggregateAnalytics query
+- [ ] Use raw SQL compatible with TiDB/MySQL for date grouping
+
+
+## Critical Fix - PDF Export in Production (Feb 6)
+- [x] Replace Puppeteer-based PDF generation with client-side approach (jsPDF + html2canvas-pro)
+- [x] Update & Publish button now generates PDF in browser, no Chrome needed
+- [x] Publish PDF button also uses client-side generation
+- [x] PDF uploaded to S3 after generation for storage
+- [x] Progress bar shows slide-by-slide rendering progress
+
+## Bug Fix - Dashboard Analytics SQL Error (Feb 6)
+- [x] Fix DATE() function error in getAggregateAnalytics query
+- [x] Use DATE_FORMAT('%Y-%m-%d') compatible with TiDB/MySQL
