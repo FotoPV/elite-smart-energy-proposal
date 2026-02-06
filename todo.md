@@ -181,3 +181,29 @@
 ## Production PDF Generation Fix (Feb 6)
 - [ ] Fix Update & Publish button for production environment
 - [ ] Ensure Chrome/Puppeteer works in deployed environment
+
+
+## Add Missing Slides for 25-Slide Structure (Feb 6)
+- [x] Add Executive Summary slide (Slide 2)
+- [x] Add Yearly Cost Projection slide (Slide 5)
+- [x] Add Current Gas Footprint slide (conditional - Slide 6)
+- [x] Add Gas Appliance Inventory slide (conditional - Slide 7)
+- [x] Add Hot Water Electrification slide (conditional - Slide 13)
+- [x] Add Heating & Cooling Upgrade slide (conditional - Slide 14)
+- [x] Add Induction Cooking Upgrade slide (conditional - Slide 15)
+- [x] Add EV Charger Recommendation slide (Slide 17)
+- [x] Add Pool Heat Pump slide (conditional - Slide 18)
+- [x] Add Full Electrification Investment slide (conditional - Slide 19)
+- [x] Add Environmental Impact slide (Slide 22)
+- [x] Add HTML rendering for all new slide types
+
+
+## Add All 13 VPP Providers (Feb 6)
+- [x] Add Energy Locals
+- [x] Add Powershop
+- [x] Add Red Energy
+- [x] Add Momentum Energy
+- [x] Add Lumo Energy
+- [x] Add Alinta Energy
+- [x] Add Tango Energy
+- [x] Add GloBird Energy

@@ -31,10 +31,15 @@ export const BRAND = {
     urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YGUmPLTiRKkxOqHk.ttf',
   },
   
-  // Contact Info
+  // Contact Info (as per Lightning Energy specifications)
   contact: {
     name: 'George Fotopoulos',
+    title: 'Renewables Strategist & Designer',
     company: 'Lightning Energy',
+    address: 'Showroom 1, Waverley Road, Malvern East VIC 3145',
+    phone: '0419 574 520',
+    email: 'george.f@lightning-energy.com.au',
+    website: 'www.lightning-energy.com.au',
     copyright: '© Lightning Energy - Architect George Fotopoulos',
   },
 } as const;

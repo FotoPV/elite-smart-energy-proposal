@@ -57,11 +57,11 @@ describe("generateSlides", () => {
     expect(coverSlide?.title).toBe("Paul Stokes");
   });
 
-  it("includes annual expenditure slide", () => {
+  it("includes bill analysis slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const expenditureSlide = slides.find(s => s.type === "annual_expenditure");
-    expect(expenditureSlide).toBeDefined();
-    expect(expenditureSlide?.content.annualCost).toBe(2800);
+    const billSlide = slides.find(s => s.type === "bill_analysis");
+    expect(billSlide).toBeDefined();
+    expect(billSlide?.content.annualCost).toBe(2800);
   });
 
   it("includes EV analysis slide when hasEV is true", () => {
