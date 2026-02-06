@@ -81,7 +81,7 @@
 - [x] Document tests (7 tests)
 - [x] Slide generator tests (15 tests)
 - [x] All 50 tests passing
-- [ ] Analytics dashboard (Coming soon placeholder)
+- [x] Analytics dashboard with aggregate engagement metrics
 
 
 ## New Features (Feb 6)
@@ -219,3 +219,21 @@
 - [x] Recent views list with browser/OS/IP info
 - [x] Write unit tests for analytics (11 tests passing)
 - [x] All 61 tests passing
+
+
+## Analytics Overview on Main Dashboard (Feb 6)
+- [x] Add aggregate analytics API endpoint (total views across all proposals, top viewed proposals, engagement trends)
+- [x] Add analytics overview cards to main dashboard (total views, unique visitors, most viewed proposal)
+- [x] Add top proposals by engagement list
+- [x] Add recent activity feed
+- [x] Add views trend bar chart (last 7 days)
+
+## Proposal Expiry Notifications (Feb 6)
+- [x] Add expiry check logic for shared proposal links
+- [x] Add notification when links are expiring within 7 days
+- [x] Add notification banner on dashboard for expiring links (amber warning)
+- [x] Add bulk expiry check on dashboard load
+- [x] Show "Never viewed" badge for expired unviewed tokens
+- [x] Add regenerate link shortcut from notification banner
+- [x] Write tests for expiry notification logic (7 tests)
+- [x] All 68 tests passing

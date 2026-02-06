@@ -11,15 +11,43 @@ import {
   PlusCircle,
   ArrowRight,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  Timer,
+  BarChart3,
+  AlertTriangle,
+  RefreshCw,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Globe
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = trpc.dashboard.stats.useQuery();
   const { data: recentProposals, isLoading: proposalsLoading } = trpc.dashboard.recentProposals.useQuery();
   const { data: recentCustomers, isLoading: customersLoading } = trpc.dashboard.recentCustomers.useQuery();
+  const { data: analytics, isLoading: analyticsLoading } = trpc.analytics.getAggregateAnalytics.useQuery();
+  const { data: expiringTokens, isLoading: expiringLoading } = trpc.analytics.getExpiringTokens.useQuery({ daysUntilExpiry: 7 });
+
+  const formatDuration = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+
+  const getDeviceIcon = (type: string) => {
+    switch (type) {
+      case 'mobile': return <Smartphone className="h-3.5 w-3.5" />;
+      case 'tablet': return <Tablet className="h-3.5 w-3.5" />;
+      case 'desktop': return <Monitor className="h-3.5 w-3.5" />;
+      default: return <Globe className="h-3.5 w-3.5" />;
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -42,6 +70,63 @@ export default function Dashboard() {
             New Proposal
           </Button>
         </div>
+
+        {/* Expiry Notifications Banner */}
+        {!expiringLoading && expiringTokens && expiringTokens.length > 0 && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-400 text-sm">Expiring Proposal Links</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {expiringTokens.length} shared proposal link{expiringTokens.length > 1 ? 's' : ''} {expiringTokens.some(t => t.isExpired) ? 'have expired or are' : 'are'} expiring soon.
+                  Customers who haven't viewed their proposals may lose access.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {expiringTokens.slice(0, 3).map((token) => (
+                    <div 
+                      key={token.tokenId} 
+                      className="flex items-center justify-between bg-background/50 rounded-lg px-3 py-2 cursor-pointer hover:bg-background/80 transition-colors"
+                      onClick={() => setLocation(`/proposals/${token.proposalId}`)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Proposal #{token.proposalId}</span>
+                        {token.viewCount === 0 && (
+                          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">Never viewed</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {token.isExpired ? (
+                          <span className="text-xs text-red-400 font-medium">Expired</span>
+                        ) : (
+                          <span className="text-xs text-amber-400 font-medium">{token.daysRemaining} day{token.daysRemaining !== 1 ? 's' : ''} left</span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLocation(`/proposals/${token.proposalId}`);
+                          }}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Regenerate
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {expiringTokens.length > 3 && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      +{expiringTokens.length - 3} more expiring links
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -72,6 +157,175 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Analytics Overview */}
+        <Card className="bg-card border-border">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Engagement Analytics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analyticsLoading ? (
+              <div className="grid gap-4 md:grid-cols-4">
+                {[1, 2, 3, 4].map(i => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            ) : analytics && analytics.totalViews > 0 ? (
+              <div className="space-y-6">
+                {/* Analytics Metrics */}
+                <div className="grid gap-4 md:grid-cols-4">
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Eye className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Views</p>
+                        <p className="text-2xl font-bold font-mono">{analytics.totalViews}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Unique Visitors</p>
+                        <p className="text-2xl font-bold font-mono">{analytics.uniqueVisitors}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Timer className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Avg. Duration</p>
+                        <p className="text-2xl font-bold font-mono">{formatDuration(analytics.avgDurationSeconds)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Proposals Viewed</p>
+                        <p className="text-2xl font-bold font-mono">{analytics.totalProposalsViewed}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Proposals & Recent Activity */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Top Proposals by Engagement */}
+                  {analytics.topProposals.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Top Proposals by Views</h4>
+                      <div className="space-y-2">
+                        {analytics.topProposals.map((proposal, index) => (
+                          <div 
+                            key={proposal.proposalId}
+                            className="flex items-center justify-between bg-background rounded-lg px-4 py-3 border border-border cursor-pointer hover:border-primary/30 transition-colors"
+                            onClick={() => setLocation(`/proposals/${proposal.proposalId}`)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-bold text-primary w-5 text-center">#{index + 1}</span>
+                              <div>
+                                <p className="text-sm font-medium truncate max-w-[200px]">{proposal.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Avg. {formatDuration(proposal.avgDuration)} per view
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="text-sm font-bold font-mono">{proposal.viewCount}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Activity Feed */}
+                  {analytics.recentActivity.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Recent Activity</h4>
+                      <div className="space-y-2">
+                        {analytics.recentActivity.slice(0, 5).map((activity) => (
+                          <div 
+                            key={activity.id}
+                            className="flex items-center justify-between bg-background rounded-lg px-4 py-3 border border-border cursor-pointer hover:border-primary/30 transition-colors"
+                            onClick={() => setLocation(`/proposals/${activity.proposalId}`)}
+                          >
+                            <div className="flex items-center gap-3">
+                              {getDeviceIcon(activity.deviceType || 'unknown')}
+                              <div>
+                                <p className="text-sm font-medium truncate max-w-[180px]">
+                                  {(activity as any).proposalTitle || `Proposal #${activity.proposalId}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {activity.browser || 'Unknown'} on {activity.os || 'Unknown'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-mono">{formatDuration(activity.durationSeconds || 0)}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {activity.viewedAt ? new Date(activity.viewedAt).toLocaleDateString('en-AU', {
+                                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                }) : 'Unknown'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Views Trend (Last 7 Days) */}
+                {analytics.viewsTrend.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Views Last 7 Days</h4>
+                    <div className="flex items-end gap-1 h-24">
+                      {analytics.viewsTrend.map((day) => {
+                        const maxCount = Math.max(...analytics.viewsTrend.map(d => d.count), 1);
+                        const height = Math.max((day.count / maxCount) * 100, 8);
+                        return (
+                          <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
+                            <span className="text-xs font-mono text-primary">{day.count}</span>
+                            <div 
+                              className="w-full rounded-t-lg bg-gradient-to-t from-primary/60 to-primary transition-all duration-500"
+                              style={{ height: `${height}%` }}
+                            />
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(day.date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Eye className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No engagement data yet</p>
+                <p className="text-xs mt-1">Share proposals with customers to start tracking views and engagement</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-3">
           <QuickActionCard
@@ -87,11 +341,10 @@ export default function Dashboard() {
             onClick={() => setLocation("/customers")}
           />
           <QuickActionCard
-            title="View Analytics"
-            description="See proposal performance and trends"
+            title="View All Proposals"
+            description="Browse and manage all your proposals"
             icon={TrendingUp}
-            onClick={() => setLocation("/settings")}
-            disabled
+            onClick={() => setLocation("/proposals")}
           />
         </div>
 

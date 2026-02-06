@@ -1,4 +1,4 @@
-import { eq, desc, and, like, sql } from "drizzle-orm";
+import { eq, desc, and, like, sql, gte, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -702,4 +702,217 @@ export async function getProposalAnalyticsSummary(proposalId: number) {
       viewedAt: v.viewedAt,
     })),
   };
+}
+
+
+// ============================================
+// AGGREGATE ANALYTICS (Dashboard Overview)
+// ============================================
+
+export async function getAggregateAnalytics(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Get all proposal IDs for this user
+  const userProposals = await db
+    .select({ id: proposals.id, title: proposals.title, customerId: proposals.customerId })
+    .from(proposals)
+    .where(eq(proposals.userId, userId));
+  
+  if (userProposals.length === 0) {
+    return {
+      totalViews: 0,
+      uniqueVisitors: 0,
+      avgDurationSeconds: 0,
+      totalProposalsViewed: 0,
+      topProposals: [],
+      recentActivity: [],
+      viewsTrend: [],
+    };
+  }
+  
+  const proposalIds = userProposals.map(p => p.id);
+  
+  // Total views across all proposals
+  const [totalViewsResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds));
+  
+  // Unique visitors across all proposals
+  const [uniqueVisitorsResult] = await db
+    .select({ count: sql<number>`count(DISTINCT ${proposalViews.ipAddress})` })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds));
+  
+  // Average duration across all proposals
+  const [avgDurationResult] = await db
+    .select({ avg: sql<number>`COALESCE(AVG(${proposalViews.durationSeconds}), 0)` })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds));
+  
+  // Proposals that have been viewed
+  const [proposalsViewedResult] = await db
+    .select({ count: sql<number>`count(DISTINCT ${proposalViews.proposalId})` })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds));
+  
+  // Top proposals by views
+  const topProposalsRaw = await db
+    .select({
+      proposalId: proposalViews.proposalId,
+      viewCount: sql<number>`count(*)`,
+      avgDuration: sql<number>`COALESCE(AVG(${proposalViews.durationSeconds}), 0)`,
+      lastViewed: sql<string>`MAX(${proposalViews.viewedAt})`,
+    })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds))
+    .groupBy(proposalViews.proposalId)
+    .orderBy(sql`count(*) DESC`)
+    .limit(5);
+  
+  // Map proposal titles to top proposals
+  const proposalMap = new Map(userProposals.map(p => [p.id, p]));
+  const topProposals = topProposalsRaw.map(tp => ({
+    proposalId: tp.proposalId,
+    title: proposalMap.get(tp.proposalId)?.title || 'Unknown',
+    customerId: proposalMap.get(tp.proposalId)?.customerId || 0,
+    viewCount: Number(tp.viewCount),
+    avgDuration: Math.round(Number(tp.avgDuration)),
+    lastViewed: tp.lastViewed,
+  }));
+  
+  // Recent activity (last 10 views across all proposals)
+  const recentActivity = await db
+    .select({
+      id: proposalViews.id,
+      proposalId: proposalViews.proposalId,
+      ipAddress: proposalViews.ipAddress,
+      deviceType: proposalViews.deviceType,
+      browser: proposalViews.browser,
+      os: proposalViews.os,
+      durationSeconds: proposalViews.durationSeconds,
+      totalSlidesViewed: proposalViews.totalSlidesViewed,
+      viewedAt: proposalViews.viewedAt,
+    })
+    .from(proposalViews)
+    .where(inArray(proposalViews.proposalId, proposalIds))
+    .orderBy(desc(proposalViews.viewedAt))
+    .limit(10);
+  
+  // Views trend (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  const viewsTrend = await db
+    .select({
+      date: sql<string>`DATE(${proposalViews.viewedAt})`,
+      count: sql<number>`count(*)`,
+    })
+    .from(proposalViews)
+    .where(and(
+      inArray(proposalViews.proposalId, proposalIds),
+      gte(proposalViews.viewedAt, sevenDaysAgo)
+    ))
+    .groupBy(sql`DATE(${proposalViews.viewedAt})`)
+    .orderBy(sql`DATE(${proposalViews.viewedAt})`);
+  
+  return {
+    totalViews: Number(totalViewsResult?.count ?? 0),
+    uniqueVisitors: Number(uniqueVisitorsResult?.count ?? 0),
+    avgDurationSeconds: Math.round(Number(avgDurationResult?.avg ?? 0)),
+    totalProposalsViewed: Number(proposalsViewedResult?.count ?? 0),
+    topProposals,
+    recentActivity: recentActivity.map(v => ({
+      ...v,
+      proposalTitle: proposalMap.get(v.proposalId)?.title || 'Unknown',
+    })),
+    viewsTrend: viewsTrend.map(v => ({
+      date: v.date,
+      count: Number(v.count),
+    })),
+  };
+}
+
+// ============================================
+// EXPIRY NOTIFICATIONS
+// ============================================
+
+export async function getExpiringAccessTokens(userId: number, daysUntilExpiry: number = 7) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date();
+  const expiryThreshold = new Date();
+  expiryThreshold.setDate(expiryThreshold.getDate() + daysUntilExpiry);
+  
+  // Get all active tokens for user's proposals that expire within threshold
+  const userProposals = await db
+    .select({ id: proposals.id })
+    .from(proposals)
+    .where(eq(proposals.userId, userId));
+  
+  if (userProposals.length === 0) return [];
+  
+  const proposalIds = userProposals.map(p => p.id);
+  
+  const expiringTokens = await db
+    .select({
+      tokenId: proposalAccessTokens.id,
+      proposalId: proposalAccessTokens.proposalId,
+      customerId: proposalAccessTokens.customerId,
+      token: proposalAccessTokens.token,
+      expiresAt: proposalAccessTokens.expiresAt,
+      isActive: proposalAccessTokens.isActive,
+      viewCount: proposalAccessTokens.viewCount,
+      createdAt: proposalAccessTokens.createdAt,
+    })
+    .from(proposalAccessTokens)
+    .where(and(
+      inArray(proposalAccessTokens.proposalId, proposalIds),
+      eq(proposalAccessTokens.isActive, true),
+    ));
+  
+  // Filter for tokens expiring within threshold or already expired
+  return expiringTokens
+    .filter(t => {
+      if (!t.expiresAt) return false;
+      const expiresAt = new Date(t.expiresAt);
+      return expiresAt <= expiryThreshold;
+    })
+    .map(t => ({
+      ...t,
+      daysRemaining: t.expiresAt ? Math.max(0, Math.ceil((new Date(t.expiresAt).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0,
+      isExpired: t.expiresAt ? new Date(t.expiresAt) <= now : false,
+    }));
+}
+
+export async function getExpiredUnviewedTokens(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date();
+  
+  const userProposals = await db
+    .select({ id: proposals.id })
+    .from(proposals)
+    .where(eq(proposals.userId, userId));
+  
+  if (userProposals.length === 0) return [];
+  
+  const proposalIds = userProposals.map(p => p.id);
+  
+  const expiredTokens = await db
+    .select()
+    .from(proposalAccessTokens)
+    .where(and(
+      inArray(proposalAccessTokens.proposalId, proposalIds),
+      eq(proposalAccessTokens.isActive, true),
+    ));
+  
+  // Filter for expired tokens with 0 views
+  return expiredTokens.filter(t => {
+    if (!t.expiresAt) return false;
+    return new Date(t.expiresAt) <= now && (t.viewCount === 0 || t.viewCount === null);
+  });
 }

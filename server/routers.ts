@@ -1106,6 +1106,25 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return db.getSlideEngagementByView(input.viewId);
       }),
+    
+    // Protected: Get aggregate analytics across all proposals
+    getAggregateAnalytics: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getAggregateAnalytics(ctx.user.id);
+      }),
+    
+    // Protected: Get expiring access tokens (links about to expire)
+    getExpiringTokens: protectedProcedure
+      .input(z.object({ daysUntilExpiry: z.number().optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        return db.getExpiringAccessTokens(ctx.user.id, input?.daysUntilExpiry ?? 7);
+      }),
+    
+    // Protected: Get expired unviewed tokens (customer never viewed)
+    getExpiredUnviewedTokens: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getExpiredUnviewedTokens(ctx.user.id);
+      }),
   }),
 
   // ============================================
