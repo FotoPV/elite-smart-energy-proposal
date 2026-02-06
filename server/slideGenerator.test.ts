@@ -134,7 +134,7 @@ describe("generateSlideHTML", () => {
     
     // Check for brand colors
     expect(html).toContain("#00EAD3"); // Aqua
-    expect(html).toContain("#E8731A"); // Orange (Burnt Orange)
+    expect(html).toContain("#f36710"); // Orange (Burnt Orange)
     expect(html).toContain("#000000"); // Black background
   });
 

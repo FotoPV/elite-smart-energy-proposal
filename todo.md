@@ -326,3 +326,28 @@
 
 ## Bug Fix - /dashboard 404 Error (Feb 6)
 - [x] Add /dashboard redirect route to /proposals/new in App.tsx
+
+
+## Bill Analysis Page Design (Feb 6)
+- [x] Redesign ProposalDetail to match Bill Analysis screenshot
+- [x] "BILL ANALYSIS" heading in NextSphere font at top
+- [x] Dark card with document icon, "BILL ANALYSIS" title, filename, Open and Download buttons
+- [x] Slide preview showing all slides scrollable below
+- [x] Aqua accent on Open button, filled aqua on Download button
+- [x] Clean dark background with thin borders matching brand
+- [x] Removed tabs (overview/slides) - now single scrollable view
+- [x] All 68 tests passing
+
+
+## Brand Assets & Slide Font/Color Fix (Feb 6)
+- [x] Upload fresh brand fonts to CDN (GeneralSans-Regular, NextSphere-ExtraBold, Urbanist-SemiBold, Urbanist-SemiBoldItalic)
+- [x] Upload Lightning Energy aqua logo to CDN
+- [x] Upload SLIDE COVER PAGE background image to CDN
+- [x] Update brand.ts with fresh CDN URLs for all fonts and logo
+- [x] Fix orange color from #E8731A to correct brand orange #f36710 in all slides
+- [x] Fix hero-num font from NextSphere to GeneralSans (NextSphere is headings only)
+- [x] Add cover slide background image from SLIDE COVER PAGE PDF
+- [x] Fix SlidePreview iframe to use full HTML document (preserves @font-face declarations)
+- [x] Update PDF generation to use iframe rendering for proper font loading
+- [x] Update slide dimensions from 1120x630 to 1920x1080
+- [x] All 68 tests passing

@@ -713,15 +713,16 @@ const SLIDE_STYLES = `
     height: 60px;
   }
   
-  /* Hero numbers */
+  /* Hero numbers - GeneralSans for all numeric content */
   .hero-num {
-    font-family: 'NextSphere', sans-serif;
-    font-weight: 800;
+    font-family: 'GeneralSans', sans-serif;
+    font-weight: 700;
     line-height: 1;
   }
   .hero-num.aqua { color: #00EAD3; }
   .hero-num.white { color: #FFFFFF; }
-  .hero-num.orange { color: #E8731A; }
+  .hero-num.orange { color: #f36710; }
+  .hero-num .unit { font-family: 'GeneralSans', sans-serif; font-weight: 400; }
   
   /* Labels */
   .lbl {
@@ -741,7 +742,7 @@ const SLIDE_STYLES = `
     padding: 24px;
   }
   .card.aqua-b { border-color: #00EAD3; }
-  .card.orange-b { border-color: #E8731A; }
+  .card.orange-b { border-color: #f36710; }
   .card.white-b { border-color: #FFFFFF; }
   
   /* Insight cards - dark grey bg with colored left border */
@@ -751,7 +752,7 @@ const SLIDE_STYLES = `
     padding: 24px 28px;
     border-left: 4px solid #00EAD3;
   }
-  .insight-card.orange { border-left-color: #E8731A; }
+  .insight-card.orange { border-left-color: #f36710; }
   .insight-card .insight-title {
     font-family: 'NextSphere', sans-serif;
     font-size: 18px;
@@ -760,20 +761,20 @@ const SLIDE_STYLES = `
     text-transform: uppercase;
     margin-bottom: 10px;
   }
-  .insight-card.orange .insight-title { color: #E8731A; }
+  .insight-card.orange .insight-title { color: #f36710; }
   .insight-card p { color: #808285; font-size: 14px; line-height: 1.6; }
   .insight-card .hl-aqua { color: #00EAD3; font-weight: 600; }
-  .insight-card .hl-orange { color: #E8731A; font-weight: 600; }
+  .insight-card .hl-orange { color: #f36710; font-weight: 600; }
   .insight-card .hl-white { color: #FFFFFF; font-weight: 600; }
   
   /* Badges */
   .badge { display: inline-block; padding: 4px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
   .badge.excellent { background: #00EAD3; color: #000; }
   .badge.good { background: #22c55e; color: #000; }
-  .badge.moderate { background: #E8731A; color: #000; }
+  .badge.moderate { background: #f36710; color: #000; }
   .badge.complex { background: #555; color: #fff; }
   .badge.high { background: #ef4444; color: #fff; }
-  .badge.medium { background: #E8731A; color: #000; }
+  .badge.medium { background: #f36710; color: #000; }
   .badge.low { background: #22c55e; color: #000; }
   
   /* Tables */
@@ -793,7 +794,7 @@ const SLIDE_STYLES = `
   
   /* Colors */
   .aqua { color: #00EAD3; }
-  .orange { color: #E8731A; }
+  .orange { color: #f36710; }
   .gray { color: #808285; }
   .white { color: #FFFFFF; }
   
@@ -856,14 +857,14 @@ export function generateSlideHTML(slide: SlideContent): string {
 function genCover(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
-    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px;">
+    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; background: #000000 url('${BRAND.coverBg}') no-repeat right center; background-size: contain;">
       <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 60px;">
         <img src="${c.logoUrl}" style="width: 50px; height: 50px;" alt="LE" />
         <span style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; letter-spacing: 0.15em;">LIGHTNING ENERGY</span>
       </div>
-      <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 900px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
+      <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 800px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
       <div style="position: absolute; bottom: 80px; left: 80px; display: flex; align-items: flex-start; gap: 16px;">
-        <div style="width: 4px; height: 50px; background: #E8731A; border-radius: 2px;"></div>
+        <div style="width: 4px; height: 50px; background: #f36710; border-radius: 2px;"></div>
         <div>
           <p style="font-family: 'Urbanist', sans-serif; font-size: 20px; color: #00EAD3; font-weight: 600;">${slide.title}</p>
           <p style="font-family: 'GeneralSans', sans-serif; font-size: 16px; color: #00EAD3;">${c.address}</p>
@@ -922,7 +923,7 @@ function genBillAnalysis(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
           <table>
-            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #E8731A;">AMOUNT</th></tr>
+            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #f36710;">AMOUNT</th></tr>
             <tr><td>General Usage</td><td class="gray">${(c.annualCost as number / (c.usageRate as number / 100)).toFixed(0)} kWh @ $${(c.usageRate as number / 100).toFixed(4)}/kWh</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.usageCost as number).toLocaleString()}</td></tr>
             <tr><td>Daily Supply Charge</td><td class="gray">365 days @ $${(c.supplyCharge as number / 100).toFixed(4)}/day</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.supplyCost as number).toLocaleString()}</td></tr>
             <tr><td>Solar Feed-in Credit</td><td class="gray">@ ${c.feedInTariff}¢/kWh</td><td style="text-align: right; color: #00EAD3;">Credit</td></tr>
@@ -937,7 +938,7 @@ function genBillAnalysis(slide: SlideContent): string {
           <div style="display: flex; gap: 16px;">
             <div class="card" style="flex: 1; text-align: center;">
               <p class="lbl">USAGE RATE</p>
-              <p style="font-size: 28px; color: #E8731A; font-weight: 600;">${c.usageRate}¢</p>
+              <p style="font-size: 28px; color: #f36710; font-weight: 600;">${c.usageRate}¢</p>
               <p class="gray" style="font-size: 11px;">per kWh</p>
             </div>
             <div class="card" style="flex: 1; text-align: center;">
@@ -1031,12 +1032,12 @@ function genYearlyProjection(slide: SlideContent): string {
               return `
                 <div style="position: absolute; left: ${x}%; bottom: 0; width: 2px; height: 100%; border-left: 1px dashed #1a1a1a;"></div>
                 <div style="position: absolute; left: ${x}%; bottom: ${100 - yAqua}%; width: 8px; height: 8px; background: #00EAD3; border-radius: 50%; transform: translate(-4px, 4px);"></div>
-                <div style="position: absolute; left: ${x}%; bottom: ${100 - yOrange}%; width: 8px; height: 8px; background: #E8731A; border-radius: 50%; transform: translate(-4px, 4px);"></div>
+                <div style="position: absolute; left: ${x}%; bottom: ${100 - yOrange}%; width: 8px; height: 8px; background: #f36710; border-radius: 50%; transform: translate(-4px, 4px);"></div>
               `;
             }).join('')}
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #E8731A; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Bill Cost (Current)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Bill Cost (Current)</span></div>
             <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Total Benefit (Proposed)</span></div>
           </div>
         </div>
@@ -1137,10 +1138,10 @@ function genStrategic(slide: SlideContent): string {
         <div style="width: 1px; background: #333;"></div>
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <span style="color: #E8731A; font-size: 24px;">⚠</span>
-            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #E8731A;">CONSIDERATIONS</span>
+            <span style="color: #f36710; font-size: 24px;">⚠</span>
+            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #f36710;">CONSIDERATIONS</span>
           </div>
-          <div style="border-bottom: 2px solid #E8731A; margin-bottom: 20px;"></div>
+          <div style="border-bottom: 2px solid #f36710; margin-bottom: 20px;"></div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             ${considerations.map(co => `
               <div>
@@ -1192,12 +1193,12 @@ function genBattery(slide: SlideContent): string {
           <div style="display: flex; height: 44px; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
             <div style="width: ${(cap.home / total) * 100}%; background: #808285; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">HOME ~${cap.home.toFixed(0)}kWh</div>
             ${cap.evCharge > 0 ? `<div style="width: ${(cap.evCharge / total) * 100}%; background: #00EAD3; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">EV CHARGE ~${cap.evCharge}kWh</div>` : ''}
-            <div style="width: ${(cap.vppTrade / total) * 100}%; background: #E8731A; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">VPP TRADE ~${cap.vppTrade.toFixed(0)}kWh</div>
+            <div style="width: ${(cap.vppTrade / total) * 100}%; background: #f36710; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">VPP TRADE ~${cap.vppTrade.toFixed(0)}kWh</div>
           </div>
           <div style="display: flex; gap: 20px; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #808285; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Home Overnight</span></div>
             ${cap.evCharge > 0 ? `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">EV Charging</span></div>` : ''}
-            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #E8731A; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">VPP Trading</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">VPP Trading</span></div>
           </div>
           <p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>
         </div>
@@ -1225,7 +1226,7 @@ function genSolar(slide: SlideContent): string {
           <p class="hero-num white" style="font-size: 72px;">${c.panelCount}<span style="font-size: 20px; color: #00EAD3;"> UNITS</span></p>
         </div>
         <div class="card orange-b" style="flex: 1; text-align: center; padding: 30px; background: rgba(232,115,26,0.05);">
-          <p class="lbl" style="color: #E8731A;">HARDWARE TECHNOLOGY</p>
+          <p class="lbl" style="color: #f36710;">HARDWARE TECHNOLOGY</p>
           <p class="hero-num orange" style="font-size: 72px;">${c.panelPower}<span style="font-size: 20px; color: #808285;"> W</span></p>
           <p class="gray" style="font-size: 13px; margin-top: 8px;">${c.panelBrand}</p>
         </div>
@@ -1236,7 +1237,7 @@ function genSolar(slide: SlideContent): string {
           <p>${c.whyThisBrand}</p>
         </div>
         <div style="flex: 1;">
-          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #E8731A; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #f36710; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
           ${features.map(f => `
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
               <span style="color: #00EAD3; font-size: 10px; margin-top: 4px;">●</span>
@@ -1266,8 +1267,8 @@ function genVPPComparison(slide: SlideContent): string {
         <tr><th>PROVIDER</th><th>VPP MODEL</th><th>GAS BUNDLE</th><th>EST. ANNUAL VALUE</th><th>STRATEGIC FIT</th></tr>
         ${providers.map(p => `
           <tr class="${p.provider === rec ? 'highlight-row' : ''}">
-            <td style="font-weight: 600;">${p.provider}${p.provider === rec ? '<br/><span style="color: #E8731A; font-size: 11px;">Recommended</span>' : ''}</td>
-            <td><span style="color: #E8731A;">${p.program}</span></td>
+            <td style="font-weight: 600;">${p.provider}${p.provider === rec ? '<br/><span style="color: #f36710; font-size: 11px;">Recommended</span>' : ''}</td>
+            <td><span style="color: #f36710;">${p.program}</span></td>
             <td>${p.gasBundle ? '<span style="color: #00EAD3;">✓ Yes</span>' : '<span class="gray">✗ No</span>'}</td>
             <td style="font-weight: 600;">${p.annualValue}</td>
             <td><span class="badge ${p.strategicFit.toLowerCase()}">${p.strategicFit}</span></td>
@@ -1294,8 +1295,8 @@ function genVPPRecommendation(slide: SlideContent): string {
       </div>
       <div style="display: flex; gap: 24px; margin-top: 36px;">
         ${features.map(f => `
-          <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #E8731A;">
-            <p style="color: #E8731A; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
+          <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #f36710;">
+            <p style="color: #f36710; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
             <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
             <p style="color: #808285; font-size: 13px; line-height: 1.5;">${f.description}</p>
           </div>
@@ -1325,7 +1326,7 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
         <div style="flex: 1;">
           <div class="card" style="margin-bottom: 20px;">
             <p class="lbl">CURRENT SYSTEM</p>
-            <p style="font-size: 22px; color: #E8731A; font-weight: 600;">${c.currentSystem}</p>
+            <p style="font-size: 22px; color: #f36710; font-weight: 600;">${c.currentSystem}</p>
             <p class="gray" style="margin-top: 8px;">Annual Cost: <span class="orange">$${c[type === 'hot_water' ? 'annualGasCost' : type === 'heating' ? 'annualGasCost' : 'annualGasCost']}/year</span></p>
           </div>
           <div class="card aqua-b">
@@ -1385,8 +1386,8 @@ function genEVAnalysis(slide: SlideContent): string {
             ${comparison.map((comp, i) => `
               <tr class="${i === 2 ? 'highlight-row' : ''}">
                 <td>${comp.scenario}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#E8731A' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#E8731A' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
               </tr>
             `).join('')}
           </table>
@@ -1510,14 +1511,14 @@ function genSavingsSummary(slide: SlideContent): string {
           <div style="height: 380px; display: flex; align-items: flex-end; justify-content: center;">
             <div style="width: 200px; display: flex; flex-direction: column;">
               ${breakdown.map(b => {
-                const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+                const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
                 return `<div style="height: ${(b.value / total) * 300}px; background: ${col}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: 600;">${b.category}</div>`;
               }).join('')}
             </div>
           </div>
           <div style="display: flex; gap: 16px; margin-top: 16px; justify-content: center;">
             ${breakdown.map(b => {
-              const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+              const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
               return `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: ${col};"></div><span style="font-size: 11px; color: #808285;">${b.category}</span></div>`;
             }).join('')}
           </div>
@@ -1529,7 +1530,7 @@ function genSavingsSummary(slide: SlideContent): string {
             <p class="gray" style="margin-top: 8px;">Tax-Free Savings</p>
           </div>
           ${breakdown.map(b => {
-            const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#E8731A' : '#FFFFFF';
+            const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
             return `
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1a1a1a;">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -1566,7 +1567,7 @@ function genFinancial(slide: SlideContent): string {
             <span style="font-weight: 600; color: #00EAD3; font-style: italic;">-$${(c.rebates as number).toLocaleString()}</span>
           </div>
           <div class="card orange-b" style="margin-top: 20px; padding: 30px;">
-            <p class="lbl" style="color: #E8731A;">NET INVESTMENT</p>
+            <p class="lbl" style="color: #f36710;">NET INVESTMENT</p>
             <p class="hero-num white" style="font-size: 64px;">$${(c.netInvestment as number).toLocaleString()}</p>
             <p class="gray" style="font-size: 13px; margin-top: 8px;">Fully Installed (Inc. GST)</p>
           </div>
@@ -1620,7 +1621,7 @@ function genEnvironmental(slide: SlideContent): string {
             </div>
             <div class="card" style="text-align: center; padding: 24px;">
               <p class="lbl">CARS OFF ROAD</p>
-              <p style="font-size: 32px; color: #E8731A; font-weight: 600;">${c.carsOffRoad}</p>
+              <p style="font-size: 32px; color: #f36710; font-weight: 600;">${c.carsOffRoad}</p>
               <p class="gray" style="font-size: 11px;">equivalent</p>
             </div>
           </div>
@@ -1657,18 +1658,18 @@ function genRoadmap(slide: SlideContent): string {
       <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
         ${steps.map((s, i) => `
           <div style="display: flex; align-items: center;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'};"></div>
-            ${i < steps.length - 1 ? `<div style="width: ${800 / steps.length}px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'}, ${steps[i + 1].color === 'aqua' ? '#00EAD3' : '#E8731A'});"></div>` : ''}
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};"></div>
+            ${i < steps.length - 1 ? `<div style="width: ${800 / steps.length}px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}, ${steps[i + 1].color === 'aqua' ? '#00EAD3' : '#f36710'});"></div>` : ''}
           </div>
         `).join('')}
       </div>
       <div style="display: flex; gap: 16px;">
         ${steps.map(s => `
-          <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'};">
+          <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};">
             <p style="font-size: 40px; color: #333; font-weight: 800; font-family: 'NextSphere', sans-serif;">${s.number}</p>
-            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#E8731A'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#f36710'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
             <p style="color: #808285; font-size: 12px; line-height: 1.5; margin-bottom: 14px;">${s.description}</p>
-            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#E8731A'}; font-size: 12px; font-family: 'Urbanist', sans-serif;">⏱ ${s.timeline}</p>
+            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}; font-size: 12px; font-family: 'Urbanist', sans-serif;">⏱ ${s.timeline}</p>
           </div>
         `).join('')}
       </div>
@@ -1687,12 +1688,12 @@ function genConclusion(slide: SlideContent): string {
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 24px; margin-top: 10px;">
         ${features.map(f => {
-          const borderCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#E8731A' : '#FFFFFF';
-          const iconCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#E8731A' : '#FFFFFF';
+          const borderCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#f36710' : '#FFFFFF';
+          const iconCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#f36710' : '#FFFFFF';
           return `
             <div class="card" style="flex: 1; text-align: center; border-top: 3px solid ${borderCol}; padding: 30px;">
               <p style="color: ${iconCol}; font-size: 36px; margin-bottom: 14px;">${f.icon}</p>
-              <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#E8731A' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
+              <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#f36710' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
               <p style="color: #808285; font-size: 13px; line-height: 1.6;">${f.description}</p>
             </div>
           `;
@@ -1739,7 +1740,7 @@ function genContact(slide: SlideContent): string {
         <p class="lbl" style="color: #00EAD3; margin-bottom: 14px;">YOUR NEXT STEPS</p>
         ${nextSteps.map((step, i) => `
           <p style="font-size: 15px; margin-bottom: 10px;">
-            <span style="color: #E8731A; font-weight: 700;">${i + 1}.</span> ${step}
+            <span style="color: #f36710; font-weight: 700;">${i + 1}.</span> ${step}
           </p>
         `).join('')}
       </div>

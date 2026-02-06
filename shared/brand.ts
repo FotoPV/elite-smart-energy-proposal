@@ -4,31 +4,34 @@
 export const BRAND = {
   // Logo
   logo: {
-    aqua: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/xoEnSiyrnDIFkppW.png',
+    aqua: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/CEecvotbhlfqjFdS.png',
   },
+  
+  // Cover page background image
+  coverBg: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/efFUlWSUSNJuclEL.png',
   
   // Colors (exact hex values from brand guide)
   colors: {
-    aqua: '#00EAD3',      // Primary accent - use sparingly (logo, graphs, highlights)
-    orange: '#E8731A',    // Burnt Orange - costs, alerts, accent borders
-    white: '#FFFFFF',     // Body text
-    ash: '#808285',       // Secondary text, labels
+    aqua: '#00EAD3',      // Primary accent - Pantone 3265C
+    orange: '#f36710',    // Burnt Orange - costs, alerts, accent borders (minimal usage)
+    white: '#FFFFFF',     // Body text - Pantone White
+    ash: '#808285',       // Secondary text, labels - Pantone 443C
     black: '#000000',     // Background
   },
   
   // Fonts
   fonts: {
-    heading: 'NextSphere',      // Main headings (ALL CAPS, bold)
-    label: 'Urbanist',          // Section labels (ALL CAPS, letter-spaced)
-    body: 'GeneralSans',        // Body text
+    heading: 'NextSphere',      // Main headings (ALL CAPS, bold) - HEADINGS ONLY
+    label: 'Urbanist',          // Section labels, subtitles (ALL CAPS, letter-spaced)
+    body: 'GeneralSans',        // Body text, numbers, all other content
   },
   
-  // Font CDN URLs
+  // Font CDN URLs (freshly uploaded)
   fontUrls: {
-    nextSphere: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/fRacvGdPvRdejhxR.ttf',
-    generalSans: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/FlnvYEaVCWLmtgQE.otf',
-    urbanist: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/ifpxpyNGTnspcxRL.ttf',
-    urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YGUmPLTiRKkxOqHk.ttf',
+    nextSphere: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/kMqxsAvtbLaduJLn.ttf',
+    generalSans: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vrzfchblYdJojJyn.otf',
+    urbanist: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/eYiOkjJCeeZuKAcI.ttf',
+    urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/FXkHnZytykxslQaU.ttf',
   },
   
   // Contact Info (as per Lightning Energy specifications)

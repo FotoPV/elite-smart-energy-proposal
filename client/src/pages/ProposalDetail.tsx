@@ -1,44 +1,38 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useParams } from "wouter";
 import { 
   ArrowLeft,
-  Calculator,
   FileText,
   Download,
-  RefreshCw,
-  CheckCircle,
+  ExternalLink,
   Clock,
-  Zap,
-  DollarSign,
-  TrendingUp,
-  Battery,
-  Sun,
   Loader2,
-  Edit,
-  Upload
+  Upload,
+  RefreshCw,
+  Calculator,
+  MoreVertical,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
-import { SlideViewer } from "@/components/SlideViewer";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 /**
  * Client-side PDF generation: renders each slide HTML in a hidden iframe,
  * captures with html2canvas, and assembles into a PDF with jsPDF.
- * This works in production without needing Puppeteer/Chrome on the server.
  */
 async function generatePdfClientSide(
   slideHtmlArray: string[],
   onProgress?: (step: string, percent: number) => void
 ): Promise<Blob> {
-  // Dynamic imports for code splitting
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import('html2canvas-pro'),
     import('jspdf'),
@@ -52,19 +46,21 @@ async function generatePdfClientSide(
 
   const pageWidth = 297;
   const pageHeight = 210;
+  const slideW = 1920;
+  const slideH = 1080;
 
-  // Create a hidden container
-  const container = document.createElement('div');
-  container.style.cssText = `
+  // Use an iframe for rendering so @font-face declarations in the full HTML document work
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = `
     position: fixed;
     left: -9999px;
     top: 0;
-    width: 1120px;
-    height: 630px;
-    overflow: hidden;
+    width: ${slideW}px;
+    height: ${slideH}px;
+    border: none;
     z-index: -1;
   `;
-  document.body.appendChild(container);
+  document.body.appendChild(iframe);
 
   try {
     for (let i = 0; i < slideHtmlArray.length; i++) {
@@ -73,31 +69,32 @@ async function generatePdfClientSide(
       const pct = Math.round(((i + 1) / slideHtmlArray.length) * 100);
       onProgress?.(`Rendering slide ${i + 1} of ${slideHtmlArray.length}...`, pct);
 
-      // Render slide
-      container.innerHTML = `
-        <div style="
-          width: 1120px;
-          height: 630px;
-          background: #000000;
-          color: #ffffff;
-          overflow: hidden;
-          position: relative;
-          font-family: 'General Sans', sans-serif;
-        ">
-          ${slideHtmlArray[i]}
-        </div>
-      `;
+      const slideHtml = slideHtmlArray[i];
+      const iframeDoc = iframe.contentDocument;
+      if (!iframeDoc) continue;
 
-      // Wait for rendering
-      await new Promise(r => setTimeout(r, 300));
+      // Write the full HTML document (includes @font-face, styles, etc.)
+      const isFullDoc = slideHtml.includes('<!DOCTYPE html>') || slideHtml.includes('<html');
+      iframeDoc.open();
+      if (isFullDoc) {
+        const overrides = `<style>html,body{width:${slideW}px;height:${slideH}px;overflow:hidden;margin:0;padding:0;}</style>`;
+        iframeDoc.write(slideHtml.replace('</head>', overrides + '</head>'));
+      } else {
+        iframeDoc.write(`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${slideW}px;height:${slideH}px;overflow:hidden;background:#000;color:#fff;}</style></head><body>${slideHtml}</body></html>`);
+      }
+      iframeDoc.close();
 
-      const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
-        scale: 2,
+      // Wait for fonts and images to load
+      await new Promise(r => setTimeout(r, 800));
+
+      const body = iframeDoc.body;
+      const canvas = await html2canvas(body, {
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#000000',
-        width: 1120,
-        height: 630,
+        width: slideW,
+        height: slideH,
         logging: false,
       });
 
@@ -107,11 +104,227 @@ async function generatePdfClientSide(
 
     return pdf.output('blob');
   } finally {
-    document.body.removeChild(container);
+    document.body.removeChild(iframe);
   }
 }
 
-// Update and Publish Button Component - Recalculates, regenerates slides, then exports PDF client-side
+/**
+ * SlidePreview renders a single slide HTML inside a scaled container
+ * that maintains 16:9 aspect ratio without scrollbars.
+ */
+function SlidePreview({ html, index, title }: { html: string; index: number; title: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!iframeRef.current) return;
+    const iframe = iframeRef.current;
+    
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+    
+    // The html from generateSlideHTML is a full document with <!DOCTYPE html>,
+    // <head> containing @font-face declarations, and <body> with the slide content.
+    // We inject additional overrides to ensure proper scaling and no scrollbars,
+    // but we must preserve the original document structure for fonts to load.
+    const isFullDocument = html.includes('<!DOCTYPE html>') || html.includes('<html');
+    
+    doc.open();
+    if (isFullDocument) {
+      // Insert our override styles just before </head> to ensure they take effect
+      const overrideStyles = `
+        <style>
+          html, body { width: 1920px; height: 1080px; overflow: hidden; margin: 0; padding: 0; }
+          ::-webkit-scrollbar { display: none; }
+          body { -ms-overflow-style: none; scrollbar-width: none; }
+        </style>
+      `;
+      const modifiedHtml = html.replace('</head>', overrideStyles + '</head>');
+      doc.write(modifiedHtml);
+    } else {
+      // Fallback for raw HTML content without document wrapper
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000000; color: #ffffff; }
+            ::-webkit-scrollbar { display: none; }
+            body { -ms-overflow-style: none; scrollbar-width: none; }
+          </style>
+        </head>
+        <body>${html}</body>
+        </html>
+      `);
+    }
+    doc.close();
+  }, [html]);
+
+  return (
+    <div 
+      ref={containerRef}
+      className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] overflow-hidden"
+    >
+      <div 
+        className="w-full relative overflow-hidden"
+        style={{ aspectRatio: '16/9' }}
+      >
+        <iframe
+          ref={iframeRef}
+          className="border-0 origin-top-left"
+          title={`Slide ${index + 1}: ${title}`}
+          style={{ 
+            width: '1920px',
+            height: '1080px',
+            transform: 'scale(var(--slide-scale, 0.3))',
+            transformOrigin: 'top left',
+            pointerEvents: 'none',
+            display: 'block',
+          }}
+          sandbox="allow-same-origin"
+        />
+        {/* Overlay to calculate scale */}
+        <ScaleCalculator containerRef={containerRef} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ScaleCalculator observes the container width and sets a CSS variable
+ * so the iframe scales correctly to fill the card.
+ */
+function ScaleCalculator({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateScale = () => {
+      const containerWidth = container.clientWidth;
+      const scale = containerWidth / 1920;
+      container.style.setProperty('--slide-scale', scale.toString());
+      // Also set the height of the aspect ratio container
+      const aspectContainer = container.querySelector('[style*="aspect-ratio"]') as HTMLElement;
+      if (aspectContainer) {
+        aspectContainer.style.height = `${1080 * scale}px`;
+      }
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [containerRef]);
+
+  return null;
+}
+
+// Download PDF button - generates and downloads
+function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { proposalId: number; customerName: string; size?: 'default' | 'sm' }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('');
+  const utils = trpc.useUtils();
+  
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    setProgress(0);
+    
+    try {
+      setCurrentStep('Fetching slides...');
+      setProgress(10);
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      
+      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
+        throw new Error('No slides generated. Run calculations and generate slides first.');
+      }
+      
+      setProgress(20);
+      const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
+      
+      const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
+        setCurrentStep(step);
+        setProgress(20 + Math.round(pct * 0.7));
+      });
+      
+      setProgress(90);
+      setCurrentStep('Preparing download...');
+      
+      const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      // Upload to S3 for storage
+      try {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onloadend = () => {
+            const base64data = (reader.result as string).split(',')[1];
+            resolve(base64data);
+          };
+          reader.readAsDataURL(pdfBlob);
+        });
+        
+        await fetch('/api/upload-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdfData: base64,
+            fileName: `Bill_Analysis_${customerName.replace(/\s+/g, '_')}_${Date.now()}.pdf`,
+            proposalId: proposalId.toString(),
+          }),
+        });
+      } catch {
+        // Upload optional
+      }
+      
+      setProgress(100);
+      toast.success('PDF downloaded successfully!');
+    } catch (error: any) {
+      toast.error(`Failed to generate PDF: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+  
+  return (
+    <div className="space-y-2">
+      <Button 
+        onClick={handleDownload}
+        disabled={isGenerating}
+        className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+        size={size}
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {Math.round(progress)}%
+          </>
+        ) : (
+          <>
+            <Download className="mr-2 h-4 w-4" />
+            Download
+          </>
+        )}
+      </Button>
+      {isGenerating && (
+        <Progress value={progress} className="h-1.5" />
+      )}
+    </div>
+  );
+}
+
+// Update & Publish - recalculates, regenerates, then downloads
 function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { proposalId: number; customerName: string; onComplete: () => void }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
@@ -125,19 +338,16 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
     setIsProcessing(true);
     setProgress(0);
     try {
-      // Step 1: Recalculate (0-20%)
       setCurrentStep('Recalculating...');
       setProgress(10);
       await calculateMutation.mutateAsync({ proposalId });
       setProgress(20);
       
-      // Step 2: Regenerate slides (20-40%)
       setCurrentStep('Generating slides...');
       setProgress(30);
       await generateMutation.mutateAsync({ proposalId });
       setProgress(40);
       
-      // Step 3: Fetch slide HTML (40-50%)
       setCurrentStep('Fetching slide data...');
       setProgress(45);
       const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
@@ -147,7 +357,6 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       }
       setProgress(50);
       
-      // Step 4: Generate PDF client-side (50-95%)
       setCurrentStep('Creating PDF...');
       const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
       
@@ -157,12 +366,9 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       });
       
       setProgress(95);
-      
-      // Step 5: Upload to server for storage
       setCurrentStep('Uploading PDF...');
-      const fileName = `${customerName.replace(/\s+/g, '_')}_Proposal_${Date.now()}.pdf`;
+      const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
       
-      // Convert blob to base64 for upload
       const reader = new FileReader();
       const base64 = await new Promise<string>((resolve) => {
         reader.onloadend = () => {
@@ -182,31 +388,18 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
         }),
       });
       
-      if (uploadResponse.ok) {
-        const uploadResult = await uploadResponse.json();
-        // Also trigger a download
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      } else {
-        // Just download locally if upload fails
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+      // Always download
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       setProgress(100);
-      toast.success('Proposal updated and PDF generated successfully!');
+      toast.success('Proposal updated and PDF generated!');
       onComplete();
     } catch (error: any) {
       toast.error(`Failed: ${error.message}`);
@@ -222,149 +415,43 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       <Button 
         onClick={handleUpdateAndPublish}
         disabled={isProcessing}
-        className="lightning-button-primary w-full"
+        variant="outline"
+        className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10 hover:border-[#00EAD3] font-semibold"
       >
         {isProcessing ? (
           <>
-            <Clock className="mr-2 h-4 w-4 animate-pulse" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {currentStep} ({progress}%)
           </>
         ) : (
           <>
-            <Upload className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             Update & Publish
           </>
         )}
       </Button>
       {isProcessing && (
         <div className="space-y-1">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            <Clock className="inline h-3 w-3 mr-1" />
-            {progress}% Complete
-          </p>
+          <Progress value={progress} className="h-1.5" />
+          <p className="text-xs text-[#808285] text-center">{progress}% Complete</p>
         </div>
       )}
     </div>
   );
 }
 
-// Publish PDF Button Component - Client-side PDF generation
-function PublishPDFButton({ proposalId, customerName }: { proposalId: number; customerName: string }) {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState('');
-  const utils = trpc.useUtils();
-  
-  const handlePublish = async () => {
-    setIsGenerating(true);
-    setProgress(0);
-    toast.info('Generating PDF... This may take a moment.');
-    
-    try {
-      // Fetch slide HTML
-      setCurrentStep('Fetching slides...');
-      setProgress(10);
-      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
-      
-      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
-        throw new Error('No slides generated. Run calculations and generate slides first.');
-      }
-      
-      setProgress(20);
-      
-      // Generate PDF client-side
-      const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
-      
-      const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
-        setCurrentStep(step);
-        setProgress(20 + Math.round(pct * 0.7));
-      });
-      
-      setProgress(90);
-      setCurrentStep('Preparing download...');
-      
-      // Download the PDF
-      const fileName = `${customerName.replace(/\s+/g, '_')}_Proposal.pdf`;
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      // Also upload to S3 for storage
-      try {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve) => {
-          reader.onloadend = () => {
-            const base64data = (reader.result as string).split(',')[1];
-            resolve(base64data);
-          };
-          reader.readAsDataURL(pdfBlob);
-        });
-        
-        await fetch('/api/upload-pdf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pdfData: base64,
-            fileName: `${customerName.replace(/\s+/g, '_')}_Proposal_${Date.now()}.pdf`,
-            proposalId: proposalId.toString(),
-          }),
-        });
-      } catch {
-        // Upload to S3 is optional, PDF already downloaded
-      }
-      
-      setProgress(100);
-      toast.success('PDF generated and downloaded!');
-    } catch (error: any) {
-      toast.error(`Failed to generate PDF: ${error.message}`);
-    } finally {
-      setIsGenerating(false);
-      setProgress(0);
-      setCurrentStep('');
-    }
-  };
-  
-  return (
-    <div className="space-y-2">
-      <Button 
-        onClick={handlePublish}
-        disabled={isGenerating}
-        className="lightning-button-primary"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {currentStep || 'Generating PDF...'}
-          </>
-        ) : (
-          <>
-            <Download className="mr-2 h-4 w-4" />
-            Publish PDF
-          </>
-        )}
-      </Button>
-      {isGenerating && (
-        <Progress value={progress} className="h-2" />
-      )}
-    </div>
-  );
-}
-
-
 
 export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const proposalId = parseInt(params.id || '0');
-  const [activeTab, setActiveTab] = useState<'overview' | 'slides'>('overview');
   
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
+  const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
+    { proposalId },
+    { enabled: !!proposal && proposal.status === 'generated' }
+  );
+  
   const calculateMutation = trpc.proposals.calculate.useMutation({
     onSuccess: () => {
       toast.success('Calculations completed!');
@@ -400,10 +487,10 @@ export default function ProposalDetailPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-16">
-          <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h2 className="text-xl font-semibold mb-2">Proposal Not Found</h2>
-          <p className="text-muted-foreground mb-4">The proposal you're looking for doesn't exist.</p>
-          <Button onClick={() => setLocation('/proposals')} variant="outline">
+          <FileText className="h-16 w-16 mx-auto mb-4 text-[#808285] opacity-50" />
+          <h2 className="text-xl" style={{ fontFamily: "'Next Sphere', sans-serif" }}>Proposal Not Found</h2>
+          <p className="text-[#808285] mb-4 mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>The proposal you're looking for doesn't exist.</p>
+          <Button onClick={() => setLocation('/proposals')} variant="outline" className="border-[#808285]/30">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Proposals
           </Button>
@@ -412,213 +499,200 @@ export default function ProposalDetailPage() {
     );
   }
   
-  const calc = proposal.calculations as any;
   const customerName = (proposal as any).customer?.fullName || 'Customer';
+  const customerAddress = (proposal as any).customer?.address || '';
+  const slides = slidesData?.slides || [];
+  const hasSlides = slides.length > 0;
   
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation('/proposals')}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight">
-                <span className="lightning-text-gradient">{proposal.title}</span>
-              </h1>
-              <p className="text-muted-foreground">
-                {customerName} • {proposal.status}
-              </p>
+      <div className="space-y-8 animate-fade-in">
+        {/* Back button */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation('/proposals')}
+            className="text-[#808285] hover:text-white"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        {/* Page Title - BILL ANALYSIS in NextSphere */}
+        <div>
+          <h1 
+            className="text-4xl md:text-5xl tracking-tight text-white uppercase"
+            style={{ fontFamily: "'Next Sphere', sans-serif" }}
+          >
+            Bill Analysis
+          </h1>
+          <p className="text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            View and download your electricity bill analysis
+          </p>
+        </div>
+        
+        {/* Document Card - Dark card with file info + Open/Download */}
+        <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-lg bg-[#00EAD3]/10 border border-[#00EAD3]/20">
+                <FileText className="h-6 w-6 text-[#00EAD3]" />
+              </div>
+              <div>
+                <h2 
+                  className="text-lg text-white uppercase tracking-wide"
+                  style={{ fontFamily: "'Next Sphere', sans-serif" }}
+                >
+                  Bill Analysis
+                </h2>
+                <p className="text-sm text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                  Bill Analysis.pdf
+                </p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-wrap">
-            {proposal.status === 'generated' && (
-              <PublishPDFButton proposalId={proposalId} customerName={customerName} />
-            )}
-            <UpdateAndPublishButton 
-              proposalId={proposalId} 
-              customerName={customerName}
-              onComplete={refetch}
-            />
+            
+            <div className="flex items-center gap-3">
+              {/* Open button - ghost style with aqua text */}
+              {hasSlides && (
+                <Button
+                  variant="ghost"
+                  className="text-[#00EAD3] hover:text-[#00EAD3] hover:bg-[#00EAD3]/10 font-semibold"
+                  onClick={() => {
+                    // Open all slides in a new window for fullscreen viewing
+                    const win = window.open('', '_blank');
+                    if (win && slides[0]) {
+                      win.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head><title>Bill Analysis - ${customerName}</title></head>
+                        <body style="margin:0;background:#000;display:flex;flex-direction:column;align-items:center;">
+                          ${slides.map((s: any, i: number) => `
+                            <div style="width:1120px;max-width:100%;margin:0 auto;${i > 0 ? 'margin-top:4px;' : ''}">
+                              ${s.html}
+                            </div>
+                          `).join('')}
+                        </body>
+                        </html>
+                      `);
+                      win.document.close();
+                    }
+                  }}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open
+                </Button>
+              )}
+              
+              {/* Download button - filled aqua */}
+              {hasSlides && (
+                <DownloadPDFButton proposalId={proposalId} customerName={customerName} />
+              )}
+
+              {/* More options dropdown for admin actions */}
+              {hasSlides && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-[#808285] hover:text-white"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-[#0a0a0a] border-[#1a1a1a]">
+                    <DropdownMenuItem
+                      onClick={() => calculateMutation.mutate({ proposalId })}
+                      disabled={calculateMutation.isPending}
+                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                    >
+                      <Calculator className="mr-2 h-4 w-4" />
+                      Recalculate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => generateMutation.mutate({ proposalId })}
+                      disabled={generateMutation.isPending}
+                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Regenerate Slides
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </div>
         
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-border">
-          {(['overview', 'slides'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px capitalize ${
-                activeTab === tab
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+        {/* If no slides yet, show generation actions */}
+        {!hasSlides && (
+          <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-8 text-center">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-[#808285]/50" />
+            <h3 
+              className="text-xl text-white mb-2 uppercase"
+              style={{ fontFamily: "'Next Sphere', sans-serif" }}
             >
-              {tab}
-            </button>
-          ))}
-        </div>
-        
-        {/* Tab Content */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Status & Actions */}
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Status</p>
-                      <p className="text-lg font-semibold capitalize">{proposal.status}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Zap className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Slide Count</p>
-                      <p className="text-lg font-semibold">{proposal.slideCount || 0} slides</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Created</p>
-                      <p className="text-lg font-semibold">
-                        {new Date(proposal.createdAt).toLocaleDateString('en-AU')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Calculations Summary */}
-            {calc && (
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-primary" />
-                    Calculation Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <p className="text-xs text-muted-foreground">Annual Usage</p>
-                      <p className="text-xl font-bold font-mono">{calc.yearlyUsageKwh?.toLocaleString() || 0} kWh</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <p className="text-xs text-muted-foreground">Annual Cost</p>
-                      <p className="text-xl font-bold font-mono text-red-400">${calc.projectedAnnualCost?.toLocaleString() || 0}</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <p className="text-xs text-muted-foreground">Annual Savings</p>
-                      <p className="text-xl font-bold font-mono text-primary">${calc.totalAnnualSavings?.toLocaleString() || 0}</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <p className="text-xs text-muted-foreground">Payback Period</p>
-                      <p className="text-xl font-bold font-mono">{calc.paybackYears || 0} years</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sun className="h-4 w-4 text-primary" />
-                        <p className="text-xs text-muted-foreground">Solar System</p>
-                      </div>
-                      <p className="text-lg font-bold font-mono">{calc.recommendedSolarKw || 0} kW</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Battery className="h-4 w-4 text-primary" />
-                        <p className="text-xs text-muted-foreground">Battery</p>
-                      </div>
-                      <p className="text-lg font-bold font-mono">{calc.recommendedBatteryKwh || 0} kWh</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <DollarSign className="h-4 w-4 text-primary" />
-                        <p className="text-xs text-muted-foreground">Total Investment</p>
-                      </div>
-                      <p className="text-lg font-bold font-mono">${calc.totalInvestment?.toLocaleString() || 0}</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <p className="text-xs text-muted-foreground">10-Year Savings</p>
-                      </div>
-                      <p className="text-lg font-bold font-mono text-primary">${((calc.totalAnnualSavings || 0) * 10).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            {/* Quick Actions */}
-            <div className="flex gap-3 flex-wrap">
+              No Slides Generated Yet
+            </h3>
+            <p className="text-[#808285] mb-6" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              Run calculations and generate slides to create the bill analysis.
+            </p>
+            <div className="flex items-center justify-center gap-3">
               <Button
                 onClick={() => calculateMutation.mutate({ proposalId })}
                 disabled={calculateMutation.isPending}
                 variant="outline"
-                className="border-primary/30 hover:border-primary"
+                className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10"
               >
                 {calculateMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Calculator className="mr-2 h-4 w-4" />
                 )}
-                Recalculate
+                Calculate
               </Button>
               <Button
                 onClick={() => generateMutation.mutate({ proposalId })}
-                disabled={generateMutation.isPending || !calc}
-                variant="outline"
-                className="border-primary/30 hover:border-primary"
+                disabled={generateMutation.isPending}
+                className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
               >
                 {generateMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}
-                Regenerate Slides
+                Generate Slides
               </Button>
             </div>
           </div>
         )}
         
-        {activeTab === 'slides' && (
-          <SlideViewer proposalId={proposalId} />
+        {/* Slide Preview - Clean scaled slide cards without scrollbars */}
+        {hasSlides && (
+          <div className="space-y-4">
+            {slides.map((slide: any, index: number) => (
+              <SlidePreview
+                key={slide.id || index}
+                html={slide.html}
+                index={index}
+                title={slide.title || `Slide ${index + 1}`}
+              />
+            ))}
+          </div>
         )}
         
-
+        {/* Loading state for slides */}
+        {slidesLoading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-[#00EAD3]" />
+            <span className="ml-3 text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>
+          </div>
+        )}
         
         {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          COPYRIGHT Lightning Energy - Architect George Fotopoulos
+        <div className="text-center text-xs text-[#808285]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+          COPYRIGHT Lightning Energy — Architect George Fotopoulos
         </div>
       </div>
     </DashboardLayout>
