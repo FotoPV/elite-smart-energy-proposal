@@ -19,17 +19,25 @@ import {
   Sun,
   Loader2,
   Edit,
-  Upload
+  Upload,
+  Share2,
+  Copy,
+  Link,
+  ExternalLink
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { SlideViewer } from "@/components/SlideViewer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Update and Publish Button Component - Recalculates, regenerates slides, then exports PDF
 function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { proposalId: number; customerName: string; onComplete: () => void }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
+  const [progress, setProgress] = useState(0);
   
   const calculateMutation = trpc.proposals.calculate.useMutation();
   const generateMutation = trpc.proposals.generate.useMutation();
@@ -37,18 +45,25 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
   
   const handleUpdateAndPublish = async () => {
     setIsProcessing(true);
+    setProgress(0);
     try {
-      // Step 1: Recalculate
+      // Step 1: Recalculate (0-33%)
       setCurrentStep('Recalculating...');
+      setProgress(10);
       await calculateMutation.mutateAsync({ proposalId });
+      setProgress(33);
       
-      // Step 2: Regenerate slides
+      // Step 2: Regenerate slides (33-66%)
       setCurrentStep('Generating slides...');
+      setProgress(40);
       await generateMutation.mutateAsync({ proposalId });
+      setProgress(66);
       
-      // Step 3: Export PDF
+      // Step 3: Export PDF (66-100%)
       setCurrentStep('Creating PDF...');
+      setProgress(75);
       const result = await exportMutation.mutateAsync({ proposalId });
+      setProgress(100);
       
       // Download the PDF
       const link = document.createElement('a');
@@ -65,27 +80,39 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
     } finally {
       setIsProcessing(false);
       setCurrentStep('');
+      setProgress(0);
     }
   };
   
   return (
-    <Button 
-      onClick={handleUpdateAndPublish}
-      disabled={isProcessing}
-      className="lightning-button-primary"
-    >
-      {isProcessing ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {currentStep}
-        </>
-      ) : (
-        <>
-          <Upload className="mr-2 h-4 w-4" />
-          Update & Publish
-        </>
+    <div className="space-y-2">
+      <Button 
+        onClick={handleUpdateAndPublish}
+        disabled={isProcessing}
+        className="lightning-button-primary w-full"
+      >
+        {isProcessing ? (
+          <>
+            <Clock className="mr-2 h-4 w-4 animate-pulse" />
+            {currentStep} ({progress}%)
+          </>
+        ) : (
+          <>
+            <Upload className="mr-2 h-4 w-4" />
+            Update & Publish
+          </>
+        )}
+      </Button>
+      {isProcessing && (
+        <div className="space-y-1">
+          <Progress value={progress} className="h-2" />
+          <p className="text-xs text-muted-foreground text-center">
+            <Clock className="inline h-3 w-3 mr-1" />
+            {progress}% Complete
+          </p>
+        </div>
       )}
-    </Button>
+    </div>
   );
 }
 
@@ -135,6 +162,126 @@ function PublishPDFButton({ proposalId, customerName }: { proposalId: number; cu
         </>
       )}
     </Button>
+  );
+}
+
+// Share Link Button Component - Generates a shareable link for customer portal
+function ShareLinkButton({ proposalId, customerName }: { proposalId: number; customerName: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [shareLink, setShareLink] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const createLinkMutation = trpc.proposals.createShareLink.useMutation({
+    onSuccess: (data) => {
+      const fullUrl = `${window.location.origin}/portal/${data.token}`;
+      setShareLink(fullUrl);
+      setIsGenerating(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to create link: ${error.message}`);
+      setIsGenerating(false);
+    }
+  });
+  
+  const handleGenerateLink = () => {
+    setIsGenerating(true);
+    createLinkMutation.mutate({ proposalId, expiresInDays: 30 });
+  };
+  
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareLink);
+    toast.success('Link copied to clipboard!');
+  };
+  
+  const handleOpenPortal = () => {
+    window.open(shareLink, '_blank');
+  };
+  
+  return (
+    <>
+      <Button 
+        onClick={() => setIsOpen(true)}
+        variant="outline"
+        className="border-primary/30 hover:bg-primary/10"
+      >
+        <Share2 className="mr-2 h-4 w-4" />
+        Share with Customer
+      </Button>
+      
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link className="h-5 w-5 text-primary" />
+              Share Proposal
+            </DialogTitle>
+            <DialogDescription>
+              Generate a secure link for {customerName} to view their proposal online.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {!shareLink ? (
+              <Button 
+                onClick={handleGenerateLink}
+                disabled={isGenerating}
+                className="w-full lightning-button-primary"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Link...
+                  </>
+                ) : (
+                  <>
+                    <Link className="mr-2 h-4 w-4" />
+                    Generate Share Link
+                  </>
+                )}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <Label>Customer Portal Link</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={shareLink} 
+                    readOnly 
+                    className="font-mono text-xs"
+                  />
+                  <Button 
+                    onClick={handleCopyLink}
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleCopyLink}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Link
+                  </Button>
+                  <Button 
+                    onClick={handleOpenPortal}
+                    className="flex-1 lightning-button-primary"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Open Portal
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Link expires in 30 days
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -295,6 +442,10 @@ export default function ProposalDetail() {
               
               {proposal.status === 'generated' && (
                 <PublishPDFButton proposalId={proposalId} customerName={customer?.fullName || 'Customer'} />
+              )}
+              
+              {proposal.status === 'generated' && (
+                <ShareLinkButton proposalId={proposalId} customerName={customer?.fullName || 'Customer'} />
               )}
               
               {proposal.calculations && (

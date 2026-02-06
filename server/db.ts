@@ -7,7 +7,8 @@ import {
   proposals, InsertProposal, Proposal,
   vppProviders, InsertVppProvider, VppProvider,
   stateRebates, InsertStateRebate, StateRebate,
-  customerDocuments, InsertCustomerDocument, CustomerDocument
+  customerDocuments, InsertCustomerDocument, CustomerDocument,
+  proposalAccessTokens, InsertProposalAccessToken, ProposalAccessToken
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -437,4 +438,87 @@ export async function getDashboardStats(userId: number) {
     draftProposals: Number(draftCount?.count ?? 0),
     generatedProposals: Number(generatedCount?.count ?? 0),
   };
+}
+
+// ============================================
+// PROPOSAL ACCESS TOKEN QUERIES (Customer Portal)
+// ============================================
+
+export async function createAccessToken(token: InsertProposalAccessToken): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(proposalAccessTokens).values(token);
+  return Number(result[0].insertId);
+}
+
+// Alias for createAccessToken
+export async function createProposalAccessToken(token: InsertProposalAccessToken): Promise<number> {
+  return createAccessToken(token);
+}
+
+export async function getAccessTokenByToken(token: string): Promise<ProposalAccessToken | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(proposalAccessTokens)
+    .where(eq(proposalAccessTokens.token, token))
+    .limit(1);
+  return result[0];
+}
+
+export async function getAccessTokensByProposalId(proposalId: number): Promise<ProposalAccessToken[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(proposalAccessTokens)
+    .where(eq(proposalAccessTokens.proposalId, proposalId))
+    .orderBy(desc(proposalAccessTokens.createdAt));
+}
+
+export async function incrementTokenViewCount(token: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(proposalAccessTokens)
+    .set({ 
+      viewCount: sql`${proposalAccessTokens.viewCount} + 1`,
+      lastViewedAt: new Date()
+    })
+    .where(eq(proposalAccessTokens.token, token));
+}
+
+export async function deactivateAccessToken(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(proposalAccessTokens)
+    .set({ isActive: false })
+    .where(eq(proposalAccessTokens.id, id));
+}
+
+export async function getProposalWithCustomerByToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Get the access token
+  const accessToken = await getAccessTokenByToken(token);
+  if (!accessToken || !accessToken.isActive) return null;
+  
+  // Check expiry
+  if (accessToken.expiresAt && new Date(accessToken.expiresAt) < new Date()) {
+    return null;
+  }
+  
+  // Get proposal and customer
+  const proposal = await getProposalById(accessToken.proposalId);
+  if (!proposal) return null;
+  
+  const customer = await getCustomerById(proposal.customerId);
+  if (!customer) return null;
+  
+  // Increment view count
+  await incrementTokenViewCount(token);
+  
+  return { proposal, customer, accessToken };
 }

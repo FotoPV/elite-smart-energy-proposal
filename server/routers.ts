@@ -693,6 +693,38 @@ export const appRouter = router({
           fileName,
         };
       }),
+    
+    createShareLink: protectedProcedure
+      .input(z.object({
+        proposalId: z.number(),
+        expiresInDays: z.number().default(30),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        // Generate a unique token
+        const token = nanoid(32);
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
+        
+        // Create access token record
+        await db.createProposalAccessToken({
+          customerId: proposal.customerId,
+          proposalId: input.proposalId,
+          token,
+          expiresAt,
+          createdBy: ctx.user.id,
+        });
+        
+        return {
+          success: true,
+          token,
+          expiresAt,
+        };
+      }),
   }),
 
   // ============================================
@@ -842,6 +874,110 @@ export const appRouter = router({
           success: true,
           analysis,
           report,
+        };
+      }),
+  }),
+
+  // ============================================
+  // CUSTOMER PORTAL ROUTES (Public)
+  // ============================================
+  portal: router({
+    // Get proposal by access token (public - no auth required)
+    getProposal: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const result = await db.getProposalWithCustomerByToken(input.token);
+        if (!result) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found or link expired' });
+        }
+        
+        const { proposal, customer, accessToken } = result;
+        
+        // Generate slides HTML for viewing
+        const slides: { slideNumber: number; html: string }[] = [];
+        if (proposal.slidesData) {
+          const slidesData = proposal.slidesData as any[];
+          for (const slide of slidesData) {
+            if (slide.isIncluded) {
+              const html = generateSlideHTML(slide);
+              slides.push({ slideNumber: slide.slideNumber, html });
+            }
+          }
+        }
+        
+        return {
+          proposal: {
+            id: proposal.id,
+            title: proposal.title,
+            status: proposal.status,
+            calculations: proposal.calculations,
+            proposalDate: proposal.proposalDate,
+          },
+          customer: {
+            fullName: customer.fullName,
+            address: customer.address,
+            state: customer.state,
+          },
+          slides,
+          viewCount: accessToken.viewCount,
+        };
+      }),
+    
+    // Download PDF via access token (public)
+    downloadPdf: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const result = await db.getProposalWithCustomerByToken(input.token);
+        if (!result) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found or link expired' });
+        }
+        
+        const { proposal, customer } = result;
+        
+        // Check if PDF already exists
+        if (proposal.pdfUrl) {
+          return {
+            fileUrl: proposal.pdfUrl,
+            fileName: `${customer.fullName.replace(/\s+/g, '_')}_Proposal.pdf`,
+          };
+        }
+        
+        // Generate PDF if not exists
+        const { generateProposalPdf } = await import('./pdfExport');
+        
+        // Build slides data for PDF
+        const slidesForPdf: { title: string; subtitle?: string; content: string; type: string }[] = [];
+        if (proposal.slidesData) {
+          const slidesData = proposal.slidesData as any[];
+          for (const slide of slidesData) {
+            if (slide.isIncluded) {
+              slidesForPdf.push({
+                title: slide.title || '',
+                subtitle: slide.content?.subtitle || '',
+                content: JSON.stringify(slide.content || {}),
+                type: slide.slideType || 'content',
+              });
+            }
+          }
+        }
+        
+        // Generate PDF
+        const pdfBuffer = await generateProposalPdf(
+          slidesForPdf,
+          customer.fullName,
+          proposal.title || `${customer.fullName} Proposal`
+        );
+        
+        // Upload to S3
+        const fileName = `proposals/${proposal.id}/${nanoid()}.pdf`;
+        const { url } = await storagePut(fileName, pdfBuffer, 'application/pdf');
+        
+        // Update proposal with PDF URL
+        await db.updateProposal(proposal.id, { pdfUrl: url, lastExportedAt: new Date() });
+        
+        return {
+          fileUrl: url,
+          fileName: `${customer.fullName.replace(/\s+/g, '_')}_Proposal.pdf`,
         };
       }),
   }),

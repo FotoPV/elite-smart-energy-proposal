@@ -152,3 +152,27 @@
 ## Update and Publish Feature (Feb 6)
 - [x] Add "Update & Publish" button to proposal detail page
 - [x] Button recalculates, regenerates slides, then exports PDF in one click
+
+
+## Customer Portal Feature (Feb 6)
+- [x] Add secure access token system for customer proposal links
+- [x] Create customer portal page with branded proposal view
+- [ ] Add share link generation button in proposal detail page
+- [ ] Add link expiry and access tracking
+- [ ] Customer can view proposal slides and download PDF
+
+
+## Progress Indicator Feature (Feb 6)
+- [x] Add time/percentage icon showing slide generation progress
+- [x] Show completion status during Update & Publish workflow
+
+
+## Dashboard Branding Update (Feb 6 - CRITICAL)
+- [x] Update dashboard to use Lightning Energy brand fonts (NextSphere-ExtraBold for headings, GeneralSans-Regular for body)
+- [x] Upload brand fonts to S3 CDN for dashboard use
+- [x] Ensure dashboard uses exact brand colors: Black bg, Aqua (#00EAD3), Ash (#808285), White (#FFFFFF)
+- [x] NO orange in dashboard UI (only in icons and exported slides)
+- [x] Update DashboardLayout with Lightning Energy logo
+- [x] Apply fonts consistently across all dashboard pages
+- [x] Complete customer portal share link button
+- [x] Test customer portal access flow

@@ -12,6 +12,7 @@ import Proposals from "./pages/Proposals";
 import ProposalDetail from "./pages/ProposalDetail";
 import NewProposal from "./pages/NewProposal";
 import Settings from "./pages/Settings";
+import CustomerPortal from "./pages/CustomerPortal";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/proposals/new" component={NewProposal} />
       <Route path="/proposals/:id" component={ProposalDetail} />
       <Route path="/settings" component={Settings} />
+      <Route path="/portal/:token" component={CustomerPortal} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

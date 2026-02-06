@@ -304,3 +304,30 @@ export interface SlideData {
   isIncluded: boolean;
   content: Record<string, unknown>;
 }
+
+// ============================================
+// PROPOSAL ACCESS TOKENS TABLE (Customer Portal)
+// ============================================
+export const proposalAccessTokens = mysqlTable("proposalAccessTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  proposalId: int("proposalId").notNull(),
+  customerId: int("customerId").notNull(),
+  
+  // Access Token
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  
+  // Access Control
+  expiresAt: timestamp("expiresAt"),
+  isActive: boolean("isActive").default(true),
+  
+  // Tracking
+  viewCount: int("viewCount").default(0),
+  lastViewedAt: timestamp("lastViewedAt"),
+  
+  // Metadata
+  createdBy: int("createdBy").notNull(), // User who created the link
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProposalAccessToken = typeof proposalAccessTokens.$inferSelect;
+export type InsertProposalAccessToken = typeof proposalAccessTokens.$inferInsert;
