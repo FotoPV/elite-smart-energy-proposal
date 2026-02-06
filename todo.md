@@ -351,3 +351,14 @@
 - [x] Update PDF generation to use iframe rendering for proper font loading
 - [x] Update slide dimensions from 1120x630 to 1920x1080
 - [x] All 68 tests passing
+
+
+## Reusable Skill Creation (Feb 6)
+- [x] Create lightning-energy-proposal-generator skill using /skill-creator
+- [x] SKILL.md with 6-phase workflow (182 lines, under 500 limit)
+- [x] references/brand-assets.md - CDN URLs, colour palette, typography rules, contact details
+- [x] references/vpp-providers.md - 13 nationwide VPP providers with gas bundle data
+- [x] references/calculations.md - All formulas + ProposalData TypeScript interface
+- [x] references/slide-structure.md - 25-slide breakdown, HTML patterns, CSS design specs
+- [x] templates/ - All brand fonts, logo, colour palette image, cover page PDF
+- [x] Skill validated successfully
