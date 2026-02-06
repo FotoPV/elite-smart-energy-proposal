@@ -34,7 +34,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function NewProposal() {
   const [, setLocation] = useLocation();
@@ -57,7 +59,29 @@ export default function NewProposal() {
   const [solarProposalPdfUrl, setSolarProposalPdfUrl] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
-  const { data: customers } = trpc.customers.list.useQuery({});
+  const { data: customers, refetch: refetchCustomers } = trpc.customers.list.useQuery({});
+  const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    address: '',
+    state: 'VIC',
+    hasGas: false,
+    hasPool: false,
+    hasEV: false,
+    notes: '',
+  });
+  const createCustomer = trpc.customers.create.useMutation({
+    onSuccess: (data) => {
+      toast.success('Customer created successfully');
+      refetchCustomers();
+      setSelectedCustomerId(data.id);
+      setShowNewCustomerDialog(false);
+      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasGas: false, hasPool: false, hasEV: false, notes: '' });
+    },
+    onError: (err) => toast.error(err.message),
+  });
   const { data: selectedCustomer } = trpc.customers.get.useQuery(
     { id: selectedCustomerId || 0 },
     { enabled: !!selectedCustomerId }
@@ -280,7 +304,7 @@ export default function NewProposal() {
               )}
               
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setLocation("/customers")}>
+                <Button variant="outline" onClick={() => setShowNewCustomerDialog(true)}>
                   Add New Customer
                 </Button>
                 <Button 
@@ -639,6 +663,141 @@ export default function NewProposal() {
           {previewUrl && (
             <img src={previewUrl} alt="Switchboard Preview" className="w-full h-auto rounded-lg" />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New Customer Dialog */}
+      <Dialog open={showNewCustomerDialog} onOpenChange={setShowNewCustomerDialog}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Add New Customer
+            </DialogTitle>
+            <DialogDescription>Enter customer details to create a new record</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Full Name *</Label>
+              <Input
+                value={newCustomer.fullName}
+                onChange={(e) => setNewCustomer(p => ({ ...p, fullName: e.target.value }))}
+                placeholder="John Smith"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer(p => ({ ...p, email: e.target.value }))}
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Phone</Label>
+                <Input
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer(p => ({ ...p, phone: e.target.value }))}
+                  placeholder="0412 345 678"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Address *</Label>
+              <Input
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer(p => ({ ...p, address: e.target.value }))}
+                placeholder="123 Main St, Melbourne VIC 3000"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>State *</Label>
+              <Select value={newCustomer.state} onValueChange={(v) => setNewCustomer(p => ({ ...p, state: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VIC">VIC</SelectItem>
+                  <SelectItem value="NSW">NSW</SelectItem>
+                  <SelectItem value="QLD">QLD</SelectItem>
+                  <SelectItem value="SA">SA</SelectItem>
+                  <SelectItem value="WA">WA</SelectItem>
+                  <SelectItem value="TAS">TAS</SelectItem>
+                  <SelectItem value="NT">NT</SelectItem>
+                  <SelectItem value="ACT">ACT</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-3 pt-2">
+              <Label className="text-muted-foreground">Property Details</Label>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="hasGas"
+                  checked={newCustomer.hasGas}
+                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasGas: !!c }))}
+                />
+                <label htmlFor="hasGas" className="text-sm flex items-center gap-1.5 cursor-pointer">
+                  <Flame className="h-4 w-4 text-orange-400" /> Has Gas Connection
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="hasPool"
+                  checked={newCustomer.hasPool}
+                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasPool: !!c }))}
+                />
+                <label htmlFor="hasPool" className="text-sm cursor-pointer">Has Swimming Pool</label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="hasEV"
+                  checked={newCustomer.hasEV}
+                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasEV: !!c }))}
+                />
+                <label htmlFor="hasEV" className="text-sm cursor-pointer">Has / Interested in EV</label>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Input
+                value={newCustomer.notes}
+                onChange={(e) => setNewCustomer(p => ({ ...p, notes: e.target.value }))}
+                placeholder="Any additional notes..."
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              <Button variant="outline" onClick={() => setShowNewCustomerDialog(false)}>Cancel</Button>
+              <Button
+                onClick={() => {
+                  if (!newCustomer.fullName.trim() || !newCustomer.address.trim()) {
+                    toast.error('Name and address are required');
+                    return;
+                  }
+                  createCustomer.mutate({
+                    fullName: newCustomer.fullName,
+                    email: newCustomer.email || undefined,
+                    phone: newCustomer.phone || undefined,
+                    address: newCustomer.address,
+                    state: newCustomer.state,
+                    hasGas: newCustomer.hasGas,
+                    hasPool: newCustomer.hasPool,
+                    hasEV: newCustomer.hasEV,
+                    notes: newCustomer.notes || undefined,
+                  });
+                }}
+                disabled={createCustomer.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {createCustomer.isPending ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
+                ) : (
+                  'Create Customer'
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </DashboardLayout>

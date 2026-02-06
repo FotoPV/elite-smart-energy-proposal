@@ -414,3 +414,10 @@
 - [x] Full in-depth data tables: bill charges, tariff rates, usage breakdown, gas analysis
 - [x] Each visualization on its own page for clarity
 - [x] Professional tone for HIGH LEVEL OF EDUCATED PUBLICS audience
+
+
+## Bug Fix - Add New Customer 404 Error (Feb 6)
+- [x] Fix 404 error when clicking Add New Customer during proposal creation
+- [x] Replaced navigation to /customers with inline dialog modal
+- [x] Modal includes: Full Name, Email, Phone, Address, State, Gas/Pool/EV checkboxes, Notes
+- [x] Auto-selects newly created customer and refreshes customer list
