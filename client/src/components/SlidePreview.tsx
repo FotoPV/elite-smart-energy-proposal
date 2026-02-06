@@ -55,9 +55,6 @@ function getSlideIcon(slideType: string) {
     case 'monthly_usage':
     case 'yearly_projection':
       return <DollarSign className={iconClass} />;
-    case 'gas_footprint':
-    case 'gas_appliances':
-      return <Flame className="w-6 h-6 text-orange-500" />;
     case 'battery_recommendation':
       return <Battery className={iconClass} />;
     case 'solar_recommendation':
@@ -156,7 +153,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
       );
       
     case 'vpp_comparison':
-      const providers = content.providers as Array<{ provider: string; estimatedAnnualValue: number; hasGasBundle: boolean }>;
+      const providers = content.providers as Array<{ provider: string; estimatedAnnualValue: number }>;
       return (
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-primary mb-6" style={{ fontFamily: 'NextSphere, sans-serif' }}>
@@ -168,9 +165,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
                 <div className="flex items-center gap-3">
                   <span className="text-primary font-bold">{i + 1}</span>
                   <span className="text-foreground">{p.provider}</span>
-                  {p.hasGasBundle && (
-                    <span className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-500 rounded">Gas Bundle</span>
-                  )}
+
                 </div>
                 <span className="text-primary font-semibold">${p.estimatedAnnualValue?.toFixed(0)}/yr</span>
               </div>

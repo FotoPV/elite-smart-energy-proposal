@@ -421,3 +421,29 @@
 - [x] Replaced navigation to /customers with inline dialog modal
 - [x] Modal includes: Full Name, Email, Phone, Address, State, Gas/Pool/EV checkboxes, Notes
 - [x] Auto-selects newly created customer and refreshes customer list
+
+
+## Major Rebuild - Manus Slides Image Mode (Feb 7)
+- [ ] Pivot from HTML/PDFKit slides to Manus Slides (image mode) for pixel-perfect output
+- [ ] Build slide content markdown generator that produces rich, data-driven content per slide
+- [ ] Match reference project quality: deep analysis, strategic language, specific data points
+- [ ] Each slide must tell a story with context and recommendations (not just numbers)
+- [ ] Generate slides in batches using Manus Slides tool with image mode
+- [ ] Wire up export flow: proposal data → markdown content → Manus Slides → PDF/PPTX output
+- [ ] Ensure consistent black backgrounds, minimal style, data-driven layouts
+- [ ] Include visual charts (consumption patterns, cost projections, savings comparisons)
+- [ ] Include comparison tables (VPP providers, before/after costs)
+- [ ] Include implementation roadmap with phases
+- [ ] Include environmental quantification with specific metrics
+
+
+## Multi-File Upload & Remove Gas (Feb 7)
+- [x] Enable multiple file upload (photos + PDFs) in upload section — select/drop multiple at once
+- [x] Show all queued files with individual progress indicators
+- [x] Remove all gas bill upload UI and references
+- [x] Remove gas analysis/extraction logic from backend
+- [x] Remove gas-related slides (Current Gas Footprint, Gas Appliance Inventory) — always excluded via hasGas=false
+- [x] Remove gas conversion calculations from calculation engine — gas always null
+- [x] Remove gas fields from customer profile form
+- [x] Remove gas bundle column from VPP comparison (keep providers)
+- [x] Clean up any remaining gas references throughout the app

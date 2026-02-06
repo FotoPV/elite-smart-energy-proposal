@@ -6,7 +6,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { storagePut } from "./storage";
-import { extractElectricityBillData, extractGasBillData, validateElectricityBillData, validateGasBillData } from "./billExtraction";
+import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
 import { generateFullCalculations } from "./calculations";
 import { generateSlides, generateSlideHTML, ProposalData } from "./slideGenerator";
 import { generatePptx } from "./pptxGenerator";
@@ -73,8 +73,6 @@ export const appRouter = router({
         phone: z.string().optional(),
         address: z.string().min(1),
         state: z.string().min(2).max(3),
-        hasGas: z.boolean().optional(),
-        gasAppliances: z.array(z.string()).optional(),
         hasPool: z.boolean().optional(),
         poolVolume: z.number().optional(),
         hasEV: z.boolean().optional(),
@@ -101,8 +99,6 @@ export const appRouter = router({
         phone: z.string().optional(),
         address: z.string().min(1).optional(),
         state: z.string().min(2).max(3).optional(),
-        hasGas: z.boolean().optional(),
-        gasAppliances: z.array(z.string()).optional(),
         hasPool: z.boolean().optional(),
         poolVolume: z.number().optional(),
         hasEV: z.boolean().optional(),
@@ -152,7 +148,7 @@ export const appRouter = router({
     upload: protectedProcedure
       .input(z.object({
         customerId: z.number(),
-        billType: z.enum(['electricity', 'gas']),
+        billType: z.enum(['electricity']),
         fileData: z.string(), // Base64 encoded
         fileName: z.string(),
       }))
@@ -209,23 +205,7 @@ export const appRouter = router({
             
             return { success: true, data, validation };
           } else {
-            const data = await extractGasBillData(bill.fileUrl);
-            const validation = validateGasBillData(data);
-            
-            await db.updateBill(input.billId, {
-              retailer: data.retailer,
-              billingPeriodStart: data.billingPeriodStart ? new Date(data.billingPeriodStart) : undefined,
-              billingPeriodEnd: data.billingPeriodEnd ? new Date(data.billingPeriodEnd) : undefined,
-              billingDays: data.billingDays,
-              totalAmount: data.totalAmount?.toString(),
-              dailySupplyCharge: data.dailySupplyCharge?.toString(),
-              gasUsageMj: data.gasUsageMj?.toString(),
-              gasRateCentsMj: data.gasRateCentsMj?.toString(),
-              rawExtractedData: data.rawData,
-              extractionConfidence: data.extractionConfidence?.toString(),
-            });
-            
-            return { success: true, data, validation };
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Gas bills are not supported' });
           }
         } catch (error) {
           throw new TRPCError({ 
@@ -310,7 +290,6 @@ export const appRouter = router({
         customerId: z.number(),
         title: z.string().optional(),
         electricityBillId: z.number().optional(),
-        gasBillId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const customer = await db.getCustomerById(input.customerId);
@@ -323,7 +302,6 @@ export const appRouter = router({
           userId: ctx.user.id,
           title: input.title || `Proposal for ${customer.fullName}`,
           electricityBillId: input.electricityBillId,
-          gasBillId: input.gasBillId,
           status: 'draft',
         });
         
@@ -332,15 +310,11 @@ export const appRouter = router({
           try {
             const electricityBill = await db.getBillById(input.electricityBillId);
             if (electricityBill) {
-              let gasBill = null;
-              if (input.gasBillId) {
-                gasBill = await db.getBillById(input.gasBillId);
-              }
               const vppProviders = await db.getVppProvidersByState(customer.state);
               const rebates = await db.getRebatesByState(customer.state);
-              const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+              const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
               
-              const proposalData = buildProposalData(customer, calculations, !!input.gasBillId);
+              const proposalData = buildProposalData(customer, calculations, false);
               const slides = generateSlides(proposalData);
               const slideData = slides.map((s, i) => ({
                 slideNumber: i + 1,
@@ -389,11 +363,6 @@ export const appRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
         }
         
-        let gasBill = null;
-        if (proposal.gasBillId) {
-          gasBill = await db.getBillById(proposal.gasBillId);
-        }
-        
         // Get VPP providers and rebates
         const vppProviders = await db.getVppProvidersByState(customer.state);
         const rebates = await db.getRebatesByState(customer.state);
@@ -405,7 +374,7 @@ export const appRouter = router({
           const calculations = generateFullCalculations(
             customer,
             electricityBill,
-            gasBill ?? null,
+            null,
             vppProviders,
             rebates
           );
@@ -447,13 +416,9 @@ export const appRouter = router({
           if (!electricityBill) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
           }
-          let gasBill = null;
-          if (proposal.gasBillId) {
-            gasBill = await db.getBillById(proposal.gasBillId);
-          }
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
           await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
           proposal = await db.getProposalById(input.proposalId);
           if (!proposal) {
@@ -462,7 +427,7 @@ export const appRouter = router({
         }
         
         // Generate slides data structure (calculations guaranteed to exist after auto-calculate above)
-        const slidesData = generateSlidesData(customer, proposal.calculations!, proposal.gasBillId !== null);
+        const slidesData = generateSlidesData(customer, proposal.calculations!, false);
         
         await db.updateProposal(input.proposalId, {
           slidesData,
@@ -479,7 +444,6 @@ export const appRouter = router({
         title: z.string().optional(),
         status: z.enum(['draft', 'calculating', 'generated', 'exported', 'archived']).optional(),
         electricityBillId: z.number().optional(),
-        gasBillId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
@@ -549,13 +513,9 @@ export const appRouter = router({
           if (!electricityBill) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
           }
-          let gasBill = null;
-          if (proposal.gasBillId) {
-            gasBill = await db.getBillById(proposal.gasBillId);
-          }
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
           await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
           proposal = await db.getProposalById(input.proposalId);
           if (!proposal) {
@@ -564,7 +524,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        const proposalData = buildProposalData(customer, calc, false);
         
         const slides = generateSlides(proposalData);
         
@@ -673,13 +633,9 @@ export const appRouter = router({
           if (!electricityBill) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
           }
-          let gasBill = null;
-          if (proposal.gasBillId) {
-            gasBill = await db.getBillById(proposal.gasBillId);
-          }
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
           await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
           proposal = await db.getProposalById(input.proposalId);
           if (!proposal) {
@@ -688,7 +644,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        const proposalData = buildProposalData(customer, calc, false);
         
         const slides = generateSlides(proposalData);
         
@@ -744,13 +700,9 @@ export const appRouter = router({
           if (!electricityBill) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
           }
-          let gasBill = null;
-          if (proposal.gasBillId) {
-            gasBill = await db.getBillById(proposal.gasBillId);
-          }
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
           await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
           proposal = await db.getProposalById(input.proposalId);
           if (!proposal) {
@@ -759,7 +711,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        const proposalData = buildProposalData(customer, calc, false);
         
         // Generate PPTX with embedded brand fonts
         const pptxBuffer = await generatePptx(proposalData);
@@ -802,13 +754,9 @@ export const appRouter = router({
           if (!electricityBill) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
           }
-          let gasBill = null;
-          if (proposal.gasBillId) {
-            gasBill = await db.getBillById(proposal.gasBillId);
-          }
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, gasBill ?? null, vppProviders, rebates);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
           await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
           proposal = await db.getProposalById(input.proposalId);
           if (!proposal) {
@@ -817,7 +765,7 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, !!proposal.gasBillId);
+        const proposalData = buildProposalData(customer, calc, false);
         
         // Generate native PDF with embedded brand fonts
         const pdfBuffer = await generateNativePdf(proposalData);
@@ -832,6 +780,61 @@ export const appRouter = router({
           success: true,
           fileUrl: url,
           fileName,
+        };
+      }),
+
+    generateSlideContent: protectedProcedure
+      .input(z.object({
+        proposalId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        const customer = await db.getCustomerById(proposal.customerId);
+        if (!customer) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        }
+        
+        // Auto-calculate if calculations are missing
+        if (!proposal.calculations) {
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
+        }
+        
+        const calc = proposal.calculations as ProposalCalculations;
+        const { generateSlideContentMarkdown } = await import('./slideContentGenerator');
+        const markdown = generateSlideContentMarkdown({
+          customer,
+          calculations: calc,
+          proposalTitle: proposal.title || undefined,
+        });
+        
+        // Upload markdown to S3 for easy access
+        const fileName = `slide-content-${proposal.id}-${customer.fullName.replace(/\s+/g, '_')}-${Date.now()}.md`;
+        const { url } = await storagePut(`slide-content/${fileName}`, Buffer.from(markdown, 'utf-8'), 'text/markdown');
+        
+        return {
+          success: true,
+          markdown,
+          fileUrl: url,
+          fileName,
+          slideCount: (markdown.match(/^# Slide \d+:/gm) || []).length,
         };
       }),
 
@@ -1066,7 +1069,8 @@ export type AppRouter = typeof appRouter;
 
 import { ProposalCalculations, SlideData } from "../drizzle/schema";
 
-function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGas: boolean): ProposalData {
+function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasGas: boolean): ProposalData {
+  const hasGas = false; // Gas features removed
   const vppName = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE';
   const vppProgram = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName || 'VPP Advantage' : 'VPP Advantage';
   return {
@@ -1149,7 +1153,7 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGa
     poolPumpSavings: calc.poolHeatPumpSavings,
     poolRecommendedKw: calc.poolRecommendedKw,
     poolAnnualOperatingCost: calc.poolAnnualOperatingCost,
-    hasHeatPump: hasGas,
+    hasHeatPump: false,
     heatPumpSavings: calc.hotWaterSavings,
     hotWaterCurrentGasCost: calc.hotWaterCurrentGasCost,
     hotWaterHeatPumpCost: calc.hotWaterHeatPumpCost,
@@ -1184,8 +1188,9 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGa
 function generateSlidesData(
   customer: Customer,
   calculations: ProposalCalculations,
-  hasGasBill: boolean
+  _hasGasBill: boolean
 ): SlideData[] {
+  const hasGasBill = false; // Gas features removed
   const c = calculations; // shorthand
   const slides: SlideData[] = [
     // Slide 1: Cover Page

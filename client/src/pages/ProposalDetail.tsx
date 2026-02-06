@@ -453,7 +453,9 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   
   const exportPptxMutation = trpc.proposals.exportPptx.useMutation();
   const exportNativePdfMutation = trpc.proposals.exportNativePdf.useMutation();
+  const generateSlideContentMutation = trpc.proposals.generateSlideContent.useMutation();
   const utils = trpc.useUtils();
+  const [slideContentUrl, setSlideContentUrl] = useState<string | null>(null);
   
   const handleExportPptx = async () => {
     setIsExporting(true);
@@ -513,6 +515,38 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     }
   };
   
+  const handlePrepareSlides = async () => {
+    setIsExporting(true);
+    setExportType('slides');
+    setProgress(10);
+    setCurrentStep('Preparing slide content...');
+    try {
+      setProgress(30);
+      setCurrentStep('Generating strategic analysis...');
+      const result = await generateSlideContentMutation.mutateAsync({ proposalId });
+      setProgress(70);
+      setCurrentStep('Uploading content...');
+      if (result.fileUrl) {
+        setSlideContentUrl(result.fileUrl);
+        // Also download the markdown file
+        const link = document.createElement('a');
+        link.href = result.fileUrl;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      setProgress(100);
+      toast.success(`Slide content prepared! ${result.slideCount} slides ready for Manus Slides rendering.`);
+    } catch (error: any) {
+      toast.error(`Preparation failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+
   const handleExportHtmlPdf = async () => {
     setIsExporting(true);
     setExportType('html-pdf');
@@ -603,6 +637,17 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           <div>
             <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>HTML PDF</div>
             <div className="text-[10px] text-[#808285]">Browser-rendered slides</div>
+          </div>
+        </DropdownMenuItem>
+        <div className="h-px bg-[#1a1a1a] my-1" />
+        <DropdownMenuItem
+          onClick={handlePrepareSlides}
+          className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
+        >
+          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <div>
+            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Urbanist', sans-serif" }}>Manus Slides</div>
+            <div className="text-[10px] text-[#808285]">Pixel-perfect image slides</div>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>

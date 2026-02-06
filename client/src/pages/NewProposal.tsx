@@ -4,73 +4,55 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useSearch } from "wouter";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { 
-  ArrowLeft,
-  ArrowRight,
-  Users,
-  Upload,
-  Zap,
-  Flame,
-  CheckCircle,
-  FileText,
-  Loader2,
-  Camera,
-  File,
-  X,
-  Eye
+  ArrowLeft, ArrowRight, Users, Upload, Zap, CheckCircle, FileText,
+  Loader2, Camera, X, Eye, Trash2, Plus, ImageIcon
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  docType: string;
+  status: 'uploading' | 'done' | 'error';
+}
 
 export default function NewProposal() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
   const preselectedCustomerId = searchParams.get("customerId");
-  
+
   const [step, setStep] = useState(1);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     preselectedCustomerId ? parseInt(preselectedCustomerId) : null
   );
   const [proposalTitle, setProposalTitle] = useState("");
   const [electricityBillId, setElectricityBillId] = useState<number | null>(null);
-  const [gasBillId, setGasBillId] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingType, setUploadingType] = useState<string | null>(null);
-  
-  // Document upload states
-  const [switchboardPhotoUrl, setSwitchboardPhotoUrl] = useState<string | null>(null);
-  const [solarProposalPdfUrl, setSolarProposalPdfUrl] = useState<string | null>(null);
+
+  // Multi-file upload states
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+  const multiFileRef = useRef<HTMLInputElement>(null);
+
   const { data: customers, refetch: refetchCustomers } = trpc.customers.list.useQuery({});
   const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    state: 'VIC',
-    hasGas: false,
-    hasPool: false,
-    hasEV: false,
-    notes: '',
+    fullName: '', email: '', phone: '', address: '', state: 'VIC',
+    hasPool: false, hasEV: false, notes: '',
   });
   const createCustomer = trpc.customers.create.useMutation({
     onSuccess: (data) => {
@@ -78,7 +60,7 @@ export default function NewProposal() {
       refetchCustomers();
       setSelectedCustomerId(data.id);
       setShowNewCustomerDialog(false);
-      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasGas: false, hasPool: false, hasEV: false, notes: '' });
+      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasPool: false, hasEV: false, notes: '' });
     },
     onError: (err) => toast.error(err.message),
   });
@@ -94,7 +76,7 @@ export default function NewProposal() {
     { customerId: selectedCustomerId || 0 },
     { enabled: !!selectedCustomerId }
   );
-  
+
   const uploadBill = trpc.bills.upload.useMutation();
   const extractBill = trpc.bills.extract.useMutation();
   const uploadDocument = trpc.documents.upload.useMutation();
@@ -106,22 +88,30 @@ export default function NewProposal() {
     onError: (error) => toast.error(error.message)
   });
 
-  // Auto-select existing bills and documents
+  // Auto-select existing electricity bill
   useEffect(() => {
     if (existingBills) {
       const elecBill = existingBills.find(b => b.billType === 'electricity');
-      const gasBill = existingBills.find(b => b.billType === 'gas');
       if (elecBill) setElectricityBillId(elecBill.id);
-      if (gasBill) setGasBillId(gasBill.id);
     }
   }, [existingBills]);
 
+  // Load existing documents into uploaded files list
   useEffect(() => {
-    if (existingDocuments) {
-      const switchboard = existingDocuments.find(d => d.documentType === 'switchboard_photo');
-      const solarPdf = existingDocuments.find(d => d.documentType === 'solar_proposal_pdf');
-      if (switchboard) setSwitchboardPhotoUrl(switchboard.fileUrl);
-      if (solarPdf) setSolarProposalPdfUrl(solarPdf.fileUrl);
+    if (existingDocuments && existingDocuments.length > 0) {
+      const existing: UploadedFile[] = existingDocuments.map(d => ({
+        id: `existing-${d.id}`,
+        name: d.fileName || d.documentType,
+        type: d.mimeType || 'application/octet-stream',
+        url: d.fileUrl,
+        docType: d.documentType,
+        status: 'done' as const,
+      }));
+      setUploadedFiles(prev => {
+        const existingIds = new Set(prev.map(f => f.id));
+        const newFiles = existing.filter(f => !existingIds.has(f.id));
+        return newFiles.length > 0 ? [...prev, ...newFiles] : prev;
+      });
     }
   }, [existingDocuments]);
 
@@ -132,58 +122,58 @@ export default function NewProposal() {
     }
   }, [selectedCustomer, proposalTitle]);
 
-  const handleFileUpload = async (billType: 'electricity' | 'gas', file: File) => {
+  const handleElectricityBillUpload = async (file: globalThis.File) => {
     if (!selectedCustomerId) return;
-    
     setIsUploading(true);
-    setUploadingType(billType);
+    setUploadingType('electricity');
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(',')[1];
-        const result = await uploadBill.mutateAsync({
-          customerId: selectedCustomerId,
-          billType,
-          fileData: base64,
-          fileName: file.name
-        });
-        
-        toast.success("Bill uploaded, extracting data...");
-        
-        try {
-          await extractBill.mutateAsync({ billId: result.id });
-          toast.success("Bill data extracted successfully");
-        } catch (err) {
-          toast.error("Extraction failed, you can manually enter data later");
-        }
-        
-        if (billType === 'electricity') {
-          setElectricityBillId(result.id);
-        } else {
-          setGasBillId(result.id);
-        }
-        
-        refetchBills();
-        setIsUploading(false);
-        setUploadingType(null);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
+      const base64 = await fileToBase64(file);
+      const result = await uploadBill.mutateAsync({
+        customerId: selectedCustomerId,
+        billType: 'electricity',
+        fileData: base64,
+        fileName: file.name
+      });
+      toast.success("Bill uploaded, extracting data...");
+      try {
+        await extractBill.mutateAsync({ billId: result.id });
+        toast.success("Bill data extracted successfully");
+      } catch {
+        toast.error("Extraction failed, you can manually enter data later");
+      }
+      setElectricityBillId(result.id);
+      refetchBills();
+    } catch {
       toast.error("Failed to upload bill");
+    } finally {
       setIsUploading(false);
       setUploadingType(null);
     }
   };
 
-  const handleDocumentUpload = async (docType: 'switchboard_photo' | 'solar_proposal_pdf', file: File) => {
+  // Multi-file upload handler for photos and PDFs
+  const handleMultiFileUpload = useCallback(async (files: FileList | globalThis.File[]) => {
     if (!selectedCustomerId) return;
-    
-    setIsUploading(true);
-    setUploadingType(docType);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(',')[1];
+    const fileArray = Array.from(files);
+
+    const newEntries: UploadedFile[] = fileArray.map((file, idx) => ({
+      id: `upload-${Date.now()}-${idx}`,
+      name: file.name,
+      type: file.type,
+      url: '',
+      docType: file.type.startsWith('image/') ? 'photo' : 'document_pdf',
+      status: 'uploading' as const,
+    }));
+
+    setUploadedFiles(prev => [...prev, ...newEntries]);
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const entryId = newEntries[i].id;
+      const docType = file.type.startsWith('image/') ? 'switchboard_photo' : 'solar_proposal_pdf';
+
+      try {
+        const base64 = await fileToBase64(file);
         const result = await uploadDocument.mutateAsync({
           customerId: selectedCustomerId,
           documentType: docType,
@@ -191,44 +181,49 @@ export default function NewProposal() {
           fileName: file.name,
           mimeType: file.type || 'application/octet-stream',
         });
-        
-        toast.success(`${docType === 'switchboard_photo' ? 'Switchboard photo' : 'Solar proposal PDF'} uploaded`);
-        
-        if (docType === 'switchboard_photo') {
-          setSwitchboardPhotoUrl(result.fileUrl);
-        } else {
-          setSolarProposalPdfUrl(result.fileUrl);
-        }
-        
-        refetchDocuments();
-        setIsUploading(false);
-        setUploadingType(null);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      toast.error("Failed to upload document");
-      setIsUploading(false);
-      setUploadingType(null);
+        setUploadedFiles(prev => prev.map(f =>
+          f.id === entryId ? { ...f, status: 'done', url: result.fileUrl } : f
+        ));
+        toast.success(`${file.name} uploaded`);
+      } catch {
+        setUploadedFiles(prev => prev.map(f =>
+          f.id === entryId ? { ...f, status: 'error' } : f
+        ));
+        toast.error(`Failed to upload ${file.name}`);
+      }
     }
+    refetchDocuments();
+  }, [selectedCustomerId]);
+
+  const handleRemoveFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) handleMultiFileUpload(files);
+  }, [handleMultiFileUpload]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
   const handleCreateProposal = () => {
-    if (!selectedCustomerId) {
-      toast.error("Please select a customer");
-      return;
-    }
-    if (!electricityBillId) {
-      toast.error("Please upload an electricity bill");
-      return;
-    }
-    
+    if (!selectedCustomerId) { toast.error("Please select a customer"); return; }
+    if (!electricityBillId) { toast.error("Please upload an electricity bill"); return; }
     createProposal.mutate({
       customerId: selectedCustomerId,
       title: proposalTitle,
       electricityBillId,
-      gasBillId: gasBillId || undefined,
     });
   };
+
+  const completedUploads = uploadedFiles.filter(f => f.status === 'done');
+  const photoCount = completedUploads.filter(f => f.type.startsWith('image/')).length;
+  const pdfCount = completedUploads.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf')).length;
 
   return (
     <DashboardLayout>
@@ -250,7 +245,7 @@ export default function NewProposal() {
         <div className="flex items-center justify-center gap-4 py-4">
           <StepIndicator step={1} currentStep={step} label="Customer" />
           <div className="w-16 h-0.5 bg-border" />
-          <StepIndicator step={2} currentStep={step} label="Bills" />
+          <StepIndicator step={2} currentStep={step} label="Upload" />
           <div className="w-16 h-0.5 bg-border" />
           <StepIndicator step={3} currentStep={step} label="Create" />
         </div>
@@ -268,8 +263,8 @@ export default function NewProposal() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Customer</Label>
-                <Select 
-                  value={selectedCustomerId?.toString() || ""} 
+                <Select
+                  value={selectedCustomerId?.toString() || ""}
                   onValueChange={(v) => setSelectedCustomerId(parseInt(v))}
                 >
                   <SelectTrigger>
@@ -284,15 +279,12 @@ export default function NewProposal() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {selectedCustomer && (
                 <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                   <p className="font-medium">{selectedCustomer.fullName}</p>
                   <p className="text-sm text-muted-foreground">{selectedCustomer.address}</p>
                   <div className="flex gap-2 mt-2">
-                    {selectedCustomer.hasGas && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-accent/10 text-accent">Gas</span>
-                    )}
                     {selectedCustomer.hasPool && (
                       <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">Pool</span>
                     )}
@@ -302,13 +294,13 @@ export default function NewProposal() {
                   </div>
                 </div>
               )}
-              
+
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setShowNewCustomerDialog(true)}>
                   Add New Customer
                 </Button>
-                <Button 
-                  onClick={() => setStep(2)} 
+                <Button
+                  onClick={() => setStep(2)}
                   disabled={!selectedCustomerId}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
@@ -326,12 +318,12 @@ export default function NewProposal() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5 text-primary" />
-                Upload Bills
+                Upload Files
               </CardTitle>
-              <CardDescription>Upload customer energy bills for analysis</CardDescription>
+              <CardDescription>Upload electricity bill, photos, and supporting documents</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Electricity Bill */}
+              {/* Electricity Bill - Required */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-primary" />
@@ -354,66 +346,17 @@ export default function NewProposal() {
                       disabled={isUploading}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload('electricity', file);
+                        if (file) handleElectricityBillUpload(file);
                       }}
                     />
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => document.getElementById('electricity-upload')?.click()}
                       disabled={isUploading}
                     >
                       {uploadingType === 'electricity' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select File"
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Gas Bill */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-accent" />
-                  Gas Bill (Optional)
-                </Label>
-                {gasBillId ? (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                    <span className="text-green-400 font-medium">Gas bill uploaded</span>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload gas bill for electrification analysis</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="gas-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload('gas', file);
-                      }}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('gas-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'gas' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select File"
-                      )}
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Uploading...</>
+                      ) : "Select File"}
                     </Button>
                   </div>
                 )}
@@ -421,139 +364,123 @@ export default function NewProposal() {
 
               {/* Divider */}
               <div className="border-t border-border pt-6">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-4">ADDITIONAL DOCUMENTS (Optional)</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-1">ADDITIONAL DOCUMENTS (Optional)</h3>
+                <p className="text-xs text-muted-foreground mb-4">Upload multiple photos (switchboard, roof, meter) and PDFs (solar proposals, quotes)</p>
               </div>
 
-              {/* Switchboard Photo */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-primary" />
-                  Switchboard Photo (Optional)
-                </Label>
-                {switchboardPhotoUrl ? (
-                  <div className="relative">
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                      <img 
-                        src={switchboardPhotoUrl} 
-                        alt="Switchboard" 
-                        className="h-20 w-20 object-cover rounded-lg cursor-pointer"
-                        onClick={() => setPreviewUrl(switchboardPhotoUrl)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-5 w-5 text-green-400" />
-                          <span className="text-green-400 font-medium">Switchboard photo uploaded</span>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="mt-2 text-muted-foreground"
-                          onClick={() => setPreviewUrl(switchboardPhotoUrl)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Full Size
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload switchboard photo for assessment</p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      id="switchboard-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleDocumentUpload('switchboard_photo', file);
-                      }}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('switchboard-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'switchboard_photo' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select Photo"
-                      )}
-                    </Button>
-                  </div>
-                )}
+              {/* Multi-file drop zone */}
+              <div
+                className="border-2 border-dashed border-border rounded-lg p-8 text-center transition-colors hover:border-primary/50 cursor-pointer"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onClick={() => multiFileRef.current?.click()}
+              >
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <Camera className="h-6 w-6 text-muted-foreground" />
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium mb-1">Drop files here or click to browse</p>
+                <p className="text-xs text-muted-foreground">Supports multiple photos (JPG, PNG) and PDFs</p>
+                <input
+                  ref={multiFileRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleMultiFileUpload(e.target.files);
+                      e.target.value = '';
+                    }
+                  }}
+                />
               </div>
 
-              {/* Solar Proposal PDF */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <File className="h-4 w-4 text-accent" />
-                  Solar Proposal PDF (Optional)
-                </Label>
-                {solarProposalPdfUrl ? (
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <FileText className="h-10 w-10 text-accent" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-400" />
-                        <span className="text-green-400 font-medium">Solar proposal PDF uploaded</span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 text-muted-foreground"
-                        onClick={() => window.open(solarProposalPdfUrl, '_blank')}
+              {/* Uploaded files list */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm text-muted-foreground">
+                      Uploaded Files ({completedUploads.length})
+                      {photoCount > 0 && <span className="ml-2 text-xs">{photoCount} photo{photoCount !== 1 ? 's' : ''}</span>}
+                      {pdfCount > 0 && <span className="ml-2 text-xs">{pdfCount} PDF{pdfCount !== 1 ? 's' : ''}</span>}
+                    </Label>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {uploadedFiles.map(file => (
+                      <div
+                        key={file.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border ${
+                          file.status === 'done' ? 'bg-green-500/5 border-green-500/20' :
+                          file.status === 'error' ? 'bg-red-500/5 border-red-500/20' :
+                          'bg-muted/30 border-border'
+                        }`}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View PDF
-                      </Button>
-                    </div>
+                        {file.type.startsWith('image/') ? (
+                          file.status === 'done' && file.url ? (
+                            <img
+                              src={file.url}
+                              alt={file.name}
+                              className="h-10 w-10 object-cover rounded cursor-pointer"
+                              onClick={(e) => { e.stopPropagation(); setPreviewUrl(file.url); }}
+                            />
+                          ) : (
+                            <ImageIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          )
+                        ) : (
+                          <FileText className="h-5 w-5 text-accent flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{file.name}</p>
+                          {file.status === 'uploading' && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                              <span className="text-xs text-muted-foreground">Uploading...</span>
+                            </div>
+                          )}
+                          {file.status === 'error' && (
+                            <p className="text-xs text-red-400 mt-0.5">Upload failed</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {file.status === 'done' && (
+                            <>
+                              <CheckCircle className="h-4 w-4 text-green-400" />
+                              {file.type.startsWith('image/') && file.url && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setPreviewUrl(file.url); }}>
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              {!file.type.startsWith('image/') && file.url && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }}>
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-red-400"
+                            onClick={(e) => { e.stopPropagation(); handleRemoveFile(file.id); }}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload existing solar proposal for reference</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="solar-proposal-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleDocumentUpload('solar_proposal_pdf', file);
-                      }}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('solar-proposal-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'solar_proposal_pdf' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select PDF"
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
+                </div>
+              )}
+
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setStep(1)}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back
                 </Button>
-                <Button 
-                  onClick={() => setStep(3)} 
+                <Button
+                  onClick={() => setStep(3)}
                   disabled={!electricityBillId}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
@@ -578,13 +505,13 @@ export default function NewProposal() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Proposal Title</Label>
-                <Input 
-                  value={proposalTitle} 
+                <Input
+                  value={proposalTitle}
                   onChange={(e) => setProposalTitle(e.target.value)}
                   placeholder="Enter proposal title"
                 />
               </div>
-              
+
               <div className="p-4 rounded-lg bg-muted/50 space-y-3">
                 <h4 className="font-medium">Summary</h4>
                 <div className="grid gap-2 text-sm">
@@ -601,46 +528,30 @@ export default function NewProposal() {
                     <span className="text-green-400">Uploaded</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gas Bill:</span>
-                    <span className={gasBillId ? "text-green-400" : "text-muted-foreground"}>
-                      {gasBillId ? "Uploaded" : "Not provided"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Switchboard Photo:</span>
-                    <span className={switchboardPhotoUrl ? "text-green-400" : "text-muted-foreground"}>
-                      {switchboardPhotoUrl ? "Uploaded" : "Not provided"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Solar Proposal PDF:</span>
-                    <span className={solarProposalPdfUrl ? "text-green-400" : "text-muted-foreground"}>
-                      {solarProposalPdfUrl ? "Uploaded" : "Not provided"}
+                    <span className="text-muted-foreground">Additional Files:</span>
+                    <span className={completedUploads.length > 0 ? "text-green-400" : "text-muted-foreground"}>
+                      {completedUploads.length > 0
+                        ? `${completedUploads.length} file${completedUploads.length !== 1 ? 's' : ''} (${photoCount} photo${photoCount !== 1 ? 's' : ''}, ${pdfCount} PDF${pdfCount !== 1 ? 's' : ''})`
+                        : "None"}
                     </span>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setStep(2)}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back
                 </Button>
-                <Button 
+                <Button
                   onClick={handleCreateProposal}
                   disabled={createProposal.isPending}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {createProposal.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
                   ) : (
-                    <>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Create Proposal
-                    </>
+                    <><Zap className="mr-2 h-4 w-4" />Create Proposal</>
                   )}
                 </Button>
               </div>
@@ -658,10 +569,10 @@ export default function NewProposal() {
       <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Switchboard Photo</DialogTitle>
+            <DialogTitle>Image Preview</DialogTitle>
           </DialogHeader>
           {previewUrl && (
-            <img src={previewUrl} alt="Switchboard Preview" className="w-full h-auto rounded-lg" />
+            <img src={previewUrl} alt="Preview" className="w-full h-auto rounded-lg" />
           )}
         </DialogContent>
       </Dialog>
@@ -715,9 +626,7 @@ export default function NewProposal() {
             <div className="space-y-2">
               <Label>State *</Label>
               <Select value={newCustomer.state} onValueChange={(v) => setNewCustomer(p => ({ ...p, state: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="VIC">VIC</SelectItem>
                   <SelectItem value="NSW">NSW</SelectItem>
@@ -732,16 +641,6 @@ export default function NewProposal() {
             </div>
             <div className="space-y-3 pt-2">
               <Label className="text-muted-foreground">Property Details</Label>
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="hasGas"
-                  checked={newCustomer.hasGas}
-                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasGas: !!c }))}
-                />
-                <label htmlFor="hasGas" className="text-sm flex items-center gap-1.5 cursor-pointer">
-                  <Flame className="h-4 w-4 text-orange-400" /> Has Gas Connection
-                </label>
-              </div>
               <div className="flex items-center gap-3">
                 <Checkbox
                   id="hasPool"
@@ -781,7 +680,6 @@ export default function NewProposal() {
                     phone: newCustomer.phone || undefined,
                     address: newCustomer.address,
                     state: newCustomer.state,
-                    hasGas: newCustomer.hasGas,
                     hasPool: newCustomer.hasPool,
                     hasEV: newCustomer.hasEV,
                     notes: newCustomer.notes || undefined,
@@ -792,9 +690,7 @@ export default function NewProposal() {
               >
                 {createCustomer.isPending ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
-                ) : (
-                  'Create Customer'
-                )}
+                ) : 'Create Customer'}
               </Button>
             </div>
           </div>
@@ -807,7 +703,6 @@ export default function NewProposal() {
 function StepIndicator({ step, currentStep, label }: { step: number; currentStep: number; label: string }) {
   const isActive = step === currentStep;
   const isCompleted = step < currentStep;
-  
   return (
     <div className="flex flex-col items-center gap-2">
       <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all ${
@@ -822,4 +717,13 @@ function StepIndicator({ step, currentStep, label }: { step: number; currentStep
       </span>
     </div>
   );
+}
+
+function fileToBase64(file: globalThis.File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve((e.target?.result as string).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
