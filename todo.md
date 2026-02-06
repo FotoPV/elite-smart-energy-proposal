@@ -126,3 +126,9 @@
 
 ## Bug Fix (Feb 6)
 - [x] Remove all orange colors from dashboard UI except icons (orange only for icons and exported slides)
+
+
+## Publish PDF Feature (Feb 6)
+- [x] Add "Publish PDF" button to proposal detail page
+- [x] Update slide generator to match Paul Stokes SA example exactly
+- [x] Generate professional PDF with correct branding and layout

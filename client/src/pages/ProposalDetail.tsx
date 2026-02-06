@@ -1,3 +1,4 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,62 @@ import {
   DollarSign,
   TrendingUp,
   Battery,
-  Sun
+  Sun,
+  Loader2
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { SlideViewer } from "@/components/SlideViewer";
+
+// Publish PDF Button Component
+function PublishPDFButton({ proposalId, customerName }: { proposalId: number; customerName: string }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const exportMutation = trpc.proposals.exportPdf.useMutation({
+    onSuccess: (data) => {
+      // Create download link
+      const link = document.createElement('a');
+      link.href = data.fileUrl;
+      link.download = `${customerName.replace(/\s+/g, '_')}_Proposal.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('PDF generated successfully!');
+      setIsGenerating(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to generate PDF: ${error.message}`);
+      setIsGenerating(false);
+    }
+  });
+  
+  const handlePublish = () => {
+    setIsGenerating(true);
+    toast.info('Generating PDF... This may take a moment.');
+    exportMutation.mutate({ proposalId });
+  };
+  
+  return (
+    <Button 
+      onClick={handlePublish}
+      disabled={isGenerating || exportMutation.isPending}
+      className="lightning-button-primary"
+    >
+      {isGenerating || exportMutation.isPending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Generating PDF...
+        </>
+      ) : (
+        <>
+          <Download className="mr-2 h-4 w-4" />
+          Publish PDF
+        </>
+      )}
+    </Button>
+  );
+}
 
 export default function ProposalDetail() {
   const params = useParams<{ id: string }>();
@@ -170,13 +221,7 @@ export default function ProposalDetail() {
               )}
               
               {proposal.status === 'generated' && (
-                <Button 
-                  onClick={() => toast.info("Export feature coming soon")}
-                  className="lightning-button-primary"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Proposal
-                </Button>
+                <PublishPDFButton proposalId={proposalId} customerName={customer?.fullName || 'Customer'} />
               )}
               
               {proposal.calculations && (
