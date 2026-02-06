@@ -17,12 +17,77 @@ import {
   TrendingUp,
   Battery,
   Sun,
-  Loader2
+  Loader2,
+  Edit,
+  Upload
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { SlideViewer } from "@/components/SlideViewer";
+
+// Update and Publish Button Component - Recalculates, regenerates slides, then exports PDF
+function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { proposalId: number; customerName: string; onComplete: () => void }) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState('');
+  
+  const calculateMutation = trpc.proposals.calculate.useMutation();
+  const generateMutation = trpc.proposals.generate.useMutation();
+  const exportMutation = trpc.proposals.exportPdf.useMutation();
+  
+  const handleUpdateAndPublish = async () => {
+    setIsProcessing(true);
+    try {
+      // Step 1: Recalculate
+      setCurrentStep('Recalculating...');
+      await calculateMutation.mutateAsync({ proposalId });
+      
+      // Step 2: Regenerate slides
+      setCurrentStep('Generating slides...');
+      await generateMutation.mutateAsync({ proposalId });
+      
+      // Step 3: Export PDF
+      setCurrentStep('Creating PDF...');
+      const result = await exportMutation.mutateAsync({ proposalId });
+      
+      // Download the PDF
+      const link = document.createElement('a');
+      link.href = result.fileUrl;
+      link.download = `${customerName.replace(/\s+/g, '_')}_Proposal.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Proposal updated and PDF generated successfully!');
+      onComplete();
+    } catch (error: any) {
+      toast.error(`Failed: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+      setCurrentStep('');
+    }
+  };
+  
+  return (
+    <Button 
+      onClick={handleUpdateAndPublish}
+      disabled={isProcessing}
+      className="lightning-button-primary"
+    >
+      {isProcessing ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {currentStep}
+        </>
+      ) : (
+        <>
+          <Upload className="mr-2 h-4 w-4" />
+          Update & Publish
+        </>
+      )}
+    </Button>
+  );
+}
 
 // Publish PDF Button Component
 function PublishPDFButton({ proposalId, customerName }: { proposalId: number; customerName: string }) {
@@ -218,6 +283,14 @@ export default function ProposalDetail() {
                   <FileText className="mr-2 h-4 w-4" />
                   {generateMutation.isPending ? "Generating..." : "Generate Slides"}
                 </Button>
+              )}
+              
+              {proposal.calculations && (
+                <UpdateAndPublishButton 
+                  proposalId={proposalId} 
+                  customerName={customer?.fullName || 'Customer'} 
+                  onComplete={() => refetch()}
+                />
               )}
               
               {proposal.status === 'generated' && (

@@ -136,3 +136,19 @@
 
 ## Layout Fix (Feb 6)
 - [x] Position all bottom tabs on the left-hand side
+
+
+## New Tasks (Feb 6 - Part 4)
+- [x] Seed VPP providers reference data (13 providers)
+- [x] Seed state rebates reference data
+- [ ] Test complete workflow (create proposal, upload bill, generate slides, publish PDF)
+- [ ] Add email delivery integration for generated proposals
+
+
+## Bug Fix - PDF Export (Feb 6)
+- [x] Install Chrome for Puppeteer to fix PDF export error
+
+
+## Update and Publish Feature (Feb 6)
+- [x] Add "Update & Publish" button to proposal detail page
+- [x] Button recalculates, regenerates slides, then exports PDF in one click
