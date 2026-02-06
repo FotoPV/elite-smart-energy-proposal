@@ -1,17 +1,10 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, json } from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
+// ============================================
+// USER TABLE (Extended from template)
+// ============================================
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -25,4 +18,252 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// ============================================
+// CUSTOMERS TABLE
+// ============================================
+export const customers = mysqlTable("customers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Created by user
+  
+  // Basic Info
+  fullName: varchar("fullName", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  address: text("address").notNull(),
+  state: varchar("state", { length: 10 }).notNull(), // VIC, NSW, SA, QLD, etc.
+  
+  // Optional Inputs
+  hasGas: boolean("hasGas").default(false),
+  gasAppliances: json("gasAppliances").$type<string[]>(), // ["Hot Water", "Heating", "Cooktop", "Pool Heater"]
+  hasPool: boolean("hasPool").default(false),
+  poolVolume: int("poolVolume"), // Litres
+  hasEV: boolean("hasEV").default(false),
+  evInterest: mysqlEnum("evInterest", ["none", "interested", "owns"]).default("none"),
+  hasExistingSolar: boolean("hasExistingSolar").default(false),
+  existingSolarSize: decimal("existingSolarSize", { precision: 5, scale: 2 }), // kW
+  existingSolarAge: int("existingSolarAge"), // Years
+  
+  // Metadata
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = typeof customers.$inferInsert;
+
+// ============================================
+// BILLS TABLE (Electricity & Gas)
+// ============================================
+export const bills = mysqlTable("bills", {
+  id: int("id").autoincrement().primaryKey(),
+  customerId: int("customerId").notNull(),
+  billType: mysqlEnum("billType", ["electricity", "gas"]).notNull(),
+  
+  // File Storage
+  fileUrl: varchar("fileUrl", { length: 512 }),
+  fileKey: varchar("fileKey", { length: 255 }),
+  fileName: varchar("fileName", { length: 255 }),
+  
+  // Extracted Data - Common
+  retailer: varchar("retailer", { length: 100 }),
+  billingPeriodStart: timestamp("billingPeriodStart"),
+  billingPeriodEnd: timestamp("billingPeriodEnd"),
+  billingDays: int("billingDays"),
+  totalAmount: decimal("totalAmount", { precision: 10, scale: 2 }),
+  dailySupplyCharge: decimal("dailySupplyCharge", { precision: 8, scale: 4 }),
+  
+  // Electricity Specific
+  totalUsageKwh: decimal("totalUsageKwh", { precision: 10, scale: 2 }),
+  peakUsageKwh: decimal("peakUsageKwh", { precision: 10, scale: 2 }),
+  offPeakUsageKwh: decimal("offPeakUsageKwh", { precision: 10, scale: 2 }),
+  shoulderUsageKwh: decimal("shoulderUsageKwh", { precision: 10, scale: 2 }),
+  solarExportsKwh: decimal("solarExportsKwh", { precision: 10, scale: 2 }),
+  peakRateCents: decimal("peakRateCents", { precision: 8, scale: 4 }),
+  offPeakRateCents: decimal("offPeakRateCents", { precision: 8, scale: 4 }),
+  shoulderRateCents: decimal("shoulderRateCents", { precision: 8, scale: 4 }),
+  feedInTariffCents: decimal("feedInTariffCents", { precision: 8, scale: 4 }),
+  
+  // Gas Specific
+  gasUsageMj: decimal("gasUsageMj", { precision: 10, scale: 2 }),
+  gasRateCentsMj: decimal("gasRateCentsMj", { precision: 8, scale: 4 }),
+  
+  // Raw Extracted Data (JSON for flexibility)
+  rawExtractedData: json("rawExtractedData"),
+  extractionConfidence: decimal("extractionConfidence", { precision: 5, scale: 2 }),
+  
+  // Metadata
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Bill = typeof bills.$inferSelect;
+export type InsertBill = typeof bills.$inferInsert;
+
+// ============================================
+// PROPOSALS TABLE
+// ============================================
+export const proposals = mysqlTable("proposals", {
+  id: int("id").autoincrement().primaryKey(),
+  customerId: int("customerId").notNull(),
+  userId: int("userId").notNull(), // Created by user
+  
+  // Proposal Info
+  title: varchar("title", { length: 255 }),
+  status: mysqlEnum("status", ["draft", "calculating", "generated", "exported", "archived"]).default("draft").notNull(),
+  proposalDate: timestamp("proposalDate").defaultNow().notNull(),
+  
+  // Linked Bills
+  electricityBillId: int("electricityBillId"),
+  gasBillId: int("gasBillId"),
+  
+  // Calculated Results (stored as JSON for flexibility)
+  calculations: json("calculations").$type<ProposalCalculations>(),
+  
+  // Generated Slides Data
+  slidesData: json("slidesData").$type<SlideData[]>(),
+  slideCount: int("slideCount"),
+  
+  // Export Info
+  pdfUrl: varchar("pdfUrl", { length: 512 }),
+  pptUrl: varchar("pptUrl", { length: 512 }),
+  lastExportedAt: timestamp("lastExportedAt"),
+  
+  // Metadata
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Proposal = typeof proposals.$inferSelect;
+export type InsertProposal = typeof proposals.$inferInsert;
+
+// ============================================
+// VPP PROVIDERS REFERENCE TABLE
+// ============================================
+export const vppProviders = mysqlTable("vppProviders", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  programName: varchar("programName", { length: 100 }),
+  
+  // Availability
+  availableStates: json("availableStates").$type<string[]>(), // ["VIC", "NSW", "SA", "QLD"]
+  hasGasBundle: boolean("hasGasBundle").default(false),
+  
+  // VPP Details
+  dailyCredit: decimal("dailyCredit", { precision: 8, scale: 2 }),
+  eventPayment: decimal("eventPayment", { precision: 8, scale: 2 }),
+  estimatedEventsPerYear: int("estimatedEventsPerYear"),
+  bundleDiscount: decimal("bundleDiscount", { precision: 8, scale: 2 }),
+  
+  // Additional Info
+  minBatterySize: decimal("minBatterySize", { precision: 5, scale: 2 }), // kWh
+  website: varchar("website", { length: 255 }),
+  notes: text("notes"),
+  
+  // Metadata
+  isActive: boolean("isActive").default(true),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VppProvider = typeof vppProviders.$inferSelect;
+export type InsertVppProvider = typeof vppProviders.$inferInsert;
+
+// ============================================
+// STATE REBATES REFERENCE TABLE
+// ============================================
+export const stateRebates = mysqlTable("stateRebates", {
+  id: int("id").autoincrement().primaryKey(),
+  state: varchar("state", { length: 10 }).notNull(),
+  rebateType: mysqlEnum("rebateType", ["solar", "battery", "heat_pump_hw", "heat_pump_ac", "ev_charger", "induction"]).notNull(),
+  
+  // Rebate Details
+  name: varchar("name", { length: 255 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  isPercentage: boolean("isPercentage").default(false),
+  maxAmount: decimal("maxAmount", { precision: 10, scale: 2 }),
+  
+  // Eligibility
+  eligibilityCriteria: text("eligibilityCriteria"),
+  incomeThreshold: decimal("incomeThreshold", { precision: 12, scale: 2 }),
+  
+  // Validity
+  validFrom: timestamp("validFrom"),
+  validUntil: timestamp("validUntil"),
+  isActive: boolean("isActive").default(true),
+  
+  // Metadata
+  sourceUrl: varchar("sourceUrl", { length: 512 }),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StateRebate = typeof stateRebates.$inferSelect;
+export type InsertStateRebate = typeof stateRebates.$inferInsert;
+
+// ============================================
+// TYPE DEFINITIONS FOR JSON FIELDS
+// ============================================
+
+export interface ProposalCalculations {
+  // Usage Projections
+  dailyAverageKwh: number;
+  monthlyUsageKwh: number;
+  yearlyUsageKwh: number;
+  projectedAnnualCost: number;
+  
+  // Gas Analysis (if applicable)
+  gasAnnualCost?: number;
+  gasKwhEquivalent?: number;
+  gasCo2Emissions?: number;
+  
+  // Battery Recommendation
+  recommendedBatteryKwh: number;
+  batteryProduct?: string;
+  batteryPaybackYears?: number;
+  
+  // Solar Recommendation (if no existing)
+  recommendedSolarKw?: number;
+  solarPanelCount?: number;
+  solarAnnualGeneration?: number;
+  
+  // VPP Analysis
+  selectedVppProvider?: string;
+  vppAnnualValue?: number;
+  vppProviderComparison?: VppComparisonItem[];
+  
+  // Electrification Savings
+  hotWaterSavings?: number;
+  heatingCoolingSavings?: number;
+  cookingSavings?: number;
+  poolHeatPumpSavings?: number;
+  
+  // EV Analysis
+  evPetrolCost?: number;
+  evGridChargeCost?: number;
+  evSolarChargeCost?: number;
+  evAnnualSavings?: number;
+  
+  // Total Summary
+  totalAnnualSavings: number;
+  totalInvestment: number;
+  totalRebates: number;
+  netInvestment: number;
+  paybackYears: number;
+  co2ReductionTonnes?: number;
+}
+
+export interface VppComparisonItem {
+  provider: string;
+  programName: string;
+  hasGasBundle: boolean;
+  estimatedAnnualValue: number;
+  strategicFit: "excellent" | "good" | "moderate" | "poor";
+}
+
+export interface SlideData {
+  slideNumber: number;
+  slideType: string;
+  title: string;
+  isConditional: boolean;
+  isIncluded: boolean;
+  content: Record<string, unknown>;
+}

@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -21,21 +22,33 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  LogOut, 
+  Users, 
+  FileText, 
+  PlusCircle,
+  Settings,
+  Zap,
+  ChevronRight
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Users, label: "Customers", path: "/customers" },
+  { icon: FileText, label: "Proposals", path: "/proposals" },
+  { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 200;
-const MAX_WIDTH = 480;
+const MAX_WIDTH = 400;
 
 export default function DashboardLayout({
   children,
@@ -58,25 +71,43 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Sign in to continue
+          {/* Logo */}
+          <div className="flex flex-col items-center gap-4">
+            <img 
+              src="/LightningEnergy_Logo_Icon_Aqua.png" 
+              alt="Lightning Energy" 
+              className="h-20 w-20"
+            />
+            <h1 className="text-3xl font-extrabold tracking-tight text-center">
+              <span className="lightning-text-gradient">Lightning Energy</span>
             </h1>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+            <p className="text-lg text-muted-foreground text-center">
+              Proposal Generator
             </p>
           </div>
-          <Button
-            onClick={() => {
-              window.location.href = getLoginUrl();
-            }}
-            size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
-          >
-            Sign in
-          </Button>
+          
+          <div className="flex flex-col items-center gap-4 w-full">
+            <p className="text-sm text-muted-foreground text-center max-w-sm">
+              Sign in to access the proposal generator dashboard and create professional electrification proposals.
+            </p>
+            <Button
+              onClick={() => {
+                window.location.href = getLoginUrl();
+              }}
+              size="lg"
+              className="w-full lightning-button-primary font-semibold"
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Sign in to Continue
+            </Button>
+          </div>
+          
+          {/* Copyright */}
+          <p className="text-xs text-muted-foreground text-center mt-8">
+            COPYRIGHT Lightning Energy - Architect George Fotopoulos
+          </p>
         </div>
       </div>
     );
@@ -112,7 +143,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const activeMenuItem = menuItems.find(item => location.startsWith(item.path));
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -156,44 +187,58 @@ function DashboardLayoutContent({
       <div className="relative" ref={sidebarRef}>
         <Sidebar
           collapsible="icon"
-          className="border-r-0"
+          className="border-r border-border"
           disableTransition={isResizing}
         >
-          <SidebarHeader className="h-16 justify-center">
+          <SidebarHeader className="h-16 justify-center border-b border-border">
             <div className="flex items-center gap-3 px-2 transition-all w-full">
               <button
-                onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                aria-label="Toggle navigation"
+                onClick={() => setLocation("/dashboard")}
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none"
               >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                <img 
+                  src="/LightningEnergy_Logo_Icon_Aqua.png" 
+                  alt="Lightning Energy" 
+                  className="h-8 w-8 shrink-0"
+                />
+                {!isCollapsed && (
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-extrabold text-sm tracking-tight text-primary truncate">
+                      Lightning Energy
+                    </span>
+                    <span className="text-[10px] text-muted-foreground truncate">
+                      Proposal Generator
+                    </span>
+                  </div>
+                )}
               </button>
-              {!isCollapsed ? (
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold tracking-tight truncate">
-                    Navigation
-                  </span>
-                </div>
-              ) : null}
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
+          <SidebarContent className="gap-0 py-4">
+            <SidebarMenu className="px-2">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = location === item.path || 
+                  (item.path !== "/dashboard" && location.startsWith(item.path));
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
                       onClick={() => setLocation(item.path)}
                       tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
+                      className={`h-11 transition-all font-medium ${
+                        isActive 
+                          ? "bg-primary/10 text-primary border-l-2 border-primary" 
+                          : "hover:bg-muted"
+                      }`}
                     >
                       <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                        className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
                       />
                       <span>{item.label}</span>
+                      {isActive && !isCollapsed && (
+                        <ChevronRight className="ml-auto h-4 w-4 text-primary" />
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -201,26 +246,39 @@ function DashboardLayoutContent({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          <SidebarFooter className="p-3 border-t border-border">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-9 w-9 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
+                <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Avatar className="h-9 w-9 border border-primary/30 shrink-0">
+                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                     <p className="text-sm font-medium truncate leading-none">
-                      {user?.name || "-"}
+                      {user?.name || "User"}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate mt-1.5">
+                    <p className="text-xs text-muted-foreground truncate mt-1">
                       {user?.email || "-"}
                     </p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-2">
+                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setLocation("/settings")}
+                  className="cursor-pointer"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
@@ -230,10 +288,17 @@ function DashboardLayoutContent({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            
+            {/* Copyright in sidebar */}
+            {!isCollapsed && (
+              <p className="text-[9px] text-muted-foreground text-center mt-3 px-2">
+                © Lightning Energy
+              </p>
+            )}
           </SidebarFooter>
         </Sidebar>
         <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
+          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/30 transition-colors ${isCollapsed ? "hidden" : ""}`}
           onMouseDown={() => {
             if (isCollapsed) return;
             setIsResizing(true);
@@ -242,22 +307,25 @@ function DashboardLayoutContent({
         />
       </div>
 
-      <SidebarInset>
+      <SidebarInset className="bg-background">
         {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col gap-1">
-                  <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? "Menu"}
-                  </span>
-                </div>
+          <div className="flex border-b border-border h-14 items-center justify-between bg-sidebar px-4 sticky top-0 z-40">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="h-9 w-9 rounded-lg" />
+              <div className="flex items-center gap-2">
+                <img 
+                  src="/LightningEnergy_Logo_Icon_Aqua.png" 
+                  alt="Lightning Energy" 
+                  className="h-6 w-6"
+                />
+                <span className="font-semibold text-sm text-primary">
+                  {activeMenuItem?.label ?? "Dashboard"}
+                </span>
               </div>
             </div>
           </div>
         )}
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-6 overflow-auto scrollbar-thin">{children}</main>
       </SidebarInset>
     </>
   );
