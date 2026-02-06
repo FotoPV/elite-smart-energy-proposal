@@ -207,3 +207,15 @@
 - [x] Add Alinta Energy
 - [x] Add Tango Energy
 - [x] Add GloBird Energy
+
+
+## Proposal Analytics Tracking (Feb 6)
+- [x] Add proposal_views database table (proposal_id, access_token, viewed_at, ip_address, user_agent, duration_seconds)
+- [x] Add slide_engagement database table (proposal_id, slide_index, slide_type, time_spent_seconds, viewed_at)
+- [x] Add public tracking API endpoints (record view, record slide engagement, update duration)
+- [x] Add tracking JavaScript to customer portal (auto-track page views, slide time, heartbeat)
+- [x] Add analytics dashboard section to proposal detail page (view count, unique visitors, slide engagement bars)
+- [x] Device breakdown display (desktop/mobile/tablet)
+- [x] Recent views list with browser/OS/IP info
+- [x] Write unit tests for analytics (11 tests passing)
+- [x] All 61 tests passing

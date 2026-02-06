@@ -29,6 +29,13 @@
       "when": 1770357016654,
       "tag": "0003_mighty_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1770361376412,
+      "tag": "0004_cynical_shatterstar",
+      "breakpoints": true
     }
   ]
 }

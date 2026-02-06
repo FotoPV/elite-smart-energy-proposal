@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
@@ -19,11 +19,141 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 // Lightning Energy brand assets
 const LOGO_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/maXyrLOUeJCvTJgW.png';
 
-// Slide viewer for customer portal
-function PortalSlideViewer({ slides }: { slides: { slideNumber: number; html: string }[] }) {
+// Generate a unique session ID for this visit
+function generateSessionId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
+// Detect device type from user agent
+function detectDevice(): { deviceType: string; browser: string; os: string } {
+  const ua = navigator.userAgent;
+  
+  let deviceType = 'desktop';
+  if (/Mobi|Android/i.test(ua)) deviceType = 'mobile';
+  else if (/Tablet|iPad/i.test(ua)) deviceType = 'tablet';
+  
+  let browser = 'unknown';
+  if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Edg')) browser = 'Edge';
+  
+  let os = 'unknown';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  
+  return { deviceType, browser, os };
+}
+
+// Analytics tracking hook
+function useAnalyticsTracking(proposalId: number | undefined, token: string, slides: { slideNumber: number; html: string }[] | undefined) {
+  const sessionIdRef = useRef(generateSessionId());
+  const viewIdRef = useRef<number | null>(null);
+  const startTimeRef = useRef(Date.now());
+  const slideStartTimeRef = useRef(Date.now());
+  const currentSlideRef = useRef(0);
+  const slidesViewedRef = useRef(new Set<number>());
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  const recordViewMutation = trpc.analytics.recordView.useMutation();
+  const updateDurationMutation = trpc.analytics.updateViewDuration.useMutation();
+  const recordSlideViewMutation = trpc.analytics.recordSlideView.useMutation();
+  
+  // Record initial view
+  useEffect(() => {
+    if (!proposalId || !token) return;
+    
+    const device = detectDevice();
+    recordViewMutation.mutate({
+      proposalId,
+      token,
+      sessionId: sessionIdRef.current,
+      deviceType: device.deviceType,
+      browser: device.browser,
+      os: device.os,
+      referrer: document.referrer || undefined,
+    }, {
+      onSuccess: (result) => {
+        viewIdRef.current = result.viewId;
+      }
+    });
+    
+    // Start heartbeat to update duration every 15 seconds
+    heartbeatRef.current = setInterval(() => {
+      if (viewIdRef.current) {
+        const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+        updateDurationMutation.mutate({
+          viewId: viewIdRef.current,
+          durationSeconds: duration,
+          totalSlidesViewed: slidesViewedRef.current.size,
+        });
+      }
+    }, 15000);
+    
+    // Cleanup on unmount
+    return () => {
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
+      // Final duration update
+      if (viewIdRef.current) {
+        const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+        updateDurationMutation.mutate({
+          viewId: viewIdRef.current,
+          durationSeconds: duration,
+          totalSlidesViewed: slidesViewedRef.current.size,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposalId, token]);
+  
+  // Track slide navigation
+  const onSlideChange = useCallback((newSlideIndex: number) => {
+    if (!proposalId || !viewIdRef.current || !slides) return;
+    
+    // Record time spent on previous slide
+    const timeSpent = Math.round((Date.now() - slideStartTimeRef.current) / 1000);
+    if (timeSpent > 0) {
+      const prevSlide = slides[currentSlideRef.current];
+      if (prevSlide) {
+        recordSlideViewMutation.mutate({
+          proposalId,
+          viewId: viewIdRef.current,
+          sessionId: sessionIdRef.current,
+          slideIndex: currentSlideRef.current,
+          slideType: 'slide',
+          slideTitle: `Slide ${currentSlideRef.current + 1}`,
+          timeSpentSeconds: timeSpent,
+        });
+      }
+    }
+    
+    // Update refs for new slide
+    currentSlideRef.current = newSlideIndex;
+    slideStartTimeRef.current = Date.now();
+    slidesViewedRef.current.add(newSlideIndex);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposalId, slides]);
+  
+  return { onSlideChange };
+}
+
+// Slide viewer for customer portal with analytics
+function PortalSlideViewer({ 
+  slides, 
+  onSlideChange 
+}: { 
+  slides: { slideNumber: number; html: string }[];
+  onSlideChange?: (index: number) => void;
+}) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
@@ -37,6 +167,7 @@ function PortalSlideViewer({ slides }: { slides: { slideNumber: number; html: st
   
   const goToSlide = (index: number) => {
     if (index >= 0 && index < slides.length) {
+      onSlideChange?.(index);
       setCurrentSlide(index);
     }
   };
@@ -149,6 +280,13 @@ export default function CustomerPortal() {
   );
   
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Analytics tracking
+  const { onSlideChange } = useAnalyticsTracking(
+    data?.proposal?.id as number | undefined,
+    token,
+    data?.slides
+  );
   
   // Download PDF mutation
   const downloadMutation = trpc.portal.downloadPdf.useMutation({
@@ -340,7 +478,7 @@ export default function CustomerPortal() {
             <CardTitle>Your Proposal</CardTitle>
           </CardHeader>
           <CardContent>
-            <PortalSlideViewer slides={slides || []} />
+            <PortalSlideViewer slides={slides || []} onSlideChange={onSlideChange} />
           </CardContent>
         </Card>
         

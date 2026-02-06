@@ -522,3 +522,184 @@ export async function getProposalWithCustomerByToken(token: string) {
   
   return { proposal, customer, accessToken };
 }
+
+
+// ============================================
+// PROPOSAL ANALYTICS QUERIES
+// ============================================
+
+import { proposalViews, InsertProposalView, ProposalView, slideEngagement, InsertSlideEngagement, SlideEngagement } from "../drizzle/schema";
+
+export async function recordProposalView(view: InsertProposalView): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(proposalViews).values(view);
+  return Number(result[0].insertId);
+}
+
+export async function updateProposalView(id: number, data: Partial<InsertProposalView>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(proposalViews).set(data).where(eq(proposalViews.id, id));
+}
+
+export async function getProposalViewById(id: number): Promise<ProposalView | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(proposalViews).where(eq(proposalViews.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getViewsByProposalId(proposalId: number): Promise<ProposalView[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId))
+    .orderBy(desc(proposalViews.viewedAt));
+}
+
+export async function getViewsBySessionId(sessionId: string): Promise<ProposalView | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(proposalViews)
+    .where(eq(proposalViews.sessionId, sessionId))
+    .limit(1);
+  return result[0];
+}
+
+export async function recordSlideEngagement(engagement: InsertSlideEngagement): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(slideEngagement).values(engagement);
+  return Number(result[0].insertId);
+}
+
+export async function updateSlideEngagement(id: number, data: Partial<InsertSlideEngagement>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(slideEngagement).set(data).where(eq(slideEngagement.id, id));
+}
+
+export async function getSlideEngagementByView(viewId: number): Promise<SlideEngagement[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(slideEngagement)
+    .where(eq(slideEngagement.viewId, viewId))
+    .orderBy(slideEngagement.slideIndex);
+}
+
+export async function getSlideEngagementByProposal(proposalId: number): Promise<SlideEngagement[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(slideEngagement)
+    .where(eq(slideEngagement.proposalId, proposalId))
+    .orderBy(slideEngagement.slideIndex);
+}
+
+export async function getExistingSlideEngagement(
+  viewId: number, 
+  slideIndex: number
+): Promise<SlideEngagement | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(slideEngagement)
+    .where(and(
+      eq(slideEngagement.viewId, viewId),
+      eq(slideEngagement.slideIndex, slideIndex)
+    ))
+    .limit(1);
+  return result[0];
+}
+
+export async function getProposalAnalyticsSummary(proposalId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Total views
+  const [viewCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId));
+  
+  // Unique visitors (by IP)
+  const [uniqueVisitors] = await db
+    .select({ count: sql<number>`count(DISTINCT ${proposalViews.ipAddress})` })
+    .from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId));
+  
+  // Average duration
+  const [avgDuration] = await db
+    .select({ avg: sql<number>`COALESCE(AVG(${proposalViews.durationSeconds}), 0)` })
+    .from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId));
+  
+  // Device breakdown
+  const deviceBreakdown = await db
+    .select({ 
+      deviceType: proposalViews.deviceType,
+      count: sql<number>`count(*)` 
+    })
+    .from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId))
+    .groupBy(proposalViews.deviceType);
+  
+  // Slide engagement aggregated
+  const slideStats = await db
+    .select({
+      slideIndex: slideEngagement.slideIndex,
+      slideType: slideEngagement.slideType,
+      slideTitle: slideEngagement.slideTitle,
+      totalTimeSpent: sql<number>`SUM(${slideEngagement.timeSpentSeconds})`,
+      totalViews: sql<number>`SUM(${slideEngagement.viewCount})`,
+      avgTimeSpent: sql<number>`AVG(${slideEngagement.timeSpentSeconds})`,
+    })
+    .from(slideEngagement)
+    .where(eq(slideEngagement.proposalId, proposalId))
+    .groupBy(slideEngagement.slideIndex, slideEngagement.slideType, slideEngagement.slideTitle)
+    .orderBy(slideEngagement.slideIndex);
+  
+  // Recent views (last 10)
+  const recentViews = await db.select().from(proposalViews)
+    .where(eq(proposalViews.proposalId, proposalId))
+    .orderBy(desc(proposalViews.viewedAt))
+    .limit(10);
+  
+  return {
+    totalViews: Number(viewCount?.count ?? 0),
+    uniqueVisitors: Number(uniqueVisitors?.count ?? 0),
+    avgDurationSeconds: Math.round(Number(avgDuration?.avg ?? 0)),
+    deviceBreakdown: deviceBreakdown.map(d => ({
+      deviceType: d.deviceType || 'unknown',
+      count: Number(d.count),
+    })),
+    slideEngagement: slideStats.map(s => ({
+      slideIndex: s.slideIndex,
+      slideType: s.slideType,
+      slideTitle: s.slideTitle,
+      totalTimeSpent: Number(s.totalTimeSpent ?? 0),
+      totalViews: Number(s.totalViews ?? 0),
+      avgTimeSpent: Math.round(Number(s.avgTimeSpent ?? 0)),
+    })),
+    recentViews: recentViews.map(v => ({
+      id: v.id,
+      sessionId: v.sessionId,
+      ipAddress: v.ipAddress,
+      deviceType: v.deviceType,
+      browser: v.browser,
+      os: v.os,
+      durationSeconds: v.durationSeconds,
+      totalSlidesViewed: v.totalSlidesViewed,
+      viewedAt: v.viewedAt,
+    })),
+  };
+}

@@ -331,3 +331,61 @@ export const proposalAccessTokens = mysqlTable("proposalAccessTokens", {
 
 export type ProposalAccessToken = typeof proposalAccessTokens.$inferSelect;
 export type InsertProposalAccessToken = typeof proposalAccessTokens.$inferInsert;
+
+
+// ============================================
+// PROPOSAL VIEWS TABLE (Analytics)
+// ============================================
+export const proposalViews = mysqlTable("proposalViews", {
+  id: int("id").autoincrement().primaryKey(),
+  proposalId: int("proposalId").notNull(),
+  accessTokenId: int("accessTokenId"),
+  
+  // Visitor Info
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  referrer: varchar("referrer", { length: 512 }),
+  
+  // Session Tracking
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  durationSeconds: int("durationSeconds").default(0),
+  totalSlidesViewed: int("totalSlidesViewed").default(0),
+  
+  // Device Info
+  deviceType: varchar("deviceType", { length: 20 }), // desktop, mobile, tablet
+  browser: varchar("browser", { length: 50 }),
+  os: varchar("os", { length: 50 }),
+  
+  // Timestamps
+  viewedAt: timestamp("viewedAt").defaultNow().notNull(),
+  lastActivityAt: timestamp("lastActivityAt").defaultNow().notNull(),
+});
+
+export type ProposalView = typeof proposalViews.$inferSelect;
+export type InsertProposalView = typeof proposalViews.$inferInsert;
+
+// ============================================
+// SLIDE ENGAGEMENT TABLE (Analytics)
+// ============================================
+export const slideEngagement = mysqlTable("slideEngagement", {
+  id: int("id").autoincrement().primaryKey(),
+  proposalId: int("proposalId").notNull(),
+  viewId: int("viewId").notNull(), // Links to proposalViews
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  
+  // Slide Info
+  slideIndex: int("slideIndex").notNull(),
+  slideType: varchar("slideType", { length: 50 }).notNull(),
+  slideTitle: varchar("slideTitle", { length: 255 }),
+  
+  // Engagement Metrics
+  timeSpentSeconds: int("timeSpentSeconds").default(0),
+  viewCount: int("viewCount").default(1), // Times revisited within session
+  
+  // Timestamps
+  firstViewedAt: timestamp("firstViewedAt").defaultNow().notNull(),
+  lastViewedAt: timestamp("lastViewedAt").defaultNow().notNull(),
+});
+
+export type SlideEngagement = typeof slideEngagement.$inferSelect;
+export type InsertSlideEngagement = typeof slideEngagement.$inferInsert;

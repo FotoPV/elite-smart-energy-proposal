@@ -983,6 +983,132 @@ export const appRouter = router({
   }),
 
   // ============================================
+  // ANALYTICS ROUTES (Public tracking + Protected dashboard)
+  // ============================================
+  analytics: router({
+    // Public: Record a new proposal view (called from customer portal)
+    recordView: publicProcedure
+      .input(z.object({
+        proposalId: z.number(),
+        token: z.string(),
+        sessionId: z.string(),
+        deviceType: z.string().optional(),
+        browser: z.string().optional(),
+        os: z.string().optional(),
+        referrer: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Verify token is valid
+        const accessToken = await db.getAccessTokenByToken(input.token);
+        if (!accessToken || !accessToken.isActive) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Invalid access token' });
+        }
+        
+        // Check if session already exists
+        const existingView = await db.getViewsBySessionId(input.sessionId);
+        if (existingView) {
+          return { viewId: existingView.id, isReturning: true };
+        }
+        
+        // Get IP from request
+        const ipAddress = ctx.req.headers['x-forwarded-for'] as string || ctx.req.socket.remoteAddress || 'unknown';
+        
+        const viewId = await db.recordProposalView({
+          proposalId: input.proposalId,
+          accessTokenId: accessToken.id,
+          sessionId: input.sessionId,
+          ipAddress: ipAddress.split(',')[0].trim(),
+          userAgent: ctx.req.headers['user-agent'] || '',
+          referrer: input.referrer || null,
+          deviceType: input.deviceType || null,
+          browser: input.browser || null,
+          os: input.os || null,
+          durationSeconds: 0,
+          totalSlidesViewed: 0,
+        });
+        
+        return { viewId, isReturning: false };
+      }),
+    
+    // Public: Update view duration (heartbeat from customer portal)
+    updateViewDuration: publicProcedure
+      .input(z.object({
+        viewId: z.number(),
+        durationSeconds: z.number(),
+        totalSlidesViewed: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateProposalView(input.viewId, {
+          durationSeconds: input.durationSeconds,
+          totalSlidesViewed: input.totalSlidesViewed,
+          lastActivityAt: new Date(),
+        });
+        return { success: true };
+      }),
+    
+    // Public: Record slide engagement (called when user navigates slides)
+    recordSlideView: publicProcedure
+      .input(z.object({
+        proposalId: z.number(),
+        viewId: z.number(),
+        sessionId: z.string(),
+        slideIndex: z.number(),
+        slideType: z.string(),
+        slideTitle: z.string().optional(),
+        timeSpentSeconds: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        // Check if engagement record exists for this view + slide
+        const existing = await db.getExistingSlideEngagement(input.viewId, input.slideIndex);
+        
+        if (existing) {
+          // Update existing record
+          await db.updateSlideEngagement(existing.id, {
+            timeSpentSeconds: (existing.timeSpentSeconds || 0) + input.timeSpentSeconds,
+            viewCount: (existing.viewCount || 0) + 1,
+            lastViewedAt: new Date(),
+          });
+          return { engagementId: existing.id, updated: true };
+        }
+        
+        // Create new record
+        const engagementId = await db.recordSlideEngagement({
+          proposalId: input.proposalId,
+          viewId: input.viewId,
+          sessionId: input.sessionId,
+          slideIndex: input.slideIndex,
+          slideType: input.slideType,
+          slideTitle: input.slideTitle || null,
+          timeSpentSeconds: input.timeSpentSeconds,
+          viewCount: 1,
+        });
+        
+        return { engagementId, updated: false };
+      }),
+    
+    // Protected: Get analytics summary for a proposal
+    getProposalAnalytics: protectedProcedure
+      .input(z.object({ proposalId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getProposalAnalyticsSummary(input.proposalId);
+      }),
+    
+    // Protected: Get all views for a proposal
+    getProposalViews: protectedProcedure
+      .input(z.object({ proposalId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getViewsByProposalId(input.proposalId);
+      }),
+    
+    // Protected: Get slide engagement for a specific view
+    getViewEngagement: protectedProcedure
+      .input(z.object({ viewId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getSlideEngagementByView(input.viewId);
+      }),
+  }),
+
+  // ============================================
   // ADMIN ROUTES
   // ============================================
   admin: router({

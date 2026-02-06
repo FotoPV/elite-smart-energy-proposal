@@ -23,7 +23,15 @@ import {
   Share2,
   Copy,
   Link,
-  ExternalLink
+  ExternalLink,
+  BarChart3,
+  Eye,
+  Users,
+  Timer,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Globe
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -282,6 +290,203 @@ function ShareLinkButton({ proposalId, customerName }: { proposalId: number; cus
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// Analytics Dashboard Component
+function ProposalAnalytics({ proposalId }: { proposalId: number }) {
+  const { data: analytics, isLoading } = trpc.analytics.getProposalAnalytics.useQuery(
+    { proposalId },
+    { refetchInterval: 30000 } // Refresh every 30 seconds
+  );
+  
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-[#00EAD3]" />
+            Customer Engagement Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!analytics) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-[#00EAD3]" />
+            Customer Engagement Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <Eye className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p>No views yet. Share the proposal with your customer to start tracking engagement.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  const formatDuration = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+  
+  const getDeviceIcon = (type: string) => {
+    switch (type) {
+      case 'mobile': return <Smartphone className="h-4 w-4" />;
+      case 'tablet': return <Tablet className="h-4 w-4" />;
+      case 'desktop': return <Monitor className="h-4 w-4" />;
+      default: return <Globe className="h-4 w-4" />;
+    }
+  };
+  
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-[#00EAD3]" />
+          Customer Engagement Analytics
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Overview Metrics */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="bg-background rounded-xl p-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Eye className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Views</p>
+                <p className="text-2xl font-bold font-mono">{analytics.totalViews}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-background rounded-xl p-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Unique Visitors</p>
+                <p className="text-2xl font-bold font-mono">{analytics.uniqueVisitors}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-background rounded-xl p-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Timer className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Avg. Duration</p>
+                <p className="text-2xl font-bold font-mono">{formatDuration(analytics.avgDurationSeconds)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Device Breakdown */}
+        {analytics.deviceBreakdown.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Device Breakdown</h4>
+            <div className="flex gap-4">
+              {analytics.deviceBreakdown.map((device) => (
+                <div key={device.deviceType} className="flex items-center gap-2 bg-background rounded-lg px-3 py-2 border border-border">
+                  {getDeviceIcon(device.deviceType)}
+                  <span className="text-sm capitalize">{device.deviceType}</span>
+                  <span className="text-sm font-bold text-primary">{device.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Slide Engagement */}
+        {analytics.slideEngagement.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Slide Engagement</h4>
+            <div className="space-y-2">
+              {analytics.slideEngagement.map((slide) => {
+                const maxTime = Math.max(...analytics.slideEngagement.map(s => s.avgTimeSpent), 1);
+                const percentage = Math.round((slide.avgTimeSpent / maxTime) * 100);
+                return (
+                  <div key={slide.slideIndex} className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground w-6 text-right">{slide.slideIndex + 1}</span>
+                    <span className="text-sm w-48 truncate" title={slide.slideTitle || slide.slideType}>
+                      {slide.slideTitle || slide.slideType}
+                    </span>
+                    <div className="flex-1 h-6 bg-background rounded-full overflow-hidden border border-border">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#00EAD3] to-[#00EAD3]/60 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(percentage, 5)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono w-16 text-right">{formatDuration(slide.avgTimeSpent)}</span>
+                    <span className="text-xs text-muted-foreground w-12 text-right">{slide.totalViews} views</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        
+        {/* Recent Views */}
+        {analytics.recentViews.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Recent Views</h4>
+            <div className="space-y-2">
+              {analytics.recentViews.map((view) => (
+                <div key={view.id} className="flex items-center justify-between bg-background rounded-lg px-4 py-3 border border-border">
+                  <div className="flex items-center gap-3">
+                    {getDeviceIcon(view.deviceType || 'unknown')}
+                    <div>
+                      <p className="text-sm">
+                        {view.browser || 'Unknown'} on {view.os || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {view.ipAddress ? view.ipAddress.substring(0, 12) + '...' : 'Unknown IP'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-mono">{formatDuration(view.durationSeconds || 0)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {view.viewedAt ? new Date(view.viewedAt).toLocaleDateString('en-AU', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                      }) : 'Unknown'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {analytics.totalViews === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Eye className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p>No views yet. Share the proposal with your customer to start tracking engagement.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -579,6 +784,11 @@ export default function ProposalDetail() {
               <SlideViewer proposalId={proposalId} />
             </CardContent>
           </Card>
+        )}
+
+        {/* Analytics Section */}
+        {proposal.status === 'generated' && (
+          <ProposalAnalytics proposalId={proposalId} />
         )}
 
         {/* Footer */}
