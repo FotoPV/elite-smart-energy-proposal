@@ -91,7 +91,7 @@
   /* Lightning Energy Brand Colors */
   --primary: oklch(82.5% 0.14 180); /* Aqua #00EAD3 */
   --primary-foreground: oklch(10% 0 0);
-  --accent: oklch(68% 0.19 45); /* Burnt Orange #F36710 */
+  --accent: oklch(82.5% 0.14 180); /* Aqua - same as primary for dashboard */
   --accent-foreground: oklch(10% 0 0);
   
   --sidebar-primary: oklch(82.5% 0.14 180);
@@ -99,7 +99,7 @@
   
   /* Chart colors using brand palette */
   --chart-1: oklch(82.5% 0.14 180); /* Aqua */
-  --chart-2: oklch(68% 0.19 45); /* Orange */
+  --chart-2: oklch(75% 0.12 160); /* Teal variant */
   --chart-3: oklch(70% 0.12 150);
   --chart-4: oklch(75% 0.10 200);
   --chart-5: oklch(65% 0.15 30);
@@ -231,7 +231,7 @@
   }
   
   .lightning-text-gradient {
-    background: linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(68% 0.19 45) 100%);
+    background: linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(70% 0.12 190) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -258,7 +258,7 @@
   }
   
   .stat-card.accent::before {
-    background: oklch(68% 0.19 45);
+    background: oklch(82.5% 0.14 180);
   }
   
   /* Status badges */
@@ -287,8 +287,8 @@
   }
   
   .status-badge.exported {
-    background: oklch(68% 0.19 45 / 0.2);
-    color: oklch(68% 0.19 45);
+    background: oklch(70% 0.15 150 / 0.2);
+    color: oklch(70% 0.15 150);
   }
   
   .status-badge.archived {

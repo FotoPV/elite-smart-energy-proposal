@@ -118,3 +118,11 @@
 - [x] Add AI switchboard analysis using LLM vision to extract circuit details
 - [x] Implement auto-seeding of VPP providers (13 providers)
 - [x] Implement auto-seeding of state rebates
+
+
+## Bug Fix (Feb 6)
+- [ ] Remove all orange colors from dashboard UI (orange only for exported slides)
+
+
+## Bug Fix (Feb 6)
+- [x] Remove all orange colors from dashboard UI except icons (orange only for icons and exported slides)

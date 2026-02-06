@@ -64,7 +64,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
               <span className="block text-foreground">Lightning Energy</span>
               <span className="block mt-2" style={{
-                background: 'linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(68% 0.19 45) 100%)',
+                background: 'linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(70% 0.12 190) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
