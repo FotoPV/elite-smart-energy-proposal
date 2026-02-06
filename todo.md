@@ -280,3 +280,14 @@
 - [x] Fix pdfUpload module error in server
 - [x] Updated BRAND orange color from #f36710 to #E8731A to match best example
 - [x] All 68 tests passing
+
+
+## Bin/Trash Tab for Proposals (Feb 6)
+- [x] Add soft-delete (deletedAt) column to proposals table
+- [x] Add "Move to Bin" action on proposals (delete now soft-deletes)
+- [x] Add Bin tab in sidebar under Proposals section
+- [x] Add Bin page showing deleted proposals with customer name and delete date
+- [x] Add "Restore" and "Permanently Delete" actions in Bin
+- [x] Add "Empty Bin" button with confirmation dialog
+- [x] Filter deleted proposals from main proposals list
+- [x] All 68 tests passing

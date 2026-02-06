@@ -30,7 +30,8 @@ import {
   PlusCircle,
   Settings,
   Zap,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -42,6 +43,7 @@ const menuItems = [
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: FileText, label: "Proposals", path: "/proposals" },
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
+  { icon: Trash2, label: "Bin", path: "/proposals/bin" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

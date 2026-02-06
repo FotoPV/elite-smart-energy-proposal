@@ -13,6 +13,7 @@ import ProposalDetail from "./pages/ProposalDetail";
 import NewProposal from "./pages/NewProposal";
 import Settings from "./pages/Settings";
 import CustomerPortal from "./pages/CustomerPortal";
+import ProposalBin from "./pages/ProposalBin";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/customers/:id" component={CustomerDetail} />
       <Route path="/proposals" component={Proposals} />
       <Route path="/proposals/new" component={NewProposal} />
+      <Route path="/proposals/bin" component={ProposalBin} />
       <Route path="/proposals/:id" component={ProposalDetail} />
       <Route path="/settings" component={Settings} />
       <Route path="/portal/:token" component={CustomerPortal} />

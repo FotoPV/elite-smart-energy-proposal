@@ -36,6 +36,13 @@
       "when": 1770361376412,
       "tag": "0004_cynical_shatterstar",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1770370079000,
+      "tag": "0005_lethal_hairball",
+      "breakpoints": true
     }
   ]
 }

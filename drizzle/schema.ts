@@ -129,6 +129,9 @@ export const proposals = mysqlTable("proposals", {
   pptUrl: varchar("pptUrl", { length: 512 }),
   lastExportedAt: timestamp("lastExportedAt"),
   
+  // Soft Delete
+  deletedAt: timestamp("deletedAt"),
+  
   // Metadata
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

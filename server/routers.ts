@@ -449,8 +449,38 @@ export const appRouter = router({
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await db.deleteProposal(input.id);
+        // Soft delete - move to bin instead of permanent delete
+        await db.softDeleteProposal(input.id);
         return { success: true };
+      }),
+    
+    // Bin endpoints
+    getBinItems: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getDeletedProposals(ctx.user.id);
+      }),
+    
+    restore: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.restoreProposal(input.id);
+        return { success: true };
+      }),
+    
+    permanentDelete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.permanentlyDeleteProposal(input.id);
+        return { success: true };
+      }),
+    
+    emptyBin: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const deleted = await db.getDeletedProposals(ctx.user.id);
+        for (const item of deleted) {
+          await db.permanentlyDeleteProposal(item.id);
+        }
+        return { success: true, count: deleted.length };
       }),
     
     getSlideHtml: protectedProcedure

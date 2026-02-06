@@ -1,4 +1,4 @@
-import { eq, desc, and, like, sql, gte, inArray } from "drizzle-orm";
+import { eq, desc, and, like, sql, gte, inArray, isNull, isNotNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -222,14 +222,14 @@ export async function getProposalsByUserId(userId: number): Promise<Proposal[]> 
   const db = await getDb();
   if (!db) return [];
   
-  return db.select().from(proposals).where(eq(proposals.userId, userId)).orderBy(desc(proposals.createdAt));
+  return db.select().from(proposals).where(and(eq(proposals.userId, userId), isNull(proposals.deletedAt))).orderBy(desc(proposals.createdAt));
 }
 
 export async function getProposalsByCustomerId(customerId: number): Promise<Proposal[]> {
   const db = await getDb();
   if (!db) return [];
   
-  return db.select().from(proposals).where(eq(proposals.customerId, customerId)).orderBy(desc(proposals.createdAt));
+  return db.select().from(proposals).where(and(eq(proposals.customerId, customerId), isNull(proposals.deletedAt))).orderBy(desc(proposals.createdAt));
 }
 
 export async function searchProposals(
@@ -240,7 +240,7 @@ export async function searchProposals(
   if (!db) return [];
   
   // Join with customers to get customer name
-  const conditions = [eq(proposals.userId, userId)];
+  const conditions = [eq(proposals.userId, userId), isNull(proposals.deletedAt)];
   
   if (filters?.status && filters.status !== 'all') {
     conditions.push(eq(proposals.status, filters.status as any));
@@ -270,6 +270,51 @@ export async function updateProposal(id: number, data: Partial<InsertProposal>):
 }
 
 export async function deleteProposal(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(proposals).where(eq(proposals.id, id));
+}
+
+// Soft delete - move to bin
+export async function softDeleteProposal(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(proposals).set({ deletedAt: new Date() }).where(eq(proposals.id, id));
+}
+
+// Restore from bin
+export async function restoreProposal(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(proposals).set({ deletedAt: null }).where(eq(proposals.id, id));
+}
+
+// Get deleted proposals (bin)
+export async function getDeletedProposals(userId: number): Promise<(Proposal & { customerName?: string })[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db
+    .select({
+      proposal: proposals,
+      customerName: customers.fullName,
+    })
+    .from(proposals)
+    .leftJoin(customers, eq(proposals.customerId, customers.id))
+    .where(and(eq(proposals.userId, userId), isNotNull(proposals.deletedAt)))
+    .orderBy(desc(proposals.deletedAt));
+  
+  return results.map(r => ({
+    ...r.proposal,
+    customerName: r.customerName ?? undefined,
+  }));
+}
+
+// Permanently delete from bin
+export async function permanentlyDeleteProposal(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
