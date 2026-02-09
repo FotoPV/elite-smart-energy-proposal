@@ -980,9 +980,20 @@ function genExecutiveSummary(slide: SlideContent): string {
           <p class="gray" style="font-size: 13px; margin-top: 8px;">Years</p>
         </div>
       </div>
+      ${c.narrativeOverview ? `
+      <div style="margin-top: 24px; padding: 0 20px;">
+        <div style="font-size: 14px; line-height: 1.8; color: #FFFFFF;">${c.narrativeOverview}</div>
+      </div>
+      <div style="display: flex; gap: 20px; margin-top: 20px; padding: 0 20px;">
+        ${c.narrativeFinancial ? `<div class="card" style="flex: 1; padding: 16px;"><p class="lbl" style="color: #00EAD3; margin-bottom: 8px;">FINANCIAL OUTLOOK</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeFinancial}</p></div>` : ''}
+        ${c.narrativeSystem ? `<div class="card" style="flex: 1; padding: 16px;"><p class="lbl" style="color: #00EAD3; margin-bottom: 8px;">SYSTEM STRATEGY</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeSystem}</p></div>` : ''}
+        ${c.narrativeUrgency ? `<div class="card" style="flex: 1; padding: 16px;"><p class="lbl" style="color: #00EAD3; margin-bottom: 8px;">TIME SENSITIVITY</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeUrgency}</p></div>` : ''}
+      </div>
+      ` : `
       <div class="insight-card" style="margin-top: 40px;">
         <p style="color: #FFFFFF; font-size: 15px; line-height: 1.7;">This comprehensive analysis evaluates your current energy expenditure and presents a tailored solar + battery solution designed to deliver <span class="hl-aqua">$${(c.totalAnnualSavings as number).toLocaleString()} in annual savings</span>. The proposed ${c.systemSize}kW solar system paired with a ${c.batterySize}kWh battery and ${c.vppProvider} VPP partnership achieves payback in <span class="hl-orange">${(c.paybackYears as number).toFixed(1)} years</span>.</p>
       </div>
+      `}
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
@@ -1007,8 +1018,8 @@ function genBillAnalysis(slide: SlideContent): string {
         </div>
         <div style="flex: 0.8;">
           <div class="insight-card orange" style="margin-bottom: 24px;">
-            <p class="insight-title">KEY INSIGHT</p>
-            <p>Your current feed-in tariff of <span class="hl-aqua">${c.feedInTariff}¢/kWh</span> is significantly below the usage rate of <span class="hl-orange">${c.usageRate}¢/kWh</span>. Self-consumption with battery storage will capture the full value of your solar generation.</p>
+            <p class="insight-title">ANALYSIS</p>
+            ${c.narrative ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : `<p>Your current feed-in tariff of <span class="hl-aqua">${c.feedInTariff}¢/kWh</span> is significantly below the usage rate of <span class="hl-orange">${c.usageRate}¢/kWh</span>. Self-consumption with battery storage will capture the full value of your solar generation.</p>`}
           </div>
           <div style="display: flex; gap: 16px;">
             <div class="card" style="flex: 1; text-align: center;">
@@ -1066,8 +1077,8 @@ function genUsageAnalysis(slide: SlideContent): string {
             </div>
           `).join('')}
           <div class="insight-card orange" style="margin-top: 24px;">
-            <p class="insight-title">EFFICIENCY INSIGHT</p>
-            <p>Your daily usage of <span class="hl-aqua">${daily.toFixed(1)} kWh</span> is <span class="hl-orange">${Math.round((1 - daily / 12.7) * 100)}%</span> below the medium household average, indicating an energy-efficient home.</p>
+            <p class="insight-title">ANALYSIS</p>
+            ${c.narrative ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : `<p>Your daily usage of <span class="hl-aqua">${daily.toFixed(1)} kWh</span> is <span class="hl-orange">${Math.round((1 - daily / 12.7) * 100)}%</span> below the medium household average, indicating an energy-efficient home.</p>`}
           </div>
         </div>
       </div>
@@ -1092,8 +1103,8 @@ function genYearlyProjection(slide: SlideContent): string {
             <tr><td>Annual Total</td><td style="text-align: right;">Est.</td><td style="text-align: right;">Est.</td><td style="text-align: right; font-weight: 600;">$${(c.currentAnnualCost as number).toLocaleString()}</td></tr>
           </table>
           <div class="insight-card" style="margin-top: 24px;">
-            <p class="insight-title">KEY FINDING</p>
-            <p>With the proposed system, your projected annual cost drops from <span class="hl-orange">$${(c.currentAnnualCost as number).toLocaleString()}</span> to <span class="hl-aqua">$${Math.round(c.projectedAnnualCost as number).toLocaleString()}</span>, delivering cumulative savings of <span class="hl-aqua">$${(c.tenYearSavings as number).toLocaleString()}</span> over 10 years.</p>
+            <p class="insight-title">ANALYSIS</p>
+            ${c.narrative ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : `<p>With the proposed system, your projected annual cost drops from <span class="hl-orange">$${(c.currentAnnualCost as number).toLocaleString()}</span> to <span class="hl-aqua">$${Math.round(c.projectedAnnualCost as number).toLocaleString()}</span>, delivering cumulative savings of <span class="hl-aqua">$${(c.tenYearSavings as number).toLocaleString()}</span> over 10 years.</p>`}
           </div>
         </div>
         <div style="flex: 1;">
@@ -1275,7 +1286,8 @@ function genBattery(slide: SlideContent): string {
             ${cap.evCharge > 0 ? `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">EV Charging</span></div>` : ''}
             <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">VPP Trading</span></div>
           </div>
-          <p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>
+          ${c.narrativeWhy ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc; margin-bottom: 12px;">${c.narrativeWhy}</div>` : ''}
+          ${c.narrativeFinancial ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeFinancial}</div>` : `<p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>`}
         </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
@@ -1384,6 +1396,7 @@ function genVPPRecommendation(slide: SlideContent): string {
           <p class="hero-num aqua" style="font-size: 64px;">~$${c.annualValue}<span style="font-size: 22px;"> / YEAR</span></p>
         </div>
       </div>
+      ${c.narrative ? `<div style="margin-top: 20px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
@@ -1616,6 +1629,7 @@ function genSavingsSummary(slide: SlideContent): string {
               </div>
             `;
           }).join('')}
+          ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
         </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
@@ -1664,6 +1678,7 @@ function genFinancial(slide: SlideContent): string {
           <div class="card" style="text-align: center; padding: 24px;">
             <p style="font-family: 'NextSphere', sans-serif; font-size: 22px; font-weight: 800;">10-YEAR TOTAL SAVINGS: <span class="aqua">~$${(c.tenYearSavings as number).toLocaleString()}</span></p>
           </div>
+          ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
         </div>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
@@ -1706,6 +1721,7 @@ function genEnvironmental(slide: SlideContent): string {
             <p class="lbl">ENERGY INDEPENDENCE SCORE</p>
             <p class="hero-num aqua" style="font-size: 72px;">${c.energyIndependenceScore}%</p>
           </div>
+          ${c.narrative ? `<div style="margin-bottom: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
           ${(c.benefits as Array<{ icon: string; title: string; description: string }>).map(b => `
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
               <span style="font-size: 22px;">${b.icon}</span>
@@ -1730,6 +1746,7 @@ function genRoadmap(slide: SlideContent): string {
     <div class="slide">
       <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
+      ${c.narrative ? `<div style="padding: 0 40px; margin-top: 10px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
       <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
         ${steps.map((s, i) => `
           <div style="display: flex; align-items: center;">
@@ -1774,7 +1791,14 @@ function genConclusion(slide: SlideContent): string {
           `;
         }).join('')}
       </div>
-      <div style="text-align: center; margin-top: 40px;">
+      ${c.narrativeFinancial || c.narrativeStrategic || c.narrativeUrgency ? `
+      <div style="display: flex; gap: 20px; margin-top: 24px;">
+        ${c.narrativeFinancial ? `<div class="card" style="flex: 1; padding: 20px; border-top: 3px solid #00EAD3;"><p class="lbl" style="color: #00EAD3; margin-bottom: 8px;">FINANCIAL TRANSFORMATION</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeFinancial}</p></div>` : ''}
+        ${c.narrativeStrategic ? `<div class="card" style="flex: 1; padding: 20px; border-top: 3px solid #FFFFFF;"><p class="lbl" style="margin-bottom: 8px;">STRATEGIC CHOICE</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeStrategic}</p></div>` : ''}
+        ${c.narrativeUrgency ? `<div class="card" style="flex: 1; padding: 20px; border-top: 3px solid #f36710;"><p class="lbl" style="color: #f36710; margin-bottom: 8px;">ACT NOW</p><p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeUrgency}</p></div>` : ''}
+      </div>
+      ` : ''}
+      <div style="text-align: center; margin-top: ${c.narrativeFinancial ? '20' : '40'}px;">
         <p style="font-family: 'NextSphere', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.4; max-width: 1200px; margin: 0 auto;">${c.quote}</p>
         <div style="width: 200px; height: 2px; background: #00EAD3; margin: 24px auto;"></div>
         <p style="color: #00EAD3; font-size: 18px; font-family: 'Urbanist', sans-serif;">${c.callToAction}</p>

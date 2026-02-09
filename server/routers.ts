@@ -8,7 +8,8 @@ import * as db from "./db";
 import { storagePut } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
 import { generateFullCalculations } from "./calculations";
-import { generateSlides, generateSlideHTML, ProposalData } from "./slideGenerator";
+import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
+import { narrativeGenerators, narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeAnnualFinancialImpact, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
 import { generatePptx } from "./pptxGenerator";
 import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
@@ -480,26 +481,35 @@ export const appRouter = router({
         const slideInfo = allSlides.map(s => ({ type: s.type, title: s.title }));
         initProgress(input.proposalId, slideInfo);
         
-        // Generate slides one by one with progress updates
+        // Generate slides one by one with LLM narrative content
         const slidesData = generateSlidesData(customer, calc, false);
         
-        // Process each slide with a small delay for visual effect
+        // Process each slide — LLM-powered narrative for applicable slides
         for (let i = 0; i < allSlides.length; i++) {
           updateSlideProgress(input.proposalId, i, { status: 'generating' });
           
           try {
-            const html = generateSlideHTML(allSlides[i]);
-            // Small delay to allow polling to catch the 'generating' state
-            await new Promise(resolve => setTimeout(resolve, 150));
+            // Inject LLM narrative content into the slide before rendering
+            const enrichedSlide = await enrichSlideWithNarrative(allSlides[i], proposalData);
+            const html = generateSlideHTML(enrichedSlide);
             updateSlideProgress(input.proposalId, i, {
               status: 'complete',
               html,
             });
           } catch (err: any) {
-            updateSlideProgress(input.proposalId, i, {
-              status: 'error',
-              error: err.message,
-            });
+            // Fallback: generate without narrative on error
+            try {
+              const html = generateSlideHTML(allSlides[i]);
+              updateSlideProgress(input.proposalId, i, {
+                status: 'complete',
+                html,
+              });
+            } catch (err2: any) {
+              updateSlideProgress(input.proposalId, i, {
+                status: 'error',
+                error: err.message,
+              });
+            }
           }
         }
         
@@ -1156,6 +1166,95 @@ export type AppRouter = typeof appRouter;
 // ============================================
 
 import { ProposalCalculations, SlideData } from "../drizzle/schema";
+
+/**
+ * Enrich a slide with LLM-generated narrative content.
+ * Maps slide types to their narrative generators and injects
+ * the generated content into the slide's content object.
+ */
+async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData): Promise<SlideContent> {
+  const enriched = { ...slide, content: { ...slide.content } };
+  
+  try {
+    switch (slide.type) {
+      case 'executive_summary': {
+        const narrative = await narrativeExecutiveSummary(data);
+        enriched.content.narrativeOverview = narrative.overview;
+        enriched.content.narrativeFinancial = narrative.financialCard;
+        enriched.content.narrativeSystem = narrative.systemCard;
+        enriched.content.narrativeUrgency = narrative.urgencyCard;
+        break;
+      }
+      case 'bill_analysis': {
+        const narrative = await narrativeBillAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'usage_analysis': {
+        const narrative = await narrativeUsageAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'yearly_projection': {
+        const narrative = await narrativeYearlyProjection(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'strategic_assessment': {
+        const narrative = await narrativeStrategicAssessment(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'battery_recommendation': {
+        const narrative = await narrativeBatteryOption(data, 1);
+        enriched.content.narrativeWhy = narrative.whyRecommend;
+        enriched.content.narrativeFinancial = narrative.financialAnalysis;
+        break;
+      }
+      case 'vpp_recommendation': {
+        const narrative = await narrativeVPPRecommendation(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'savings_summary': {
+        const narrative = await narrativeAnnualFinancialImpact(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'financial_summary': {
+        const narrative = await narrativeInvestmentAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'environmental_impact': {
+        const narrative = await narrativeEnvironmentalImpact(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'conclusion': {
+        const narrative = await narrativeFinalRecommendation(data);
+        enriched.content.narrativeFinancial = narrative.financial;
+        enriched.content.narrativeStrategic = narrative.strategic;
+        enriched.content.narrativeUrgency = narrative.urgency;
+        break;
+      }
+      case 'roadmap': {
+        const narrative = await narrativeRoadmap(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      // Slides without narrative (cover, contact, vpp_comparison, data-only slides)
+      // just pass through without LLM enrichment
+      default:
+        break;
+    }
+  } catch (err: any) {
+    console.error(`[enrichSlide] Failed to enrich ${slide.type}:`, err.message);
+    // Return original slide on error — fallback to data-only rendering
+  }
+  
+  return enriched;
+}
 
 function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasGas: boolean): ProposalData {
   const hasGas = false; // Gas features removed

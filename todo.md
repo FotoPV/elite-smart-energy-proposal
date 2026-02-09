@@ -495,3 +495,35 @@
 ## Rename Sidebar Tab (Feb 10)
 - [x] Rename "Proposals" sidebar tab to "Electricity Bill"
 - [x] Update page heading and subtitle to "Electricity Bill"
+
+
+## Complete Slide Generator Overhaul — Match Frieda Lay Reference (Feb 10)
+- [x] Add LLM-powered narrative generation for each slide (contextual, customer-specific paragraphs)
+- [x] Each slide calls invokeLLM to generate analysis text based on customer data
+- [x] Created slideNarrative.ts with 12 narrative generators
+- [x] Created enrichSlideWithNarrative() function in routers.ts
+- [x] Updated generateProgressive mutation to call LLM for each slide
+- [x] Updated 12 HTML templates to render narrative content (exec summary, bill, usage, yearly, strategic, battery, VPP rec, savings, financial, environmental, roadmap, conclusion)
+- [ ] Cover slide: "IN-DEPTH BILL ANALYSIS & SOLAR BATTERY PROPOSAL" title, customer name/address
+- [ ] Executive Summary: 4 quadrant cards with rich narrative paragraphs (not bullets)
+- [ ] Current Bill Analysis: Hero metrics (annual cost, daily avg, daily usage, daily export) + billing period table
+- [ ] Detailed Usage Analysis: Metric cards + monthly bar chart (grid vs solar)
+- [ ] Yearly Cost Projection: Before/After comparison cards with logo between
+- [ ] Strategic Site Assessment: Infrastructure audit using UPLOADED CUSTOMER PHOTOS
+- [ ] Option 1 battery slide: Why recommend + financial breakdown card
+- [ ] Option 2 battery slide: Alternative option + financial breakdown card
+- [ ] System Comparison: Feature comparison table (two options side by side)
+- [ ] VPP Provider Comparison: Full 13-provider table
+- [ ] VPP Recommendation: Why + income breakdown table + hero metric
+- [ ] Annual Financial Impact: Before/After + itemized savings breakdown + Total Annual Turnaround
+- [ ] Investment Analysis: Comparison table + 20-year cumulative cashflow line chart
+- [ ] Environmental Impact: 3 metric cards + energy independence score
+- [ ] Recommended Roadmap: 4-phase timeline with connecting lines
+- [ ] Executive Summary (Final): 3 recommendation cards + "Ready to Proceed?" CTA
+- [ ] Next Steps / Contact: 4-step process + George Fotopoulos details
+- [ ] Generation takes 5-10 minutes (LLM calls per slide)
+- [ ] Side window shows each slide rendering in real-time
+- [ ] Dark charcoal card backgrounds (#1a2332), not pure black cards
+- [ ] Orange = current cost/problem only, Aqua = savings/solution
+- [ ] NextSphere for headings ONLY, GeneralSans for numbers, Urbanist for body
+- [ ] Footer on every page: "© Lightning Energy — Architect George Fotopoulos"
