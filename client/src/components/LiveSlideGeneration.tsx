@@ -23,6 +23,7 @@ interface LiveSlideGenerationProps {
   proposalId: number;
   onComplete: () => void;
   onCancel: () => void;
+  autoStart?: boolean; // Auto-start generation without requiring button click
 }
 
 type SlideStatus = 'pending' | 'generating' | 'complete' | 'error';
@@ -36,9 +37,10 @@ interface SlideProgressItem {
   error?: string;
 }
 
-export function LiveSlideGeneration({ proposalId, onComplete, onCancel }: LiveSlideGenerationProps) {
+export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStart = false }: LiveSlideGenerationProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const autoStartRef = useRef(false);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [localSlides, setLocalSlides] = useState<SlideProgressItem[]>([]);
   const [generationStatus, setGenerationStatus] = useState<string>('idle');
@@ -109,6 +111,14 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel }: LiveSl
       setGenerationStatus('error');
     }
   }, [proposalId, generateMutation]);
+  
+  // Auto-start generation if autoStart prop is true
+  useEffect(() => {
+    if (autoStart && !autoStartRef.current && !hasStarted) {
+      autoStartRef.current = true;
+      handleStart();
+    }
+  }, [autoStart, hasStarted, handleStart]);
   
   const completedCount = localSlides.filter(s => s.status === 'complete').length;
   const totalCount = localSlides.length;

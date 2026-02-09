@@ -1,0 +1,38 @@
+{
+  "query": "SELECT 'customers' as tbl, COUNT(*) as cnt FROM customers\nUNION ALL SELECT 'bills', COUNT(*) FROM bills\nUNION ALL SELECT 'proposals', COUNT(*) FROM proposals\nUNION ALL SELECT 'customerDocuments', COUNT(*) FROM customerDocuments\nUNION ALL SELECT 'proposalAccessTokens', COUNT(*) FROM proposalAccessTokens\nUNION ALL SELECT 'proposalViews', COUNT(*) FROM proposalViews\nUNION ALL SELECT 'slideEngagement', COUNT(*) FROM slideEngagement;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT 'customers' as tbl, COUNT(*) as cnt FROM customers\nUNION ALL SELECT 'bills', COUNT(*) FROM bills\nUNION ALL SELECT 'proposals', COUNT(*) FROM proposals\nUNION ALL SELECT 'customerDocuments', COUNT(*) FROM customerDocuments\nUNION ALL SELECT 'proposalAccessTokens', COUNT(*) FROM proposalAccessTokens\nUNION ALL SELECT 'proposalViews', COUNT(*) FROM proposalViews\nUNION ALL SELECT 'slideEngagement', COUNT(*) FROM slideEngagement;",
+  "rows": [
+    {
+      "tbl": "customerDocuments",
+      "cnt": "0"
+    },
+    {
+      "tbl": "proposals",
+      "cnt": "0"
+    },
+    {
+      "tbl": "customers",
+      "cnt": "0"
+    },
+    {
+      "tbl": "proposalAccessTokens",
+      "cnt": "0"
+    },
+    {
+      "tbl": "bills",
+      "cnt": "0"
+    },
+    {
+      "tbl": "proposalViews",
+      "cnt": "0"
+    },
+    {
+      "tbl": "slideEngagement",
+      "cnt": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\ncustomerDocuments\t0\nproposals\t0\ncustomers\t0\nproposalAccessTokens\t0\nbills\t0\nproposalViews\t0\nslideEngagement\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1556
+}

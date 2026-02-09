@@ -276,11 +276,15 @@ const SLIDE_STYLES = `
 // ============================================
 
 export function generateSlideHtml(slide: SlideData): string {
-  const content = slide.content as Record<string, unknown>;
+  // Use stored LLM-generated HTML if available
+  if (slide.html) {
+    return slide.html;
+  }
+  const content = {} as Record<string, unknown>;
   
   let bodyHtml = '';
   
-  switch (slide.slideType) {
+  switch (slide.type) {
     case 'cover':
       bodyHtml = `
         <div class="cover-slide">
@@ -454,7 +458,7 @@ export function generateSlideHtml(slide: SlideData): string {
       </div>
       <div class="slide-footer">
         <span class="logo-text">Lightning Energy</span>
-        <span>Slide ${slide.slideNumber}</span>
+        <span>${slide.title}</span>
       </div>
     </div>
   `;

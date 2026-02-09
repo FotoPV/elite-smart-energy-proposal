@@ -1,0 +1,9 @@
+{
+  "query": "SET FOREIGN_KEY_CHECKS = 0;\nDELETE FROM slideEngagement;\nDELETE FROM proposalViews;\nDELETE FROM proposalAccessTokens;\nDELETE FROM customerDocuments;\nDELETE FROM proposals;\nDELETE FROM bills;\nDELETE FROM customers;\nSET FOREIGN_KEY_CHECKS = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SET FOREIGN_KEY_CHECKS = 0;\nDELETE FROM slideEngagement;\nDELETE FROM proposalViews;\nDELETE FROM proposalAccessTokens;\nDELETE FROM customerDocuments;\nDELETE FROM proposals;\nDELETE FROM bills;\nDELETE FROM customers;\nSET FOREIGN_KEY_CHECKS = 1;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 3382
+}

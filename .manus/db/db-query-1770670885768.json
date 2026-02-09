@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, status, slideCount FROM proposals ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, status, slideCount FROM proposals ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "210007",
+      "status": "generated",
+      "slideCount": "26"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tslideCount\n210007\tgenerated\t26\n",
+  "stderr": "",
+  "execution_time_ms": 1613
+}

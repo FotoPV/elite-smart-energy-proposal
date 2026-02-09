@@ -25,7 +25,7 @@ export function SlidePreview({ slide, isActive, onClick }: SlidePreviewProps) {
       <div className="w-full h-full bg-black p-4 flex flex-col">
         {/* Slide Header */}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] text-muted-foreground">Slide {slide.slideNumber}</span>
+          <span className="text-[10px] text-muted-foreground">{slide.title}</span>
           {!slide.isIncluded && (
             <span className="text-[8px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">Excluded</span>
           )}
@@ -33,7 +33,7 @@ export function SlidePreview({ slide, isActive, onClick }: SlidePreviewProps) {
         
         {/* Slide Content Preview */}
         <div className="flex-1 flex flex-col items-center justify-center">
-          {getSlideIcon(slide.slideType)}
+          {getSlideIcon(slide.type)}
           <h3 className="text-xs font-semibold text-foreground mt-2 text-center line-clamp-2">
             {slide.title}
           </h3>
@@ -100,7 +100,7 @@ function getSlideIcon(slideType: string) {
 
 // Full slide renderer for export/preview
 export function FullSlideRenderer({ slide }: { slide: SlideData }) {
-  const content = slide.content as Record<string, unknown>;
+  const content = {} as Record<string, unknown>;
   
   return (
     <div className="w-full aspect-video bg-black relative overflow-hidden">
@@ -113,13 +113,13 @@ export function FullSlideRenderer({ slide }: { slide: SlideData }) {
       
       {/* Content */}
       <div className="relative z-10 h-full p-8 flex flex-col">
-        {renderSlideContent(slide.slideType, slide.title, content)}
+        {renderSlideContent(slide.type, slide.title, content)}
       </div>
       
       {/* Footer */}
       <div className="absolute bottom-4 left-8 right-8 flex items-center justify-between text-xs text-muted-foreground">
         <span>Lightning Energy</span>
-        <span>Slide {slide.slideNumber}</span>
+        <span>Slide {slide.type}</span>
       </div>
     </div>
   );

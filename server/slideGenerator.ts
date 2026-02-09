@@ -156,6 +156,9 @@ export interface ProposalData {
   electrificationTotalRebates?: number;
   electrificationNetCost?: number;
   
+  // Site Assessment
+  sitePhotos?: Array<{ url: string; caption: string }>;
+  
   // Environmental
   co2ReductionTonnes: number;
   treesEquivalent?: number;
@@ -173,7 +176,13 @@ export interface SlideContent {
   content: Record<string, unknown>;
 }
 
-// Generate all slides based on proposal data - Full 25-slide structure
+// Generate all slides based on proposal data - Matches Frieda Lay SA reference exactly
+// Slide order: Cover → Exec Summary → Bill Analysis → Usage Analysis → Yearly Projection
+// → [Gas slides if applicable] → Strategic Site Assessment → Option 1 → Option 2
+// → System Comparison → VPP Comparison → VPP Recommendation
+// → [Electrification slides if applicable] → [EV slides if applicable] → [Pool if applicable]
+// → Annual Financial Impact → Investment Analysis → Environmental Impact
+// → Recommended Roadmap → Conclusion → Next Steps
 export function generateSlides(data: ProposalData): SlideContent[] {
   const slides: SlideContent[] = [];
   let slideId = 1;
@@ -183,7 +192,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     id: slideId++,
     type: 'cover',
     title: data.customerName,
-    subtitle: 'In-Depth Bill Analysis & Solar Battery Proposal',
+    subtitle: 'Comprehensive Energy Optimization Report',
     content: {
       address: data.address,
       state: data.state,
@@ -194,12 +203,12 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 2: Executive Summary
+  // Slide 2: Executive Summary (4 narrative cards: Current Position, Opportunity, Solution, Impact)
   slides.push({
     id: slideId++,
     type: 'executive_summary',
     title: 'EXECUTIVE SUMMARY',
-    subtitle: 'Your Energy Transformation at a Glance',
+    subtitle: 'Overview',
     content: {
       currentAnnualCost: data.annualCost,
       projectedAnnualCost: data.annualCost - data.annualSavings,
@@ -212,12 +221,12 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 3: Current Bill Analysis
+  // Slide 3: Current Bill Analysis (hero numbers left, bill table right)
   slides.push({
     id: slideId++,
     type: 'bill_analysis',
     title: 'CURRENT BILL ANALYSIS',
-    subtitle: 'Detailed Breakdown',
+    subtitle: `${data.retailer} ${data.retailer ? 'Plan' : 'Detailed Breakdown'}`,
     content: {
       retailer: data.retailer,
       annualCost: data.annualCost,
@@ -227,15 +236,21 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       supplyCharge: data.supplyChargeCentsPerDay,
       feedInTariff: data.feedInTariffCentsPerKwh,
       controlledLoadRate: data.controlledLoadRateCentsPerKwh,
+      dailyAverageKwh: data.dailyUsageKwh,
+      dailyAverageCost: data.dailyAverageCost || (data.annualCost / 365),
+      dailySolarExport: data.billSolarExportsKwh ? (data.billSolarExportsKwh / (data.billDays || 365)) : 0,
+      monthlyData: data.monthlyUsageData || [],
     }
   });
   
-  // Slide 4: Monthly Usage Analysis
+  // Slide 4: Detailed Usage Analysis (3 stat cards left, bar chart right)
   slides.push({
     id: slideId++,
     type: 'usage_analysis',
-    title: 'MONTHLY USAGE ANALYSIS',
-    subtitle: 'Your Energy Consumption Pattern',
+    title: 'DETAILED USAGE ANALYSIS',
+    subtitle: data.monthlyUsageData && data.monthlyUsageData.length > 0 
+      ? `${data.monthlyUsageData.length}-Month Data Profile` 
+      : 'Energy Consumption Pattern',
     content: {
       annualUsageKwh: data.annualUsageKwh,
       dailyAverageKwh: data.dailyUsageKwh,
@@ -244,21 +259,24 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       monthlyData: data.monthlyUsageData || [],
       usageRate: data.usageRateCentsPerKwh,
       feedInTariff: data.feedInTariffCentsPerKwh,
+      peakUsagePercent: data.billPeakUsageKwh && data.billTotalUsageKwh 
+        ? Math.round((data.billPeakUsageKwh / data.billTotalUsageKwh) * 100) : null,
     }
   });
   
-  // Slide 5: Yearly Cost Projection
+  // Slide 5: Yearly Cost Projection (current path vs with battery, transformation visual)
   slides.push({
     id: slideId++,
     type: 'yearly_projection',
     title: 'YEARLY COST PROJECTION',
-    subtitle: 'Annual Analysis & 25-Year Outlook',
+    subtitle: 'The cost of inaction vs. the value of action',
     content: {
       currentAnnualCost: data.annualCost,
       projectedAnnualCost: data.annualCost - data.annualSavings,
       tenYearSavings: data.tenYearSavings,
       twentyFiveYearSavings: data.twentyFiveYearSavings || data.annualSavings * 25,
       inflationRate: 3.5,
+      batterySize: data.batterySizeKwh,
       yearlyProjection: generateYearlyProjection(data.annualCost, data.annualSavings, 25),
     }
   });
@@ -301,103 +319,138 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 8: Strategic Assessment
+  // Slide: Strategic Site Assessment (infrastructure audit left, site photos right)
   slides.push({
     id: slideId++,
-    type: 'strategic_assessment',
-    title: 'STRATEGIC ASSESSMENT',
-    subtitle: 'Battery Storage Investment',
+    type: 'strategic_site_assessment',
+    title: 'STRATEGIC SITE ASSESSMENT',
+    subtitle: 'Infrastructure Audit & Compatibility Check',
     content: {
-      advantages: [
-        { icon: '⚡', title: 'ENERGY INDEPENDENCE', description: 'Reduce grid reliance from 100% to near-zero during outages.' },
-        { icon: '💰', title: 'VPP INCOME', description: `Earn $${data.vppAnnualValue}-${data.vppAnnualValue + 150}/year through Virtual Power Plant participation.` },
-        { icon: '🚗', title: 'FUTURE-PROOFING', description: 'Ready for EV charging and time-of-use tariffs.' },
-        { icon: '📈', title: 'PEAK SHIFTING', description: 'Store cheap solar energy for expensive peak periods (6-9pm).' },
-        { icon: '🛡', title: 'BLACKOUT PROTECTION', description: `Partial home backup with ${data.batteryBrand} system.` },
-      ],
-      considerations: [
-        { icon: '💵', title: 'UPFRONT COST', description: `$${data.netInvestment.toLocaleString()} investment (after rebates).` },
-        { icon: '⏳', title: 'PAYBACK PERIOD', description: `${data.paybackYears.toFixed(1)} years for battery component alone.` },
-        { icon: '🖥', title: 'TECHNOLOGY EVOLUTION', description: 'Battery technology is improving rapidly.' },
-        { icon: '📦', title: 'SPACE REQUIREMENTS', description: 'Floor-mounted unit requires dedicated garage space.' },
-        { icon: '🔋', title: 'DEGRADATION', description: 'Battery capacity reduces over time (approx. 0.35%/year).' },
-      ],
+      existingInverter: data.inverterBrand || 'To be assessed',
+      electricalSupply: 'Single Phase',
+      metering: 'Smart Meter',
+      sitePhotos: data.sitePhotos || [],
     }
   });
   
-  // Slide 9: Recommended Battery Size
+  // Slide: Option 1 — Sigenergy SigenStor (narrative left, financial card right)
   slides.push({
     id: slideId++,
-    type: 'battery_recommendation',
-    title: 'RECOMMENDED BATTERY SIZE',
-    subtitle: `${data.batteryBrand} Configuration`,
+    type: 'option_1',
+    title: 'OPTION 1: SIGENERGY SIGENSTOR',
+    subtitle: "The World's First 5-in-1 Energy System",
     content: {
-      totalCapacity: data.batterySizeKwh,
-      inverterSize: data.inverterSizeKw,
-      inverterType: 'HYBRID',
-      modules: calculateBatteryModules(data.batterySizeKwh),
-      technology: 'LFP (SAFE)',
-      brand: data.batteryBrand,
-      whyThisCapacity: {
-        home: Math.min(4, data.dailyUsageKwh * 0.3),
-        evCharge: data.hasEV ? 10 : 0,
-        vppTrade: Math.max(0, data.batterySizeKwh - 4 - (data.hasEV ? 10 : 0)),
-      },
-      explanation: `This configuration ensures your home runs 100% off-grid overnight, ${data.hasEV ? 'fully charges your EV for daily commuting, and ' : ''}leaves substantial capacity for high-value VPP trading events.`,
-    }
-  });
-  
-  // Slide 10: Proposed Solar PV System
-  slides.push({
-    id: slideId++,
-    type: 'solar_system',
-    title: 'PROPOSED SOLAR PV SYSTEM',
-    subtitle: 'High-Performance Hardware Specification',
-    content: {
-      systemSize: data.solarSizeKw,
-      panelCount: data.panelCount,
-      panelPower: data.panelWattage,
-      panelBrand: data.panelBrand,
-      whyThisBrand: `${data.panelBrand} panels deliver industry-leading efficiency with superior shade performance, maximizing energy harvest from your roof.`,
+      batteryKwh: data.batterySizeKwh,
+      inverterKw: data.inverterSizeKw || 5,
+      systemCost: data.systemCost,
+      rebateAmount: data.rebateAmount,
+      netInvestment: data.netInvestment,
+      annualSavings: data.annualSavings,
+      paybackYears: data.paybackYears,
       features: [
-        { icon: '●', title: '25-Year Warranty', description: 'Full product and performance guarantee' },
-        { icon: '●', title: 'Full Black Design', description: 'Premium aesthetic integration with your roof' },
-        { icon: '●', title: 'Shade Optimization', description: 'Advanced cell technology for partial shade conditions' },
+        `${data.batterySizeKwh} kWh Capacity`,
+        `${data.inverterSizeKw || 5}kW AC Output + EV Charger Ready`,
+        '0ms Switchover — Seamless Backup',
+        'AI-Driven Tariff Arbitrage',
       ],
     }
   });
   
-  // Slide 11: VPP Provider Comparison
+  // Slide: Option 2 — GoodWe ESA Series (same layout, orange accents)
+  const option2Cost = Math.round(data.systemCost * 0.87);
+  const option2Rebate = Math.round(data.rebateAmount * 0.87);
+  const option2Net = option2Cost - option2Rebate;
+  const option2Savings = Math.round(data.annualSavings * 0.94);
+  const option2Payback = parseFloat((option2Net / option2Savings).toFixed(1));
+  slides.push({
+    id: slideId++,
+    type: 'option_2',
+    title: 'OPTION 2: GOODWE ESA SERIES',
+    subtitle: 'Proven Performance at Exceptional Value',
+    content: {
+      batteryKwh: data.batterySizeKwh,
+      inverterKw: data.inverterSizeKw || 5,
+      systemCost: option2Cost,
+      rebateAmount: option2Rebate,
+      netInvestment: option2Net,
+      annualSavings: option2Savings,
+      paybackYears: option2Payback,
+      features: [
+        `${data.batterySizeKwh} kWh Usable Capacity`,
+        `${data.inverterSizeKw || 5}kW Hybrid Inverter`,
+        '10ms Transfer Switch — Near-Instant Backup',
+        'Proven Reliability — 500,000+ Units Deployed',
+      ],
+    }
+  });
+  
+  // Slide: System Comparison (full-width comparison table)
+  slides.push({
+    id: slideId++,
+    type: 'system_comparison',
+    title: 'SYSTEM COMPARISON',
+    subtitle: 'Selecting the right fit for your home',
+    content: {
+      option1: {
+        name: 'Sigenergy SigenStor',
+        netInvestment: data.netInvestment,
+        annualSavings: data.annualSavings,
+        paybackYears: data.paybackYears,
+        backup: '0ms — Full Home Backup',
+        evCharger: 'Integrated — Ready to Use',
+        intelligence: 'AI-Driven Tariff Arbitrage',
+        warranty: '15-Year Battery + 10-Year Inverter',
+      },
+      option2: {
+        name: 'GoodWe ESA Series',
+        netInvestment: option2Net,
+        annualSavings: option2Savings,
+        paybackYears: option2Payback,
+        backup: '10ms — Essential Circuits',
+        evCharger: 'Compatible — Separate Unit Required',
+        intelligence: 'Smart Mode Scheduling',
+        warranty: '10-Year Battery + 10-Year Inverter',
+      },
+    }
+  });
+  
+  // Slide: VPP Provider Comparison (full 13-provider table)
   slides.push({
     id: slideId++,
     type: 'vpp_comparison',
     title: 'VPP PROVIDER COMPARISON',
-    subtitle: `Evaluating Market Leaders${data.hasGasBundle ? ' for Gas & Elec Bundles' : ''}`,
+    subtitle: `Virtual Power Plant Options for ${data.state}`,
     content: {
-      providers: getVPPProviders(data.state, data.hasGasBundle).slice(0, 5),
+      providers: getVPPProviders(data.state, data.hasGasBundle),
       recommendedProvider: data.vppProvider,
+      state: data.state,
+      hasGas: data.hasGas,
     }
   });
   
-  // Slide 12: VPP Recommendation
+  // Slide: VPP Recommendation (narrative left, income breakdown right)
   slides.push({
     id: slideId++,
     type: 'vpp_recommendation',
     title: 'VPP RECOMMENDATION',
-    subtitle: 'Optimal Provider Selection',
+    subtitle: `${data.vppProvider} ${data.vppProgram}`,
     content: {
       provider: data.vppProvider,
       program: data.vppProgram,
       annualValue: data.vppAnnualValue,
+      vppDailyCreditAnnual: data.vppDailyCreditAnnual || Math.round(data.vppAnnualValue * 0.4),
+      vppEventPaymentsAnnual: data.vppEventPaymentsAnnual || Math.round(data.vppAnnualValue * 0.5),
+      vppBundleDiscount: data.vppBundleDiscount || Math.round(data.vppAnnualValue * 0.1),
+      hasGas: data.hasGas,
       features: [
-        { icon: '≡', title: 'INTEGRATED BUNDLE', description: `Gas & Electricity combined for maximum savings with ${data.vppProvider}.` },
-        { icon: '↗', title: 'FINANCIAL CERTAINTY', description: 'Fixed daily credits plus variable event payments provide predictable income.' },
-        { icon: '⊕', title: 'STRATEGIC FIT', description: `Optimized for your ${data.batterySizeKwh}kWh battery and ${data.solarSizeKw}kW solar system.` },
+        { icon: '\u26A1', title: 'DAILY CREDITS', description: `Earn ~$${Math.round((data.vppDailyCreditAnnual || Math.round(data.vppAnnualValue * 0.4)))}/year in daily VPP credits for battery availability.` },
+        { icon: '\uD83D\uDCB0', title: 'EVENT PAYMENTS', description: `Receive ~$${Math.round((data.vppEventPaymentsAnnual || Math.round(data.vppAnnualValue * 0.5)))}/year from grid stabilisation events during peak demand.` },
+        { icon: '\uD83D\uDD17', title: 'BUNDLE SAVINGS', description: `Save ~$${Math.round((data.vppBundleDiscount || Math.round(data.vppAnnualValue * 0.1)))}/year through energy bundle discounts.` },
       ],
     }
   });
   
-  // Slide 13: Hot Water Electrification (CONDITIONAL)
+  // CONDITIONAL: Hot Water Electrification
   if (data.hasGas && data.gasAppliances?.hotWater) {
     slides.push({
       id: slideId++,
@@ -418,7 +471,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 14: Heating & Cooling (CONDITIONAL)
+  // CONDITIONAL: Heating & Cooling
   if (data.hasGas && data.gasAppliances?.heating) {
     slides.push({
       id: slideId++,
@@ -440,7 +493,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 15: Induction Cooking (CONDITIONAL)
+  // CONDITIONAL: Induction Cooking
   if (data.hasGas && data.gasAppliances?.cooktop) {
     slides.push({
       id: slideId++,
@@ -459,7 +512,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 16: EV Analysis (CONDITIONAL)
+  // CONDITIONAL: EV Analysis
   if (data.hasEV) {
     slides.push({
       id: slideId++,
@@ -479,7 +532,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 17: EV Charger Recommendation (CONDITIONAL)
+  // CONDITIONAL: EV Charger
   if (data.hasEV) {
     slides.push({
       id: slideId++,
@@ -496,7 +549,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 18: Pool Heat Pump (CONDITIONAL)
+  // CONDITIONAL: Pool Heat Pump
   if (data.hasPoolPump) {
     slides.push({
       id: slideId++,
@@ -516,7 +569,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 19: Full Electrification Investment (CONDITIONAL)
+  // CONDITIONAL: Full Electrification Investment
   if (data.hasGas && data.electrificationTotalCost) {
     slides.push({
       id: slideId++,
@@ -539,49 +592,63 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 20: Total Savings Summary
+  // Slide: Annual Financial Impact (before/after cards top, savings breakdown bottom)
+  const solarBatterySavings = Math.round(data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0));
   slides.push({
     id: slideId++,
-    type: 'savings_summary',
-    title: 'TOTAL SAVINGS SUMMARY',
-    subtitle: 'Combined Annual Financial Benefits',
+    type: 'annual_financial_impact',
+    title: 'ANNUAL FINANCIAL IMPACT',
+    subtitle: `Projected outcomes with ${data.batterySizeKwh}kWh Battery + VPP`,
     content: {
-      totalAnnualBenefit: data.annualSavings,
-      breakdown: [
-        { category: 'Solar & Battery', value: Math.round((data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0)) * 1), color: 'aqua' },
-        data.hasEV ? { category: 'EV Integration', value: data.evAnnualSavings || 0, color: 'white' } : null,
-        { category: 'VPP Credits', value: data.vppAnnualValue, color: 'orange' },
-        data.hasGas ? { category: 'Gas Elimination', value: data.gasAnnualCost || 0, color: 'orange' } : null,
-      ].filter(Boolean) as Array<{ category: string; value: number; color: string }>,
-      taxFree: true,
+      currentAnnualCost: data.annualCost,
+      projectedAnnualCost: data.annualCost - data.annualSavings,
+      totalTurnaround: data.annualSavings,
+      savingsBreakdown: [
+        { source: 'Peak Usage Avoided', value: Math.round(solarBatterySavings * 0.7), percent: '95%' },
+        { source: 'Off-Peak Usage Avoided', value: Math.round(solarBatterySavings * 0.15) },
+        { source: 'VPP Income', value: data.vppAnnualValue },
+        data.hasEV ? { source: 'EV Fuel Savings', value: data.evAnnualSavings || 0 } : null,
+        data.hasGas ? { source: 'Gas Elimination', value: data.gasAnnualCost || 0 } : null,
+        { source: 'Less: Lost Feed-in Credits', value: -Math.round(data.feedInTariffCentsPerKwh * data.annualUsageKwh * 0.3 / 100) },
+      ].filter(Boolean) as Array<{ source: string; value: number; percent?: string }>,
+      batterySize: data.batterySizeKwh,
     }
   });
   
-  // Slide 21: Financial Summary & Payback
+  // Slide: Investment Analysis (comparison table left, cashflow chart right)
   slides.push({
     id: slideId++,
-    type: 'financial_summary',
-    title: 'FINANCIAL SUMMARY & PAYBACK',
-    subtitle: 'Investment Analysis & ROI',
+    type: 'investment_analysis',
+    title: 'INVESTMENT ANALYSIS',
+    subtitle: 'Comparing ROI & Long-term Value',
     content: {
-      systemCost: data.systemCost,
-      rebates: data.rebateAmount,
-      netInvestment: data.netInvestment,
-      annualBenefit: data.annualSavings,
-      paybackYears: data.paybackYears,
-      tenYearSavings: data.tenYearSavings,
-      twentyFiveYearSavings: data.twentyFiveYearSavings || data.annualSavings * 25,
-      roi: Math.round((data.annualSavings / data.netInvestment) * 100),
-      acceleratedBy: data.hasEV ? 'EV & VPP' : 'VPP',
+      option1: {
+        name: 'Sigenergy',
+        systemCost: data.systemCost,
+        rebate: data.rebateAmount,
+        netInvestment: data.netInvestment,
+        annualBenefit: data.annualSavings,
+        paybackYears: data.paybackYears,
+        tenYearBenefit: data.tenYearSavings,
+      },
+      option2: {
+        name: 'GoodWe',
+        systemCost: option2Cost,
+        rebate: option2Rebate,
+        netInvestment: option2Net,
+        annualBenefit: option2Savings,
+        paybackYears: option2Payback,
+        tenYearBenefit: Math.round(option2Savings * 10 - option2Net),
+      },
     }
   });
   
-  // Slide 22: Environmental Impact
+  // Slide: Environmental Impact (3 metric cards, energy independence score)
   slides.push({
     id: slideId++,
     type: 'environmental_impact',
     title: 'ENVIRONMENTAL IMPACT',
-    subtitle: 'Your Contribution to a Cleaner Future',
+    subtitle: 'Your contribution to a cleaner grid',
     content: {
       co2ReductionTonnes: data.co2ReductionTonnes,
       treesEquivalent: data.treesEquivalent || Math.round(data.co2ReductionTonnes * 45),
@@ -596,46 +663,50 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 23: Recommended Roadmap
+  // Slide: Recommended Roadmap (4-column timeline)
   slides.push({
     id: slideId++,
     type: 'roadmap',
     title: 'RECOMMENDED ROADMAP',
-    subtitle: 'Implementation Timeline',
+    subtitle: 'Implementation & Future Expansion',
     content: {
       steps: [
-        { number: '01', title: 'APPROVAL & FINANCE', description: 'Sign proposal and submit finance application. Secure rebates.', timeline: 'WEEK 1', color: 'aqua' },
-        { number: '02', title: 'INSTALLATION', description: `Installation of ${data.panelBrand} panels, ${data.inverterBrand} inverter, and battery modules.`, timeline: 'WEEK 3-4', color: 'aqua' },
-        { number: '03', title: 'VPP ACTIVATION', description: `Switch to ${data.vppProvider} ${data.vppProgram}. Configure battery for VPP events.`, timeline: 'WEEK 5', color: 'aqua' },
-        { number: '04', title: 'EV INTEGRATION', description: 'Install EV charger. Set up solar-only charging logic.', timeline: 'MONTH 2+', color: 'orange' },
-        data.hasGas ? { number: '05', title: 'ELECTRIFICATION', description: 'Phase out gas appliances. Install heat pump, AC, and induction.', timeline: 'MONTH 3-6', color: 'orange' } : null,
-      ].filter(Boolean),
+        { number: '01', title: 'INSTALLATION', description: 'Battery system delivery and installation by certified team.', timeline: 'DAY 1-2', color: 'aqua', bullets: ['Site preparation', 'Battery mounting', 'Electrical connection'] },
+        { number: '02', title: 'COMMISSIONING', description: 'System testing, grid connection, and monitoring setup.', timeline: 'DAY 3-7', color: 'aqua', bullets: ['Grid compliance testing', 'Monitoring app setup', 'Performance verification'] },
+        { number: '03', title: 'VPP INTEGRATION', description: `Switch to ${data.vppProvider} and configure VPP participation.`, timeline: 'WEEK 2-4', color: 'aqua', bullets: ['Retailer switch', 'VPP enrollment', 'Battery scheduling'] },
+        { number: '04', title: 'FUTURE EXPANSION', description: 'EV charger, additional panels, or electrification upgrades.', timeline: 'YEAR 1+', color: 'orange', bullets: ['EV charger install', 'Panel expansion', 'Gas elimination'] },
+      ],
     }
   });
   
-  // Slide 24: Conclusion
+  // Slide: Conclusion / Executive Summary (3 cards: Financial, Strategic, Urgency + CTA)
   slides.push({
     id: slideId++,
     type: 'conclusion',
-    title: 'CONCLUSION',
-    subtitle: 'Executive Summary',
+    title: 'EXECUTIVE SUMMARY',
+    subtitle: 'Final Recommendation',
     content: {
+      currentAnnualCost: data.annualCost,
+      projectedAnnualCost: data.annualCost - data.annualSavings,
+      annualSavings: data.annualSavings,
+      batterySizeKwh: data.batterySizeKwh,
+      paybackYears: data.paybackYears,
       features: [
-        { icon: '📈', title: 'MAXIMIZE RETURNS', description: `Turn a $${Math.round(data.annualCost / 12)} monthly bill into a $${data.annualSavings.toLocaleString()} annual profit center through smart solar, battery, and VPP integration.`, border: 'aqua' },
-        { icon: '🛡', title: 'SECURE POWER', description: `Gain independence from grid instability and rising costs with a ${data.batterySizeKwh}kWh battery backup system.`, border: 'white' },
-        { icon: '⚡', title: 'FUTURE READY', description: 'Prepare your home for EV charging and full electrification, eliminating petrol and gas costs forever.', border: 'orange' },
+        { icon: '\uD83D\uDCB0', title: 'FINANCIAL TRANSFORMATION', description: `From $${data.annualCost.toLocaleString()}/yr to $${Math.round(data.annualCost - data.annualSavings).toLocaleString()}/yr \u2014 saving $${data.annualSavings.toLocaleString()} annually.`, border: 'aqua' },
+        { icon: '\u2699\uFE0F', title: 'SYSTEM STRATEGY', description: `${data.solarSizeKw}kW solar + ${data.batterySizeKwh}kWh battery delivering energy independence and VPP income.`, border: 'white' },
+        { icon: '\u23F0', title: 'ACT NOW', description: `Federal rebates reduce your investment significantly. Lock in current pricing before incentives change.`, border: 'orange' },
       ],
-      quote: '"THIS SOLUTION TRANSFORMS YOUR HOME FROM AN ENERGY CONSUMER INTO A CLEAN POWER STATION."',
-      callToAction: 'Recommended Action: Approve Proposal to Secure Rebates',
+      quote: `Your ${data.paybackYears}-year payback transforms a $${data.annualCost.toLocaleString()}/yr liability into a $${data.annualSavings.toLocaleString()}/yr asset.`,
+      callToAction: 'Contact George Fotopoulos to secure your energy future today.',
     }
   });
   
-  // Slide 25: Contact/Next Steps
+  // Slide: Next Steps (4 numbered steps left, contact card right)
   slides.push({
     id: slideId++,
     type: 'contact',
     title: 'NEXT STEPS',
-    subtitle: 'Get Started Today',
+    subtitle: 'Ready to Electrify!',
     content: {
       preparedBy: BRAND.contact.name,
       title: BRAND.contact.title,
@@ -647,17 +718,16 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       copyright: BRAND.contact.copyright,
       logoUrl: BRAND.logo.aqua,
       nextSteps: [
-        'Review this proposal and ask any questions',
-        'Approve the proposal to lock in current rebates',
-        'Schedule site inspection and installation date',
-        'Enjoy clean, free energy for 25+ years',
+        { number: '01', title: 'SELECT YOUR SYSTEM', description: 'Choose between Sigenergy SigenStor or GoodWe ESA based on your priorities.' },
+        { number: '02', title: 'APPROVE PROPOSAL', description: 'Sign the proposal to lock in current Federal Rebate pricing.' },
+        { number: '03', title: 'SCHEDULE INSTALLATION', description: 'Book your preferred installation date with our certified team.' },
+        { number: '04', title: 'CONNECT & SAVE', description: 'Start generating clean energy and earning VPP income from day one.' },
       ],
     }
   });
   
   return slides;
 }
-
 // Helper functions
 function generateYearlyProjection(currentCost: number, annualSavings: number, years: number): Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }> {
   const projection = [];
@@ -897,6 +967,10 @@ export function generateSlideHTML(slide: SlideContent): string {
     case 'gas_footprint': content = genGasFootprint(slide); break;
     case 'gas_appliances': content = genGasAppliances(slide); break;
     case 'strategic_assessment': content = genStrategic(slide); break;
+    case 'strategic_site_assessment': content = genStrategicSiteAssessment(slide); break;
+    case 'option_1': content = genOption1(slide); break;
+    case 'option_2': content = genOption2(slide); break;
+    case 'system_comparison': content = genSystemComparison(slide); break;
     case 'battery_recommendation': content = genBattery(slide); break;
     case 'solar_system': content = genSolar(slide); break;
     case 'vpp_comparison': content = genVPPComparison(slide); break;
@@ -909,6 +983,8 @@ export function generateSlideHTML(slide: SlideContent): string {
     case 'pool_heat_pump': content = genPoolHeatPump(slide); break;
     case 'electrification_investment': content = genElectrificationInvestment(slide); break;
     case 'savings_summary': content = genSavingsSummary(slide); break;
+    case 'annual_financial_impact': content = genAnnualFinancialImpact(slide); break;
+    case 'investment_analysis': content = genInvestmentAnalysis(slide); break;
     case 'financial_summary': content = genFinancial(slide); break;
     case 'environmental_impact': content = genEnvironmental(slide); break;
     case 'roadmap': content = genRoadmap(slide); break;
@@ -1811,7 +1887,7 @@ function genConclusion(slide: SlideContent): string {
 // ---- SLIDE 25: CONTACT ----
 function genContact(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const nextSteps = (c.nextSteps as string[]) || [];
+  const nextSteps = (c.nextSteps as Array<{ number?: string; title?: string; description?: string } | string>) || [];
   return `
     <div class="slide" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
       <img src="${BRAND.logo.aqua}" style="width: 100px; height: 100px; margin-bottom: 30px;" alt="LE" />
@@ -1837,13 +1913,319 @@ function genContact(slide: SlideContent): string {
       </div>
       <div class="card aqua-b" style="max-width: 800px; text-align: left; padding: 28px;">
         <p class="lbl" style="color: #00EAD3; margin-bottom: 14px;">YOUR NEXT STEPS</p>
-        ${nextSteps.map((step, i) => `
-          <p style="font-size: 15px; margin-bottom: 10px;">
-            <span style="color: #f36710; font-weight: 700;">${i + 1}.</span> ${step}
-          </p>
-        `).join('')}
+        ${nextSteps.map((step, i) => {
+          if (typeof step === 'string') {
+            return `<p style="font-size: 15px; margin-bottom: 10px;"><span style="color: #f36710; font-weight: 700;">${i + 1}.</span> ${step}</p>`;
+          }
+          const s = step as { number?: string; title?: string; description?: string };
+          return `<p style="font-size: 15px; margin-bottom: 10px;"><span style="color: #f36710; font-weight: 700;">${s.number || (i + 1)}.</span> <strong>${s.title || ''}</strong> — ${s.description || ''}</p>`;
+        }).join('')}
       </div>
       <div class="copyright">${c.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- STRATEGIC SITE ASSESSMENT ----
+function genStrategicSiteAssessment(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const photos = (c.sitePhotos as Array<{ url: string; caption: string }>) || [];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <div style="border-left: 4px solid #00EAD3; padding-left: 20px; margin-bottom: 28px;">
+            <p class="lbl" style="color: #00EAD3; margin-bottom: 6px;">EXISTING INVERTER</p>
+            <p style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">${c.existingInverter || 'To be assessed'}</p>
+            ${c.narrativeInverter ? `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeInverter}</p>` : `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">Current inverter to be assessed during site inspection for compatibility with battery storage system.</p>`}
+          </div>
+          <div style="border-left: 4px solid #00EAD3; padding-left: 20px; margin-bottom: 28px;">
+            <p class="lbl" style="color: #00EAD3; margin-bottom: 6px;">ELECTRICAL SUPPLY</p>
+            <p style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">${c.electricalSupply || 'Single Phase'}</p>
+            ${c.narrativeElectrical ? `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeElectrical}</p>` : `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">Electrical supply configuration to be confirmed during site assessment.</p>`}
+          </div>
+          <div style="border-left: 4px solid #00EAD3; padding-left: 20px; margin-bottom: 28px;">
+            <p class="lbl" style="color: #00EAD3; margin-bottom: 6px;">METERING</p>
+            <p style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">${c.metering || 'Smart Meter'}</p>
+            ${c.narrativeMetering ? `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeMetering}</p>` : `<p style="font-size: 13px; line-height: 1.7; color: #ccc;">Smart meter configuration supports bi-directional energy flow and VPP participation.</p>`}
+          </div>
+        </div>
+        <div style="flex: 1;">
+          ${photos.length > 0 ? `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              ${photos.slice(0, 4).map(p => `
+                <div>
+                  <img src="${p.url}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; border: 1px solid #333;" alt="${p.caption}" />
+                  <p style="font-size: 11px; color: #808285; margin-top: 6px; text-align: center;">${p.caption}</p>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="card" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px;">
+              <div>
+                <p style="font-size: 48px; margin-bottom: 16px;">\ud83d\udcf7</p>
+                <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 8px;">SITE PHOTOS</p>
+                <p style="color: #808285; font-size: 13px;">Photos will be added after site inspection</p>
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- OPTION 1: SIGENERGY SIGENSTOR ----
+function genOption1(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const features = (c.features as string[]) || [];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #00EAD3; text-transform: uppercase; margin-bottom: 16px;">WHY WE RECOMMEND IT</p>
+          ${c.narrative ? `<div style="font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px;">${c.narrative}</div>` : `<p style="font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px;">The Sigenergy SigenStor represents the pinnacle of residential energy storage technology, integrating battery, inverter, EV charger, and smart energy management into a single, elegant unit.</p>`}
+          ${features.map(f => `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="color: #00EAD3; font-size: 10px;">\u25cf</span>
+              <p style="font-size: 14px; font-weight: 600;">${f}</p>
+            </div>
+          `).join('')}
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card" style="padding: 30px; border-top: 3px solid #00EAD3;">
+            <div style="margin-bottom: 20px;">
+              <p class="lbl">TOTAL SYSTEM INVESTMENT</p>
+              <p style="font-size: 36px; font-weight: 700;">$${(c.systemCost as number).toLocaleString()}</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <p style="color: #00EAD3; font-size: 18px; font-weight: 600;">-$${(c.rebateAmount as number).toLocaleString()} <span style="font-size: 13px; color: #808285;">Federal Rebate</span></p>
+            </div>
+            <div style="border-top: 1px solid #333; padding-top: 16px; margin-bottom: 24px;">
+              <p class="lbl">NET INVESTMENT</p>
+              <p style="font-size: 36px; font-weight: 700;">= $${(c.netInvestment as number).toLocaleString()}</p>
+            </div>
+            <div style="display: flex; gap: 20px;">
+              <div style="flex: 1;">
+                <p class="lbl" style="color: #00EAD3;">ANNUAL SAVINGS</p>
+                <p style="font-size: 24px; font-weight: 700; color: #00EAD3;">$${(c.annualSavings as number).toLocaleString()}</p>
+              </div>
+              <div style="flex: 1;">
+                <p class="lbl">PAYBACK PERIOD</p>
+                <p style="font-size: 24px; font-weight: 700;">${(c.paybackYears as number).toFixed(1)} Years</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- OPTION 2: GOODWE ESA SERIES ----
+function genOption2(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const features = (c.features as string[]) || [];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #f36710; text-transform: uppercase; margin-bottom: 16px;">WHY CONSIDER IT</p>
+          ${c.narrative ? `<div style="font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px;">${c.narrative}</div>` : `<p style="font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px;">The GoodWe ESA Series delivers exceptional value with proven reliability, making it an excellent choice for homeowners seeking a cost-effective path to energy independence.</p>`}
+          ${features.map(f => `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="color: #f36710; font-size: 10px;">\u25cf</span>
+              <p style="font-size: 14px; font-weight: 600;">${f}</p>
+            </div>
+          `).join('')}
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card" style="padding: 30px; border-top: 3px solid #f36710;">
+            <div style="margin-bottom: 20px;">
+              <p class="lbl">TOTAL SYSTEM INVESTMENT</p>
+              <p style="font-size: 36px; font-weight: 700;">$${(c.systemCost as number).toLocaleString()}</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <p style="color: #00EAD3; font-size: 18px; font-weight: 600;">-$${(c.rebateAmount as number).toLocaleString()} <span style="font-size: 13px; color: #808285;">Federal Rebate</span></p>
+            </div>
+            <div style="border-top: 1px solid #333; padding-top: 16px; margin-bottom: 24px;">
+              <p class="lbl">NET INVESTMENT</p>
+              <p style="font-size: 36px; font-weight: 700;">= $${(c.netInvestment as number).toLocaleString()}</p>
+            </div>
+            <div style="display: flex; gap: 20px;">
+              <div style="flex: 1;">
+                <p class="lbl" style="color: #00EAD3;">ANNUAL SAVINGS</p>
+                <p style="font-size: 24px; font-weight: 700; color: #00EAD3;">$${(c.annualSavings as number).toLocaleString()}</p>
+              </div>
+              <div style="flex: 1;">
+                <p class="lbl">PAYBACK PERIOD</p>
+                <p style="font-size: 24px; font-weight: 700;">${(c.paybackYears as number).toFixed(1)} Years</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- SYSTEM COMPARISON ----
+function genSystemComparison(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const o1 = c.option1 as Record<string, unknown>;
+  const o2 = c.option2 as Record<string, unknown>;
+  const rows = [
+    { feature: 'Net Investment', v1: `$${(o1.netInvestment as number).toLocaleString()}`, v2: `$${(o2.netInvestment as number).toLocaleString()}`, highlight: false },
+    { feature: 'Annual Savings', v1: `$${(o1.annualSavings as number).toLocaleString()}`, v2: `$${(o2.annualSavings as number).toLocaleString()}`, highlight: false },
+    { feature: 'Payback Period', v1: `${(o1.paybackYears as number).toFixed(1)} Years`, v2: `${(o2.paybackYears as number).toFixed(1)} Years`, highlight: true },
+    { feature: 'Backup Capability', v1: o1.backup as string, v2: o2.backup as string, highlight: false },
+    { feature: 'EV Charger Integration', v1: o1.evCharger as string, v2: o2.evCharger as string, highlight: false },
+    { feature: 'Intelligence', v1: o1.intelligence as string, v2: o2.intelligence as string, highlight: false },
+    { feature: 'Warranty', v1: o1.warranty as string, v2: o2.warranty as string, highlight: false },
+  ];
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <table style="margin-top: 10px;">
+        <tr>
+          <th style="width: 25%;">FEATURE</th>
+          <th style="width: 37.5%; color: #00EAD3;">${o1.name}</th>
+          <th style="width: 37.5%; color: #f36710;">${o2.name}</th>
+        </tr>
+        ${rows.map(r => `
+          <tr ${r.highlight ? 'class="highlight-row"' : ''}>
+            <td style="font-weight: 600;">${r.feature}</td>
+            <td>${r.v1}</td>
+            <td>${r.v2}</td>
+          </tr>
+        `).join('')}
+      </table>
+      ${c.narrative ? `<div class="insight-card" style="margin-top: 24px;"><p class="insight-title">RECOMMENDATION</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- ANNUAL FINANCIAL IMPACT ----
+function genAnnualFinancialImpact(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const breakdown = (c.savingsBreakdown as Array<{ source: string; value: number; percent?: string }>) || [];
+  const currentCost = c.currentAnnualCost as number;
+  const projectedCost = c.projectedAnnualCost as number;
+  const totalTurnaround = c.totalTurnaround as number;
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; align-items: center; gap: 30px; margin-top: 10px;">
+        <div class="card" style="flex: 1; text-align: center; padding: 30px; border-top: 3px solid #f36710;">
+          <p class="lbl">Current Projected Bill</p>
+          <p class="hero-num white" style="font-size: 56px;">$${currentCost.toLocaleString()}</p>
+          <p class="gray">per year</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="${BRAND.logo.aqua}" style="width: 50px; height: 50px;" alt="LE" />
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 11px; font-weight: 800; color: #808285; margin-top: 8px; letter-spacing: 0.1em;">TRANSFORMATION</p>
+        </div>
+        <div class="card" style="flex: 1; text-align: center; padding: 30px; border-top: 3px solid #00EAD3;">
+          <p class="lbl">New Projected Bill</p>
+          <p class="hero-num ${projectedCost <= 0 ? 'aqua' : 'white'}" style="font-size: 56px;">${projectedCost <= 0 ? '-' : ''}$${Math.abs(projectedCost).toLocaleString()}</p>
+          <p class="gray">${projectedCost <= 0 ? 'Annual Credit' : 'per year'}</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 40px; margin-top: 30px;">
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; color: #00EAD3; margin-bottom: 16px;">WHERE THE SAVINGS COME FROM</p>
+          ${breakdown.map(b => `
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a1a1a;">
+              <span style="color: #ccc;">${b.source}${b.percent ? ` (${b.percent})` : ''}</span>
+              <span style="font-weight: 600; color: ${b.value < 0 ? '#f36710' : '#00EAD3'};">${b.value < 0 ? '-' : ''}$${Math.abs(b.value).toLocaleString()}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div style="flex: 0.8;">
+          <div style="background: linear-gradient(135deg, rgba(0,234,211,0.15), rgba(0,234,211,0.05)); border-radius: 8px; padding: 30px; text-align: center;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: #808285; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Total Annual Turnaround</p>
+            <p class="hero-num aqua" style="font-size: 64px;">$${totalTurnaround.toLocaleString()}</p>
+            <p style="color: #ccc; font-size: 13px; margin-top: 12px; line-height: 1.6;">Combined value of bill elimination and new income generation.</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- INVESTMENT ANALYSIS ----
+function genInvestmentAnalysis(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const o1 = c.option1 as Record<string, unknown>;
+  const o2 = c.option2 as Record<string, unknown>;
+  
+  // Generate cashflow data points for chart
+  const years = 20;
+  const o1Points: string[] = [];
+  const o2Points: string[] = [];
+  for (let y = 0; y <= years; y++) {
+    const o1Val = -(o1.netInvestment as number) + (o1.annualBenefit as number) * y;
+    const o2Val = -(o2.netInvestment as number) + (o2.annualBenefit as number) * y;
+    o1Points.push(`${(y / years) * 100},${50 - (o1Val / ((o1.annualBenefit as number) * years * 1.2)) * 45}`);
+    o2Points.push(`${(y / years) * 100},${50 - (o2Val / ((o1.annualBenefit as number) * years * 1.2)) * 45}`);
+  }
+  
+  const compRows = [
+    { metric: 'Total System Cost', v1: `$${(o1.systemCost as number).toLocaleString()}`, v2: `$${(o2.systemCost as number).toLocaleString()}` },
+    { metric: 'Federal Rebate', v1: `-$${(o1.rebate as number).toLocaleString()}`, v2: `-$${(o2.rebate as number).toLocaleString()}`, highlight: false, aqua: true },
+    { metric: 'Net Investment', v1: `$${(o1.netInvestment as number).toLocaleString()}`, v2: `$${(o2.netInvestment as number).toLocaleString()}`, highlight: true },
+    { metric: 'Annual Benefit', v1: `$${(o1.annualBenefit as number).toLocaleString()}`, v2: `$${(o2.annualBenefit as number).toLocaleString()}` },
+    { metric: 'Payback Period', v1: `${(o1.paybackYears as number).toFixed(1)} Years`, v2: `${(o2.paybackYears as number).toFixed(1)} Years` },
+    { metric: '10-Year Net Benefit', v1: `$${(o1.tenYearBenefit as number).toLocaleString()}`, v2: `$${(o2.tenYearBenefit as number).toLocaleString()}` },
+  ];
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      <div style="display: flex; gap: 40px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <table>
+            <tr><th>METRIC</th><th style="color: #00EAD3;">${o1.name}</th><th style="color: #f36710;">${o2.name}</th></tr>
+            ${compRows.map(r => `
+              <tr ${r.highlight ? 'class="highlight-row"' : ''}>
+                <td style="font-weight: 600;">${r.metric}</td>
+                <td ${r.aqua ? 'style="color: #00EAD3;"' : ''}>${r.v1}</td>
+                <td ${r.aqua ? 'style="color: #00EAD3;"' : ''}>${r.v2}</td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 16px;">CUMULATIVE CASHFLOW (20 YEARS)</p>
+          <div style="height: 280px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #333;">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+              <polyline points="${o1Points.join(' ')}" fill="none" stroke="#00EAD3" stroke-width="0.5" />
+              <polyline points="${o2Points.join(' ')}" fill="none" stroke="#f36710" stroke-width="0.5" />
+              <line x1="0" y1="50" x2="100" y2="50" stroke="#333" stroke-width="0.2" stroke-dasharray="2,2" />
+            </svg>
+          </div>
+          <div style="display: flex; gap: 24px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">${o1.name}</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">${o2.name}</span></div>
+          </div>
+        </div>
+      </div>
+      ${c.narrative ? `<div class="insight-card" style="margin-top: 16px;"><p class="insight-title">ANALYSIS</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
+      <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
 }

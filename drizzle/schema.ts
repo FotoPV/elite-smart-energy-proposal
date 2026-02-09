@@ -382,12 +382,10 @@ export interface VppComparisonItem {
 }
 
 export interface SlideData {
-  slideNumber: number;
-  slideType: string;
+  type: string;
   title: string;
-  isConditional: boolean;
+  html: string;
   isIncluded: boolean;
-  content: Record<string, unknown>;
 }
 
 // ============================================

@@ -335,7 +335,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
   const [progress, setProgress] = useState(0);
   
   const calculateMutation = trpc.proposals.calculate.useMutation();
-  const generateMutation = trpc.proposals.generate.useMutation();
+  const generateProgressiveMutation = trpc.proposals.generateProgressive.useMutation();
   const utils = trpc.useUtils();
   
   const handleUpdateAndPublish = async () => {
@@ -347,9 +347,9 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       await calculateMutation.mutateAsync({ proposalId });
       setProgress(20);
       
-      setCurrentStep('Generating slides...');
+      setCurrentStep('Generating LLM slides...');
       setProgress(30);
-      await generateMutation.mutateAsync({ proposalId });
+      await generateProgressiveMutation.mutateAsync({ proposalId });
       setProgress(40);
       
       setCurrentStep('Fetching slide data...');
@@ -661,12 +661,24 @@ export default function ProposalDetailPage() {
   const [, setLocation] = useLocation();
   const proposalId = parseInt(params.id || '0');
   const [showLiveGeneration, setShowLiveGeneration] = useState(false);
+  const [autoTriggered, setAutoTriggered] = useState(false);
   
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
   const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
     { proposalId },
     { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') }
   );
+  
+  // Auto-trigger LLM progressive generation when proposal has calculations but no slides
+  useEffect(() => {
+    if (!proposal || autoTriggered || showLiveGeneration) return;
+    const hasCalculations = !!(proposal as any).calculations;
+    const isNotGenerated = proposal.status === 'draft' || proposal.status === 'calculating';
+    if (hasCalculations && isNotGenerated) {
+      setAutoTriggered(true);
+      setShowLiveGeneration(true);
+    }
+  }, [proposal, autoTriggered, showLiveGeneration]);
   
   const calculateMutation = trpc.proposals.calculate.useMutation({
     onSuccess: () => {
@@ -675,16 +687,6 @@ export default function ProposalDetailPage() {
     },
     onError: (error) => {
       toast.error(`Calculation failed: ${error.message}`);
-    }
-  });
-  
-  const generateMutation = trpc.proposals.generate.useMutation({
-    onSuccess: () => {
-      toast.success('Slides generated!');
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Generation failed: ${error.message}`);
     }
   });
   
@@ -839,10 +841,11 @@ export default function ProposalDetailPage() {
           </div>
         </div>
         
-        {/* Live Generation View */}
+        {/* Live Generation View — auto-starts when proposal has calculations but no slides */}
         {showLiveGeneration && (
           <LiveSlideGeneration
             proposalId={proposalId}
+            autoStart={autoTriggered}
             onComplete={() => {
               setShowLiveGeneration(false);
               refetch();

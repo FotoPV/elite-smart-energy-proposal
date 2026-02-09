@@ -9,7 +9,7 @@ import { storagePut } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
 import { generateFullCalculations } from "./calculations";
 import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
-import { narrativeGenerators, narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeAnnualFinancialImpact, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
+import { narrativeGenerators, narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeAnnualFinancialImpact, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap, narrativeTariffComparison, narrativeDailyLoadProfile, narrativeSolarGeneration, narrativeBatteryCycle, narrativeGridIndependence, narrativeRebateBreakdown, narrativeFinancialProjection25yr, narrativeSystemSpecs, narrativeWarrantyMaintenance } from './slideNarrative';
 import { generatePptx } from "./pptxGenerator";
 import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
@@ -307,7 +307,7 @@ export const appRouter = router({
           status: 'draft',
         });
         
-        // Auto-generate: if electricity bill is provided, auto-calculate and generate slides
+        // Auto-calculate only (NO old template slides) — LLM progressive generation happens on ProposalDetail
         if (input.electricityBillId) {
           try {
             const electricityBill = await db.getBillById(input.electricityBillId);
@@ -316,27 +316,13 @@ export const appRouter = router({
               const rebates = await db.getRebatesByState(customer.state);
               const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
               
-              const proposalData = buildProposalData(customer, calculations, false);
-              const slides = generateSlides(proposalData);
-              const slideData = slides.map((s, i) => ({
-                slideNumber: i + 1,
-                slideType: s.type,
-                title: s.title,
-                isConditional: false,
-                isIncluded: true,
-                content: s as unknown as Record<string, unknown>,
-              }));
-              
               await db.updateProposal(id, {
                 calculations,
-                slidesData: slideData,
-                slideCount: slideData.length,
-                status: 'generated',
+                status: 'draft', // stays draft — no slides yet, LLM generation triggered on detail page
               });
             }
           } catch (e) {
-            // Auto-generate is best-effort; don't fail the create
-            console.error('Auto-generate failed:', e);
+            console.error('Auto-calculate failed:', e);
           }
         }
         
@@ -396,48 +382,11 @@ export const appRouter = router({
         }
       }),
     
+    // OLD generate mutation removed — use generateProgressive for LLM-powered slide generation
     generate: protectedProcedure
       .input(z.object({ proposalId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        let proposal = await db.getProposalById(input.proposalId);
-        if (!proposal) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
-        }
-        
-        const customer = await db.getCustomerById(proposal.customerId);
-        if (!customer) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
-        }
-        
-        // Auto-calculate if calculations are missing
-        if (!proposal.calculations) {
-          if (!proposal.electricityBillId) {
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
-          }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
-          const vppProviders = await db.getVppProvidersByState(customer.state);
-          const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
-          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
-          proposal = await db.getProposalById(input.proposalId);
-          if (!proposal) {
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
-          }
-        }
-        
-        // Generate slides data structure (calculations guaranteed to exist after auto-calculate above)
-        const slidesData = generateSlidesData(customer, proposal.calculations!, false);
-        
-        await db.updateProposal(input.proposalId, {
-          slidesData,
-          slideCount: slidesData.filter(s => s.isIncluded).length,
-          status: 'generated',
-        });
-        
-        return { success: true, slideCount: slidesData.filter(s => s.isIncluded).length };
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Use generateProgressive for LLM-powered slide generation with live preview' });
       }),
     
     // Progressive generation with real-time progress tracking
@@ -475,34 +424,34 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         const proposalData = buildProposalData(customer, calc, false);
-        const allSlides = generateSlides(proposalData);
+        const allSlides = generateSlides(proposalData); // Only active/included slides
         
-        // Initialize progress tracking
+        // Initialize progress tracking with ALL active slides
         const slideInfo = allSlides.map(s => ({ type: s.type, title: s.title }));
         initProgress(input.proposalId, slideInfo);
         
-        // Generate slides one by one with LLM narrative content
-        const slidesData = generateSlidesData(customer, calc, false);
+        // Build slidesData directly from allSlides (no more old generateSlidesData)
+        const slidesData: Array<{ type: string; title: string; html: string; isIncluded: boolean }> = 
+          allSlides.map(s => ({ type: s.type, title: s.title, html: '', isIncluded: true }));
         
-        // Process each slide — LLM-powered narrative for applicable slides
+        // Process each slide — LLM-powered narrative enrichment
         for (let i = 0; i < allSlides.length; i++) {
           updateSlideProgress(input.proposalId, i, { status: 'generating' });
           
+          let slideHtml = '';
           try {
-            // Inject LLM narrative content into the slide before rendering
             const enrichedSlide = await enrichSlideWithNarrative(allSlides[i], proposalData);
-            const html = generateSlideHTML(enrichedSlide);
+            slideHtml = generateSlideHTML(enrichedSlide);
             updateSlideProgress(input.proposalId, i, {
               status: 'complete',
-              html,
+              html: slideHtml,
             });
           } catch (err: any) {
-            // Fallback: generate without narrative on error
             try {
-              const html = generateSlideHTML(allSlides[i]);
+              slideHtml = generateSlideHTML(allSlides[i]);
               updateSlideProgress(input.proposalId, i, {
                 status: 'complete',
-                html,
+                html: slideHtml,
               });
             } catch (err2: any) {
               updateSlideProgress(input.proposalId, i, {
@@ -511,18 +460,22 @@ export const appRouter = router({
               });
             }
           }
+          
+          // Store HTML directly in slidesData
+          slidesData[i].html = slideHtml;
         }
         
         // Save to DB
+        const includedCount = slidesData.filter(s => s.html).length;
         await db.updateProposal(input.proposalId, {
           slidesData,
-          slideCount: slidesData.filter(s => s.isIncluded).length,
+          slideCount: includedCount,
           status: 'generated',
         });
         
         setGenerationStatus(input.proposalId, 'complete');
         
-        return { success: true, slideCount: slidesData.filter(s => s.isIncluded).length };
+        return { success: true, slideCount: includedCount };
       }),
     
     // Query generation progress for live preview
@@ -592,59 +545,42 @@ export const appRouter = router({
         slideIndex: z.number().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        let proposal = await db.getProposalById(input.proposalId);
+        const proposal = await db.getProposalById(input.proposalId);
         if (!proposal) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
         }
         
-        const customer = await db.getCustomerById(proposal.customerId);
-        if (!customer) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        // Return stored LLM-generated HTML from slidesData in DB
+        const slidesData = (proposal.slidesData || []) as import('../drizzle/schema').SlideData[];
+        // Only return slides that are included AND have generated HTML
+        const includedSlides = slidesData.filter(s => s.isIncluded && s.html);
+        
+        if (includedSlides.length === 0 || !includedSlides.some(s => s.html)) {
+          // No LLM-generated slides yet — need to run progressive generation first
+          return { slides: [], totalSlides: 0 };
         }
-        
-        // Auto-calculate if calculations are missing
-        if (!proposal.calculations) {
-          if (!proposal.electricityBillId) {
-            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
-          }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
-          const vppProviders = await db.getVppProvidersByState(customer.state);
-          const rebates = await db.getRebatesByState(customer.state);
-          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
-          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
-          proposal = await db.getProposalById(input.proposalId);
-          if (!proposal) {
-            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
-          }
-        }
-        
-        const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, false);
-        
-        const slides = generateSlides(proposalData);
         
         if (input.slideIndex !== undefined) {
-          const slide = slides[input.slideIndex];
-          if (!slide) {
+          const slide = includedSlides[input.slideIndex];
+          if (!slide || !slide.html) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Slide not found' });
           }
           return {
-            html: generateSlideHTML(slide),
+            html: slide.html,
             slide,
-            totalSlides: slides.length,
+            totalSlides: includedSlides.length,
           };
         }
         
-        // Return all slides HTML
+        // Return all stored LLM-generated slide HTML
         return {
-          slides: slides.map(s => ({
-            ...s,
-            html: generateSlideHTML(s),
+          slides: includedSlides.map((s, idx) => ({
+            id: idx + 1,
+            type: s.type,
+            title: s.title,
+            html: s.html || '',
           })),
-          totalSlides: slides.length,
+          totalSlides: includedSlides.length,
         };
       }),
     
@@ -1205,6 +1141,36 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
         enriched.content.narrative = narrative;
         break;
       }
+      case 'strategic_site_assessment': {
+        const narrative = await narrativeStrategicAssessment(data);
+        enriched.content.narrativeInverter = narrative;
+        break;
+      }
+      case 'option_1': {
+        const narrative = await narrativeBatteryOption(data, 1);
+        enriched.content.narrative = narrative.whyRecommend;
+        break;
+      }
+      case 'option_2': {
+        const narrative = await narrativeBatteryOption(data, 2);
+        enriched.content.narrative = narrative.whyRecommend;
+        break;
+      }
+      case 'system_comparison': {
+        const narrative = await narrativeInvestmentAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'annual_financial_impact': {
+        const narrative = await narrativeAnnualFinancialImpact(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'investment_analysis': {
+        const narrative = await narrativeInvestmentAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
       case 'battery_recommendation': {
         const narrative = await narrativeBatteryOption(data, 1);
         enriched.content.narrativeWhy = narrative.whyRecommend;
@@ -1243,7 +1209,52 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
         enriched.content.narrative = narrative;
         break;
       }
-      // Slides without narrative (cover, contact, vpp_comparison, data-only slides)
+      case 'tariff_comparison': {
+        const narrative = await narrativeTariffComparison(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'daily_load_profile': {
+        const narrative = await narrativeDailyLoadProfile(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'solar_generation_profile': {
+        const narrative = await narrativeSolarGeneration(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'battery_cycle': {
+        const narrative = await narrativeBatteryCycle(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'grid_independence': {
+        const narrative = await narrativeGridIndependence(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'rebate_breakdown': {
+        const narrative = await narrativeRebateBreakdown(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'financial_projection_25yr': {
+        const narrative = await narrativeFinancialProjection25yr(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'system_specifications': {
+        const narrative = await narrativeSystemSpecs(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'warranty_maintenance': {
+        const narrative = await narrativeWarrantyMaintenance(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      // Slides without narrative (cover, contact, vpp_comparison)
       // just pass through without LLM enrichment
       default:
         break;
@@ -1370,493 +1381,6 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasG
     co2ProjectedTonnes: calc.co2ProjectedTonnes,
     co2ReductionPercent: calc.co2ReductionPercent,
   };
-}
-
-function generateSlidesData(
-  customer: Customer,
-  calculations: ProposalCalculations,
-  _hasGasBill: boolean
-): SlideData[] {
-  const hasGasBill = false; // Gas features removed
-  const c = calculations; // shorthand
-  const slides: SlideData[] = [
-    // Slide 1: Cover Page
-    {
-      slideNumber: 1, slideType: 'cover', title: 'Cover Page',
-      isConditional: false, isIncluded: true,
-      content: {
-        customerName: customer.fullName,
-        customerAddress: customer.address,
-        date: new Date().toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' }),
-      },
-    },
-    // Slide 2: Executive Summary
-    {
-      slideNumber: 2, slideType: 'executive_summary', title: 'Executive Summary',
-      isConditional: false, isIncluded: true,
-      content: {
-        currentAnnualCost: c.projectedAnnualCost,
-        gasAnnualCost: c.gasAnnualCost,
-        totalAnnualSavings: c.totalAnnualSavings,
-        paybackYears: c.paybackYears,
-        netInvestment: c.netInvestment,
-        totalInvestment: c.totalInvestment,
-        totalRebates: c.totalRebates,
-        co2ReductionTonnes: c.co2ReductionTonnes,
-        twentyFiveYearSavings: c.twentyFiveYearSavings,
-        hasGas: hasGasBill,
-      },
-    },
-    // Slide 3: Current Bill Analysis
-    {
-      slideNumber: 3, slideType: 'bill_analysis', title: 'Current Bill Analysis',
-      isConditional: false, isIncluded: true,
-      content: {
-        retailer: c.billRetailer,
-        periodStart: c.billPeriodStart,
-        periodEnd: c.billPeriodEnd,
-        billingDays: c.billDays,
-        totalAmount: c.billTotalAmount,
-        dailySupplyCharge: c.billDailySupplyCharge,
-        totalUsageKwh: c.billTotalUsageKwh,
-        peakUsageKwh: c.billPeakUsageKwh,
-        offPeakUsageKwh: c.billOffPeakUsageKwh,
-        shoulderUsageKwh: c.billShoulderUsageKwh,
-        solarExportsKwh: c.billSolarExportsKwh,
-        peakRateCents: c.billPeakRateCents,
-        offPeakRateCents: c.billOffPeakRateCents,
-        shoulderRateCents: c.billShoulderRateCents,
-        feedInTariffCents: c.billFeedInTariffCents,
-        dailyAverageKwh: c.dailyAverageKwh,
-        dailyAverageCost: c.dailyAverageCost,
-      },
-    },
-    // Slide 4: Monthly Usage Analysis
-    {
-      slideNumber: 4, slideType: 'monthly_usage', title: 'Monthly Usage Analysis',
-      isConditional: false, isIncluded: true,
-      content: {
-        dailyAverageKwh: c.dailyAverageKwh,
-        monthlyUsageKwh: c.monthlyUsageKwh,
-        yearlyUsageKwh: c.yearlyUsageKwh,
-        peakUsageKwh: c.billPeakUsageKwh,
-        offPeakUsageKwh: c.billOffPeakUsageKwh,
-        shoulderUsageKwh: c.billShoulderUsageKwh,
-        billingDays: c.billDays,
-      },
-    },
-    // Slide 5: Yearly Cost Projection
-    {
-      slideNumber: 5, slideType: 'yearly_projection', title: 'Yearly Cost Projection',
-      isConditional: false, isIncluded: true,
-      content: {
-        yearlyUsageKwh: c.yearlyUsageKwh,
-        projectedAnnualCost: c.projectedAnnualCost,
-        annualSupplyCharge: c.annualSupplyCharge,
-        annualUsageCharge: c.annualUsageCharge,
-        annualSolarCredit: c.annualSolarCredit,
-        dailyAverageCost: c.dailyAverageCost,
-        peakRateCents: c.billPeakRateCents,
-        offPeakRateCents: c.billOffPeakRateCents,
-        shoulderRateCents: c.billShoulderRateCents,
-        feedInTariffCents: c.billFeedInTariffCents,
-        dailySupplyCharge: c.billDailySupplyCharge,
-        gasAnnualCost: c.gasAnnualCost,
-      },
-    },
-    // Slide 6: Current Gas Footprint (Conditional)
-    {
-      slideNumber: 6, slideType: 'gas_footprint', title: 'Current Gas Footprint',
-      isConditional: true, isIncluded: hasGasBill,
-      content: {
-        gasBillRetailer: c.gasBillRetailer,
-        gasBillPeriodStart: c.gasBillPeriodStart,
-        gasBillPeriodEnd: c.gasBillPeriodEnd,
-        gasBillDays: c.gasBillDays,
-        gasBillTotalAmount: c.gasBillTotalAmount,
-        gasBillDailySupplyCharge: c.gasBillDailySupplyCharge,
-        gasBillUsageMj: c.gasBillUsageMj,
-        gasBillRateCentsMj: c.gasBillRateCentsMj,
-        gasAnnualCost: c.gasAnnualCost,
-        gasKwhEquivalent: c.gasKwhEquivalent,
-        gasCo2Emissions: c.gasCo2Emissions,
-        gasDailyGasCost: c.gasDailyGasCost,
-        gasAnnualSupplyCharge: c.gasAnnualSupplyCharge,
-      },
-    },
-    // Slide 7: Gas Appliance Inventory (Conditional)
-    {
-      slideNumber: 7, slideType: 'gas_appliances', title: 'Gas Appliance Inventory',
-      isConditional: true, isIncluded: hasGasBill && (customer.gasAppliances?.length ?? 0) > 0,
-      content: {
-        appliances: customer.gasAppliances,
-        gasAnnualCost: c.gasAnnualCost,
-        gasKwhEquivalent: c.gasKwhEquivalent,
-      },
-    },
-    // Slide 8: Strategic Assessment
-    {
-      slideNumber: 8, slideType: 'strategic_assessment', title: 'Strategic Assessment',
-      isConditional: false, isIncluded: true,
-      content: {
-        totalAnnualSavings: c.totalAnnualSavings,
-        paybackYears: c.paybackYears,
-        netInvestment: c.netInvestment,
-        co2ReductionTonnes: c.co2ReductionTonnes,
-        hasGas: hasGasBill,
-        hasEV: customer.hasEV,
-        hasPool: customer.hasPool,
-        hasExistingSolar: customer.hasExistingSolar,
-      },
-    },
-    // Slide 9: Recommended Battery Size
-    {
-      slideNumber: 9, slideType: 'battery_recommendation', title: 'Recommended Battery Size',
-      isConditional: false, isIncluded: true,
-      content: {
-        recommendedBatteryKwh: c.recommendedBatteryKwh,
-        batteryProduct: c.batteryProduct,
-        batteryEstimatedCost: c.batteryEstimatedCost,
-        dailyAverageKwh: c.dailyAverageKwh,
-        hasEV: customer.hasEV,
-      },
-    },
-    // Slide 10: Proposed Solar PV System (Conditional)
-    {
-      slideNumber: 10, slideType: 'solar_recommendation', title: 'Proposed Solar PV System',
-      isConditional: true, isIncluded: !customer.hasExistingSolar,
-      content: {
-        recommendedSolarKw: c.recommendedSolarKw,
-        solarPanelCount: c.solarPanelCount,
-        solarAnnualGeneration: c.solarAnnualGeneration,
-        solarEstimatedCost: c.solarEstimatedCost,
-        yearlyUsageKwh: c.yearlyUsageKwh,
-      },
-    },
-    // Slide 11: VPP Provider Comparison
-    {
-      slideNumber: 11, slideType: 'vpp_comparison', title: 'VPP Provider Comparison',
-      isConditional: false, isIncluded: true,
-      content: {
-        providers: c.vppProviderComparison,
-        state: customer.state,
-        hasGas: hasGasBill,
-      },
-    },
-    // Slide 12: VPP Recommendation
-    {
-      slideNumber: 12, slideType: 'vpp_recommendation', title: 'VPP Recommendation',
-      isConditional: false, isIncluded: true,
-      content: {
-        selectedVppProvider: c.selectedVppProvider,
-        vppAnnualValue: c.vppAnnualValue,
-        vppDailyCreditAnnual: c.vppDailyCreditAnnual,
-        vppEventPaymentsAnnual: c.vppEventPaymentsAnnual,
-        vppBundleDiscount: c.vppBundleDiscount,
-        recommendedBatteryKwh: c.recommendedBatteryKwh,
-      },
-    },
-    // Slide 13: Hot Water Electrification (Conditional)
-    {
-      slideNumber: 13, slideType: 'hot_water', title: 'Hot Water Electrification',
-      isConditional: true, isIncluded: hasGasBill,
-      content: {
-        hotWaterSavings: c.hotWaterSavings,
-        hotWaterCurrentGasCost: c.hotWaterCurrentGasCost,
-        hotWaterHeatPumpCost: c.hotWaterHeatPumpCost,
-        hotWaterDailySupplySaved: c.hotWaterDailySupplySaved,
-        investmentHeatPumpHw: c.investmentHeatPumpHw,
-        heatPumpHwRebateAmount: c.heatPumpHwRebateAmount,
-      },
-    },
-    // Slide 14: Heating & Cooling Upgrade (Conditional)
-    {
-      slideNumber: 14, slideType: 'heating_cooling', title: 'Heating & Cooling Upgrade',
-      isConditional: true, isIncluded: hasGasBill,
-      content: {
-        heatingCoolingSavings: c.heatingCoolingSavings,
-        heatingCurrentGasCost: c.heatingCurrentGasCost,
-        heatingRcAcCost: c.heatingRcAcCost,
-        investmentRcAc: c.investmentRcAc,
-        heatPumpAcRebateAmount: c.heatPumpAcRebateAmount,
-      },
-    },
-    // Slide 15: Induction Cooking Upgrade (Conditional)
-    {
-      slideNumber: 15, slideType: 'induction_cooking', title: 'Induction Cooking Upgrade',
-      isConditional: true, isIncluded: hasGasBill,
-      content: {
-        cookingSavings: c.cookingSavings,
-        cookingCurrentGasCost: c.cookingCurrentGasCost,
-        cookingInductionCost: c.cookingInductionCost,
-        investmentInduction: c.investmentInduction,
-      },
-    },
-    // Slide 16: EV Analysis
-    {
-      slideNumber: 16, slideType: 'ev_analysis', title: 'EV Analysis - Low KM Vehicle',
-      isConditional: false, isIncluded: true,
-      content: {
-        evPetrolCost: c.evPetrolCost,
-        evGridChargeCost: c.evGridChargeCost,
-        evSolarChargeCost: c.evSolarChargeCost,
-        evAnnualSavings: c.evAnnualSavings,
-        evKmPerYear: c.evKmPerYear,
-        evConsumptionPer100km: c.evConsumptionPer100km,
-        evPetrolPricePerLitre: c.evPetrolPricePerLitre,
-        peakRateCents: c.billPeakRateCents,
-      },
-    },
-    // Slide 17: EV Charger Recommendation
-    {
-      slideNumber: 17, slideType: 'ev_charger', title: 'EV Charger Recommendation',
-      isConditional: false,
-      isIncluded: (customer.hasEV ?? false) || customer.evInterest === 'interested' || customer.evInterest === 'owns',
-      content: {
-        hasEV: customer.hasEV,
-        evInterest: customer.evInterest,
-        investmentEvCharger: c.investmentEvCharger,
-        evAnnualSavings: c.evAnnualSavings,
-      },
-    },
-    // Slide 18: Pool Heat Pump (Conditional)
-    {
-      slideNumber: 18, slideType: 'pool_heat_pump', title: 'Pool Heat Pump',
-      isConditional: true, isIncluded: customer.hasPool ?? false,
-      content: {
-        poolVolume: customer.poolVolume,
-        poolHeatPumpSavings: c.poolHeatPumpSavings,
-        poolRecommendedKw: c.poolRecommendedKw,
-        poolAnnualOperatingCost: c.poolAnnualOperatingCost,
-        investmentPoolHeatPump: c.investmentPoolHeatPump,
-      },
-    },
-    // Slide 19: Full Electrification Investment (Conditional)
-    {
-      slideNumber: 19, slideType: 'electrification_investment', title: 'Full Electrification Investment',
-      isConditional: true, isIncluded: hasGasBill,
-      content: {
-        totalInvestment: c.totalInvestment,
-        totalRebates: c.totalRebates,
-        netInvestment: c.netInvestment,
-        investmentSolar: c.investmentSolar,
-        investmentBattery: c.investmentBattery,
-        investmentHeatPumpHw: c.investmentHeatPumpHw,
-        investmentRcAc: c.investmentRcAc,
-        investmentInduction: c.investmentInduction,
-        investmentEvCharger: c.investmentEvCharger,
-        investmentPoolHeatPump: c.investmentPoolHeatPump,
-        solarRebateAmount: c.solarRebateAmount,
-        batteryRebateAmount: c.batteryRebateAmount,
-        heatPumpHwRebateAmount: c.heatPumpHwRebateAmount,
-        heatPumpAcRebateAmount: c.heatPumpAcRebateAmount,
-      },
-    },
-    // Slide 20: Total Savings Summary
-    {
-      slideNumber: 20, slideType: 'savings_summary', title: 'Total Savings Summary',
-      isConditional: false, isIncluded: true,
-      content: {
-        totalAnnualSavings: c.totalAnnualSavings,
-        projectedAnnualCost: c.projectedAnnualCost,
-        gasAnnualCost: c.gasAnnualCost,
-        hotWaterSavings: c.hotWaterSavings,
-        heatingCoolingSavings: c.heatingCoolingSavings,
-        cookingSavings: c.cookingSavings,
-        evAnnualSavings: c.evAnnualSavings,
-        vppAnnualValue: c.vppAnnualValue,
-        poolHeatPumpSavings: c.poolHeatPumpSavings,
-      },
-    },
-    // Slide 21: Financial Summary & Payback
-    {
-      slideNumber: 21, slideType: 'financial_summary', title: 'Financial Summary & Payback',
-      isConditional: false, isIncluded: true,
-      content: {
-        totalInvestment: c.totalInvestment,
-        totalRebates: c.totalRebates,
-        netInvestment: c.netInvestment,
-        totalAnnualSavings: c.totalAnnualSavings,
-        paybackYears: c.paybackYears,
-        tenYearSavings: c.tenYearSavings,
-        twentyFiveYearSavings: c.twentyFiveYearSavings,
-      },
-    },
-    // Slide 22: Environmental Impact
-    {
-      slideNumber: 22, slideType: 'environmental_impact', title: 'Environmental Impact',
-      isConditional: false, isIncluded: true,
-      content: {
-        co2ReductionTonnes: c.co2ReductionTonnes,
-        co2CurrentTonnes: c.co2CurrentTonnes,
-        co2ProjectedTonnes: c.co2ProjectedTonnes,
-        co2ReductionPercent: c.co2ReductionPercent,
-      },
-    },
-    // Slide 23: Recommended Roadmap
-    {
-      slideNumber: 23, slideType: 'roadmap', title: 'Recommended Roadmap',
-      isConditional: false, isIncluded: true,
-      content: {
-        milestones: [
-          { phase: 1, title: 'Solar & Battery Installation', timeline: 'Month 1-2' },
-          { phase: 2, title: 'VPP Enrollment', timeline: 'Month 2' },
-          ...(hasGasBill ? [
-            { phase: 3, title: 'Hot Water Upgrade', timeline: 'Month 3-4' },
-            { phase: 4, title: 'HVAC Upgrade', timeline: 'Month 4-6' },
-          ] : []),
-          ...((customer.hasEV || customer.evInterest === 'interested') ? [
-            { phase: hasGasBill ? 5 : 3, title: 'EV Charger Installation', timeline: hasGasBill ? 'Month 6' : 'Month 3' },
-          ] : []),
-        ],
-        totalAnnualSavings: c.totalAnnualSavings,
-        paybackYears: c.paybackYears,
-      },
-    },
-    // Slide 24: Tariff Rate Comparison
-    {
-      slideNumber: 24, slideType: 'tariff_comparison', title: 'Tariff Rate Comparison',
-      isConditional: false, isIncluded: true,
-      content: {
-        peakRate: c.billPeakRateCents,
-        offPeakRate: c.billOffPeakRateCents,
-        shoulderRate: c.billShoulderRateCents,
-        feedInTariff: c.billFeedInTariffCents,
-        dailySupplyCharge: c.billDailySupplyCharge,
-        peakUsageKwh: c.billPeakUsageKwh,
-        offPeakUsageKwh: c.billOffPeakUsageKwh,
-        shoulderUsageKwh: c.billShoulderUsageKwh,
-        totalUsageKwh: c.billTotalUsageKwh,
-      },
-    },
-    // Slide 25: Daily Load Profile
-    {
-      slideNumber: 25, slideType: 'daily_load_profile', title: 'Estimated Daily Load Profile',
-      isConditional: false, isIncluded: true,
-      content: {
-        dailyAverageKwh: c.dailyAverageKwh,
-        hasEV: customer.hasEV,
-        hasPool: customer.hasPool,
-      },
-    },
-    // Slide 26: Solar Generation Profile (Conditional - only if solar recommended)
-    {
-      slideNumber: 26, slideType: 'solar_generation_profile', title: 'Solar Generation vs Consumption',
-      isConditional: true, isIncluded: !customer.hasExistingSolar && (c.recommendedSolarKw ?? 0) > 0,
-      content: {
-        solarKw: c.recommendedSolarKw,
-        yearlyUsageKwh: c.yearlyUsageKwh,
-        solarAnnualGeneration: c.solarAnnualGeneration,
-      },
-    },
-    // Slide 27: Battery Charge/Discharge Cycle
-    {
-      slideNumber: 27, slideType: 'battery_cycle', title: 'Battery Charge & Discharge Cycle',
-      isConditional: false, isIncluded: true,
-      content: {
-        batteryKwh: c.recommendedBatteryKwh,
-        dailyUsageKwh: c.dailyAverageKwh,
-        hasEV: customer.hasEV,
-      },
-    },
-    // Slide 28: Grid Independence Analysis
-    {
-      slideNumber: 28, slideType: 'grid_independence', title: 'Grid Independence Analysis',
-      isConditional: true, isIncluded: !customer.hasExistingSolar && (c.recommendedSolarKw ?? 0) > 0,
-      content: {
-        yearlyUsageKwh: c.yearlyUsageKwh,
-        solarGenerationKwh: c.solarAnnualGeneration,
-        batteryKwh: c.recommendedBatteryKwh,
-      },
-    },
-    // Slide 29: Rebate & Incentive Breakdown
-    {
-      slideNumber: 29, slideType: 'rebate_breakdown', title: 'Rebate & Incentive Breakdown',
-      isConditional: false, isIncluded: true,
-      content: {
-        state: customer.state,
-        solarRebate: c.solarRebateAmount,
-        batteryRebate: c.batteryRebateAmount,
-        heatPumpHwRebate: c.heatPumpHwRebateAmount,
-        heatPumpAcRebate: c.heatPumpAcRebateAmount,
-        totalRebates: c.totalRebates,
-        totalInvestment: c.totalInvestment,
-        netInvestment: c.netInvestment,
-      },
-    },
-    // Slide 30: 25-Year Financial Projection
-    {
-      slideNumber: 30, slideType: 'financial_projection_25yr', title: '25-Year Financial Projection',
-      isConditional: false, isIncluded: true,
-      content: {
-        currentAnnualCost: c.projectedAnnualCost,
-        annualSavings: c.totalAnnualSavings,
-        netInvestment: c.netInvestment,
-        paybackYears: c.paybackYears,
-        twentyFiveYearSavings: c.twentyFiveYearSavings,
-        tenYearSavings: c.tenYearSavings,
-      },
-    },
-    // Slide 31: System Specifications
-    {
-      slideNumber: 31, slideType: 'system_specifications', title: 'System Specifications',
-      isConditional: false, isIncluded: true,
-      content: {
-        solarKw: c.recommendedSolarKw,
-        panelCount: c.solarPanelCount,
-        batteryKwh: c.recommendedBatteryKwh,
-        batteryProduct: c.batteryProduct,
-        hasExistingSolar: customer.hasExistingSolar,
-      },
-    },
-    // Slide 32: Warranty & Maintenance
-    {
-      slideNumber: 32, slideType: 'warranty_maintenance', title: 'Warranty & Maintenance',
-      isConditional: false, isIncluded: true,
-      content: {
-        batteryProduct: c.batteryProduct,
-        solarKw: c.recommendedSolarKw,
-        batteryKwh: c.recommendedBatteryKwh,
-        hasExistingSolar: customer.hasExistingSolar,
-      },
-    },
-    // Conclusion
-    {
-      slideNumber: 33, slideType: 'conclusion', title: 'Conclusion',
-      isConditional: false, isIncluded: true,
-      content: {
-        totalAnnualSavings: c.totalAnnualSavings,
-        paybackYears: c.paybackYears,
-        co2ReductionTonnes: c.co2ReductionTonnes,
-        twentyFiveYearSavings: c.twentyFiveYearSavings,
-        netInvestment: c.netInvestment,
-      },
-    },
-    // Contact Slide
-    {
-      slideNumber: 34, slideType: 'contact', title: 'Contact',
-      isConditional: false, isIncluded: true,
-      content: {
-        preparedBy: 'George Fotopoulos',
-        title: 'Renewables Strategist & Designer',
-        company: 'Lightning Energy',
-        address: 'Showroom 1, Waverley Road, Malvern East VIC 3145',
-        phone: '0419 574 520',
-        email: 'george.f@lightning-energy.com.au',
-        website: 'www.lightning-energy.com.au',
-      },
-    },
-  ];
-  
-  // Dynamically renumber slides based on included slides only
-  let slideNum = 1;
-  slides.forEach(s => {
-    if (s.isIncluded) {
-      s.slideNumber = slideNum++;
-    }
-  });
-  
-  return slides;
 }
 
 // Type alias for Customer

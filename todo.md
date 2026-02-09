@@ -544,3 +544,55 @@
 - [x] Rename sidebar tab to "Bills and Photos" (already done)
 - [x] Admin: Bill Extraction Analytics link
 - [x] Copyright footer: Lightning Energy — Architect George Fotopoulos
+
+
+## Beta Test — Brian Vuong SA (Feb 10)
+- [x] Create customer: Brian Vuong, 69 Sydney St Glenunga SA 5064
+- [x] Upload 6 AGL bills (Jul-Jan 2025/2026)
+- [x] Upload 3 site photos (meter, switchboard, Fronius inverter)
+- [x] Extract bill data via LLM
+- [x] Run calculations (solar, battery, VPP, savings, payback)
+- [x] Generate full slide deck with LLM narratives
+- [x] Verify live side-window preview works
+- [x] Review all generated slides for quality
+- [ ] Report beta test results (in progress)
+
+- [x] SCRAP old auto-generate slides from proposal creation — only auto-calculate, set status to 'calculated'
+- [x] Auto-trigger LiveSlideGeneration on ProposalDetail load when calculations exist but no slides
+- [x] Ensure generateProgressive saves LLM-enriched slide HTML to DB
+- [x] Remove old generate mutation (non-progressive) — only progressive path remains
+- [x] Delete Brian Vuong old proposal and re-test with LLM progressive generation
+
+
+## Add Missing Slides to Full 25-Slide Deck (Feb 10)
+- [ ] Add Tariff Rate Comparison slide to generateSlides()
+- [ ] Add Estimated Daily Load Profile slide to generateSlides()
+- [ ] Add Solar Generation vs Consumption slide to generateSlides()
+- [ ] Add Battery Charge & Discharge Cycle slide to generateSlides()
+- [ ] Add Grid Independence Analysis slide to generateSlides()
+- [ ] Add Rebate & Incentive Breakdown slide to generateSlides()
+- [ ] Add 25-Year Financial Projection slide to generateSlides()
+- [ ] Add System Specifications slide to generateSlides()
+- [ ] Add Warranty & Maintenance slide to generateSlides()
+- [ ] Add enrichSlideWithNarrative cases for all new slide types
+- [ ] Re-test Brian Vuong with full slide deck
+
+
+## REWRITE Slide Generator to Match Frieda Lay SA Reference (Feb 10)
+- [x] Rewrite generateSlides() with exact Frieda Lay slide order (17 core slides for no-gas/no-EV/no-pool)
+- [x] Add Option 1 (Sigenergy SigenStor) slide type with narrative + financial card
+- [x] Add Option 2 (GoodWe ESA) slide type with narrative + financial card  
+- [x] Add System Comparison slide type (full-width comparison table)
+- [x] Rename savings_summary to annual_financial_impact (before/after + savings breakdown)
+- [x] Rename financial_summary to investment_analysis (comparison table + cashflow chart)
+- [x] Add Conclusion slide (3 cards: Financial Transformation, Strategic Choice, Urgency + CTA)
+- [x] Rewrite all HTML templates to match reference layouts pixel-perfectly
+- [x] Add narrative enrichment for all new/changed slide types
+- [x] Remove the 9 extra slides that don't exist in reference
+- [x] Re-test Brian Vuong with corrected slides matching reference
+- [x] Fix [object Object] bug in Next Steps slide
+- [x] Fix VPP Recommendation missing features array
+- [x] Fix Conclusion missing features/quote/callToAction
+- [x] Delete old generateSlidesData() function
+- [x] Update SlideData type to new simplified structure
+- [x] All 17 slides generating with full LLM narratives

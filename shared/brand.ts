@@ -37,13 +37,13 @@ export const BRAND = {
   // Contact Info (as per Lightning Energy specifications)
   contact: {
     name: 'George Fotopoulos',
-    title: 'Renewables Strategist & Designer',
+    title: 'Director, Lightning Energy',
     company: 'Lightning Energy',
     address: 'Showroom 1, Waverley Road, Malvern East VIC 3145',
-    phone: '0419 574 520',
-    email: 'george.f@lightning-energy.com.au',
-    website: 'www.lightning-energy.com.au',
-    copyright: '© Lightning Energy - Architect George Fotopoulos',
+    phone: '0450 095 645',
+    email: 'george@lightningenergy.com.au',
+    website: 'www.lightningenergy.com.au',
+    copyright: '© Lightning Energy — Architect George Fotopoulos',
   },
 } as const;
 

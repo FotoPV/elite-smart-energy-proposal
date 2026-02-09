@@ -121,8 +121,8 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-white">{currentSlideData.title}</h3>
-          {currentSlideData.subtitle && (
-            <p className="text-sm text-[#00EAD3]">{currentSlideData.subtitle}</p>
+          {(currentSlideData as any).subtitle && (
+            <p className="text-sm text-[#00EAD3]">{(currentSlideData as any).subtitle}</p>
           )}
         </div>
         <div className="flex items-center gap-4">
