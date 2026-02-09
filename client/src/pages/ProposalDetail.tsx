@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LiveSlideGeneration } from "@/components/LiveSlideGeneration";
 
 /**
  * Client-side PDF generation: renders each slide HTML in a hidden iframe,
@@ -659,6 +660,7 @@ export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const proposalId = parseInt(params.id || '0');
+  const [showLiveGeneration, setShowLiveGeneration] = useState(false);
   
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
   const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
@@ -824,12 +826,11 @@ export default function ProposalDetailPage() {
                       Recalculate
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => generateMutation.mutate({ proposalId })}
-                      disabled={generateMutation.isPending}
+                      onClick={() => setShowLiveGeneration(true)}
                       className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
-                      Regenerate Slides
+                      Regenerate Slides (Live Preview)
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -838,8 +839,20 @@ export default function ProposalDetailPage() {
           </div>
         </div>
         
+        {/* Live Generation View */}
+        {showLiveGeneration && (
+          <LiveSlideGeneration
+            proposalId={proposalId}
+            onComplete={() => {
+              setShowLiveGeneration(false);
+              refetch();
+            }}
+            onCancel={() => setShowLiveGeneration(false)}
+          />
+        )}
+        
         {/* If no slides yet, show generation actions */}
-        {!hasSlides && (
+        {!hasSlides && !showLiveGeneration && (
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-8 text-center">
             <FileText className="h-12 w-12 mx-auto mb-4 text-[#808285]/50" />
             <h3 
@@ -853,15 +866,11 @@ export default function ProposalDetailPage() {
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
-                onClick={() => generateMutation.mutate({ proposalId })}
-                disabled={generateMutation.isPending || calculateMutation.isPending}
+                onClick={() => setShowLiveGeneration(true)}
+                disabled={calculateMutation.isPending}
                 className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
               >
-                {(generateMutation.isPending || calculateMutation.isPending) ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Generate Slides
               </Button>
             </div>

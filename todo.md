@@ -466,3 +466,15 @@
 - [x] Update HTML templates for all new slide types
 - [x] Ensure all slides follow brand guidelines (NextSphere headings, GeneralSans body, no purple)
 - [x] Update SlidePreview component with icons for new slide types
+
+
+## Live Slide Preview During Generation (Feb 10)
+- [x] Add streaming/polling endpoint for slide generation progress
+- [x] Build split-screen UI: left panel = progress tracker, right panel = live slide preview
+- [x] Show each slide rendering in real-time as it completes
+- [x] Auto-select latest completed slide for preview
+- [x] Show generation status per slide (pending/generating/complete)
+- [x] Auto-scroll to latest generated slide in progress list
+- [x] Handle errors gracefully with error display per slide
+- [x] Wire Regenerate Slides action to live preview mode
+- [x] 93 tests passing

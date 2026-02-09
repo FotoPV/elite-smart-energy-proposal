@@ -12,6 +12,7 @@ import { generateSlides, generateSlideHTML, ProposalData } from "./slideGenerato
 import { generatePptx } from "./pptxGenerator";
 import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
+import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, clearProgress } from "./generationProgress";
 
 
 // ============================================
@@ -436,6 +437,93 @@ export const appRouter = router({
         });
         
         return { success: true, slideCount: slidesData.filter(s => s.isIncluded).length };
+      }),
+    
+    // Progressive generation with real-time progress tracking
+    generateProgressive: protectedProcedure
+      .input(z.object({ proposalId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        let proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        
+        const customer = await db.getCustomerById(proposal.customerId);
+        if (!customer) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Customer not found' });
+        }
+        
+        // Auto-calculate if calculations are missing
+        if (!proposal.calculations) {
+          if (!proposal.electricityBillId) {
+            throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
+          }
+          const electricityBill = await db.getBillById(proposal.electricityBillId);
+          if (!electricityBill) {
+            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+          }
+          const vppProviders = await db.getVppProvidersByState(customer.state);
+          const rebates = await db.getRebatesByState(customer.state);
+          const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
+          await db.updateProposal(input.proposalId, { calculations, status: 'draft' });
+          proposal = await db.getProposalById(input.proposalId);
+          if (!proposal) {
+            throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to reload proposal after calculation' });
+          }
+        }
+        
+        const calc = proposal.calculations as ProposalCalculations;
+        const proposalData = buildProposalData(customer, calc, false);
+        const allSlides = generateSlides(proposalData);
+        
+        // Initialize progress tracking
+        const slideInfo = allSlides.map(s => ({ type: s.type, title: s.title }));
+        initProgress(input.proposalId, slideInfo);
+        
+        // Generate slides one by one with progress updates
+        const slidesData = generateSlidesData(customer, calc, false);
+        
+        // Process each slide with a small delay for visual effect
+        for (let i = 0; i < allSlides.length; i++) {
+          updateSlideProgress(input.proposalId, i, { status: 'generating' });
+          
+          try {
+            const html = generateSlideHTML(allSlides[i]);
+            // Small delay to allow polling to catch the 'generating' state
+            await new Promise(resolve => setTimeout(resolve, 150));
+            updateSlideProgress(input.proposalId, i, {
+              status: 'complete',
+              html,
+            });
+          } catch (err: any) {
+            updateSlideProgress(input.proposalId, i, {
+              status: 'error',
+              error: err.message,
+            });
+          }
+        }
+        
+        // Save to DB
+        await db.updateProposal(input.proposalId, {
+          slidesData,
+          slideCount: slidesData.filter(s => s.isIncluded).length,
+          status: 'generated',
+        });
+        
+        setGenerationStatus(input.proposalId, 'complete');
+        
+        return { success: true, slideCount: slidesData.filter(s => s.isIncluded).length };
+      }),
+    
+    // Query generation progress for live preview
+    generationProgress: protectedProcedure
+      .input(z.object({ proposalId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const progress = getProgress(input.proposalId);
+        if (!progress) {
+          return { status: 'idle' as const, totalSlides: 0, completedSlides: 0, currentSlideIndex: 0, slides: [] };
+        }
+        return progress;
       }),
     
     update: protectedProcedure
