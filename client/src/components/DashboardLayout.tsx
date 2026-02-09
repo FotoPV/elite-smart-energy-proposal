@@ -39,7 +39,7 @@ const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
-  { icon: FileText, label: "Electricity Bill", path: "/proposals" },
+  { icon: FileText, label: "Bills and Photos", path: "/proposals" },
   { icon: Trash2, label: "Bin", path: "/proposals/bin" },
 ];
 
@@ -319,7 +319,7 @@ function DashboardLayoutContent({
                   className="h-6 w-6"
                 />
                 <span className="text-sm" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
-                  {activeMenuItem?.label ?? "Electricity Bill"}
+                  {activeMenuItem?.label ?? "Bills and Photos"}
                 </span>
               </div>
             </div>

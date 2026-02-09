@@ -527,3 +527,8 @@
 - [ ] Orange = current cost/problem only, Aqua = savings/solution
 - [ ] NextSphere for headings ONLY, GeneralSans for numbers, Urbanist for body
 - [ ] Footer on every page: "© Lightning Energy — Architect George Fotopoulos"
+
+
+## Rename Sidebar Tab (Feb 10 - Part 2)
+- [x] Rename "Electricity Bill" sidebar tab to "Bills and Photos"
+- [x] Update page heading and subtitle to match
