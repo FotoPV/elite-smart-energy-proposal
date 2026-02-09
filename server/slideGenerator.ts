@@ -934,7 +934,7 @@ function genCover(slide: SlideContent): string {
   return `
     <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; background: #000000 url('${BRAND.coverBg}') no-repeat right center; background-size: contain;">
       <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 60px;">
-        <img src="${c.logoUrl}" style="width: 50px; height: 50px;" alt="LE" />
+        <img src="${BRAND.logo.aqua}" style="width: 50px; height: 50px;" alt="LE" />
         <span style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; letter-spacing: 0.15em;">LIGHTNING ENERGY</span>
       </div>
       <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 800px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
@@ -1790,7 +1790,7 @@ function genContact(slide: SlideContent): string {
   const nextSteps = (c.nextSteps as string[]) || [];
   return `
     <div class="slide" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-      <img src="${c.logoUrl}" style="width: 100px; height: 100px; margin-bottom: 30px;" alt="LE" />
+      <img src="${BRAND.logo.aqua}" style="width: 100px; height: 100px; margin-bottom: 30px;" alt="LE" />
       <h1 class="slide-title" style="font-size: 64px; margin-bottom: 16px;">${slide.title}</h1>
       <p class="slide-subtitle" style="font-size: 24px; margin-bottom: 40px; text-align: center;">${slide.subtitle}</p>
       <div style="display: flex; gap: 60px; margin-bottom: 36px;">

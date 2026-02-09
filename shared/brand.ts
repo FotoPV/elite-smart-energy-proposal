@@ -4,7 +4,7 @@
 export const BRAND = {
   // Logo
   logo: {
-    aqua: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/CEecvotbhlfqjFdS.png',
+    aqua: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/ZhCrnrOHmvPlhPsR.png',
   },
   
   // Cover page background image
@@ -12,8 +12,8 @@ export const BRAND = {
   
   // Colors (exact hex values from brand guide)
   colors: {
-    aqua: '#00EAD3',      // Primary accent - Pantone 3265C
-    orange: '#f36710',    // Burnt Orange - costs, alerts, accent borders (minimal usage)
+    aqua: '#00EAD3',      // Primary accent - Pantone 3265C — USE SPARINGLY (logo + graph bars only)
+    orange: '#f36710',    // Burnt Orange - costs, alerts, accent borders (MINIMAL usage)
     white: '#FFFFFF',     // Body text - Pantone White
     ash: '#808285',       // Secondary text, labels - Pantone 443C
     black: '#000000',     // Background
@@ -26,12 +26,12 @@ export const BRAND = {
     body: 'GeneralSans',        // Body text, numbers, all other content
   },
   
-  // Font CDN URLs (freshly uploaded)
+  // Font CDN URLs (freshly uploaded Feb 10)
   fontUrls: {
-    nextSphere: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/kMqxsAvtbLaduJLn.ttf',
-    generalSans: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vrzfchblYdJojJyn.otf',
-    urbanist: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/eYiOkjJCeeZuKAcI.ttf',
-    urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/FXkHnZytykxslQaU.ttf',
+    nextSphere: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/VKaRCbkIgKENeNzZ.ttf',
+    generalSans: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/cDkISnICUZBXPAzK.otf',
+    urbanist: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/SgyKyTuxmnZJwdsX.ttf',
+    urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KovhlDECwhCbRBpZ.ttf',
   },
   
   // Contact Info (as per Lightning Energy specifications)

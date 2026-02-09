@@ -478,3 +478,15 @@
 - [x] Handle errors gracefully with error display per slide
 - [x] Wire Regenerate Slides action to live preview mode
 - [x] 93 tests passing
+
+
+## Embed Brand Assets as Defaults in Slide Templates (Feb 10)
+- [x] Upload logo PNG and font files to S3 for CDN access in slide HTML
+- [x] Embed @font-face declarations for NextSphere-ExtraBold, GeneralSans-Regular, Urbanist-SemiBold in all slide HTML
+- [x] Use actual Lightning Energy aqua logo PNG in all slides (header/footer) — BRAND.logo.aqua used everywhere
+- [x] Enforce exact color palette: Black #000, White #FFF, Ash #808285, Aqua #00EAD3, Orange #f36710 (minimal)
+- [x] Aqua limited to logo and graph bars only — go light on aqua
+- [x] Review cover page PDF for layout reference — landscape 16:9 with circuit board motif
+- [x] Update brand.ts shared constants with fresh CDN URLs (Feb 10)
+- [x] Landscape 16:9 format (1920x1080) confirmed in all slide templates
+- [x] 93 tests passing
