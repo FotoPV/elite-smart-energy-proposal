@@ -532,3 +532,15 @@
 ## Rename Sidebar Tab (Feb 10 - Part 2)
 - [x] Rename "Electricity Bill" sidebar tab to "Bills and Photos"
 - [x] Update page heading and subtitle to match
+
+
+## Home Page Redesign — Match Reference Screenshot (Feb 10)
+- [x] Centred Lightning Energy logo + wordmark at top
+- [x] Bold NextSphere heading "IN-DEPTH BILL ANALYSIS & PROPOSAL GENERATOR"
+- [x] GeneralSans subtitle describing app functionality
+- [x] Action buttons row: Upload Bill (aqua outline), Bulk Upload (orange filled), View Bills & Photos (grey outline), View Proposals (grey outline)
+- [x] 3 feature cards at bottom with thin grey borders (Automatic Extraction, LLM-Powered Analysis, Instant Proposals)
+- [x] Darkest black background throughout
+- [x] Rename sidebar tab to "Bills and Photos" (already done)
+- [x] Admin: Bill Extraction Analytics link
+- [x] Copyright footer: Lightning Energy — Architect George Fotopoulos
