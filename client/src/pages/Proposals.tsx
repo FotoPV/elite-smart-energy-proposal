@@ -56,10 +56,10 @@ export default function Proposals() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
-              Proposals
-            </h1>
+               Electricity Bill
+             </h1>
             <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
-              All processed customer proposals
+              All processed customer electricity bills
             </p>
           </div>
           <button 

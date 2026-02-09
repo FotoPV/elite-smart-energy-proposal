@@ -490,3 +490,8 @@
 - [x] Update brand.ts shared constants with fresh CDN URLs (Feb 10)
 - [x] Landscape 16:9 format (1920x1080) confirmed in all slide templates
 - [x] 93 tests passing
+
+
+## Rename Sidebar Tab (Feb 10)
+- [x] Rename "Proposals" sidebar tab to "Electricity Bill"
+- [x] Update page heading and subtitle to "Electricity Bill"
