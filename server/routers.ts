@@ -1526,9 +1526,116 @@ function generateSlidesData(
         paybackYears: c.paybackYears,
       },
     },
-    // Slide 24: Conclusion
+    // Slide 24: Tariff Rate Comparison
     {
-      slideNumber: 24, slideType: 'conclusion', title: 'Conclusion',
+      slideNumber: 24, slideType: 'tariff_comparison', title: 'Tariff Rate Comparison',
+      isConditional: false, isIncluded: true,
+      content: {
+        peakRate: c.billPeakRateCents,
+        offPeakRate: c.billOffPeakRateCents,
+        shoulderRate: c.billShoulderRateCents,
+        feedInTariff: c.billFeedInTariffCents,
+        dailySupplyCharge: c.billDailySupplyCharge,
+        peakUsageKwh: c.billPeakUsageKwh,
+        offPeakUsageKwh: c.billOffPeakUsageKwh,
+        shoulderUsageKwh: c.billShoulderUsageKwh,
+        totalUsageKwh: c.billTotalUsageKwh,
+      },
+    },
+    // Slide 25: Daily Load Profile
+    {
+      slideNumber: 25, slideType: 'daily_load_profile', title: 'Estimated Daily Load Profile',
+      isConditional: false, isIncluded: true,
+      content: {
+        dailyAverageKwh: c.dailyAverageKwh,
+        hasEV: customer.hasEV,
+        hasPool: customer.hasPool,
+      },
+    },
+    // Slide 26: Solar Generation Profile (Conditional - only if solar recommended)
+    {
+      slideNumber: 26, slideType: 'solar_generation_profile', title: 'Solar Generation vs Consumption',
+      isConditional: true, isIncluded: !customer.hasExistingSolar && (c.recommendedSolarKw ?? 0) > 0,
+      content: {
+        solarKw: c.recommendedSolarKw,
+        yearlyUsageKwh: c.yearlyUsageKwh,
+        solarAnnualGeneration: c.solarAnnualGeneration,
+      },
+    },
+    // Slide 27: Battery Charge/Discharge Cycle
+    {
+      slideNumber: 27, slideType: 'battery_cycle', title: 'Battery Charge & Discharge Cycle',
+      isConditional: false, isIncluded: true,
+      content: {
+        batteryKwh: c.recommendedBatteryKwh,
+        dailyUsageKwh: c.dailyAverageKwh,
+        hasEV: customer.hasEV,
+      },
+    },
+    // Slide 28: Grid Independence Analysis
+    {
+      slideNumber: 28, slideType: 'grid_independence', title: 'Grid Independence Analysis',
+      isConditional: true, isIncluded: !customer.hasExistingSolar && (c.recommendedSolarKw ?? 0) > 0,
+      content: {
+        yearlyUsageKwh: c.yearlyUsageKwh,
+        solarGenerationKwh: c.solarAnnualGeneration,
+        batteryKwh: c.recommendedBatteryKwh,
+      },
+    },
+    // Slide 29: Rebate & Incentive Breakdown
+    {
+      slideNumber: 29, slideType: 'rebate_breakdown', title: 'Rebate & Incentive Breakdown',
+      isConditional: false, isIncluded: true,
+      content: {
+        state: customer.state,
+        solarRebate: c.solarRebateAmount,
+        batteryRebate: c.batteryRebateAmount,
+        heatPumpHwRebate: c.heatPumpHwRebateAmount,
+        heatPumpAcRebate: c.heatPumpAcRebateAmount,
+        totalRebates: c.totalRebates,
+        totalInvestment: c.totalInvestment,
+        netInvestment: c.netInvestment,
+      },
+    },
+    // Slide 30: 25-Year Financial Projection
+    {
+      slideNumber: 30, slideType: 'financial_projection_25yr', title: '25-Year Financial Projection',
+      isConditional: false, isIncluded: true,
+      content: {
+        currentAnnualCost: c.projectedAnnualCost,
+        annualSavings: c.totalAnnualSavings,
+        netInvestment: c.netInvestment,
+        paybackYears: c.paybackYears,
+        twentyFiveYearSavings: c.twentyFiveYearSavings,
+        tenYearSavings: c.tenYearSavings,
+      },
+    },
+    // Slide 31: System Specifications
+    {
+      slideNumber: 31, slideType: 'system_specifications', title: 'System Specifications',
+      isConditional: false, isIncluded: true,
+      content: {
+        solarKw: c.recommendedSolarKw,
+        panelCount: c.solarPanelCount,
+        batteryKwh: c.recommendedBatteryKwh,
+        batteryProduct: c.batteryProduct,
+        hasExistingSolar: customer.hasExistingSolar,
+      },
+    },
+    // Slide 32: Warranty & Maintenance
+    {
+      slideNumber: 32, slideType: 'warranty_maintenance', title: 'Warranty & Maintenance',
+      isConditional: false, isIncluded: true,
+      content: {
+        batteryProduct: c.batteryProduct,
+        solarKw: c.recommendedSolarKw,
+        batteryKwh: c.recommendedBatteryKwh,
+        hasExistingSolar: customer.hasExistingSolar,
+      },
+    },
+    // Conclusion
+    {
+      slideNumber: 33, slideType: 'conclusion', title: 'Conclusion',
       isConditional: false, isIncluded: true,
       content: {
         totalAnnualSavings: c.totalAnnualSavings,
@@ -1538,9 +1645,9 @@ function generateSlidesData(
         netInvestment: c.netInvestment,
       },
     },
-    // Slide 25: Contact Slide
+    // Contact Slide
     {
-      slideNumber: 25, slideType: 'contact', title: 'Contact',
+      slideNumber: 34, slideType: 'contact', title: 'Contact',
       isConditional: false, isIncluded: true,
       content: {
         preparedBy: 'George Fotopoulos',
@@ -1553,6 +1660,14 @@ function generateSlidesData(
       },
     },
   ];
+  
+  // Dynamically renumber slides based on included slides only
+  let slideNum = 1;
+  slides.forEach(s => {
+    if (s.isIncluded) {
+      s.slideNumber = slideNum++;
+    }
+  });
   
   return slides;
 }

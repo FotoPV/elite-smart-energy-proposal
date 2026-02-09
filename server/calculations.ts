@@ -818,6 +818,391 @@ export function generateFullCalculations(
 }
 
 // ============================================
+// TARIFF RATE ANALYSIS
+// ============================================
+
+export interface TariffRateAnalysis {
+  peakRate: number;
+  offPeakRate: number;
+  shoulderRate: number;
+  feedInTariff: number;
+  dailySupplyCharge: number;
+  peakCostPercent: number;
+  offPeakCostPercent: number;
+  shoulderCostPercent: number;
+  supplyCostPercent: number;
+  peakUsagePercent: number;
+  offPeakUsagePercent: number;
+  shoulderUsagePercent: number;
+}
+
+export function calculateTariffAnalysis(electricityBill: Bill): TariffRateAnalysis {
+  const peak = Number(electricityBill.peakRateCents) || CONSTANTS.DEFAULT_ELECTRICITY_RATE_CENTS;
+  const offPeak = Number(electricityBill.offPeakRateCents) || peak * 0.5;
+  const shoulder = Number(electricityBill.shoulderRateCents) || peak * 0.75;
+  const feedIn = Number(electricityBill.feedInTariffCents) || CONSTANTS.DEFAULT_FEED_IN_TARIFF_CENTS;
+  const supply = Number(electricityBill.dailySupplyCharge) || CONSTANTS.DEFAULT_DAILY_SUPPLY_CHARGE;
+  const billingDays = electricityBill.billingDays || 90;
+  
+  const peakKwh = Number(electricityBill.peakUsageKwh) || 0;
+  const offPeakKwh = Number(electricityBill.offPeakUsageKwh) || 0;
+  const shoulderKwh = Number(electricityBill.shoulderUsageKwh) || 0;
+  const totalKwh = peakKwh + offPeakKwh + shoulderKwh || 1;
+  
+  const peakCost = peakKwh * peak / 100;
+  const offPeakCost = offPeakKwh * offPeak / 100;
+  const shoulderCost = shoulderKwh * shoulder / 100;
+  const supplyCost = supply * billingDays;
+  const totalCost = peakCost + offPeakCost + shoulderCost + supplyCost || 1;
+  
+  return {
+    peakRate: round(peak, 2),
+    offPeakRate: round(offPeak, 2),
+    shoulderRate: round(shoulder, 2),
+    feedInTariff: round(feedIn, 2),
+    dailySupplyCharge: round(supply, 4),
+    peakCostPercent: round((peakCost / totalCost) * 100, 1),
+    offPeakCostPercent: round((offPeakCost / totalCost) * 100, 1),
+    shoulderCostPercent: round((shoulderCost / totalCost) * 100, 1),
+    supplyCostPercent: round((supplyCost / totalCost) * 100, 1),
+    peakUsagePercent: round((peakKwh / totalKwh) * 100, 1),
+    offPeakUsagePercent: round((offPeakKwh / totalKwh) * 100, 1),
+    shoulderUsagePercent: round((shoulderKwh / totalKwh) * 100, 1),
+  };
+}
+
+// ============================================
+// DAILY LOAD PROFILE (ESTIMATED)
+// ============================================
+
+export interface DailyLoadProfile {
+  hourlyEstimate: { hour: number; kwh: number; label: string }[];
+  peakPeriodKwh: number;
+  offPeakPeriodKwh: number;
+  shoulderPeriodKwh: number;
+  solarGenerationHours: string;
+  peakDemandHours: string;
+}
+
+export function estimateDailyLoadProfile(dailyAverageKwh: number, hasEv: boolean, hasPool: boolean): DailyLoadProfile {
+  // Typical Australian residential load curve percentages by hour
+  const loadCurve = [
+    0.02, 0.015, 0.015, 0.015, 0.02, 0.03, // 0-5am (off-peak)
+    0.05, 0.06, 0.05, 0.04, 0.035, 0.03,    // 6-11am (morning shoulder)
+    0.03, 0.03, 0.035, 0.04, 0.05, 0.06,    // 12-5pm (afternoon)
+    0.08, 0.09, 0.08, 0.07, 0.05, 0.03,     // 6-11pm (evening peak)
+  ];
+  
+  const hourLabels = ['12am','1am','2am','3am','4am','5am','6am','7am','8am','9am','10am','11am',
+    '12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+  
+  let hourlyEstimate = loadCurve.map((pct, hour) => {
+    let kwh = dailyAverageKwh * pct;
+    // Add EV charging load overnight
+    if (hasEv && hour >= 0 && hour <= 5) kwh += 1.5;
+    // Add pool pump load midday
+    if (hasPool && hour >= 10 && hour <= 14) kwh += 0.4;
+    return { hour, kwh: round(kwh, 2), label: hourLabels[hour] };
+  });
+  
+  const peakPeriodKwh = round(hourlyEstimate.filter(h => h.hour >= 15 && h.hour <= 21).reduce((s, h) => s + h.kwh, 0), 2);
+  const offPeakPeriodKwh = round(hourlyEstimate.filter(h => h.hour >= 22 || h.hour <= 6).reduce((s, h) => s + h.kwh, 0), 2);
+  const shoulderPeriodKwh = round(hourlyEstimate.filter(h => h.hour >= 7 && h.hour <= 14).reduce((s, h) => s + h.kwh, 0), 2);
+  
+  return {
+    hourlyEstimate,
+    peakPeriodKwh,
+    offPeakPeriodKwh,
+    shoulderPeriodKwh,
+    solarGenerationHours: '7am - 5pm',
+    peakDemandHours: '6pm - 9pm',
+  };
+}
+
+// ============================================
+// SOLAR GENERATION PROFILE
+// ============================================
+
+export interface SolarGenerationProfile {
+  monthlyGeneration: { month: string; generationKwh: number; consumptionKwh: number; surplusKwh: number }[];
+  annualGeneration: number;
+  annualConsumption: number;
+  selfConsumptionPercent: number;
+  gridExportPercent: number;
+  coveragePercent: number;
+}
+
+export function calculateSolarGenerationProfile(
+  solarKw: number,
+  yearlyUsageKwh: number
+): SolarGenerationProfile {
+  // Monthly solar generation factors for Australian climate (relative to annual average)
+  const monthlyFactors = [
+    { month: 'Jan', factor: 1.35 }, { month: 'Feb', factor: 1.25 },
+    { month: 'Mar', factor: 1.10 }, { month: 'Apr', factor: 0.90 },
+    { month: 'May', factor: 0.70 }, { month: 'Jun', factor: 0.60 },
+    { month: 'Jul', factor: 0.65 }, { month: 'Aug', factor: 0.80 },
+    { month: 'Sep', factor: 0.95 }, { month: 'Oct', factor: 1.15 },
+    { month: 'Nov', factor: 1.25 }, { month: 'Dec', factor: 1.30 },
+  ];
+  
+  const annualGeneration = solarKw * 365 * 4; // 4 peak sun hours average
+  const monthlyAvgGen = annualGeneration / 12;
+  const monthlyAvgUse = yearlyUsageKwh / 12;
+  
+  const monthlyGeneration = monthlyFactors.map(m => {
+    const gen = round(monthlyAvgGen * m.factor, 0);
+    const use = round(monthlyAvgUse * (m.factor > 1 ? 0.9 : 1.1), 0); // Less usage in summer, more in winter
+    return {
+      month: m.month,
+      generationKwh: gen,
+      consumptionKwh: use,
+      surplusKwh: round(Math.max(0, gen - use), 0),
+    };
+  });
+  
+  const totalGen = monthlyGeneration.reduce((s, m) => s + m.generationKwh, 0);
+  const totalUse = monthlyGeneration.reduce((s, m) => s + m.consumptionKwh, 0);
+  const totalSurplus = monthlyGeneration.reduce((s, m) => s + m.surplusKwh, 0);
+  
+  return {
+    monthlyGeneration,
+    annualGeneration: round(totalGen, 0),
+    annualConsumption: round(totalUse, 0),
+    selfConsumptionPercent: round(((totalGen - totalSurplus) / totalGen) * 100, 1),
+    gridExportPercent: round((totalSurplus / totalGen) * 100, 1),
+    coveragePercent: round((totalGen / totalUse) * 100, 0),
+  };
+}
+
+// ============================================
+// BATTERY CHARGE/DISCHARGE CYCLE
+// ============================================
+
+export interface BatteryCycleAnalysis {
+  dailyCycle: { hour: number; label: string; action: string; socPercent: number; kw: number }[];
+  cyclesPerYear: number;
+  depthOfDischarge: number;
+  roundTripEfficiency: number;
+  expectedLifeYears: number;
+  warrantyYears: number;
+}
+
+export function calculateBatteryCycle(batteryKwh: number, dailyUsageKwh: number, hasEv: boolean): BatteryCycleAnalysis {
+  const dod = 0.90; // 90% depth of discharge
+  const usableKwh = batteryKwh * dod;
+  const efficiency = 0.95; // 95% round-trip
+  
+  // Simulate 24-hour SOC curve
+  const cycle: { hour: number; label: string; action: string; socPercent: number; kw: number }[] = [];
+  const labels = ['12am','1am','2am','3am','4am','5am','6am','7am','8am','9am','10am','11am',
+    '12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm','11pm'];
+  
+  let soc = 30; // Start at 30% after overnight discharge
+  for (let h = 0; h < 24; h++) {
+    let action = 'Idle';
+    let kw = 0;
+    
+    if (h >= 0 && h <= 5) {
+      // Overnight: slow discharge for base load
+      action = hasEv && h <= 3 ? 'EV Charging' : 'Discharge';
+      kw = hasEv && h <= 3 ? -2.5 : -0.5;
+      soc = Math.max(10, soc - (hasEv && h <= 3 ? 8 : 2));
+    } else if (h >= 6 && h <= 8) {
+      // Morning: discharge for morning peak
+      action = 'Discharge';
+      kw = -1.5;
+      soc = Math.max(10, soc - 5);
+    } else if (h >= 9 && h <= 15) {
+      // Solar hours: charging from solar
+      action = 'Solar Charge';
+      kw = 3.0;
+      soc = Math.min(100, soc + 12);
+    } else if (h >= 16 && h <= 17) {
+      // Late afternoon: topping up
+      action = 'Solar Charge';
+      kw = 1.5;
+      soc = Math.min(100, soc + 5);
+    } else if (h >= 18 && h <= 21) {
+      // Evening peak: heavy discharge
+      action = 'Peak Discharge';
+      kw = -3.0;
+      soc = Math.max(15, soc - 10);
+    } else {
+      // Late night: slow discharge
+      action = 'Discharge';
+      kw = -0.8;
+      soc = Math.max(10, soc - 3);
+    }
+    
+    cycle.push({ hour: h, label: labels[h], action, socPercent: round(soc, 0), kw: round(kw, 1) });
+  }
+  
+  return {
+    dailyCycle: cycle,
+    cyclesPerYear: 365,
+    depthOfDischarge: round(dod * 100, 0),
+    roundTripEfficiency: round(efficiency * 100, 0),
+    expectedLifeYears: 15,
+    warrantyYears: 10,
+  };
+}
+
+// ============================================
+// GRID INDEPENDENCE ANALYSIS
+// ============================================
+
+export interface GridIndependenceAnalysis {
+  currentGridDependence: number;
+  projectedGridDependence: number;
+  selfSufficiencyPercent: number;
+  solarCoveragePercent: number;
+  batteryCoveragePercent: number;
+  gridImportKwh: number;
+  gridExportKwh: number;
+  netGridPosition: string;
+}
+
+export function calculateGridIndependence(
+  yearlyUsageKwh: number,
+  solarGenerationKwh: number,
+  batteryKwh: number
+): GridIndependenceAnalysis {
+  const solarSelfConsumed = Math.min(solarGenerationKwh * 0.35, yearlyUsageKwh); // ~35% self-consumption without battery
+  const batteryContribution = batteryKwh * 365 * 0.8 * 0.95; // 80% daily cycle, 95% efficiency
+  const totalSelfConsumed = Math.min(solarSelfConsumed + batteryContribution, yearlyUsageKwh);
+  
+  const gridImport = Math.max(0, yearlyUsageKwh - totalSelfConsumed);
+  const gridExport = Math.max(0, solarGenerationKwh - solarSelfConsumed - batteryContribution);
+  
+  const selfSufficiency = (totalSelfConsumed / yearlyUsageKwh) * 100;
+  const solarCoverage = (solarGenerationKwh / yearlyUsageKwh) * 100;
+  const batteryCoverage = (batteryContribution / yearlyUsageKwh) * 100;
+  
+  return {
+    currentGridDependence: 100,
+    projectedGridDependence: round(100 - selfSufficiency, 1),
+    selfSufficiencyPercent: round(Math.min(selfSufficiency, 100), 1),
+    solarCoveragePercent: round(solarCoverage, 1),
+    batteryCoveragePercent: round(Math.min(batteryCoverage, 100), 1),
+    gridImportKwh: round(gridImport, 0),
+    gridExportKwh: round(gridExport, 0),
+    netGridPosition: gridExport > gridImport ? 'Net Exporter' : 'Net Importer',
+  };
+}
+
+// ============================================
+// 25-YEAR FINANCIAL PROJECTION
+// ============================================
+
+export interface YearlyFinancialProjection {
+  year: number;
+  costWithoutSystem: number;
+  costWithSystem: number;
+  annualSaving: number;
+  cumulativeSaving: number;
+  systemValue: number;
+}
+
+export function calculate25YearProjection(
+  currentAnnualCost: number,
+  annualSavings: number,
+  netInvestment: number,
+  inflationRate: number = 0.035
+): YearlyFinancialProjection[] {
+  const projection: YearlyFinancialProjection[] = [];
+  let cumulativeSaving = -netInvestment; // Start negative (investment)
+  
+  for (let year = 1; year <= 25; year++) {
+    const inflatedCost = currentAnnualCost * Math.pow(1 + inflationRate, year);
+    const costWithSystem = Math.max(0, inflatedCost - annualSavings);
+    const annualSaving = inflatedCost - costWithSystem;
+    cumulativeSaving += annualSaving;
+    
+    projection.push({
+      year,
+      costWithoutSystem: round(inflatedCost, 0),
+      costWithSystem: round(costWithSystem, 0),
+      annualSaving: round(annualSaving, 0),
+      cumulativeSaving: round(cumulativeSaving, 0),
+      systemValue: round(cumulativeSaving + netInvestment, 0), // Total value generated
+    });
+  }
+  
+  return projection;
+}
+
+// ============================================
+// SYSTEM SPECIFICATIONS
+// ============================================
+
+export interface SystemSpecifications {
+  solar: {
+    systemSize: number;
+    panelCount: number;
+    panelWattage: number;
+    panelBrand: string;
+    inverterSize: number;
+    inverterBrand: string;
+    annualGeneration: number;
+    warrantyYears: number;
+    performanceWarranty: string;
+  };
+  battery: {
+    capacity: number;
+    usableCapacity: number;
+    brand: string;
+    technology: string;
+    warrantyYears: number;
+    cycleWarranty: number;
+    roundTripEfficiency: number;
+  };
+  inverter: {
+    size: number;
+    brand: string;
+    type: string;
+    phases: number;
+    warrantyYears: number;
+  };
+}
+
+export function generateSystemSpecs(
+  solarKw: number,
+  panelCount: number,
+  batteryKwh: number
+): SystemSpecifications {
+  return {
+    solar: {
+      systemSize: solarKw,
+      panelCount,
+      panelWattage: 400,
+      panelBrand: 'Trina Solar Vertex S+',
+      inverterSize: Math.ceil(solarKw * 1.2),
+      inverterBrand: 'Sigenergy',
+      annualGeneration: round(solarKw * 365 * 4, 0),
+      warrantyYears: 25,
+      performanceWarranty: '87.4% output at 25 years',
+    },
+    battery: {
+      capacity: batteryKwh,
+      usableCapacity: round(batteryKwh * 0.9, 1),
+      brand: 'Sigenergy SigenStor',
+      technology: 'LFP (Lithium Iron Phosphate)',
+      warrantyYears: 10,
+      cycleWarranty: 6000,
+      roundTripEfficiency: 95,
+    },
+    inverter: {
+      size: Math.ceil(solarKw * 1.2),
+      brand: 'Sigenergy',
+      type: 'Hybrid (Solar + Battery)',
+      phases: 1,
+      warrantyYears: 10,
+    },
+  };
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 

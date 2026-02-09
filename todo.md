@@ -447,3 +447,22 @@
 - [x] Remove gas fields from customer profile form
 - [x] Remove gas bundle column from VPP comparison (keep providers)
 - [x] Clean up any remaining gas references throughout the app
+
+
+## Unlimited Slides & New Slide Types (Feb 10)
+- [x] Remove all hard-coded slide count caps (no upper limit on slides)
+- [x] Make slide generation fully dynamic based on available data — dynamic renumbering added
+- [x] Add new slide type: Tariff Rate Comparison (detailed peak/off-peak/shoulder breakdown)
+- [x] Add new slide type: Daily Load Profile (hourly consumption pattern analysis)
+- [x] Add new slide type: Solar Generation Profile (monthly solar output vs consumption)
+- [x] Add new slide type: Battery Charge/Discharge Cycle (how battery optimises usage)
+- [x] Add new slide type: Grid Independence Analysis (self-sufficiency percentage)
+- [x] Add new slide type: Rebate & Incentive Breakdown (state-specific rebates detail)
+- [ ] Add new slide type: Retailer Comparison (current vs recommended retailer) — deferred, needs external API
+- [x] Add new slide type: 25-Year Financial Projection (detailed year-by-year table)
+- [x] Add new slide type: System Specifications (technical specs of recommended equipment)
+- [x] Add new slide type: Warranty & Maintenance (product warranties and service schedule)
+- [x] Update slide generator to include all new types dynamically
+- [x] Update HTML templates for all new slide types
+- [x] Ensure all slides follow brand guidelines (NextSphere headings, GeneralSans body, no purple)
+- [x] Update SlidePreview component with icons for new slide types

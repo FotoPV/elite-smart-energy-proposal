@@ -914,6 +914,15 @@ export function generateSlideHTML(slide: SlideContent): string {
     case 'roadmap': content = genRoadmap(slide); break;
     case 'conclusion': content = genConclusion(slide); break;
     case 'contact': content = genContact(slide); break;
+    case 'tariff_comparison': content = genTariffComparison(slide); break;
+    case 'daily_load_profile': content = genDailyLoadProfile(slide); break;
+    case 'solar_generation_profile': content = genSolarGenerationProfile(slide); break;
+    case 'battery_cycle': content = genBatteryCycle(slide); break;
+    case 'grid_independence': content = genGridIndependence(slide); break;
+    case 'rebate_breakdown': content = genRebateBreakdown(slide); break;
+    case 'financial_projection_25yr': content = genFinancialProjection25yr(slide); break;
+    case 'system_specifications': content = genSystemSpecifications(slide); break;
+    case 'warranty_maintenance': content = genWarrantyMaintenance(slide); break;
     default: content = genGeneric(slide);
   }
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${content}</body></html>`;
@@ -1823,6 +1832,638 @@ function genGeneric(slide: SlideContent): string {
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="margin-top: 20px;">
         <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: TARIFF RATE COMPARISON ----
+function genTariffComparison(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const peakRate = (c.peakRate as number) || 0;
+  const offPeakRate = (c.offPeakRate as number) || 0;
+  const shoulderRate = (c.shoulderRate as number) || 0;
+  const feedIn = (c.feedInTariff as number) || 0;
+  const supply = (c.dailySupplyCharge as number) || 0;
+  const peakKwh = (c.peakUsageKwh as number) || 0;
+  const offPeakKwh = (c.offPeakUsageKwh as number) || 0;
+  const shoulderKwh = (c.shoulderUsageKwh as number) || 0;
+  const totalKwh = (c.totalUsageKwh as number) || peakKwh + offPeakKwh + shoulderKwh || 1;
+  const maxRate = Math.max(peakRate, offPeakRate, shoulderRate, feedIn, 30);
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Understanding your electricity rate structure')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <p class="lbl" style="margin-bottom: 16px;">RATE COMPARISON (¢/kWh)</p>
+          <div style="display: flex; align-items: flex-end; height: 280px; gap: 30px; padding: 0 20px;">
+            ${[
+              { label: 'Peak', rate: peakRate, color: '#FFFFFF' },
+              { label: 'Off-Peak', rate: offPeakRate, color: '#808285' },
+              { label: 'Shoulder', rate: shoulderRate, color: '#808285' },
+              { label: 'Feed-In', rate: feedIn, color: '#00EAD3' },
+            ].map(r => `
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
+                <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: ${r.color};">${r.rate.toFixed(1)}¢</p>
+                <div style="width: 100%; height: ${(r.rate / maxRate) * 220}px; background: ${r.color}; border-radius: 4px 4px 0 0;"></div>
+                <p style="font-size: 11px; color: #808285; margin-top: 8px; text-align: center;">${r.label}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <p class="lbl" style="margin-bottom: 16px;">USAGE DISTRIBUTION</p>
+          <table>
+            <tr><th>TARIFF BAND</th><th style="text-align: right;">USAGE (kWh)</th><th style="text-align: right;">% OF TOTAL</th></tr>
+            <tr><td>Peak</td><td style="text-align: right;">${peakKwh.toFixed(0)}</td><td style="text-align: right; font-weight: 600;">${((peakKwh / totalKwh) * 100).toFixed(1)}%</td></tr>
+            <tr><td>Off-Peak</td><td style="text-align: right;">${offPeakKwh.toFixed(0)}</td><td style="text-align: right; font-weight: 600;">${((offPeakKwh / totalKwh) * 100).toFixed(1)}%</td></tr>
+            <tr><td>Shoulder</td><td style="text-align: right;">${shoulderKwh.toFixed(0)}</td><td style="text-align: right; font-weight: 600;">${((shoulderKwh / totalKwh) * 100).toFixed(1)}%</td></tr>
+          </table>
+          <div class="insight-card" style="margin-top: 24px;">
+            <p class="insight-title">TARIFF INSIGHT</p>
+            <p>Your peak rate of <span class="hl-aqua">${peakRate.toFixed(1)}¢/kWh</span> is ${((peakRate / feedIn) - 1).toFixed(0)}x higher than your feed-in tariff of <span class="hl-aqua">${feedIn.toFixed(1)}¢/kWh</span>. Battery storage captures this arbitrage by storing solar energy for peak consumption.</p>
+          </div>
+          <div style="margin-top: 16px;">
+            <p class="lbl">DAILY SUPPLY CHARGE</p>
+            <p style="font-size: 24px; font-weight: 600; color: #FFFFFF;">${supply.toFixed(2)}¢ <span class="gray" style="font-size: 14px;">per day ($${((supply * 365) / 100).toFixed(0)}/year)</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: DAILY LOAD PROFILE ----
+function genDailyLoadProfile(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const daily = (c.dailyAverageKwh as number) || 10;
+  const hasEv = c.hasEV as boolean;
+  const hasPool = c.hasPool as boolean;
+  
+  // Typical load curve
+  const loadCurve = [
+    0.02, 0.015, 0.015, 0.015, 0.02, 0.03,
+    0.05, 0.06, 0.05, 0.04, 0.035, 0.03,
+    0.03, 0.03, 0.035, 0.04, 0.05, 0.06,
+    0.08, 0.09, 0.08, 0.07, 0.05, 0.03,
+  ];
+  const labels = ['12a','1a','2a','3a','4a','5a','6a','7a','8a','9a','10a','11a',
+    '12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p','11p'];
+  
+  const hourly = loadCurve.map((pct, h) => {
+    let kwh = daily * pct;
+    if (hasEv && h >= 0 && h <= 5) kwh += 1.5;
+    if (hasPool && h >= 10 && h <= 14) kwh += 0.4;
+    return { h, kwh, label: labels[h] };
+  });
+  const maxKwh = Math.max(...hourly.map(h => h.kwh));
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Estimated 24-hour energy consumption pattern')}
+      <div style="margin-top: 10px;">
+        <div style="display: flex; align-items: flex-end; height: 300px; gap: 2px; padding: 0 10px; border-bottom: 1px solid #333;">
+          ${hourly.map(h => {
+            const isSolar = h.h >= 7 && h.h <= 17;
+            const isPeak = h.h >= 15 && h.h <= 21;
+            const color = isPeak ? '#FFFFFF' : isSolar ? '#00EAD3' : '#808285';
+            return `
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
+                <div style="width: 100%; height: ${(h.kwh / maxKwh) * 260}px; background: ${color}; border-radius: 2px 2px 0 0; min-height: 4px;"></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="display: flex; gap: 2px; padding: 0 10px;">
+          ${hourly.map(h => `<div style="flex: 1; text-align: center; font-size: 9px; color: #808285; padding-top: 4px;">${h.label}</div>`).join('')}
+        </div>
+      </div>
+      <div style="display: flex; gap: 24px; margin-top: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation Hours (7am-5pm)</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #FFFFFF; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Peak Demand (3pm-9pm)</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Off-Peak / Overnight</span></div>
+      </div>
+      <div style="display: flex; gap: 24px; margin-top: 20px;">
+        <div class="card" style="flex: 1; text-align: center;">
+          <p class="lbl">DAILY AVERAGE</p>
+          <p style="font-size: 28px; font-weight: 600; color: #00EAD3;">${daily.toFixed(1)} kWh</p>
+        </div>
+        <div class="card" style="flex: 1; text-align: center;">
+          <p class="lbl">PEAK DEMAND</p>
+          <p style="font-size: 28px; font-weight: 600; color: #FFFFFF;">6pm - 9pm</p>
+        </div>
+        <div class="card" style="flex: 1; text-align: center;">
+          <p class="lbl">SOLAR WINDOW</p>
+          <p style="font-size: 28px; font-weight: 600; color: #00EAD3;">7am - 5pm</p>
+        </div>
+        ${hasEv ? `<div class="card" style="flex: 1; text-align: center;"><p class="lbl">EV CHARGING</p><p style="font-size: 28px; font-weight: 600; color: #00EAD3;">Overnight</p></div>` : ''}
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: SOLAR GENERATION PROFILE ----
+function genSolarGenerationProfile(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const solarKw = (c.solarKw as number) || 6.6;
+  const yearlyUsage = (c.yearlyUsageKwh as number) || 3000;
+  const annualGen = (c.solarAnnualGeneration as number) || solarKw * 365 * 4;
+  
+  const monthlyFactors = [
+    { month: 'Jan', factor: 1.35 }, { month: 'Feb', factor: 1.25 },
+    { month: 'Mar', factor: 1.10 }, { month: 'Apr', factor: 0.90 },
+    { month: 'May', factor: 0.70 }, { month: 'Jun', factor: 0.60 },
+    { month: 'Jul', factor: 0.65 }, { month: 'Aug', factor: 0.80 },
+    { month: 'Sep', factor: 0.95 }, { month: 'Oct', factor: 1.15 },
+    { month: 'Nov', factor: 1.25 }, { month: 'Dec', factor: 1.30 },
+  ];
+  
+  const monthlyAvgGen = annualGen / 12;
+  const monthlyAvgUse = yearlyUsage / 12;
+  const months = monthlyFactors.map(m => ({
+    month: m.month,
+    gen: Math.round(monthlyAvgGen * m.factor),
+    use: Math.round(monthlyAvgUse * (m.factor > 1 ? 0.9 : 1.1)),
+  }));
+  const maxVal = Math.max(...months.map(m => Math.max(m.gen, m.use)));
+  const coverage = Math.round((annualGen / yearlyUsage) * 100);
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Monthly solar generation vs household consumption')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.5;">
+          <div style="display: flex; align-items: flex-end; height: 300px; gap: 6px; padding: 0 10px; border-bottom: 1px solid #333;">
+            ${months.map(m => `
+              <div style="flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 100%;">
+                <div style="flex: 1; height: ${(m.gen / maxVal) * 260}px; background: #00EAD3; border-radius: 2px 2px 0 0;"></div>
+                <div style="flex: 1; height: ${(m.use / maxVal) * 260}px; background: #808285; border-radius: 2px 2px 0 0;"></div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="display: flex; gap: 6px; padding: 0 10px;">
+            ${months.map(m => `<div style="flex: 1; text-align: center; font-size: 10px; color: #808285; padding-top: 6px;">${m.month}</div>`).join('')}
+          </div>
+          <div style="display: flex; gap: 24px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Household Consumption</span></div>
+          </div>
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 20px; padding: 30px;">
+            <p class="lbl" style="color: #00EAD3;">SOLAR COVERAGE</p>
+            <p class="hero-num aqua" style="font-size: 64px;">${coverage}%</p>
+          </div>
+          <div class="card" style="text-align: center; margin-bottom: 16px;">
+            <p class="lbl">ANNUAL GENERATION</p>
+            <p style="font-size: 22px; font-weight: 600;">${annualGen.toLocaleString()} kWh</p>
+          </div>
+          <div class="card" style="text-align: center;">
+            <p class="lbl">ANNUAL CONSUMPTION</p>
+            <p style="font-size: 22px; font-weight: 600;">${yearlyUsage.toLocaleString()} kWh</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: BATTERY CHARGE/DISCHARGE CYCLE ----
+function genBatteryCycle(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const batteryKwh = (c.batteryKwh as number) || 10;
+  const hasEv = c.hasEV as boolean;
+  
+  // SOC curve simulation
+  const socCurve = [
+    30, 25, 20, 18, 15, 12, // 0-5am: overnight discharge
+    15, 18, 25, 40, 55, 70, // 6-11am: morning solar charge
+    82, 90, 95, 100, 98, 95, // 12-5pm: peak solar
+    85, 70, 55, 40, 35, 32, // 6-11pm: evening discharge
+  ];
+  const labels = ['12a','1a','2a','3a','4a','5a','6a','7a','8a','9a','10a','11a',
+    '12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p','11p'];
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Typical daily battery state of charge pattern')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.5;">
+          <p class="lbl" style="margin-bottom: 12px;">STATE OF CHARGE (%) — TYPICAL DAY</p>
+          <div style="position: relative; height: 280px; border-left: 1px solid #333; border-bottom: 1px solid #333; padding: 0 10px;">
+            ${[100, 75, 50, 25, 0].map(pct => `
+              <div style="position: absolute; left: 0; bottom: ${pct}%; width: 100%; border-bottom: 1px dashed #1a1a1a;">
+                <span style="position: absolute; left: -30px; font-size: 9px; color: #808285; transform: translateY(50%);">${pct}%</span>
+              </div>
+            `).join('')}
+            <svg viewBox="0 0 240 100" style="width: 100%; height: 100%;" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="socGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00EAD3" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#00EAD3" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M${socCurve.map((soc, i) => `${(i / 23) * 240},${100 - soc}`).join(' L')}" fill="none" stroke="#00EAD3" stroke-width="2"/>
+              <path d="M0,100 L${socCurve.map((soc, i) => `${(i / 23) * 240},${100 - soc}`).join(' L')} L240,100 Z" fill="url(#socGrad)"/>
+            </svg>
+          </div>
+          <div style="display: flex; gap: 2px; padding: 0 10px;">
+            ${labels.map(l => `<div style="flex: 1; text-align: center; font-size: 9px; color: #808285; padding-top: 4px;">${l}</div>`).join('')}
+          </div>
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 16px; padding: 24px;">
+            <p class="lbl" style="color: #00EAD3;">BATTERY CAPACITY</p>
+            <p class="hero-num aqua" style="font-size: 48px;">${batteryKwh} kWh</p>
+          </div>
+          <div class="card" style="margin-bottom: 16px;">
+            <p class="lbl">DAILY CYCLE</p>
+            <div style="margin-top: 10px;">
+              <p style="font-size: 12px; color: #808285; margin-bottom: 6px;">☀️ <span style="color: #00EAD3;">7am-5pm</span> Solar Charging</p>
+              <p style="font-size: 12px; color: #808285; margin-bottom: 6px;">🔋 <span style="color: #FFFFFF;">6pm-9pm</span> Peak Discharge</p>
+              <p style="font-size: 12px; color: #808285; margin-bottom: 6px;">🌙 <span style="color: #808285;">10pm-6am</span> Base Load</p>
+              ${hasEv ? `<p style="font-size: 12px; color: #808285;">⚡ <span style="color: #00EAD3;">12am-5am</span> EV Charging</p>` : ''}
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">DOD</p>
+              <p style="font-size: 18px; font-weight: 600;">90%</p>
+            </div>
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">EFFICIENCY</p>
+              <p style="font-size: 18px; font-weight: 600;">95%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: GRID INDEPENDENCE ----
+function genGridIndependence(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const yearlyUsage = (c.yearlyUsageKwh as number) || 3000;
+  const solarGen = (c.solarGenerationKwh as number) || 5000;
+  const batteryKwh = (c.batteryKwh as number) || 10;
+  
+  const solarSelfConsumed = Math.min(solarGen * 0.35, yearlyUsage);
+  const batteryContribution = batteryKwh * 365 * 0.8 * 0.95;
+  const totalSelfConsumed = Math.min(solarSelfConsumed + batteryContribution, yearlyUsage);
+  const selfSufficiency = Math.min(Math.round((totalSelfConsumed / yearlyUsage) * 100), 100);
+  const gridImport = Math.max(0, Math.round(yearlyUsage - totalSelfConsumed));
+  const gridExport = Math.max(0, Math.round(solarGen - solarSelfConsumed - batteryContribution));
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Your path to energy independence')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1; text-align: center;">
+          <p class="lbl" style="margin-bottom: 20px;">ENERGY SELF-SUFFICIENCY</p>
+          <div style="position: relative; width: 240px; height: 240px; margin: 0 auto;">
+            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#1a1a1a" stroke-width="8"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#00EAD3" stroke-width="8" stroke-dasharray="${selfSufficiency * 2.64} ${(100 - selfSufficiency) * 2.64}" stroke-linecap="round"/>
+            </svg>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+              <p class="hero-num aqua" style="font-size: 56px;">${selfSufficiency}%</p>
+              <p class="gray" style="font-size: 12px;">Self-Sufficient</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; margin-top: 24px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">BEFORE</p>
+              <p style="font-size: 36px; font-weight: 600; color: #FFFFFF;">0%</p>
+              <p class="gray" style="font-size: 11px;">100% Grid Dependent</p>
+            </div>
+            <div style="display: flex; align-items: center; font-size: 24px; color: #00EAD3;">→</div>
+            <div class="card aqua-b" style="flex: 1; text-align: center;">
+              <p class="lbl" style="color: #00EAD3;">AFTER</p>
+              <p style="font-size: 36px; font-weight: 600; color: #00EAD3;">${selfSufficiency}%</p>
+              <p class="gray" style="font-size: 11px;">Energy Independent</p>
+            </div>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <p class="lbl" style="margin-bottom: 16px;">ENERGY FLOW BREAKDOWN</p>
+          <table>
+            <tr><th>SOURCE</th><th style="text-align: right;">kWh / YEAR</th><th style="text-align: right;">% OF TOTAL</th></tr>
+            <tr><td style="color: #00EAD3;">Solar Self-Consumed</td><td style="text-align: right;">${Math.round(solarSelfConsumed).toLocaleString()}</td><td style="text-align: right; color: #00EAD3;">${Math.round((solarSelfConsumed / yearlyUsage) * 100)}%</td></tr>
+            <tr><td style="color: #00EAD3;">Battery Contribution</td><td style="text-align: right;">${Math.round(batteryContribution).toLocaleString()}</td><td style="text-align: right; color: #00EAD3;">${Math.round((batteryContribution / yearlyUsage) * 100)}%</td></tr>
+            <tr><td>Grid Import (Remaining)</td><td style="text-align: right;">${gridImport.toLocaleString()}</td><td style="text-align: right;">${Math.round((gridImport / yearlyUsage) * 100)}%</td></tr>
+            <tr class="highlight-row"><td style="color: #00EAD3; font-weight: 700;">Grid Export (Revenue)</td><td style="text-align: right; color: #00EAD3; font-weight: 700;">${gridExport.toLocaleString()}</td><td style="text-align: right; color: #00EAD3; font-weight: 700;">Surplus</td></tr>
+          </table>
+          <div class="insight-card" style="margin-top: 20px;">
+            <p class="insight-title">INDEPENDENCE INSIGHT</p>
+            <p>Your proposed system achieves <span class="hl-aqua">${selfSufficiency}% energy independence</span>, reducing grid reliance from 100% to just ${100 - selfSufficiency}%. ${gridExport > 0 ? `You'll also export <span class="hl-aqua">${gridExport.toLocaleString()} kWh</span> back to the grid annually.` : ''}</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: REBATE BREAKDOWN ----
+function genRebateBreakdown(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const state = (c.state as string) || 'VIC';
+  const solarRebate = (c.solarRebate as number) || 0;
+  const batteryRebate = (c.batteryRebate as number) || 0;
+  const heatPumpHwRebate = (c.heatPumpHwRebate as number) || 0;
+  const heatPumpAcRebate = (c.heatPumpAcRebate as number) || 0;
+  const totalRebates = (c.totalRebates as number) || 0;
+  const totalInvestment = (c.totalInvestment as number) || 0;
+  const netInvestment = (c.netInvestment as number) || 0;
+  
+  const rebates = [
+    { name: 'Solar PV (STCs)', amount: solarRebate, source: 'Federal Government', status: 'Available' },
+    { name: 'Battery Rebate', amount: batteryRebate, source: `${state} State Government`, status: batteryRebate > 0 ? 'Available' : 'N/A' },
+    { name: 'Heat Pump HW Rebate', amount: heatPumpHwRebate, source: `${state} State Government`, status: heatPumpHwRebate > 0 ? 'Available' : 'N/A' },
+    { name: 'Heat Pump AC Rebate', amount: heatPumpAcRebate, source: `${state} State Government`, status: heatPumpAcRebate > 0 ? 'Available' : 'N/A' },
+  ].filter(r => r.amount > 0);
+  
+  const savingsPercent = totalInvestment > 0 ? Math.round((totalRebates / totalInvestment) * 100) : 0;
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Government incentives reducing your investment')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.2;">
+          <table>
+            <tr><th>REBATE / INCENTIVE</th><th>SOURCE</th><th style="text-align: right;">AMOUNT</th></tr>
+            ${rebates.map(r => `
+              <tr>
+                <td style="font-weight: 600;">${r.name}</td>
+                <td class="gray">${r.source}</td>
+                <td style="text-align: right; color: #00EAD3; font-weight: 600;">$${r.amount.toLocaleString()}</td>
+              </tr>
+            `).join('')}
+            <tr class="highlight-row">
+              <td style="font-weight: 700; color: #00EAD3;">TOTAL REBATES</td>
+              <td></td>
+              <td style="text-align: right; font-weight: 700; color: #00EAD3; font-size: 20px;">$${totalRebates.toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 20px; padding: 30px;">
+            <p class="lbl" style="color: #00EAD3;">YOU SAVE</p>
+            <p class="hero-num aqua" style="font-size: 56px;">${savingsPercent}%</p>
+            <p class="gray" style="font-size: 13px;">off gross investment</p>
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">GROSS</p>
+              <p style="font-size: 20px; font-weight: 600;">$${totalInvestment.toLocaleString()}</p>
+            </div>
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">REBATES</p>
+              <p style="font-size: 20px; font-weight: 600; color: #00EAD3;">-$${totalRebates.toLocaleString()}</p>
+            </div>
+          </div>
+          <div class="card aqua-b" style="text-align: center; margin-top: 16px; padding: 24px;">
+            <p class="lbl">NET INVESTMENT</p>
+            <p style="font-size: 32px; font-weight: 600;">$${netInvestment.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: 25-YEAR FINANCIAL PROJECTION ----
+function genFinancialProjection25yr(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const currentCost = (c.currentAnnualCost as number) || 1000;
+  const annualSavings = (c.annualSavings as number) || 500;
+  const netInvestment = (c.netInvestment as number) || 5000;
+  const paybackYears = (c.paybackYears as number) || 5;
+  const twentyFiveYearSavings = (c.twentyFiveYearSavings as number) || 20000;
+  const tenYearSavings = (c.tenYearSavings as number) || 8000;
+  
+  // Generate projection data
+  const milestones = [1, 5, 10, 15, 20, 25];
+  const inflationRate = 0.035;
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Long-term financial outlook with 3.5% annual inflation')}
+      <div style="display: flex; gap: 60px; margin-top: 10px;">
+        <div style="flex: 1.2;">
+          <table>
+            <tr><th>YEAR</th><th style="text-align: right;">BILL (NO ACTION)</th><th style="text-align: right;">BILL (WITH SYSTEM)</th><th style="text-align: right;">CUMULATIVE SAVING</th></tr>
+            ${milestones.map(yr => {
+              const inflatedCost = Math.round(currentCost * Math.pow(1 + inflationRate, yr));
+              const withSystem = Math.max(0, Math.round(inflatedCost - annualSavings));
+              let cumSaving = -netInvestment;
+              for (let y = 1; y <= yr; y++) {
+                cumSaving += currentCost * Math.pow(1 + inflationRate, y) - Math.max(0, currentCost * Math.pow(1 + inflationRate, y) - annualSavings);
+              }
+              return `
+                <tr class="${yr === Math.ceil(paybackYears) ? 'highlight-row' : ''}">
+                  <td style="font-weight: 600;">${yr === Math.ceil(paybackYears) ? `Year ${yr} ⚡` : `Year ${yr}`}</td>
+                  <td style="text-align: right; color: #FFFFFF;">$${inflatedCost.toLocaleString()}</td>
+                  <td style="text-align: right; color: #00EAD3;">$${withSystem.toLocaleString()}</td>
+                  <td style="text-align: right; font-weight: 600; color: ${cumSaving >= 0 ? '#00EAD3' : '#FFFFFF'};">${cumSaving >= 0 ? '+' : ''}$${Math.round(cumSaving).toLocaleString()}</td>
+                </tr>
+              `;
+            }).join('')}
+          </table>
+          <p style="font-size: 11px; color: #808285; margin-top: 10px;">* Assumes 3.5% annual electricity price inflation. Payback at Year ${Math.ceil(paybackYears)}.</p>
+        </div>
+        <div style="flex: 0.8;">
+          <div class="card aqua-b" style="text-align: center; margin-bottom: 16px; padding: 24px;">
+            <p class="lbl" style="color: #00EAD3;">25-YEAR NET BENEFIT</p>
+            <p class="hero-num aqua" style="font-size: 48px;">$${twentyFiveYearSavings.toLocaleString()}</p>
+          </div>
+          <div class="card" style="text-align: center; margin-bottom: 16px;">
+            <p class="lbl">10-YEAR NET BENEFIT</p>
+            <p style="font-size: 28px; font-weight: 600; color: #00EAD3;">$${tenYearSavings.toLocaleString()}</p>
+          </div>
+          <div class="card" style="text-align: center; margin-bottom: 16px;">
+            <p class="lbl">PAYBACK PERIOD</p>
+            <p style="font-size: 28px; font-weight: 600;">${paybackYears.toFixed(1)} Years</p>
+          </div>
+          <div class="insight-card" style="margin-top: 16px;">
+            <p class="insight-title">INVESTMENT RETURN</p>
+            <p>Your $${netInvestment.toLocaleString()} investment generates <span class="hl-aqua">$${twentyFiveYearSavings.toLocaleString()}</span> in net savings over 25 years — a <span class="hl-aqua">${Math.round((twentyFiveYearSavings / netInvestment) * 100)}%</span> return.</p>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: SYSTEM SPECIFICATIONS ----
+function genSystemSpecifications(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const solarKw = (c.solarKw as number) || 6.6;
+  const panelCount = (c.panelCount as number) || 16;
+  const batteryKwh = (c.batteryKwh as number) || 10;
+  const batteryProduct = (c.batteryProduct as string) || 'Sigenergy SigenStor';
+  const hasExistingSolar = c.hasExistingSolar as boolean;
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Complete technical specifications for your system')}
+      <div style="display: flex; gap: 30px; margin-top: 10px;">
+        ${!hasExistingSolar ? `
+        <div style="flex: 1;">
+          <div style="border-top: 3px solid #00EAD3; background: #0a0a0a; padding: 24px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; color: #00EAD3; margin-bottom: 16px;">SOLAR PV SYSTEM</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">System Size</span><span style="font-weight: 600;">${solarKw} kW</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Panel Count</span><span style="font-weight: 600;">${panelCount} panels</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Panel Wattage</span><span style="font-weight: 600;">400W</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Panel Brand</span><span style="font-weight: 600;">Trina Solar Vertex S+</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Annual Generation</span><span style="font-weight: 600; color: #00EAD3;">${(solarKw * 365 * 4).toLocaleString()} kWh</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span class="gray">Performance Warranty</span><span style="font-weight: 600;">25 years</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        <div style="flex: 1;">
+          <div style="border-top: 3px solid #00EAD3; background: #0a0a0a; padding: 24px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; color: #00EAD3; margin-bottom: 16px;">BATTERY STORAGE</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Total Capacity</span><span style="font-weight: 600;">${batteryKwh} kWh</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Usable Capacity</span><span style="font-weight: 600;">${(batteryKwh * 0.9).toFixed(1)} kWh</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Product</span><span style="font-weight: 600;">${batteryProduct}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Chemistry</span><span style="font-weight: 600;">LFP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Round-Trip Efficiency</span><span style="font-weight: 600; color: #00EAD3;">95%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span class="gray">Cycle Warranty</span><span style="font-weight: 600;">6,000 cycles / 10 years</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <div style="border-top: 3px solid #00EAD3; background: #0a0a0a; padding: 24px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; color: #00EAD3; margin-bottom: 16px;">HYBRID INVERTER</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Capacity</span><span style="font-weight: 600;">${Math.ceil(solarKw * 1.2)} kW</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Brand</span><span style="font-weight: 600;">Sigenergy</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Type</span><span style="font-weight: 600;">Hybrid (Solar + Battery)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">Phases</span><span style="font-weight: 600;">Single Phase</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
+                <span class="gray">VPP Compatible</span><span style="font-weight: 600; color: #00EAD3;">Yes</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span class="gray">Warranty</span><span style="font-weight: 600;">10 years</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">${BRAND.contact.copyright}</div>
+    </div>
+  `;
+}
+
+// ---- NEW SLIDE: WARRANTY & MAINTENANCE ----
+function genWarrantyMaintenance(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const hasExistingSolar = c.hasExistingSolar as boolean;
+  
+  const warranties = [
+    ...(!hasExistingSolar ? [
+      { component: 'Solar Panels', manufacturer: '25 years', performance: '87.4% at 25 years', maintenance: 'Annual clean recommended' },
+    ] : []),
+    { component: 'Battery System', manufacturer: '10 years', performance: '6,000 cycles', maintenance: 'Firmware updates (automatic)' },
+    { component: 'Hybrid Inverter', manufacturer: '10 years', performance: 'N/A', maintenance: 'Annual inspection' },
+  ];
+  
+  const maintenanceSchedule = [
+    { task: 'Visual Panel Inspection', frequency: 'Quarterly', cost: 'Free (DIY)' },
+    { task: 'Professional Panel Clean', frequency: 'Annual', cost: '$150-250' },
+    { task: 'System Health Check', frequency: 'Annual', cost: '$200-350' },
+    { task: 'Inverter Firmware Update', frequency: 'As released', cost: 'Free (automatic)' },
+    { task: 'Battery Performance Review', frequency: 'Annual', cost: 'Included in health check' },
+  ];
+  
+  return `
+    <div class="slide">
+      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || 'Comprehensive warranty coverage and maintenance schedule')}
+      <div style="display: flex; gap: 40px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #00EAD3; margin-bottom: 14px;">WARRANTY COVERAGE</p>
+          <table>
+            <tr><th>COMPONENT</th><th>MANUFACTURER</th><th>PERFORMANCE</th></tr>
+            ${warranties.map(w => `
+              <tr>
+                <td style="font-weight: 600;">${w.component}</td>
+                <td style="color: #00EAD3;">${w.manufacturer}</td>
+                <td class="gray">${w.performance}</td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #00EAD3; margin-bottom: 14px;">MAINTENANCE SCHEDULE</p>
+          <table>
+            <tr><th>TASK</th><th>FREQUENCY</th><th style="text-align: right;">EST. COST</th></tr>
+            ${maintenanceSchedule.map(m => `
+              <tr>
+                <td style="font-weight: 600;">${m.task}</td>
+                <td class="gray">${m.frequency}</td>
+                <td style="text-align: right;">${m.cost}</td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+      </div>
+      <div class="insight-card" style="margin-top: 20px;">
+        <p class="insight-title">LIGHTNING ENERGY SUPPORT</p>
+        <p>All systems installed by Lightning Energy include <span class="hl-aqua">complimentary first-year maintenance</span> and ongoing support. Our team monitors your system performance remotely and proactively addresses any issues.</p>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>

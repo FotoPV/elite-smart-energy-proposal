@@ -4,7 +4,7 @@
  */
 
 import { SlideData } from "../../../drizzle/schema";
-import { Zap, Battery, Sun, Flame, Car, Droplets, TrendingUp, DollarSign, Leaf, Phone, Mail, Globe, MapPin } from "lucide-react";
+import { Zap, Battery, Sun, Flame, Car, Droplets, TrendingUp, DollarSign, Leaf, Phone, Mail, Globe, MapPin, BarChart3, Clock, Activity, Shield, Calculator, FileText } from "lucide-react";
 
 interface SlidePreviewProps {
   slide: SlideData;
@@ -75,6 +75,24 @@ function getSlideIcon(slideType: string) {
       return <Leaf className="w-6 h-6 text-green-500" />;
     case 'contact':
       return <Phone className={iconClass} />;
+    case 'tariff_comparison':
+      return <BarChart3 className={iconClass} />;
+    case 'daily_load_profile':
+      return <Clock className={iconClass} />;
+    case 'solar_generation_profile':
+      return <Sun className="w-6 h-6 text-yellow-500" />;
+    case 'battery_cycle':
+      return <Activity className={iconClass} />;
+    case 'grid_independence':
+      return <Zap className={iconClass} />;
+    case 'rebate_breakdown':
+      return <Calculator className={iconClass} />;
+    case 'financial_projection_25yr':
+      return <TrendingUp className={iconClass} />;
+    case 'system_specifications':
+      return <FileText className={iconClass} />;
+    case 'warranty_maintenance':
+      return <Shield className={iconClass} />;
     default:
       return <Zap className={iconClass} />;
   }
