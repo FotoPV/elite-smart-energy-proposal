@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, title, status, slideCount, LENGTH(slidesData) as dataSize FROM proposals WHERE id = 300002;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, title, status, slideCount, LENGTH(slidesData) as dataSize FROM proposals WHERE id = 300002;",
+  "rows": [
+    {
+      "id": "300002",
+      "title": "Electrification Proposal for Seong Heng Chua",
+      "status": "draft",
+      "slideCount": "NULL",
+      "dataSize": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tstatus\tslideCount\tdataSize\n300002\tElectrification Proposal for Seong Heng Chua\tdraft\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1521
+}

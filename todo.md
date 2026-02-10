@@ -678,3 +678,11 @@
 - [x] Fixed LiveSlideGeneration component: added keepPolling state to continue polling after mutation error, added displayStatus logic with 'partial' state for partial completions
 - [x] Fixed server-side: slide generation errors now produce placeholder HTML instead of leaving blank gaps, overall status always set to 'complete'
 - [x] All 93 tests passing
+
+
+## BUG: Proposal status stays 'draft' after generation completes (Feb 10)
+- [x] Root cause: DB save of slidesData JSON silently failing (base64-embedded fonts make JSON too large)
+- [x] Added comprehensive logging to DB save (JSON size, success/failure messages)
+- [x] Added fallback: if full save fails, try status-only save without slidesData
+- [x] Manually fixed Seong Heng Chua proposal status to 'generated'
+- [ ] Future: Consider saving slide HTML to S3 instead of DB JSON column to avoid size limits

@@ -471,11 +471,27 @@ export const appRouter = router({
         
         // Save to DB — always mark as generated since all slides have been attempted
         const includedCount = slidesData.filter(s => s.html).length;
-        await db.updateProposal(input.proposalId, {
-          slidesData,
-          slideCount: includedCount,
-          status: 'generated',
-        });
+        try {
+          // Log the size of slidesData to help debug DB issues
+          const jsonSize = JSON.stringify(slidesData).length;
+          console.log(`[generateProgressive] Saving ${includedCount} slides for proposal ${input.proposalId}, JSON size: ${(jsonSize / 1024 / 1024).toFixed(2)} MB`);
+          
+          await db.updateProposal(input.proposalId, {
+            slidesData,
+            slideCount: includedCount,
+            status: 'generated',
+          });
+          console.log(`[generateProgressive] DB save successful for proposal ${input.proposalId}, status set to 'generated'`);
+        } catch (dbErr: any) {
+          console.error(`[generateProgressive] DB save FAILED for proposal ${input.proposalId}:`, dbErr.message);
+          // Try saving just the status without the huge slidesData
+          try {
+            await db.updateProposal(input.proposalId, { status: 'generated', slideCount: includedCount });
+            console.log(`[generateProgressive] Fallback status-only save successful for proposal ${input.proposalId}`);
+          } catch (dbErr2: any) {
+            console.error(`[generateProgressive] Fallback status save also FAILED:`, dbErr2.message);
+          }
+        }
         
         // Always mark as complete — individual slide errors are handled with placeholders
         setGenerationStatus(input.proposalId, 'complete');
