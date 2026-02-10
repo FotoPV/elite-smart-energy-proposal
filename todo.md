@@ -704,3 +704,14 @@
 - [x] Each button has inline progress bar when exporting
 - [x] Buttons always visible when slides are generated (no dropdown needed)
 - [x] Color-coded: aqua for PDF/Slides, orange for PowerPoint, grey for HTML PDF
+
+
+## Test PDF Download & Add Update+Regenerate Button (Feb 10)
+- [x] Test PDF download end-to-end on Seong Heng Chua proposal — 22-page PDF (8.5MB) downloaded successfully
+- [x] Verified smooth curved charts and rounded bars in PDF output
+- [x] Fixed PDF stuck at "Preparing download..." — S3 upload now fire-and-forget (non-blocking)
+- [x] Fixed customer name in filename (extract from proposal title)
+- [x] Added "Regenerate" button to DOWNLOAD & EXPORT section with server-side regenerate endpoint
+- [x] Fixed Infinity% bug in Bill Breakdown slide (division by zero when annual cost is $0)
+- [x] Fixed dailyAverageCost division by zero protection
+- [x] All 93 tests passing

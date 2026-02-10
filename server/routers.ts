@@ -567,6 +567,22 @@ export const appRouter = router({
         return { success: true, count: deleted.length };
       }),
     
+    regenerate: protectedProcedure
+      .input(z.object({ proposalId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const proposal = await db.getProposalById(input.proposalId);
+        if (!proposal) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        }
+        // Reset to draft with empty slides — this triggers auto-generation on page load
+        await db.updateProposal(input.proposalId, {
+          status: 'draft',
+          slidesData: null,
+          slideCount: 0,
+        });
+        return { success: true };
+      }),
+
     getSlideHtml: protectedProcedure
       .input(z.object({
         proposalId: z.number(),

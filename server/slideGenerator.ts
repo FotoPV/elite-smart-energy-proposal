@@ -245,7 +245,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       feedInTariff: data.feedInTariffCentsPerKwh,
       controlledLoadRate: data.controlledLoadRateCentsPerKwh,
       dailyAverageKwh: data.dailyUsageKwh,
-      dailyAverageCost: data.dailyAverageCost || (data.annualCost / 365),
+      dailyAverageCost: data.dailyAverageCost || (data.annualCost ? data.annualCost / 365 : 0),
       monthlyData: data.monthlyUsageData || [],
       billDays: data.billDays,
       billTotalAmount: data.billTotalAmount,
@@ -256,7 +256,8 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   // Slide 4: CURRENT BILL BREAKDOWN (donut chart + metrics)
   const usageCostAnnual = data.annualUsageCharge || data.annualUsageKwh * (data.usageRateCentsPerKwh / 100);
   const supplyCostAnnual = data.annualSupplyCharge || data.supplyChargeCentsPerDay * 365 / 100;
-  const usagePercent = Math.round((usageCostAnnual / (usageCostAnnual + supplyCostAnnual)) * 100);
+  const totalCostForPercent = usageCostAnnual + supplyCostAnnual;
+  const usagePercent = totalCostForPercent > 0 ? Math.round((usageCostAnnual / totalCostForPercent) * 100) : 50;
   slides.push({
     id: slideId++,
     type: 'bill_breakdown',
@@ -264,7 +265,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     subtitle: 'Annual Cost Analysis',
     content: {
       totalAnnualCost: data.annualCost,
-      dailyAverageCost: data.dailyAverageCost || (data.annualCost / 365),
+      dailyAverageCost: data.dailyAverageCost || (data.annualCost ? data.annualCost / 365 : 0),
       usageCharges: usageCostAnnual,
       supplyCharges: supplyCostAnnual,
       usageChargesPercent: usagePercent,

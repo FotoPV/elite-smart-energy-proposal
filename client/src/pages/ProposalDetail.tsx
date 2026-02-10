@@ -728,6 +728,37 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   );
 }
 
+// Regenerate button — resets proposal and triggers fresh slide generation
+function RegenerateButton({ proposalId }: { proposalId: number }) {
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const regenerateMutation = trpc.proposals.regenerate.useMutation();
+  
+  const handleRegenerate = async () => {
+    if (!confirm('Regenerate all slides? This will recalculate and rebuild the entire proposal.')) return;
+    setIsRegenerating(true);
+    try {
+      await regenerateMutation.mutateAsync({ proposalId });
+      toast.info('Regenerating slides...');
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(`Regeneration failed: ${err.message}`);
+      setIsRegenerating(false);
+    }
+  };
+  
+  return (
+    <button
+      onClick={handleRegenerate}
+      disabled={isRegenerating}
+      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#111] p-4 transition-all hover:border-[#E85D2A] hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50"
+    >
+      <RefreshCw className={`h-5 w-5 text-[#E85D2A] ${isRegenerating ? 'animate-spin' : ''}`} />
+      <span className="text-sm font-medium text-white">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
+      <span className="text-[10px] text-gray-500">Recalculate & rebuild</span>
+    </button>
+  );
+}
+
 // Prominent export button component — large, visible, with inline progress
 function ExportButton({ type, label, description, icon, color, proposalId, customerName }: {
   type: 'pdf' | 'pptx' | 'html-pdf' | 'slides';
@@ -771,8 +802,8 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
           setCurrentStep(step);
           setProgress(15 + Math.round(pct * 0.65));
         });
-        setProgress(85);
-        setCurrentStep('Preparing download...');
+        setProgress(90);
+        setCurrentStep('Downloading...');
         const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
@@ -781,19 +812,20 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        // Upload to S3 for storage
+        // Revoke after a short delay to ensure download starts
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        // Fire-and-forget S3 upload — don't await, don't block the UI
         try {
           const reader = new FileReader();
-          const base64 = await new Promise<string>((resolve) => {
-            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-            reader.readAsDataURL(pdfBlob);
-          });
-          await fetch('/api/upload-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdfData: base64, fileName: `exports/proposal-${proposalId}-${Date.now()}.pdf` }),
-          });
+          reader.onloadend = () => {
+            const base64data = (reader.result as string).split(',')[1];
+            fetch('/api/upload-pdf', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pdfData: base64data, fileName: `exports/proposal-${proposalId}-${Date.now()}.pdf` }),
+            }).catch(() => { /* upload optional */ });
+          };
+          reader.readAsDataURL(pdfBlob);
         } catch { /* upload optional */ }
         toast.success('PDF downloaded successfully!');
       } else if (type === 'pptx') {
@@ -934,7 +966,9 @@ export default function ProposalDetailPage() {
     );
   }
   
-  const customerName = (proposal as any).customer?.fullName || 'Customer';
+  // Extract customer name from proposal title (format: "Electrification Proposal for [Name]")
+  const titleMatch = proposal.title?.match(/for\s+(.+)$/i);
+  const customerName = titleMatch?.[1] || (proposal as any).customer?.fullName || 'Customer';
   const customerAddress = (proposal as any).customer?.address || '';
   const slides = slidesData?.slides || [];
   const hasSlides = slides.length > 0;
@@ -1060,7 +1094,7 @@ export default function ProposalDetailPage() {
             >
               Download & Export
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <ExportButton
                 type="pdf"
                 label="Download PDF"
@@ -1097,6 +1131,7 @@ export default function ProposalDetailPage() {
                 proposalId={proposalId}
                 customerName={customerName}
               />
+              <RegenerateButton proposalId={proposalId} />
             </div>
           </div>
         )}
