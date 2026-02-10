@@ -56,7 +56,7 @@ export function generateSlideContentMarkdown(input: SlideContentInput): string {
   const hasGas = customer.hasGas && calc.gasAnnualCost != null && calc.gasAnnualCost > 0;
   const hasPool = customer.hasPool === true;
   const hasEV = customer.hasEV === true || customer.evInterest === 'owns' || customer.evInterest === 'interested';
-  const hasExistingSolar = customer.hasExistingSolar === true;
+  const hasExistingSolar = customer.existingSolar !== 'none' && !!customer.existingSolar;
   const gasAppliances = customer.gasAppliances || [];
   const hasHotWater = hasGas && gasAppliances.some(a => a.toLowerCase().includes('hot water'));
   const hasHeating = hasGas && gasAppliances.some(a => a.toLowerCase().includes('heat'));
@@ -451,7 +451,7 @@ Full electrification of your gas appliances eliminates the ${fmt(calc.gasAnnualS
 ### Strategic Insight 1: ${hasExistingSolar ? 'Underutilised Solar Asset' : 'Solar Opportunity'}
 **Card** (dark bg, aqua left border)
 ${hasExistingSolar && solarExportPercent > 0
-  ? `Your existing ${num(Number(customer.existingSolarSize), 1)}kW solar system is currently exporting approximately ${solarExportPercent}% of its generation back to the grid at just ${cents(calc.billFeedInTariffCents)}/kWh. This represents a significant undervaluation of your solar investment. Battery storage would capture this exported energy at the full retail rate of ${cents(calc.billPeakRateCents)}/kWh — a ${num((calc.billPeakRateCents || 30) / (calc.billFeedInTariffCents || 5), 1)}x value multiplier.`
+  ? `Your existing solar system is currently exporting approximately ${solarExportPercent}% of its generation back to the grid at just ${cents(calc.billFeedInTariffCents)}/kWh. This represents a significant undervaluation of your solar investment. Battery storage would capture this exported energy at the full retail rate of ${cents(calc.billPeakRateCents)}/kWh — a ${num((calc.billPeakRateCents || 30) / (calc.billFeedInTariffCents || 5), 1)}x value multiplier.`
   : `With ${num(calc.yearlyUsageKwh)} kWh of annual consumption, a solar system would offset a significant portion of your grid dependency. Combined with battery storage, self-consumption rates of 80-85% are achievable, dramatically reducing your energy costs.`}
 
 ### Strategic Insight 2: Feed-in Tariff Erosion
@@ -536,8 +536,7 @@ ${hasExistingSolar ? `
 
 | Specification | Detail |
 |--------------|--------|
-| System Size | ${num(Number(customer.existingSolarSize), 1)} kW |
-| System Age | ${customer.existingSolarAge || 'N/A'} years |
+| System Age | ${customer.existingSolar === 'under_5_years' ? 'Under 5 years' : 'Over 5 years'} |
 | Est. Annual Generation | ${num(calc.solarAnnualGeneration)} kWh |
 | Current Self-Consumption | ~${100 - solarExportPercent}% |
 | Current Export Rate | ${solarExportPercent}% |
@@ -552,7 +551,7 @@ ${hasExistingSolar ? `
 | Export Value | ${cents(calc.billFeedInTariffCents)}/kWh | Captured at retail rate | ${num((calc.billPeakRateCents || 30) / (calc.billFeedInTariffCents || 5), 1)}x value |
 
 ### Insight Box (aqua left border)
-Adding battery storage to your existing ${num(Number(customer.existingSolarSize), 1)}kW system transforms its economics. Instead of exporting ${solarExportPercent}% of generation at ${cents(calc.billFeedInTariffCents)}/kWh, the battery captures this energy for self-consumption at the full retail rate — effectively multiplying the value of every exported kilowatt-hour by ${num((calc.billPeakRateCents || 30) / (calc.billFeedInTariffCents || 5), 1)}x.
+Adding battery storage to your existing solar system transforms its economics. Instead of exporting ${solarExportPercent}% of generation at ${cents(calc.billFeedInTariffCents)}/kWh, the battery captures this energy for self-consumption at the full retail rate — effectively multiplying the value of every exported kilowatt-hour by ${num((calc.billPeakRateCents || 30) / (calc.billFeedInTariffCents || 5), 1)}x.
 ` : `
 ### Proposed Solar System
 

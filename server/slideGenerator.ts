@@ -159,6 +159,9 @@ export interface ProposalData {
   electrificationTotalRebates?: number;
   electrificationNetCost?: number;
   
+  // Existing Solar System
+  existingSolar?: 'none' | 'under_5_years' | 'over_5_years';
+  
   // Site Assessment
   sitePhotos?: Array<{ url: string; caption: string }>;
   
@@ -394,6 +397,49 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       ],
     }
   });
+  
+  // CONDITIONAL: AC vs DC Coupling — only when customer has existing solar
+  if (data.existingSolar && data.existingSolar !== 'none') {
+    const isUnder5 = data.existingSolar === 'under_5_years';
+    slides.push({
+      id: slideId++,
+      type: 'ac_dc_coupling',
+      title: 'SYSTEM INTEGRATION',
+      subtitle: isUnder5 ? 'DC Coupling — Retrofit to Existing Solar Array' : 'AC Coupling — Integration with Existing Solar Array',
+      content: {
+        existingSolar: data.existingSolar,
+        couplingType: isUnder5 ? 'DC' : 'AC',
+        systemAge: isUnder5 ? 'Under 5 Years' : 'Over 5 Years',
+        solarSizeKw: data.solarSizeKw,
+        batterySizeKwh: data.batterySizeKwh,
+        inverterSizeKw: data.inverterSizeKw,
+        inverterBrand: data.inverterBrand,
+        batteryBrand: data.batteryBrand,
+        approach: isUnder5
+          ? 'Retrofit SigenStor hybrid inverter, replace existing inverter, retain panels if compatible (same rail/clamp system)'
+          : 'Add SigenStor as AC-coupled battery alongside existing inverter — existing PV stays untouched',
+        compliance: isUnder5
+          ? 'Existing panels re-certified under new inverter CEC approval. Full system must meet AS/NZS 4777.2:2020.'
+          : 'Existing system grandfathered under original standards. New battery system must meet current AS/NZS 4777.2:2020.',
+        efficiency: isUnder5
+          ? 'DC coupling provides ~3-5% higher round-trip efficiency (one conversion vs two)'
+          : 'AC coupling preserves existing inverter warranty and avoids re-wiring',
+        considerations: isUnder5
+          ? [
+              { title: 'PANEL COMPATIBILITY', description: 'Existing panels must be assessed for compatibility with new hybrid inverter string configuration (voltage/current matching).' },
+              { title: 'INVERTER REPLACEMENT', description: 'Existing inverter is replaced with SigenStor hybrid unit — provides both solar conversion and battery management in a single device.' },
+              { title: 'CEC COMPLIANCE', description: 'Full system re-certification required under AS/NZS 4777.2:2020. CEC-accredited installer mandatory.' },
+              { title: 'DNSP APPROVAL', description: 'Export limits may change when adding battery — distributor (DNSP) approval required before installation.' },
+            ]
+          : [
+              { title: 'EXISTING SYSTEM PRESERVED', description: 'Your current solar inverter and panels remain untouched — no disruption to existing generation.' },
+              { title: 'SEPARATE BATTERY SYSTEM', description: 'SigenStor battery connects to your switchboard as an independent AC-coupled unit with its own battery inverter.' },
+              { title: 'CEC COMPLIANCE', description: 'New battery installation must meet AS/NZS 4777.2:2020. Existing system remains under original compliance standards.' },
+              { title: 'PANEL ASSESSMENT', description: 'Systems over 5 years may have degraded panels — site assessment determines if panel replacement is more cost-effective than AC coupling.' },
+            ],
+      }
+    });
+  }
   
   // Slide 11: VPP PROVIDER COMPARISON (full table)
   slides.push({
@@ -1039,6 +1085,7 @@ export function generateSlideHTML(slide: SlideContent): string {
       case 'battery_recommendation': content = genBatteryRecommendation(slide); break;
       case 'why_battery': content = genWhyBattery(slide); break;
       case 'battery_considerations': content = genBatteryConsiderations(slide); break;
+      case 'ac_dc_coupling': content = genAcDcCoupling(slide); break;
       case 'vpp_comparison': content = genVPPComparison(slide); break;
       case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
       case 'ev_analysis': content = genEVAnalysis(slide); break;
@@ -1069,7 +1116,7 @@ export function generateSlideHTML(slide: SlideContent): string {
         <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
           <p style="color: #808285; font-size: 18px;">This slide will be regenerated with your data.</p>
         </div>
-        <div class="copyright">${BRAND.contact.copyright}</div>
+  
       </div>
     `;
     return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${errorContent}</body></html>`;
@@ -1141,7 +1188,7 @@ function genExecutiveSummary(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1182,7 +1229,7 @@ function genBillAnalysis(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1229,7 +1276,7 @@ function genUsageAnalysis(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1275,7 +1322,7 @@ function genYearlyProjection(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1309,7 +1356,7 @@ function genGasFootprint(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1337,7 +1384,7 @@ function genGasAppliances(slide: SlideContent): string {
         <p class="insight-title">TOTAL GAS ELIMINATION POTENTIAL</p>
         <p>Annual Gas Cost: <span class="hl-orange">$${(c.totalGasCost as number).toLocaleString()}</span> → <span class="hl-aqua">$0</span> through complete electrification of all gas appliances.</p>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1386,7 +1433,7 @@ function genStrategic(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1437,7 +1484,7 @@ function genBattery(slide: SlideContent): string {
           ${c.narrativeFinancial ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrativeFinancial}</div>` : `<p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>`}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1483,7 +1530,72 @@ function genSolar(slide: SlideContent): string {
           `).join('')}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
+    </div>
+  `;
+}
+
+// ---- AC vs DC COUPLING ----
+function genAcDcCoupling(slide: SlideContent): string {
+  const c = (slide.content || {}) as Record<string, unknown>;
+  const couplingType = (c.couplingType as string) || 'DC';
+  const systemAge = (c.systemAge as string) || 'Under 5 Years';
+  const approach = (c.approach as string) || '';
+  const compliance = (c.compliance as string) || '';
+  const efficiency = (c.efficiency as string) || '';
+  const considerations = (c.considerations as Array<{ title: string; description: string }>) || [];
+  const isDC = couplingType === 'DC';
+  
+  return `
+    <div class="slide">
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
+      ${slideHeader(slide.title, slide.subtitle || '')}
+      
+      <div style="display: flex; gap: 40px; margin-top: 20px;">
+        <!-- Left: Coupling Type Overview -->
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: ${isDC ? 'rgba(0,234,211,0.1)' : 'rgba(243,103,16,0.1)'}; display: flex; align-items: center; justify-content: center;">
+              <span style="font-family: 'NextSphere', sans-serif; font-size: 28px; font-weight: 800; color: ${isDC ? '#00EAD3' : '#f36710'};">${couplingType}</span>
+            </div>
+            <div>
+              <p style="font-family: 'NextSphere', sans-serif; font-size: 24px; font-weight: 800; color: #fff;">${couplingType} COUPLING</p>
+              <p style="font-size: 14px; color: #808285;">Existing System: ${systemAge}</p>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: #00EAD3; text-transform: uppercase; margin-bottom: 8px;">Integration Approach</p>
+            <p style="font-size: 14px; line-height: 1.7; color: #ccc;">${approach}</p>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: #f36710; text-transform: uppercase; margin-bottom: 8px;">Efficiency</p>
+            <p style="font-size: 14px; line-height: 1.7; color: #ccc;">${efficiency}</p>
+          </div>
+          
+          <div style="padding: 16px 20px; border-left: 3px solid ${isDC ? '#00EAD3' : '#f36710'}; background: rgba(255,255,255,0.02);">
+            <p style="font-family: 'NextSphere', sans-serif; font-size: 12px; font-weight: 800; color: #808285; text-transform: uppercase; margin-bottom: 6px;">CEC Compliance</p>
+            <p style="font-size: 13px; line-height: 1.6; color: #ccc;">${compliance}</p>
+          </div>
+        </div>
+        
+        <!-- Right: Considerations Grid -->
+        <div style="flex: 1;">
+          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 20px;">KEY CONSIDERATIONS</p>
+          <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+            ${considerations.map((item, i) => `
+              <div class="card" style="border-top: 2px solid ${i % 2 === 0 ? '#00EAD3' : '#f36710'};">
+                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; margin-bottom: 6px;">${item.title}</p>
+                <p style="color: #808285; font-size: 12px; line-height: 1.5;">${item.description}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      
+      ${c.narrative ? `<div style="margin-top: 20px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
+
     </div>
   `;
 }
@@ -1509,7 +1621,7 @@ function genVPPComparison(slide: SlideContent): string {
           </tr>
         `).join('')}
       </table>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1546,7 +1658,7 @@ function genVPPRecommendation(slide: SlideContent): string {
         </div>
       </div>
       ${c.narrative ? `<div style="margin-top: 20px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1599,7 +1711,7 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
           ` : ''}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1667,7 +1779,7 @@ function genEVAnalysis(slide: SlideContent): string {
         </div>
       </div>
       ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1700,7 +1812,7 @@ function genEVCharger(slide: SlideContent): string {
           ${benefits.map(b => `<p style="color: #00EAD3; font-size: 13px; margin-bottom: 8px;">⚡ ${b}</p>`).join('')}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1749,7 +1861,7 @@ function genElectrificationInvestment(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1805,7 +1917,7 @@ function genSavingsSummary(slide: SlideContent): string {
           ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1854,7 +1966,7 @@ function genFinancial(slide: SlideContent): string {
           ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1906,7 +2018,7 @@ function genEnvironmental(slide: SlideContent): string {
           `).join('')}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1938,7 +2050,7 @@ function genRoadmap(slide: SlideContent): string {
           </div>
         `).join('')}
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1962,7 +2074,7 @@ function genConclusion(slide: SlideContent): string {
         <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 10px;">RECOMMENDATION</p>
         <p style="font-family: 'NextSphere', sans-serif; font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1.4; text-transform: uppercase;">${c.recommendation || `PROCEED WITH THE ${c.systemSize || '6.6'}KW / ${c.batterySize || '10'}KWH SYSTEM INSTALLATION.`}</p>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -1994,7 +2106,10 @@ function genContact(slide: SlideContent): string {
           <p style="font-size: 20px; color: #FFFFFF;">${c.address || BRAND.contact.address}</p>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+      <div style="position: absolute; bottom: 28px; left: 80px; right: 80px;">
+        <p style="font-size: 10px; color: #808285; font-family: 'GeneralSans', sans-serif; line-height: 1.6; margin-bottom: 8px;">This proposal is indicative only and based on information provided. Actual savings may vary depending on usage patterns, weather conditions, and energy market changes. All pricing is subject to site inspection and final design. Lightning Energy recommends obtaining independent financial advice before proceeding.</p>
+        <p style="font-size: 11px; color: #808285; font-family: 'GeneralSans', sans-serif;">${BRAND.contact.copyright}</p>
+      </div>
     </div>
   `;
 }
@@ -2046,7 +2161,7 @@ function genStrategicSiteAssessment(slide: SlideContent): string {
           `}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2096,7 +2211,7 @@ function genOption1(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2146,7 +2261,7 @@ function genOption2(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2184,7 +2299,7 @@ function genSystemComparison(slide: SlideContent): string {
         `).join('')}
       </table>
       ${c.narrative ? `<div class="insight-card" style="margin-top: 24px;"><p class="insight-title">RECOMMENDATION</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2234,7 +2349,7 @@ function genAnnualFinancialImpact(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2316,7 +2431,7 @@ function genInvestmentAnalysis(slide: SlideContent): string {
         </div>
       </div>
       ${c.narrative ? `<div class="insight-card" style="margin-top: 16px;"><p class="insight-title">ANALYSIS</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2364,7 +2479,7 @@ function genBillBreakdown(slide: SlideContent): string {
           ${c.narrative ? `<div class="insight-card" style="margin-top: 16px;"><p class="insight-title">KEY INSIGHT</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2402,7 +2517,7 @@ function genAnnualEnergyProjection(slide: SlideContent): string {
           <div class="insight-card" style="border-left-color: #fff;"><p class="insight-title" style="color: #fff;">WINTER STRATEGY</p><p>${c.winterStrategy || 'Battery storage bridges the gap during shorter winter days.'}</p></div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2451,7 +2566,7 @@ function genUsageBenchmarking(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2488,7 +2603,7 @@ function genSolarRecommendation(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2526,7 +2641,7 @@ function genBatteryRecommendation(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2557,7 +2672,7 @@ function genWhyBattery(slide: SlideContent): string {
           </div>
         `).join('')}
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2588,7 +2703,7 @@ function genBatteryConsiderations(slide: SlideContent): string {
           </div>
         `).join('')}
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2635,7 +2750,7 @@ function genEVvsPetrol(slide: SlideContent): string {
         <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; color: #00EAD3; text-transform: uppercase;">PROJECTED ANNUAL SAVINGS</p>
         <p class="hero-num aqua" style="font-size: 48px;">$${annualSavings.toLocaleString()}</p>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2678,7 +2793,7 @@ function genFinancialInvestment(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2759,7 +2874,7 @@ function genReturnOnInvestment(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2803,7 +2918,7 @@ function genEnergyOptimisation(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2845,7 +2960,7 @@ function genRequiredElectricalWorks(slide: SlideContent): string {
           `}
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2870,7 +2985,7 @@ function genSystemIntegration(slide: SlideContent): string {
           </div>
         `).join('')}
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2884,7 +2999,7 @@ function genGeneric(slide: SlideContent): string {
       <div style="margin-top: 20px;">
         <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -2943,7 +3058,7 @@ function genTariffComparison(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3014,7 +3129,7 @@ function genDailyLoadProfile(slide: SlideContent): string {
         </div>
         ${hasEv ? `<div class="card" style="flex: 1; text-align: center;"><p class="lbl">EV CHARGING</p><p style="font-size: 28px; font-weight: 600; color: #00EAD3;">Overnight</p></div>` : ''}
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3084,7 +3199,7 @@ function genSolarGenerationProfile(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3169,7 +3284,7 @@ function genBatteryCycle(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3234,7 +3349,7 @@ function genGridIndependence(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3304,7 +3419,7 @@ function genRebateBreakdown(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3369,7 +3484,7 @@ function genFinancialProjection25yr(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3466,7 +3581,7 @@ function genSystemSpecifications(slide: SlideContent): string {
           </div>
         </div>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }
@@ -3528,7 +3643,7 @@ function genWarrantyMaintenance(slide: SlideContent): string {
         <p class="insight-title">LIGHTNING ENERGY SUPPORT</p>
         <p>All systems installed by Lightning Energy include <span class="hl-aqua">complimentary first-year maintenance</span> and ongoing support. Our team monitors your system performance remotely and proactively addresses any issues.</p>
       </div>
-      <div class="copyright">${BRAND.contact.copyright}</div>
+
     </div>
   `;
 }

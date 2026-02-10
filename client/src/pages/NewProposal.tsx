@@ -52,7 +52,7 @@ export default function NewProposal() {
   const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     fullName: '', email: '', phone: '', address: '', state: 'VIC',
-    hasPool: false, hasEV: false, notes: '',
+     hasPool: false, hasEV: false, existingSolar: 'none' as 'none' | 'under_5_years' | 'over_5_years', notes: '',
   });
   const createCustomer = trpc.customers.create.useMutation({
     onSuccess: (data) => {
@@ -60,7 +60,7 @@ export default function NewProposal() {
       refetchCustomers();
       setSelectedCustomerId(data.id);
       setShowNewCustomerDialog(false);
-      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasPool: false, hasEV: false, notes: '' });
+      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasPool: false, hasEV: false, existingSolar: 'none' as 'none' | 'under_5_years' | 'over_5_years', notes: '' });
     },
     onError: (err) => toast.error(err.message),
   });
@@ -293,6 +293,11 @@ export default function NewProposal() {
                     )}
                     {selectedCustomer.hasEV && (
                       <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-400">EV</span>
+                    )}
+                    {selectedCustomer.existingSolar && selectedCustomer.existingSolar !== 'none' && (
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/10 text-orange-400">
+                        Solar {selectedCustomer.existingSolar === 'under_5_years' ? '<5yr' : '>5yr'}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -662,6 +667,17 @@ export default function NewProposal() {
               </div>
             </div>
             <div className="space-y-2">
+              <Label>Existing Solar System</Label>
+              <Select value={newCustomer.existingSolar} onValueChange={(v) => setNewCustomer(p => ({ ...p, existingSolar: v as 'none' | 'under_5_years' | 'over_5_years' }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Existing Solar</SelectItem>
+                  <SelectItem value="under_5_years">Existing Solar — Under 5 Years</SelectItem>
+                  <SelectItem value="over_5_years">Existing Solar — Over 5 Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>Notes</Label>
               <Input
                 value={newCustomer.notes}
@@ -685,6 +701,7 @@ export default function NewProposal() {
                     state: newCustomer.state,
                     hasPool: newCustomer.hasPool,
                     hasEV: newCustomer.hasEV,
+                    existingSolar: newCustomer.existingSolar,
                     notes: newCustomer.notes || undefined,
                   });
                 }}

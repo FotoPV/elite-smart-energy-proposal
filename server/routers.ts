@@ -79,16 +79,13 @@ export const appRouter = router({
         poolVolume: z.number().optional(),
         hasEV: z.boolean().optional(),
         evInterest: z.enum(['none', 'interested', 'owns']).optional(),
-        hasExistingSolar: z.boolean().optional(),
-        existingSolarSize: z.number().optional(),
-        existingSolarAge: z.number().optional(),
+        existingSolar: z.enum(['none', 'under_5_years', 'over_5_years']).optional(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const id = await db.createCustomer({
           ...input,
           userId: ctx.user.id,
-          existingSolarSize: input.existingSolarSize?.toString(),
         });
         return { id };
       }),
@@ -105,16 +102,13 @@ export const appRouter = router({
         poolVolume: z.number().optional(),
         hasEV: z.boolean().optional(),
         evInterest: z.enum(['none', 'interested', 'owns']).optional(),
-        hasExistingSolar: z.boolean().optional(),
-        existingSolarSize: z.number().optional(),
-        existingSolarAge: z.number().optional(),
+        existingSolar: z.enum(['none', 'under_5_years', 'over_5_years']).optional(),
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         await db.updateCustomer(id, {
           ...data,
-          existingSolarSize: data.existingSolarSize?.toString(),
         });
         return { success: true };
       }),
@@ -1353,6 +1347,7 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasG
     vppDailyCreditAnnual: calc.vppDailyCreditAnnual,
     vppEventPaymentsAnnual: calc.vppEventPaymentsAnnual,
     vppBundleDiscount: calc.vppBundleDiscount,
+    existingSolar: (customer.existingSolar as 'none' | 'under_5_years' | 'over_5_years') || 'none',
     hasEV: customer.hasEV ?? false,
     evAnnualKm: calc.evKmPerYear || 10000,
     evAnnualSavings: calc.evAnnualSavings,

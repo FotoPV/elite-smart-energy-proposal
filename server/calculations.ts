@@ -680,7 +680,8 @@ export function generateFullCalculations(
   
   // Solar recommendation (if no existing system)
   let solar: SolarRecommendation | null = null;
-  if (!customer.hasExistingSolar) {
+  const hasExistingSolar = customer.existingSolar !== 'none' && !!customer.existingSolar;
+  if (!hasExistingSolar) {
     solar = calculateSolarSize(
       usage.yearlyUsageKwh,
       customer.state,

@@ -39,9 +39,7 @@ export const customers = mysqlTable("customers", {
   poolVolume: int("poolVolume"), // Litres
   hasEV: boolean("hasEV").default(false),
   evInterest: mysqlEnum("evInterest", ["none", "interested", "owns"]).default("none"),
-  hasExistingSolar: boolean("hasExistingSolar").default(false),
-  existingSolarSize: decimal("existingSolarSize", { precision: 5, scale: 2 }), // kW
-  existingSolarAge: int("existingSolarAge"), // Years
+  existingSolar: mysqlEnum("existingSolar", ["none", "under_5_years", "over_5_years"]).default("none"),
   
   // Metadata
   notes: text("notes"),

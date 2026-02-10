@@ -43,6 +43,13 @@
       "when": 1770370079000,
       "tag": "0005_lethal_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1770744021296,
+      "tag": "0006_little_scrambler",
+      "breakpoints": true
     }
   ]
 }

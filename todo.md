@@ -770,3 +770,15 @@
 
 ## Cleanup: Remove All Test Customers (Feb 11)
 - [x] Deleted 15 test customers — 6 real customers remain (Frieda, Boris, Seong Heng, Jon, Jared, Ajith)
+
+## Feature: Existing Solar Flag + AC/DC Coupling Slide (Feb 11)
+- [x] Add existingSolar field to customers DB schema (none / under_5_years / over_5_years)
+- [x] Add existing solar dropdown to customer setup form (like EV flag) + orange badge
+- [x] Build conditional AC vs DC Coupling slide generator (genAcDcCoupling)
+- [x] Wire slide into proposal generation pipeline (after battery_considerations, before VPP)
+- [x] All 94 tests passing, TypeScript clean
+- [x] Server running, ready for end-to-end testing
+
+## Copyright & Disclaimer (Feb 11)
+- [x] Removed copyright footer from all slides (50 instances) — only on contact/last slide now
+- [x] Added disclaimer text to the last (contact) slide with copyright below it
