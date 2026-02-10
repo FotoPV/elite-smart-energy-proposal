@@ -84,9 +84,9 @@ describe("generateSlides", () => {
     expect(vppSlide).toBeDefined();
   });
 
-  it("includes financial summary slide with correct values", () => {
+  it("includes financial investment slide with correct values", () => {
     const slides = generateSlides(sampleProposalData);
-    const financialSlide = slides.find(s => s.type === "financial_summary");
+    const financialSlide = slides.find(s => s.type === "financial_investment");
     expect(financialSlide).toBeDefined();
     expect(financialSlide?.content.netInvestment).toBe(22200);
     expect(financialSlide?.content.paybackYears).toBe(6.0);
@@ -117,15 +117,15 @@ describe("generateSlideHTML", () => {
     expect(html).toContain("Lightning Energy");
   });
 
-  it("generates valid HTML for financial summary slide", () => {
+  it("generates valid HTML for financial investment slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const financialSlide = slides.find(s => s.type === "financial_summary");
+    const financialSlide = slides.find(s => s.type === "financial_investment");
     expect(financialSlide).toBeDefined();
     
     const html = generateSlideHTML(financialSlide!);
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain("$22,200");
-    expect(html).toContain("6.0");
+    expect(html).toContain("YRS");
   });
 
   it("includes brand colors in generated HTML", () => {

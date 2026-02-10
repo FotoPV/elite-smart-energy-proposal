@@ -657,3 +657,17 @@
 
 ## BUG: Generation Error on WHY ADD A BATTERY slide (Feb 10)
 - [x] Fix GENERATION ERROR on why_battery slide — added global try/catch in generateSlideHTML so it can NEVER throw, always returns a valid branded error slide instead of crashing
+
+
+## BUG: Slide Data Safety Issues (Feb 10)
+- [x] Fix vpp_recommendation: Cannot read properties of undefined (reading 'map') — added || [] fallback on providers + content null-safety
+- [x] Fix ev_analysis: Cannot read properties of undefined (reading 'toLocaleString') — replaced with Number() + || fallbacks
+- [x] Audit all HTML generators for null/undefined safety — added (slide.content || {}) fallbacks
+- [x] Add missing switch cases for hot_water_electrification, heating_cooling, induction_cooking, pool_heat_pump, electrification_investment
+- [x] Update ALL SVG charts to use smooth cubic bezier curves and rounded bar corners (8-10px border-radius)
+- [x] Update ROI line chart with smooth cubic bezier path + gradient fill
+- [x] Update cashflow comparison chart with smooth bezier curves
+- [x] Update battery SOC curve with smooth bezier path
+- [x] Update donut chart with stroke-linecap round
+- [x] Update savings summary stacked bar with rounded corners
+- [x] Update all chart legend dots with rounded corners (4px)

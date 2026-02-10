@@ -1042,6 +1042,11 @@ export function generateSlideHTML(slide: SlideContent): string {
       case 'energy_optimisation': content = genEnergyOptimisation(slide); break;
       case 'required_electrical_works': content = genRequiredElectricalWorks(slide); break;
       case 'system_integration': content = genSystemIntegration(slide); break;
+      case 'hot_water_electrification': content = genHotWater(slide); break;
+      case 'heating_cooling': content = genHeatingCooling(slide); break;
+      case 'induction_cooking': content = genInduction(slide); break;
+      case 'pool_heat_pump': content = genPoolHeatPump(slide); break;
+      case 'electrification_investment': content = genElectrificationInvestment(slide); break;
       case 'conclusion': content = genConclusion(slide); break;
       case 'contact': content = genContact(slide); break;
       default: content = genGeneric(slide);
@@ -1197,7 +1202,7 @@ function genUsageAnalysis(slide: SlideContent): string {
             ${benchmarks.map(b => `
               <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
                 <p style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: ${b.color === '#00EAD3' ? '#00EAD3' : '#FFFFFF'};">${b.kwh.toFixed(1)}</p>
-                <div style="width: 100%; height: ${(b.kwh / maxKwh) * 260}px; background: ${b.color}; border-radius: 4px 4px 0 0;"></div>
+                <div style="width: 100%; height: ${(b.kwh / maxKwh) * 260}px; background: ${b.color}; border-radius: 8px 8px 0 0;"></div>
                 <p style="font-size: 11px; color: #808285; margin-top: 8px; text-align: center;">${b.label}</p>
               </div>
             `).join('')}
@@ -1478,9 +1483,9 @@ function genSolar(slide: SlideContent): string {
 
 // ---- SLIDE 11: VPP COMPARISON ----
 function genVPPComparison(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const providers = c.providers as Array<{ provider: string; program: string; gasBundle: boolean; annualValue: string; strategicFit: string }>;
-  const rec = c.recommendedProvider as string;
+  const c = (slide.content || {}) as Record<string, unknown>;
+  const providers = (c.providers as Array<{ provider: string; program: string; gasBundle: boolean; annualValue: string; strategicFit: string }>) || [];
+  const rec = (c.recommendedProvider as string) || '';
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
@@ -1504,19 +1509,21 @@ function genVPPComparison(slide: SlideContent): string {
 
 // ---- SLIDE 12: VPP RECOMMENDATION ----
 function genVPPRecommendation(slide: SlideContent): string {
-  const c = slide.content as Record<string, unknown>;
-  const features = c.features as Array<{ icon: string; title: string; description: string }>;
+  const c = (slide.content || {}) as Record<string, unknown>;
+  const strategicFit = (c.strategicFit as Array<{ icon: string; title: string; description: string }>) || [];
+  const financialValue = (c.financialValue as Array<{ icon: string; title: string; description: string }>) || [];
+  const allFeatures = [...strategicFit, ...financialValue];
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="text-align: center; margin-top: 20px;">
         <p class="lbl">SELECTED PARTNER</p>
-        <p style="font-family: 'NextSphere', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider}</p>
-        <p style="color: #00EAD3; font-size: 22px; font-family: 'Urbanist', sans-serif;">${c.program}</p>
+        <p style="font-family: 'NextSphere', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider || 'TBD'}</p>
+        <p style="color: #00EAD3; font-size: 22px; font-family: 'Urbanist', sans-serif;">${c.program || ''}</p>
       </div>
       <div style="display: flex; gap: 24px; margin-top: 36px;">
-        ${features.map(f => `
+        ${allFeatures.map(f => `
           <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #f36710;">
             <p style="color: #f36710; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
             <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
@@ -1597,41 +1604,62 @@ function genInduction(slide: SlideContent): string { return genElectrificationSl
 // ---- SLIDE 16: EV ANALYSIS ----
 function genEVAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const comparison = (c.comparison as Array<{ scenario: string; costPer100km: number; annualCost: number }>) || [];
+  const annualKm = Number(c.annualKm) || 10000;
+  const dailyKm = Number(c.dailyKm) || 27.4;
+  const vehicleEfficiency = Number(c.vehicleEfficiency) || 15;
+  const dailyEnergyNeed = Number(c.dailyEnergyNeed) || 4.1;
+  const dailySolarGeneration = Number(c.dailySolarGeneration) || 0;
+  const remainingForHome = Number(c.remainingForHome) || 0;
+  const evPercentOfSolar = Number(c.evPercentOfSolar) || 0;
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
-      <div style="display: flex; gap: 60px; margin-top: 10px;">
+      <div style="display: flex; gap: 60px; margin-top: 20px;">
         <div style="flex: 1;">
-          <table>
-            <tr><th>VEHICLE TYPE</th><th style="text-align: right;">COST / 100KM</th><th style="text-align: right;">ANNUAL COST</th></tr>
-            ${comparison.map((comp, i) => `
-              <tr class="${i === 2 ? 'highlight-row' : ''}">
-                <td>${comp.scenario}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
-              </tr>
-            `).join('')}
-          </table>
-        </div>
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
-            <div style="width: 4px; height: 60px; background: #00EAD3; border-radius: 2px;"></div>
-            <div>
-              <p class="lbl" style="color: #00EAD3;">POTENTIAL ANNUAL SAVINGS</p>
-              <p class="hero-num white" style="font-size: 64px;">$${(c.annualSavings as number).toLocaleString()}</p>
+          <div class="card" style="margin-bottom: 20px;">
+            <p class="lbl">DRIVING PROFILE</p>
+            <div style="display: flex; gap: 30px; margin-top: 16px;">
+              <div>
+                <p class="hero-num aqua" style="font-size: 48px;">${(annualKm / 1000).toFixed(0)}k</p>
+                <p class="gray" style="font-size: 13px;">km / year</p>
+              </div>
+              <div>
+                <p class="hero-num white" style="font-size: 48px;">${dailyKm}</p>
+                <p class="gray" style="font-size: 13px;">km / day</p>
+              </div>
             </div>
           </div>
-          <div class="insight-card">
-            <p style="color: #808285; font-size: 14px; line-height: 1.6;">Solar-charged EV driving eliminates fuel costs entirely. With your proposed solar system, every kilometre driven is effectively <span class="hl-aqua">free</span>.</p>
+          <div class="card" style="margin-bottom: 20px;">
+            <p class="lbl">VEHICLE EFFICIENCY</p>
+            <p style="font-size: 22px; margin-top: 12px;"><span class="hl-aqua">${vehicleEfficiency} kWh</span> per 100 km</p>
+            <p class="gray" style="margin-top: 8px; font-size: 13px;">Daily energy requirement: <span style="color: #fff;">${dailyEnergyNeed} kWh</span></p>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
-            <span style="color: #22c55e;">🌿</span>
-            <p class="gray" style="font-size: 13px;">Environmental Impact: Avoid <span class="hl-aqua">${(c.co2Avoided as number).toFixed(1)} tonnes</span> of CO2 emissions annually.</p>
+        </div>
+        <div style="flex: 1;">
+          <div class="card aqua-b" style="margin-bottom: 20px; text-align: center; padding: 30px;">
+            <p class="lbl" style="color: #00EAD3;">SOLAR INTEGRATION</p>
+            <p class="hero-num aqua" style="font-size: 56px;">${dailySolarGeneration}</p>
+            <p class="gray">kWh daily solar generation</p>
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">EV SHARE</p>
+              <p style="font-size: 28px; color: #f36710; font-weight: 600;">${evPercentOfSolar.toFixed(0)}%</p>
+              <p class="gray" style="font-size: 12px;">of solar output</p>
+            </div>
+            <div class="card" style="flex: 1; text-align: center;">
+              <p class="lbl">REMAINING</p>
+              <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">${remainingForHome.toFixed(1)}</p>
+              <p class="gray" style="font-size: 12px;">kWh for home</p>
+            </div>
+          </div>
+          <div class="insight-card" style="margin-top: 20px;">
+            <p style="color: #808285; font-size: 13px; line-height: 1.6;">Your solar system can power your EV using just <span class="hl-aqua">${evPercentOfSolar.toFixed(0)}%</span> of daily generation, leaving <span class="hl-aqua">${remainingForHome.toFixed(1)} kWh</span> for household use.</p>
           </div>
         </div>
       </div>
+      ${c.narrative ? `<div style="margin-top: 16px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
   `;
@@ -1733,9 +1761,12 @@ function genSavingsSummary(slide: SlideContent): string {
         <div style="flex: 1;">
           <div style="height: 380px; display: flex; align-items: flex-end; justify-content: center;">
             <div style="width: 200px; display: flex; flex-direction: column;">
-              ${breakdown.map(b => {
+              ${breakdown.map((b, idx) => {
                 const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
-                return `<div style="height: ${(b.value / total) * 300}px; background: ${col}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: 600;">${b.category}</div>`;
+                const isFirst = idx === 0;
+                const isLast = idx === breakdown.length - 1;
+                const radius = isFirst && isLast ? '8px' : isFirst ? '8px 8px 0 0' : isLast ? '0 0 8px 8px' : '0';
+                return `<div style="height: ${(b.value / total) * 300}px; background: ${col}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: 600; border-radius: ${radius};">${b.category}</div>`;
               }).join('')}
             </div>
           </div>
@@ -2248,9 +2279,28 @@ function genInvestmentAnalysis(slide: SlideContent): string {
           <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 16px;">CUMULATIVE CASHFLOW (20 YEARS)</p>
           <div style="height: 280px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #333;">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 100%;">
-              <polyline points="${o1Points.join(' ')}" fill="none" stroke="#00EAD3" stroke-width="0.5" />
-              <polyline points="${o2Points.join(' ')}" fill="none" stroke="#f36710" stroke-width="0.5" />
+              <defs>
+                <linearGradient id="cfGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00EAD3" stop-opacity="0.15"/><stop offset="100%" stop-color="#00EAD3" stop-opacity="0"/></linearGradient>
+                <linearGradient id="cfGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f36710" stop-opacity="0.15"/><stop offset="100%" stop-color="#f36710" stop-opacity="0"/></linearGradient>
+              </defs>
               <line x1="0" y1="50" x2="100" y2="50" stroke="#333" stroke-width="0.2" stroke-dasharray="2,2" />
+              ${(() => {
+                // Convert polyline points to smooth cubic bezier paths
+                function smoothPath(pts: string[]): string {
+                  const coords = pts.map(p => { const [x, y] = p.split(',').map(Number); return { x, y }; });
+                  if (coords.length < 2) return '';
+                  let d = 'M' + coords[0].x + ',' + coords[0].y;
+                  for (let i = 0; i < coords.length - 1; i++) {
+                    const cpx = (coords[i].x + coords[i + 1].x) / 2;
+                    d += ' C' + cpx + ',' + coords[i].y + ' ' + cpx + ',' + coords[i + 1].y + ' ' + coords[i + 1].x + ',' + coords[i + 1].y;
+                  }
+                  return d;
+                }
+                const path1 = smoothPath(o1Points);
+                const path2 = smoothPath(o2Points);
+                return '<path d="' + path1 + '" fill="none" stroke="#00EAD3" stroke-width="0.8" stroke-linecap="round" />' +
+                  '<path d="' + path2 + '" fill="none" stroke="#f36710" stroke-width="0.8" stroke-linecap="round" />';
+              })()}
             </svg>
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
@@ -2279,13 +2329,13 @@ function genBillBreakdown(slide: SlideContent): string {
           <div style="position: relative; width: 320px; height: 320px;">
             <svg viewBox="0 0 200 200" style="width: 320px; height: 320px; transform: rotate(-90deg);">
               <circle cx="100" cy="100" r="80" fill="none" stroke="#333" stroke-width="30" />
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#f36710" stroke-width="30" stroke-dasharray="${usagePct * 5.026} ${(100 - usagePct) * 5.026}" stroke-dashoffset="0" />
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#00EAD3" stroke-width="30" stroke-dasharray="${supplyPct * 5.026} ${(100 - supplyPct) * 5.026}" stroke-dashoffset="-${usagePct * 5.026}" />
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#f36710" stroke-width="30" stroke-dasharray="${usagePct * 5.026} ${(100 - usagePct) * 5.026}" stroke-dashoffset="0" stroke-linecap="round" />
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#00EAD3" stroke-width="30" stroke-dasharray="${supplyPct * 5.026} ${(100 - supplyPct) * 5.026}" stroke-dashoffset="-${usagePct * 5.026}" stroke-linecap="round" />
             </svg>
           </div>
           <div style="display: flex; gap: 30px; margin-top: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 2px;"></div><span style="font-size: 13px; color: #808285;">Usage Charges</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 13px; color: #808285;">Supply Charges</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Usage Charges</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Supply Charges</span></div>
           </div>
         </div>
         <div style="flex: 1;">
@@ -2328,16 +2378,16 @@ function genAnnualEnergyProjection(slide: SlideContent): string {
             ${months.map(m => `
               <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%;">
                 <div style="flex: 1; display: flex; align-items: flex-end; gap: 3px; width: 100%;">
-                  <div style="flex: 1; background: #f36710; border-radius: 3px 3px 0 0; height: ${(m.usage / maxVal) * 100}%;"></div>
-                  <div style="flex: 1; background: #00EAD3; border-radius: 3px 3px 0 0; height: ${(m.solar / maxVal) * 100}%;"></div>
+                  <div style="flex: 1; background: #f36710; border-radius: 8px 8px 0 0; height: ${(m.usage / maxVal) * 100}%;"></div>
+                  <div style="flex: 1; background: #00EAD3; border-radius: 8px 8px 0 0; height: ${(m.solar / maxVal) * 100}%;"></div>
                 </div>
                 <span style="font-size: 10px; color: #808285;">${m.month.substring(0, 3)}</span>
               </div>
             `).join('')}
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 2px;"></div><span style="font-size: 12px; color: #808285;">Current Usage</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 12px; color: #808285;">Solar Production (Est.)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 4px;"></div><span style="font-size: 12px; color: #808285;">Current Usage</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 12px; color: #808285;">Solar Production (Est.)</span></div>
           </div>
         </div>
         <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
@@ -2365,13 +2415,13 @@ function genUsageBenchmarking(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; margin-top: 20px;">
         <div style="flex: 1.2; display: flex; align-items: flex-end; gap: 40px; padding: 40px 60px 30px;">
           <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <div style="width: 100%; background: #f36710; border-radius: 6px 6px 0 0; height: ${(daily / maxBar) * 350}px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;">
+            <div style="width: 100%; background: #f36710; border-radius: 10px 10px 0 0; height: ${(daily / maxBar) * 350}px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;">
               <span style="font-family: 'NextSphere', sans-serif; font-size: 28px; color: #000; font-weight: 800;">${daily.toFixed(1)}</span>
             </div>
             <span style="font-size: 13px; color: #808285;">Your Usage</span>
           </div>
           <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <div style="width: 100%; background: #00EAD3; border-radius: 6px 6px 0 0; height: ${(stateAvg / maxBar) * 350}px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;">
+            <div style="width: 100%; background: #00EAD3; border-radius: 10px 10px 0 0; height: ${(stateAvg / maxBar) * 350}px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px;">
               <span style="font-family: 'NextSphere', sans-serif; font-size: 28px; color: #000; font-weight: 800;">${stateAvg.toFixed(1)}</span>
             </div>
             <span style="font-size: 13px; color: #808285;">Average Household</span>
@@ -2641,18 +2691,36 @@ function genReturnOnInvestment(slide: SlideContent): string {
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1.8; position: relative; height: 500px;">
           <svg viewBox="0 0 800 500" style="width: 100%; height: 100%;">
+            <defs>
+              <linearGradient id="roiGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00EAD3" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00EAD3" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
             <line x1="60" y1="250" x2="780" y2="250" stroke="#333" stroke-width="1" />
             <text x="40" y="255" fill="#808285" font-size="11" text-anchor="end">$0</text>
+            ${(() => {
+              const pts = dataPoints.map((d, i) => ({ x: 80 + (i * 70), y: 250 - (d.value * scale * 0.7) }));
+              // Build smooth cubic bezier path
+              let curvePath = `M${pts[0].x},${pts[0].y}`;
+              for (let i = 0; i < pts.length - 1; i++) {
+                const cpx = (pts[i].x + pts[i + 1].x) / 2;
+                curvePath += ` C${cpx},${pts[i].y} ${cpx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+              }
+              // Build filled area path
+              const lastPt = pts[pts.length - 1];
+              const fillPath = curvePath + ` L${lastPt.x},250 L${pts[0].x},250 Z`;
+              return `
+                <path d="${fillPath}" fill="url(#roiGrad)" />
+                <path d="${curvePath}" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              `;
+            })()}
             ${dataPoints.map((d, i) => {
               const x = 80 + (i * 70);
               const y = 250 - (d.value * scale * 0.7);
               const color = d.value >= 0 ? '#00EAD3' : '#f36710';
-              const nextD = dataPoints[i + 1];
-              const nextX = nextD ? 80 + ((i + 1) * 70) : x;
-              const nextY = nextD ? 250 - (nextD.value * scale * 0.7) : y;
               return `
-                ${nextD ? `<line x1="${x}" y1="${y}" x2="${nextX}" y2="${nextY}" stroke="#FFFFFF" stroke-width="2" />` : ''}
-                <circle cx="${x}" cy="${y}" r="5" fill="${color}" />
+                <circle cx="${x}" cy="${y}" r="6" fill="${color}" stroke="#000" stroke-width="2" />
                 <text x="${x}" y="480" fill="#808285" font-size="10" text-anchor="middle">${d.year === 0 ? 'Start' : 'Yr ' + d.year}</text>
               `;
             }).join('')}
@@ -2836,7 +2904,7 @@ function genTariffComparison(slide: SlideContent): string {
             ].map(r => `
               <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
                 <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: ${r.color};">${r.rate.toFixed(1)}¢</p>
-                <div style="width: 100%; height: ${(r.rate / maxRate) * 220}px; background: ${r.color}; border-radius: 4px 4px 0 0;"></div>
+                <div style="width: 100%; height: ${(r.rate / maxRate) * 220}px; background: ${r.color}; border-radius: 8px 8px 0 0;"></div>
                 <p style="font-size: 11px; color: #808285; margin-top: 8px; text-align: center;">${r.label}</p>
               </div>
             `).join('')}
@@ -2902,7 +2970,7 @@ function genDailyLoadProfile(slide: SlideContent): string {
             const color = isPeak ? '#FFFFFF' : isSolar ? '#00EAD3' : '#808285';
             return `
               <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
-                <div style="width: 100%; height: ${(h.kwh / maxKwh) * 260}px; background: ${color}; border-radius: 2px 2px 0 0; min-height: 4px;"></div>
+                <div style="width: 100%; height: ${(h.kwh / maxKwh) * 260}px; background: ${color}; border-radius: 8px 8px 0 0; min-height: 4px;"></div>
               </div>
             `;
           }).join('')}
@@ -2912,9 +2980,9 @@ function genDailyLoadProfile(slide: SlideContent): string {
         </div>
       </div>
       <div style="display: flex; gap: 24px; margin-top: 24px;">
-        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation Hours (7am-5pm)</span></div>
-        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #FFFFFF; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Peak Demand (3pm-9pm)</span></div>
-        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Off-Peak / Overnight</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation Hours (7am-5pm)</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #FFFFFF; border-radius: 4px;"></div><span style="font-size: 11px; color: #808285;">Peak Demand (3pm-9pm)</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 4px;"></div><span style="font-size: 11px; color: #808285;">Off-Peak / Overnight</span></div>
       </div>
       <div style="display: flex; gap: 24px; margin-top: 20px;">
         <div class="card" style="flex: 1; text-align: center;">
@@ -2971,8 +3039,8 @@ function genSolarGenerationProfile(slide: SlideContent): string {
           <div style="display: flex; align-items: flex-end; height: 300px; gap: 6px; padding: 0 10px; border-bottom: 1px solid #333;">
             ${months.map(m => `
               <div style="flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 100%;">
-                <div style="flex: 1; height: ${(m.gen / maxVal) * 260}px; background: #00EAD3; border-radius: 2px 2px 0 0;"></div>
-                <div style="flex: 1; height: ${(m.use / maxVal) * 260}px; background: #808285; border-radius: 2px 2px 0 0;"></div>
+                <div style="flex: 1; height: ${(m.gen / maxVal) * 260}px; background: #00EAD3; border-radius: 8px 8px 0 0;"></div>
+                <div style="flex: 1; height: ${(m.use / maxVal) * 260}px; background: #808285; border-radius: 8px 8px 0 0;"></div>
               </div>
             `).join('')}
           </div>
@@ -2980,8 +3048,8 @@ function genSolarGenerationProfile(slide: SlideContent): string {
             ${months.map(m => `<div style="flex: 1; text-align: center; font-size: 10px; color: #808285; padding-top: 6px;">${m.month}</div>`).join('')}
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 2px;"></div><span style="font-size: 11px; color: #808285;">Household Consumption</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 11px; color: #808285;">Solar Generation</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285; border-radius: 4px;"></div><span style="font-size: 11px; color: #808285;">Household Consumption</span></div>
           </div>
         </div>
         <div style="flex: 0.8;">
@@ -3040,8 +3108,18 @@ function genBatteryCycle(slide: SlideContent): string {
                   <stop offset="100%" stop-color="#00EAD3" stop-opacity="0"/>
                 </linearGradient>
               </defs>
-              <path d="M${socCurve.map((soc, i) => `${(i / 23) * 240},${100 - soc}`).join(' L')}" fill="none" stroke="#00EAD3" stroke-width="2"/>
-              <path d="M0,100 L${socCurve.map((soc, i) => `${(i / 23) * 240},${100 - soc}`).join(' L')} L240,100 Z" fill="url(#socGrad)"/>
+              ${(() => {
+                // Build smooth cubic bezier path for SOC curve
+                const pts = socCurve.map((soc, i) => ({ x: (i / 23) * 240, y: 100 - soc }));
+                let curvePath = 'M' + pts[0].x + ',' + pts[0].y;
+                for (let i = 0; i < pts.length - 1; i++) {
+                  const cpx = (pts[i].x + pts[i + 1].x) / 2;
+                  curvePath += ' C' + cpx + ',' + pts[i].y + ' ' + cpx + ',' + pts[i + 1].y + ' ' + pts[i + 1].x + ',' + pts[i + 1].y;
+                }
+                const fillPath = 'M0,100 L' + pts[0].x + ',' + pts[0].y + curvePath.substring(curvePath.indexOf(' C')) + ' L' + pts[pts.length - 1].x + ',100 Z';
+                return '<path d="' + curvePath + '" fill="none" stroke="#00EAD3" stroke-width="2" stroke-linecap="round"/>' +
+                  '<path d="' + fillPath + '" fill="url(#socGrad)"/>';
+              })()}
             </svg>
           </div>
           <div style="display: flex; gap: 2px; padding: 0 10px;">
