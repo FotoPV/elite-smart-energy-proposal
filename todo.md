@@ -696,3 +696,11 @@
 - [x] Verified Export button visible and working on generated proposals
 - [x] S3 storage ensures slides are always available for export (no more DB size limit issues)
 - [x] No share link (explicitly excluded)
+
+
+## UI: Make Export/Download Buttons More Prominent (Feb 10)
+- [x] Replaced hidden dropdown with prominent DOWNLOAD & EXPORT section on proposal detail page
+- [x] Added 4 large, clearly visible export buttons in a grid layout (PDF, PowerPoint, HTML PDF, Manus Slides)
+- [x] Each button has inline progress bar when exporting
+- [x] Buttons always visible when slides are generated (no dropdown needed)
+- [x] Color-coded: aqua for PDF/Slides, orange for PowerPoint, grey for HTML PDF

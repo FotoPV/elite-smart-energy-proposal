@@ -728,6 +728,151 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   );
 }
 
+// Prominent export button component — large, visible, with inline progress
+function ExportButton({ type, label, description, icon, color, proposalId, customerName }: {
+  type: 'pdf' | 'pptx' | 'html-pdf' | 'slides';
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  color: 'aqua' | 'orange' | 'grey';
+  proposalId: number;
+  customerName: string;
+}) {
+  const [isExporting, setIsExporting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('');
+  
+  const exportPptxMutation = trpc.proposals.exportPptx.useMutation();
+  const generateSlideContentMutation = trpc.proposals.generateSlideContent.useMutation();
+  const utils = trpc.useUtils();
+  
+  const colorMap = {
+    aqua: { bg: 'bg-[#00EAD3]', hover: 'hover:bg-[#00EAD3]/90', text: 'text-black', border: 'border-[#00EAD3]/30', iconColor: 'text-[#00EAD3]' },
+    orange: { bg: 'bg-[#f36710]', hover: 'hover:bg-[#f36710]/90', text: 'text-white', border: 'border-[#f36710]/30', iconColor: 'text-[#f36710]' },
+    grey: { bg: 'bg-[#808285]/20', hover: 'hover:bg-[#808285]/30', text: 'text-white', border: 'border-[#808285]/30', iconColor: 'text-[#808285]' },
+  };
+  const c = colorMap[color];
+  
+  const handleExport = async () => {
+    setIsExporting(true);
+    setProgress(0);
+    try {
+      if (type === 'pdf' || type === 'html-pdf') {
+        setCurrentStep('Fetching slides...');
+        setProgress(10);
+        const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+        if (!slidesResult?.slides || slidesResult.slides.length === 0) {
+          throw new Error('No slides generated. Please generate the proposal first.');
+        }
+        setProgress(15);
+        setCurrentStep(`Rendering ${slidesResult.slides.length} slides...`);
+        const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
+        const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
+          setCurrentStep(step);
+          setProgress(15 + Math.round(pct * 0.65));
+        });
+        setProgress(85);
+        setCurrentStep('Preparing download...');
+        const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        // Upload to S3 for storage
+        try {
+          const reader = new FileReader();
+          const base64 = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+            reader.readAsDataURL(pdfBlob);
+          });
+          await fetch('/api/upload-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdfData: base64, fileName: `exports/proposal-${proposalId}-${Date.now()}.pdf` }),
+          });
+        } catch { /* upload optional */ }
+        toast.success('PDF downloaded successfully!');
+      } else if (type === 'pptx') {
+        setCurrentStep('Generating PowerPoint...');
+        setProgress(30);
+        const result = await exportPptxMutation.mutateAsync({ proposalId });
+        setProgress(80);
+        setCurrentStep('Downloading...');
+        if (result.fileUrl) {
+          const link = document.createElement('a');
+          link.href = result.fileUrl;
+          link.download = result.fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        toast.success('PowerPoint exported successfully!');
+      } else if (type === 'slides') {
+        setCurrentStep('Preparing slide content...');
+        setProgress(30);
+        const result = await generateSlideContentMutation.mutateAsync({ proposalId });
+        setProgress(80);
+        if (result.fileUrl) {
+          const link = document.createElement('a');
+          link.href = result.fileUrl;
+          link.download = result.fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        toast.success(`Slide content prepared! ${result.slideCount} slides ready.`);
+      }
+      setProgress(100);
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setProgress(0);
+      setCurrentStep('');
+    }
+  };
+  
+  return (
+    <button
+      onClick={handleExport}
+      disabled={isExporting}
+      className={`relative flex flex-col items-center justify-center gap-2 p-5 rounded-xl border transition-all duration-200 ${isExporting ? 'opacity-80 cursor-wait' : 'cursor-pointer hover:scale-[1.02]'} ${c.border} bg-[#111] hover:bg-[#1a1a1a]`}
+    >
+      {isExporting ? (
+        <>
+          <Loader2 className={`h-6 w-6 animate-spin ${c.iconColor}`} />
+          <span className="text-xs text-[#808285] text-center" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            {currentStep || 'Exporting...'}
+          </span>
+          <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden mt-1">
+            <div 
+              className={`h-full ${c.bg} rounded-full transition-all duration-300`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className={`${c.iconColor}`}>{icon}</div>
+          <span 
+            className="text-sm text-white font-semibold uppercase tracking-wide"
+            style={{ fontFamily: "'Urbanist', sans-serif" }}
+          >
+            {label}
+          </span>
+          <span className="text-[10px] text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            {description}
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
 export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
@@ -822,7 +967,7 @@ export default function ProposalDetailPage() {
           </p>
         </div>
         
-        {/* Document Card - Dark card with file info + Open/Download */}
+        {/* Document Card - Dark card with file info + Open */}
         <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -837,13 +982,13 @@ export default function ProposalDetailPage() {
                   Bill Analysis
                 </h2>
                 <p className="text-sm text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-                  Bill Analysis.pdf
+                  {customerName} — {slides.length} slides
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
-              {/* Open button - ghost style with aqua text */}
+              {/* Open in new tab */}
               {hasSlides && (
                 <Button
                   variant="ghost"
@@ -872,46 +1017,89 @@ export default function ProposalDetailPage() {
                   Open
                 </Button>
               )}
-              
-              {/* Export dropdown - PDF, PPTX, HTML PDF */}
-              {hasSlides && (
-                <ExportDropdown proposalId={proposalId} customerName={customerName} />
-              )}
 
-              {/* More options dropdown for admin actions */}
-              {hasSlides && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-[#808285] hover:text-white"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-[#0a0a0a] border-[#1a1a1a]">
-                    <DropdownMenuItem
-                      onClick={() => calculateMutation.mutate({ proposalId })}
-                      disabled={calculateMutation.isPending}
-                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
-                    >
-                      <Calculator className="mr-2 h-4 w-4" />
-                      Recalculate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setShowLiveGeneration(true)}
-                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
-                    >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Regenerate Slides (Live Preview)
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {/* Admin actions */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-[#808285] hover:text-white"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-[#0a0a0a] border-[#1a1a1a]">
+                  <DropdownMenuItem
+                    onClick={() => calculateMutation.mutate({ proposalId })}
+                    disabled={calculateMutation.isPending}
+                    className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                  >
+                    <Calculator className="mr-2 h-4 w-4" />
+                    Recalculate
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setShowLiveGeneration(true)}
+                    className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Regenerate Slides
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
+
+        {/* DOWNLOAD & EXPORT — Prominent buttons always visible when slides exist */}
+        {hasSlides && (
+          <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
+            <h3 
+              className="text-lg text-white uppercase tracking-wide mb-4"
+              style={{ fontFamily: "'Next Sphere', sans-serif" }}
+            >
+              Download & Export
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <ExportButton
+                type="pdf"
+                label="Download PDF"
+                description="Full proposal with all slides"
+                icon={<FileDown className="h-5 w-5" />}
+                color="aqua"
+                proposalId={proposalId}
+                customerName={customerName}
+              />
+              <ExportButton
+                type="pptx"
+                label="PowerPoint"
+                description="Editable .pptx file"
+                icon={<Presentation className="h-5 w-5" />}
+                color="orange"
+                proposalId={proposalId}
+                customerName={customerName}
+              />
+              <ExportButton
+                type="html-pdf"
+                label="HTML PDF"
+                description="Browser-rendered slides"
+                icon={<FileText className="h-5 w-5" />}
+                color="grey"
+                proposalId={proposalId}
+                customerName={customerName}
+              />
+              <ExportButton
+                type="slides"
+                label="Manus Slides"
+                description="Pixel-perfect image slides"
+                icon={<Presentation className="h-5 w-5" />}
+                color="aqua"
+                proposalId={proposalId}
+                customerName={customerName}
+              />
+            </div>
+          </div>
+        )}
         
         {/* Live Generation View — auto-starts when proposal has calculations but no slides */}
         {showLiveGeneration && (
