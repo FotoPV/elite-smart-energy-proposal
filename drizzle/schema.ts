@@ -385,6 +385,7 @@ export interface SlideData {
   type: string;
   title: string;
   html: string;
+  s3Key?: string; // S3 key for slide HTML (used instead of storing html in DB)
   isIncluded: boolean;
 }
 

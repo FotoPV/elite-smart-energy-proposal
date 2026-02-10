@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
-import { storagePut } from "./storage";
+import { storagePut, storageGet } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
 import { generateFullCalculations } from "./calculations";
 import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
@@ -431,10 +431,10 @@ export const appRouter = router({
         initProgress(input.proposalId, slideInfo);
         
         // Build slidesData directly from allSlides (no more old generateSlidesData)
-        const slidesData: Array<{ type: string; title: string; html: string; isIncluded: boolean }> = 
+        const slidesData: Array<{ type: string; title: string; html: string; s3Key?: string; isIncluded: boolean }> = 
           allSlides.map(s => ({ type: s.type, title: s.title, html: '', isIncluded: true }));
         
-        // Process each slide — LLM-powered narrative enrichment
+        // Process each slide — LLM-powered narrative enrichment + S3 upload
         for (let i = 0; i < allSlides.length; i++) {
           updateSlideProgress(input.proposalId, i, { status: 'generating' });
           
@@ -454,7 +454,6 @@ export const appRouter = router({
                 html: slideHtml,
               });
             } catch (err2: any) {
-              // Generate a minimal placeholder slide so we don't leave a blank gap
               const placeholderHtml = `<div style="width:1920px;height:1080px;background:#000;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#808285;"><div style="text-align:center;"><p style="font-size:32px;color:#fff;margin-bottom:16px;">${allSlides[i].title || 'Slide'}</p><p style="font-size:18px;">Content generation in progress</p></div></div>`;
               slideHtml = placeholderHtml;
               updateSlideProgress(input.proposalId, i, {
@@ -465,16 +464,25 @@ export const appRouter = router({
             }
           }
           
-          // Store HTML directly in slidesData
-          slidesData[i].html = slideHtml;
+          // Upload slide HTML to S3 (non-blocking per slide — we continue even if one fails)
+          try {
+            const s3Key = `slides/${input.proposalId}/slide-${i}-${Date.now()}.html`;
+            await storagePut(s3Key, slideHtml, 'text/html');
+            slidesData[i].s3Key = s3Key;
+            slidesData[i].html = ''; // Don't store HTML in DB — it's in S3 now
+            console.log(`[generateProgressive] Slide ${i} uploaded to S3: ${s3Key}`);
+          } catch (s3Err: any) {
+            console.error(`[generateProgressive] S3 upload failed for slide ${i}:`, s3Err.message);
+            // Keep HTML in slidesData as fallback if S3 fails
+            slidesData[i].html = slideHtml;
+          }
         }
         
-        // Save to DB — always mark as generated since all slides have been attempted
-        const includedCount = slidesData.filter(s => s.html).length;
+        // Save to DB — slidesData now contains only metadata + s3Keys (no huge HTML)
+        const includedCount = slidesData.filter(s => s.s3Key || s.html).length;
         try {
-          // Log the size of slidesData to help debug DB issues
           const jsonSize = JSON.stringify(slidesData).length;
-          console.log(`[generateProgressive] Saving ${includedCount} slides for proposal ${input.proposalId}, JSON size: ${(jsonSize / 1024 / 1024).toFixed(2)} MB`);
+          console.log(`[generateProgressive] Saving ${includedCount} slides for proposal ${input.proposalId}, JSON size: ${(jsonSize / 1024).toFixed(1)} KB (HTML in S3)`);
           
           await db.updateProposal(input.proposalId, {
             slidesData,
@@ -484,7 +492,6 @@ export const appRouter = router({
           console.log(`[generateProgressive] DB save successful for proposal ${input.proposalId}, status set to 'generated'`);
         } catch (dbErr: any) {
           console.error(`[generateProgressive] DB save FAILED for proposal ${input.proposalId}:`, dbErr.message);
-          // Try saving just the status without the huge slidesData
           try {
             await db.updateProposal(input.proposalId, { status: 'generated', slideCount: includedCount });
             console.log(`[generateProgressive] Fallback status-only save successful for proposal ${input.proposalId}`);
@@ -573,35 +580,49 @@ export const appRouter = router({
         
         // Return stored LLM-generated HTML from slidesData in DB
         const slidesData = (proposal.slidesData || []) as import('../drizzle/schema').SlideData[];
-        // Only return slides that are included AND have generated HTML
-        const includedSlides = slidesData.filter(s => s.isIncluded && s.html);
+        // Only return slides that are included AND have HTML or S3 key
+        const includedSlides = slidesData.filter(s => s.isIncluded && (s.html || s.s3Key));
         
-        if (includedSlides.length === 0 || !includedSlides.some(s => s.html)) {
-          // No LLM-generated slides yet — need to run progressive generation first
+        if (includedSlides.length === 0) {
           return { slides: [], totalSlides: 0 };
         }
         
+        // Fetch HTML from S3 for slides that have s3Key (parallel fetch)
+        const resolvedSlides = await Promise.all(
+          includedSlides.map(async (s, idx) => {
+            let html = s.html || '';
+            if (s.s3Key && !html) {
+              try {
+                const { url } = await storageGet(s.s3Key);
+                const response = await fetch(url);
+                if (response.ok) {
+                  html = await response.text();
+                } else {
+                  console.error(`[getSlideHtml] S3 fetch failed for slide ${idx} (${s.s3Key}): ${response.status}`);
+                }
+              } catch (err: any) {
+                console.error(`[getSlideHtml] S3 fetch error for slide ${idx} (${s.s3Key}):`, err.message);
+              }
+            }
+            return { id: idx + 1, type: s.type, title: s.title, html };
+          })
+        );
+        
         if (input.slideIndex !== undefined) {
-          const slide = includedSlides[input.slideIndex];
+          const slide = resolvedSlides[input.slideIndex];
           if (!slide || !slide.html) {
             throw new TRPCError({ code: 'NOT_FOUND', message: 'Slide not found' });
           }
           return {
             html: slide.html,
             slide,
-            totalSlides: includedSlides.length,
+            totalSlides: resolvedSlides.length,
           };
         }
         
-        // Return all stored LLM-generated slide HTML
         return {
-          slides: includedSlides.map((s, idx) => ({
-            id: idx + 1,
-            type: s.type,
-            title: s.title,
-            html: s.html || '',
-          })),
-          totalSlides: includedSlides.length,
+          slides: resolvedSlides,
+          totalSlides: resolvedSlides.length,
         };
       }),
     

@@ -2249,6 +2249,20 @@ function genInvestmentAnalysis(slide: SlideContent): string {
     o2Points.push(`${(y / years) * 100},${50 - (o2Val / ((o1.annualBenefit as number) * years * 1.2)) * 45}`);
   }
   
+  // Pre-compute smooth SVG paths for cashflow chart (outside template literal for esbuild compatibility)
+  function smoothCashflowPath(pts: string[]): string {
+    const coords = pts.map(p => { const [x, y] = p.split(',').map(Number); return { x, y }; });
+    if (coords.length < 2) return '';
+    let d = 'M' + coords[0].x + ',' + coords[0].y;
+    for (let ii = 0; ii < coords.length - 1; ii++) {
+      const cpx = (coords[ii].x + coords[ii + 1].x) / 2;
+      d += ' C' + cpx + ',' + coords[ii].y + ' ' + cpx + ',' + coords[ii + 1].y + ' ' + coords[ii + 1].x + ',' + coords[ii + 1].y;
+    }
+    return d;
+  }
+  const cfSvgPath1 = smoothCashflowPath(o1Points);
+  const cfSvgPath2 = smoothCashflowPath(o2Points);
+
   const compRows = [
     { metric: 'Total System Cost', v1: `$${(o1.systemCost as number).toLocaleString()}`, v2: `$${(o2.systemCost as number).toLocaleString()}` },
     { metric: 'Federal Rebate', v1: `-$${(o1.rebate as number).toLocaleString()}`, v2: `-$${(o2.rebate as number).toLocaleString()}`, highlight: false, aqua: true },
@@ -2284,23 +2298,8 @@ function genInvestmentAnalysis(slide: SlideContent): string {
                 <linearGradient id="cfGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f36710" stop-opacity="0.15"/><stop offset="100%" stop-color="#f36710" stop-opacity="0"/></linearGradient>
               </defs>
               <line x1="0" y1="50" x2="100" y2="50" stroke="#333" stroke-width="0.2" stroke-dasharray="2,2" />
-              ${(() => {
-                // Convert polyline points to smooth cubic bezier paths
-                function smoothPath(pts: string[]): string {
-                  const coords = pts.map(p => { const [x, y] = p.split(',').map(Number); return { x, y }; });
-                  if (coords.length < 2) return '';
-                  let d = 'M' + coords[0].x + ',' + coords[0].y;
-                  for (let i = 0; i < coords.length - 1; i++) {
-                    const cpx = (coords[i].x + coords[i + 1].x) / 2;
-                    d += ' C' + cpx + ',' + coords[i].y + ' ' + cpx + ',' + coords[i + 1].y + ' ' + coords[i + 1].x + ',' + coords[i + 1].y;
-                  }
-                  return d;
-                }
-                const path1 = smoothPath(o1Points);
-                const path2 = smoothPath(o2Points);
-                return '<path d="' + path1 + '" fill="none" stroke="#00EAD3" stroke-width="0.8" stroke-linecap="round" />' +
-                  '<path d="' + path2 + '" fill="none" stroke="#f36710" stroke-width="0.8" stroke-linecap="round" />';
-              })()}
+              <path d="${cfSvgPath1}" fill="none" stroke="#00EAD3" stroke-width="0.8" stroke-linecap="round" />
+              <path d="${cfSvgPath2}" fill="none" stroke="#f36710" stroke-width="0.8" stroke-linecap="round" />
             </svg>
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">

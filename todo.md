@@ -685,4 +685,14 @@
 - [x] Added comprehensive logging to DB save (JSON size, success/failure messages)
 - [x] Added fallback: if full save fails, try status-only save without slidesData
 - [x] Manually fixed Seong Heng Chua proposal status to 'generated'
-- [ ] Future: Consider saving slide HTML to S3 instead of DB JSON column to avoid size limits
+- [x] Implemented S3 storage for slide HTML — each slide uploaded to S3 during generation, DB stores only 3KB metadata
+- [x] Updated getSlideHtml endpoint to fetch HTML from S3 in parallel with DB fallback
+- [x] Fixed esbuild syntax error in cashflow chart IIFE (extracted smoothPath function outside template literal)
+- [x] Regenerated Seong Heng Chua proposal — all 22 slides uploaded to S3, DB save successful, status 'generated'
+
+
+## FEATURE: Download/Export Slides (Feb 10)
+- [x] Export dropdown already exists with PDF, PowerPoint, HTML PDF, Manus Slides options
+- [x] Verified Export button visible and working on generated proposals
+- [x] S3 storage ensures slides are always available for export (no more DB size limit issues)
+- [x] No share link (explicitly excluded)
