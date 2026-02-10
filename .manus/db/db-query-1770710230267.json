@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, title, status, JSON_LENGTH(slidesData) as slideDataLength FROM proposals ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, title, status, JSON_LENGTH(slidesData) as slideDataLength FROM proposals ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "330002",
+      "title": "Electrification Proposal for Jon Shoebridge",
+      "status": "generated",
+      "slideDataLength": "22"
+    },
+    {
+      "id": "330001",
+      "title": "Electrification Proposal for Jon Shoebridge",
+      "status": "generated",
+      "slideDataLength": "22"
+    },
+    {
+      "id": "300002",
+      "title": "Electrification Proposal for Seong Heng Chua",
+      "status": "generated",
+      "slideDataLength": "22"
+    },
+    {
+      "id": "300001",
+      "title": "Electrification Proposal for Seong Heng Chua",
+      "status": "draft",
+      "slideDataLength": "NULL"
+    },
+    {
+      "id": "270004",
+      "title": "Electrification Proposal for Boris Sirota",
+      "status": "generated",
+      "slideDataLength": "19"
+    },
+    {
+      "id": "270003",
+      "title": "Electrification Proposal for Frieda Lay",
+      "status": "generated",
+      "slideDataLength": "22"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tstatus\tslideDataLength\n330002\tElectrification Proposal for Jon Shoebridge\tgenerated\t22\n330001\tElectrification Proposal for Jon Shoebridge\tgenerated\t22\n300002\tElectrification Proposal for Seong Heng Chua\tgenerated\t22\n300001\tElectrification Proposal for Seong Heng Chua\tdraft\tNULL\n270004\tElectrification Proposal for Boris Sirota\tgenerated\t19\n270003\tElectrification Proposal for Frieda Lay\tgenerated\t22\n",
+  "stderr": "",
+  "execution_time_ms": 1565
+}

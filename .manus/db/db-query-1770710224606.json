@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, title, status, slideCount, createdAt, updatedAt FROM proposals ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, title, status, slideCount, createdAt, updatedAt FROM proposals ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "330002",
+      "title": "Electrification Proposal for Jon Shoebridge",
+      "status": "generated",
+      "slideCount": "22",
+      "createdAt": "2026-02-10 06:36:54",
+      "updatedAt": "2026-02-10 07:54:09"
+    },
+    {
+      "id": "330001",
+      "title": "Electrification Proposal for Jon Shoebridge",
+      "status": "generated",
+      "slideCount": "22",
+      "createdAt": "2026-02-10 06:23:41",
+      "updatedAt": "2026-02-10 07:01:30"
+    },
+    {
+      "id": "300002",
+      "title": "Electrification Proposal for Seong Heng Chua",
+      "status": "generated",
+      "slideCount": "22",
+      "createdAt": "2026-02-10 02:17:34",
+      "updatedAt": "2026-02-10 06:53:18"
+    },
+    {
+      "id": "300001",
+      "title": "Electrification Proposal for Seong Heng Chua",
+      "status": "draft",
+      "slideCount": "NULL",
+      "createdAt": "2026-02-10 02:07:05",
+      "updatedAt": "2026-02-10 02:15:40"
+    },
+    {
+      "id": "270004",
+      "title": "Electrification Proposal for Boris Sirota",
+      "status": "generated",
+      "slideCount": "18",
+      "createdAt": "2026-02-10 00:14:54",
+      "updatedAt": "2026-02-10 01:00:38"
+    },
+    {
+      "id": "270003",
+      "title": "Electrification Proposal for Frieda Lay",
+      "status": "generated",
+      "slideCount": "20",
+      "createdAt": "2026-02-10 00:00:17",
+      "updatedAt": "2026-02-10 00:02:39"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tstatus\tslideCount\tcreatedAt\tupdatedAt\n330002\tElectrification Proposal for Jon Shoebridge\tgenerated\t22\t2026-02-10 06:36:54\t2026-02-10 07:54:09\n330001\tElectrification Proposal for Jon Shoebridge\tgenerated\t22\t2026-02-10 06:23:41\t2026-02-10 07:01:30\n300002\tElectrification Proposal for Seong Heng Chua\tgenerated\t22\t2026-02-10 02:17:34\t2026-02-10 06:53:18\n300001\tElectrification Proposal for Seong Heng Chua\tdraft\tNULL\t2026-02-10 02:07:05\t2026-02-10 02:15:40\n270004\tElectrification Proposal for Boris Sirota\tgenerated\t18\t2026-02-10 00:14:54\t2026-02-10 01:00:38\n270003\tElectrification Proposal for Frieda Lay\tgenerated\t20\t2026-02-10 00:00:17\t2026-02-10 00:02:39\n",
+  "stderr": "",
+  "execution_time_ms": 1601
+}
