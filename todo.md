@@ -653,3 +653,7 @@
 
 ## Update Contact Details (Feb 10)
 - [x] Update George Fotopoulos contact details: title "Renewables Strategist & Designer", phone "1300 009 272 | 0419 574 520", email "george.f@lightning-energy.com.au", website "www.lightning-energy.com.au"
+
+
+## BUG: Generation Error on WHY ADD A BATTERY slide (Feb 10)
+- [x] Fix GENERATION ERROR on why_battery slide — added global try/catch in generateSlideHTML so it can NEVER throw, always returns a valid branded error slide instead of crashing

@@ -1017,35 +1017,51 @@ function slideHeader(title: string, subtitle?: string): string {
 }
 
 export function generateSlideHTML(slide: SlideContent): string {
-  let content = '';
-  switch (slide.type) {
-    case 'cover': content = genCover(slide); break;
-    case 'executive_summary': content = genExecutiveSummary(slide); break;
-    case 'bill_analysis': content = genBillAnalysis(slide); break;
-    case 'bill_breakdown': content = genBillBreakdown(slide); break;
-    case 'annual_energy_projection': content = genAnnualEnergyProjection(slide); break;
-    case 'usage_benchmarking': content = genUsageBenchmarking(slide); break;
-    case 'gas_footprint': content = genGasFootprint(slide); break;
-    case 'gas_appliances': content = genGasAppliances(slide); break;
-    case 'solar_recommendation': content = genSolarRecommendation(slide); break;
-    case 'battery_recommendation': content = genBatteryRecommendation(slide); break;
-    case 'why_battery': content = genWhyBattery(slide); break;
-    case 'battery_considerations': content = genBatteryConsiderations(slide); break;
-    case 'vpp_comparison': content = genVPPComparison(slide); break;
-    case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
-    case 'ev_analysis': content = genEVAnalysis(slide); break;
-    case 'ev_vs_petrol': content = genEVvsPetrol(slide); break;
-    case 'financial_investment': content = genFinancialInvestment(slide); break;
-    case 'return_on_investment': content = genReturnOnInvestment(slide); break;
-    case 'roadmap': content = genRoadmap(slide); break;
-    case 'energy_optimisation': content = genEnergyOptimisation(slide); break;
-    case 'required_electrical_works': content = genRequiredElectricalWorks(slide); break;
-    case 'system_integration': content = genSystemIntegration(slide); break;
-    case 'conclusion': content = genConclusion(slide); break;
-    case 'contact': content = genContact(slide); break;
-    default: content = genGeneric(slide);
+  try {
+    let content = '';
+    switch (slide.type) {
+      case 'cover': content = genCover(slide); break;
+      case 'executive_summary': content = genExecutiveSummary(slide); break;
+      case 'bill_analysis': content = genBillAnalysis(slide); break;
+      case 'bill_breakdown': content = genBillBreakdown(slide); break;
+      case 'annual_energy_projection': content = genAnnualEnergyProjection(slide); break;
+      case 'usage_benchmarking': content = genUsageBenchmarking(slide); break;
+      case 'gas_footprint': content = genGasFootprint(slide); break;
+      case 'gas_appliances': content = genGasAppliances(slide); break;
+      case 'solar_recommendation': content = genSolarRecommendation(slide); break;
+      case 'battery_recommendation': content = genBatteryRecommendation(slide); break;
+      case 'why_battery': content = genWhyBattery(slide); break;
+      case 'battery_considerations': content = genBatteryConsiderations(slide); break;
+      case 'vpp_comparison': content = genVPPComparison(slide); break;
+      case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
+      case 'ev_analysis': content = genEVAnalysis(slide); break;
+      case 'ev_vs_petrol': content = genEVvsPetrol(slide); break;
+      case 'financial_investment': content = genFinancialInvestment(slide); break;
+      case 'return_on_investment': content = genReturnOnInvestment(slide); break;
+      case 'roadmap': content = genRoadmap(slide); break;
+      case 'energy_optimisation': content = genEnergyOptimisation(slide); break;
+      case 'required_electrical_works': content = genRequiredElectricalWorks(slide); break;
+      case 'system_integration': content = genSystemIntegration(slide); break;
+      case 'conclusion': content = genConclusion(slide); break;
+      case 'contact': content = genContact(slide); break;
+      default: content = genGeneric(slide);
+    }
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${content}</body></html>`;
+  } catch (err: any) {
+    console.error(`[generateSlideHTML] Error generating ${slide.type}:`, err.message);
+    // Return a valid error slide so generation never fully fails
+    const errorContent = `
+      <div class="slide">
+        <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
+        ${slideHeader(slide.title || slide.type.toUpperCase(), 'Slide generation encountered an issue — please regenerate')}
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <p style="color: #808285; font-size: 18px;">This slide will be regenerated with your data.</p>
+        </div>
+        <div class="copyright">${BRAND.contact.copyright}</div>
+      </div>
+    `;
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${errorContent}</body></html>`;
   }
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${SLIDE_STYLES}</head><body>${content}</body></html>`;
 }
 
 // ---- SLIDE 1: COVER ----
