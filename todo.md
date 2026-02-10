@@ -649,3 +649,7 @@
 
 ## BUG: File Upload Duplication (Feb 10)
 - [x] Fix single file uploads appearing twice in the uploaded files list (root cause: refetchDocuments added server entries alongside existing local entries with different IDs)
+
+
+## Update Contact Details (Feb 10)
+- [x] Update George Fotopoulos contact details: title "Renewables Strategist & Designer", phone "1300 009 272 | 0419 574 520", email "george.f@lightning-energy.com.au", website "www.lightning-energy.com.au"
