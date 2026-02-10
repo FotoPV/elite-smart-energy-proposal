@@ -46,15 +46,17 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
   const [generationStatus, setGenerationStatus] = useState<string>('idle');
   const slideListRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  // Keep polling active even after mutation completes/errors to catch final server status
+  const [keepPolling, setKeepPolling] = useState(false);
   
   const generateMutation = trpc.proposals.generateProgressive.useMutation();
   
-  // Poll for progress while generating
+  // Poll for progress while generating OR while we need to catch up on final status
   const { data: progressData } = trpc.proposals.generationProgress.useQuery(
     { proposalId },
     {
-      enabled: isGenerating,
-      refetchInterval: isGenerating ? 300 : false,
+      enabled: isGenerating || keepPolling,
+      refetchInterval: (isGenerating || keepPolling) ? 300 : false,
     }
   );
   
@@ -78,6 +80,7 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
     
     if (progressData.status === 'complete') {
       setIsGenerating(false);
+      setKeepPolling(false);
       // Small delay before calling onComplete to let user see the final state
       setTimeout(() => {
         onComplete();
@@ -86,6 +89,7 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
     
     if (progressData.status === 'error') {
       setIsGenerating(false);
+      setKeepPolling(false);
     }
   }, [progressData, onComplete]);
   
@@ -103,12 +107,28 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
     setHasStarted(true);
     setLocalSlides([]);
     setSelectedSlideIndex(0);
+    setKeepPolling(true);
     
     try {
       await generateMutation.mutateAsync({ proposalId });
-    } catch (error: any) {
+      // Mutation completed successfully — server should set progress to 'complete'
+      // Keep polling briefly to pick up the final status
       setIsGenerating(false);
-      setGenerationStatus('error');
+    } catch (error: any) {
+      // Mutation threw — could be timeout, network error, or actual failure.
+      // DON'T immediately declare error. Keep polling to check if server actually completed.
+      setIsGenerating(false);
+      // Keep polling for a bit to see if server-side progress shows 'complete'
+      // The polling useEffect above will handle setting the correct status
+      // If after 5 seconds we still don't have 'complete', then it's a real error
+      setTimeout(() => {
+        setKeepPolling(false);
+        // If status is still not complete after timeout, check if most slides completed
+        setGenerationStatus((prev) => {
+          if (prev === 'complete') return prev; // Already handled
+          return 'error';
+        });
+      }, 5000);
     }
   }, [proposalId, generateMutation]);
   
@@ -121,10 +141,27 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
   }, [autoStart, hasStarted, handleStart]);
   
   const completedCount = localSlides.filter(s => s.status === 'complete').length;
+  const errorCount = localSlides.filter(s => s.status === 'error').length;
   const totalCount = localSlides.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const selectedSlide = localSlides[selectedSlideIndex];
   const isComplete = generationStatus === 'complete';
+  // Consider "mostly complete" if all slides are done (even if some errored) and we're not generating
+  const isMostlyComplete = !isGenerating && totalCount > 0 && completedCount + errorCount >= totalCount;
+  const hasErrors = errorCount > 0;
+  
+  // Determine display status
+  const displayStatus = isGenerating 
+    ? 'generating' 
+    : isComplete 
+      ? 'complete' 
+      : isMostlyComplete && !hasErrors
+        ? 'complete'  // All slides completed, mutation may have errored but slides are fine
+        : isMostlyComplete && hasErrors
+          ? 'partial'  // Some slides had errors
+          : generationStatus === 'error'
+            ? 'error'
+            : 'generating'; // Still waiting for polling to catch up
   
   // Pre-start screen
   if (!hasStarted) {
@@ -169,10 +206,12 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
       {/* Top progress bar */}
       <div className="px-5 py-3 border-b border-[#1a1a1a] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {isGenerating ? (
+          {displayStatus === 'generating' ? (
             <Loader2 className="h-4 w-4 animate-spin text-[#00EAD3]" />
-          ) : isComplete ? (
+          ) : displayStatus === 'complete' ? (
             <CheckCircle2 className="h-4 w-4 text-[#00EAD3]" />
+          ) : displayStatus === 'partial' ? (
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
           ) : (
             <AlertCircle className="h-4 w-4 text-orange-500" />
           )}
@@ -180,7 +219,13 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
             className="text-sm text-white uppercase tracking-wider"
             style={{ fontFamily: "'Next Sphere', sans-serif" }}
           >
-            {isGenerating ? 'Generating Slides...' : isComplete ? 'Generation Complete' : 'Generation Error'}
+            {displayStatus === 'generating' 
+              ? 'Generating Slides...' 
+              : displayStatus === 'complete' 
+                ? 'Generation Complete' 
+                : displayStatus === 'partial'
+                  ? `Generated ${completedCount}/${totalCount} Slides`
+                  : 'Generation Error'}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -322,11 +367,14 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
         </div>
       </div>
       
-      {/* Bottom bar */}
-      {isComplete && (
+      {/* Bottom bar - show for complete OR mostly complete */}
+      {(displayStatus === 'complete' || displayStatus === 'partial') && (
         <div className="px-5 py-3 border-t border-[#1a1a1a] flex items-center justify-between bg-[#00EAD3]/5">
           <p className="text-sm text-[#00EAD3]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-            All {totalCount} slides generated successfully
+            {displayStatus === 'complete' 
+              ? `All ${totalCount} slides generated successfully`
+              : `${completedCount} of ${totalCount} slides generated (${errorCount} had errors)`
+            }
           </p>
           <Button
             onClick={onComplete}

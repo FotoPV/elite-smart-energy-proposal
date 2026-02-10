@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, status, slideCount, title FROM proposals WHERE deletedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, status, slideCount, title FROM proposals WHERE deletedAt IS NULL;",
+  "rows": [
+    {
+      "id": "270003",
+      "status": "generated",
+      "slideCount": "20",
+      "title": "Electrification Proposal for Frieda Lay"
+    },
+    {
+      "id": "270004",
+      "status": "generated",
+      "slideCount": "18",
+      "title": "Electrification Proposal for Boris Sirota"
+    },
+    {
+      "id": "300002",
+      "status": "draft",
+      "slideCount": "NULL",
+      "title": "Electrification Proposal for Seong Heng Chua"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tslideCount\ttitle\n270003\tgenerated\t20\tElectrification Proposal for Frieda Lay\n270004\tgenerated\t18\tElectrification Proposal for Boris Sirota\n300002\tdraft\tNULL\tElectrification Proposal for Seong Heng Chua\n",
+  "stderr": "",
+  "execution_time_ms": 1571
+}

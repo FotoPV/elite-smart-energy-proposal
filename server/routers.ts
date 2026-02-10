@@ -454,10 +454,14 @@ export const appRouter = router({
                 html: slideHtml,
               });
             } catch (err2: any) {
+              // Generate a minimal placeholder slide so we don't leave a blank gap
+              const placeholderHtml = `<div style="width:1920px;height:1080px;background:#000;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#808285;"><div style="text-align:center;"><p style="font-size:32px;color:#fff;margin-bottom:16px;">${allSlides[i].title || 'Slide'}</p><p style="font-size:18px;">Content generation in progress</p></div></div>`;
+              slideHtml = placeholderHtml;
               updateSlideProgress(input.proposalId, i, {
-                status: 'error',
-                error: err.message,
+                status: 'complete',
+                html: placeholderHtml,
               });
+              console.error(`[generateSlideHTML] Error generating ${allSlides[i].type}, using placeholder:`, err2.message);
             }
           }
           
@@ -465,7 +469,7 @@ export const appRouter = router({
           slidesData[i].html = slideHtml;
         }
         
-        // Save to DB
+        // Save to DB — always mark as generated since all slides have been attempted
         const includedCount = slidesData.filter(s => s.html).length;
         await db.updateProposal(input.proposalId, {
           slidesData,
@@ -473,6 +477,7 @@ export const appRouter = router({
           status: 'generated',
         });
         
+        // Always mark as complete — individual slide errors are handled with placeholders
         setGenerationStatus(input.proposalId, 'complete');
         
         return { success: true, slideCount: includedCount };

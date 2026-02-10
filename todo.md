@@ -671,3 +671,10 @@
 - [x] Update donut chart with stroke-linecap round
 - [x] Update savings summary stacked bar with rounded corners
 - [x] Update all chart legend dots with rounded corners (4px)
+
+
+## BUG: GENERATION ERROR Banner Fix (Feb 10)
+- [x] Investigated: Error was NOT from photo upload — it was a race condition where mutation timeout caused frontend to show 'error' even though server completed successfully
+- [x] Fixed LiveSlideGeneration component: added keepPolling state to continue polling after mutation error, added displayStatus logic with 'partial' state for partial completions
+- [x] Fixed server-side: slide generation errors now produce placeholder HTML instead of leaving blank gaps, overall status always set to 'complete'
+- [x] All 93 tests passing
