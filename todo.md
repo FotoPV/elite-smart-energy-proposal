@@ -764,3 +764,9 @@
 - [x] Inverter sizing uses calculateInverterSize() with 5 tiers (5/5/8/10/15 kW)
 - [x] Update tests for inverter sizing — all 94 tests passing
 - [x] Update prompt document with inverter sizing table
+
+## Bug: Failed to Fetch Error on Home Page (Feb 11)
+- [x] Diagnosed "Failed to fetch" TRPCClientError — transient network timeout during checkpoint save/server restart, not a code bug
+
+## Cleanup: Remove All Test Customers (Feb 11)
+- [x] Deleted 15 test customers — 6 real customers remain (Frieda, Boris, Seong Heng, Jon, Jared, Ajith)

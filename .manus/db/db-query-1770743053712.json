@@ -1,0 +1,157 @@
+{
+  "query": "SELECT id, fullName, address, state, createdAt FROM customers ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, address, state, createdAt FROM customers ORDER BY id;",
+  "rows": [
+    {
+      "id": "240001",
+      "fullName": "Frieda Lay",
+      "address": "42 Solar Drive, Adelaide SA 5000",
+      "state": "SA",
+      "createdAt": "2026-02-09 23:39:47"
+    },
+    {
+      "id": "240002",
+      "fullName": "Boris Sirota",
+      "address": "21 Leinster Street Ormond Vic 3204",
+      "state": "VIC",
+      "createdAt": "2026-02-10 00:14:19"
+    },
+    {
+      "id": "270001",
+      "fullName": "Seong Heng Chua",
+      "address": "31 Kerferd Street, Malvern East Victoria 3145",
+      "state": "VIC",
+      "createdAt": "2026-02-10 02:05:25"
+    },
+    {
+      "id": "300001",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:07:16"
+    },
+    {
+      "id": "300002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:07:48"
+    },
+    {
+      "id": "300003",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:08:08"
+    },
+    {
+      "id": "300004",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:08:25"
+    },
+    {
+      "id": "300005",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:09:03"
+    },
+    {
+      "id": "330001",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:47:34"
+    },
+    {
+      "id": "330002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 03:47:45"
+    },
+    {
+      "id": "360001",
+      "fullName": "Jon Shoebridge",
+      "address": "3 Greenview Close MITCHELTON QLD 4053",
+      "state": "QLD",
+      "createdAt": "2026-02-10 06:17:27"
+    },
+    {
+      "id": "360002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 06:56:33"
+    },
+    {
+      "id": "360003",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 07:06:19"
+    },
+    {
+      "id": "360004",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 07:26:33"
+    },
+    {
+      "id": "390001",
+      "fullName": "Jared Blode",
+      "address": "41 Gardenia Road Elsternwick Vic 3185",
+      "state": "VIC",
+      "createdAt": "2026-02-10 14:50:50"
+    },
+    {
+      "id": "390002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 15:25:14"
+    },
+    {
+      "id": "420001",
+      "fullName": "Ajith Premathilaka",
+      "address": "10 Duke Street, Berwick Vic 3806",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:04:25"
+    },
+    {
+      "id": "420002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:19:36"
+    },
+    {
+      "id": "420003",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:35:42"
+    },
+    {
+      "id": "420004",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:36:29"
+    },
+    {
+      "id": "420005",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:57:25"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\taddress\tstate\tcreatedAt\n240001\tFrieda Lay\t42 Solar Drive, Adelaide SA 5000\tSA\t2026-02-09 23:39:47\n240002\tBoris Sirota\t21 Leinster Street Ormond Vic 3204\tVIC\t2026-02-10 00:14:19\n270001\tSeong Heng Chua\t31 Kerferd Street, Malvern East Victoria 3145\tVIC\t2026-02-10 02:05:25\n300001\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:07:16\n300002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:07:48\n300003\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:08:08\n300004\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:08:25\n300005\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:09:03\n330001\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:47:34\n330002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 03:47:45\n360001\tJon Shoebridge\t3 Greenview Close MITCHELTON QLD 4053\tQLD\t2026-02-10 06:17:27\n360002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 06:56:33\n360003\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 07:06:19\n360004\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 07:26:33\n390001\tJared Blode\t41 Gardenia Road Elsternwick Vic 3185\tVIC\t2026-02-10 14:50:50\n390002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 15:25:14\n420001\tAjith Premathilaka\t10 Duke Street, Berwick Vic 3806\tVIC\t2026-02-10 16:04:25\n420002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 16:19:36\n420003\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 16:35:42\n420004\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 16:36:29\n420005\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-10 16:57:25\n",
+  "stderr": "",
+  "execution_time_ms": 1559
+}
