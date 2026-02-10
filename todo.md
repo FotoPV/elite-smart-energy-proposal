@@ -645,3 +645,7 @@
 - [x] Fix PDF generation code to ensure correct slide sizing in exported PDF
 - [x] Test PDF export with correct sizing (rendering confirmed, session expired before download)
 - [x] Fixate all brand assets with base64 data URIs + S3 CDN fallback URLs
+
+
+## BUG: File Upload Duplication (Feb 10)
+- [x] Fix single file uploads appearing twice in the uploaded files list (root cause: refetchDocuments added server entries alongside existing local entries with different IDs)

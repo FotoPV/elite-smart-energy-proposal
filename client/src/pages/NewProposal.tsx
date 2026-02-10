@@ -97,9 +97,11 @@ export default function NewProposal() {
   }, [existingBills]);
 
   // Load existing documents into uploaded files list
+  // When server data arrives, replace the entire list with server entries
+  // plus any still-uploading local entries (to avoid duplicates)
   useEffect(() => {
     if (existingDocuments && existingDocuments.length > 0) {
-      const existing: UploadedFile[] = existingDocuments.map(d => ({
+      const serverFiles: UploadedFile[] = existingDocuments.map(d => ({
         id: `existing-${d.id}`,
         name: d.fileName || d.documentType,
         type: d.mimeType || 'application/octet-stream',
@@ -108,9 +110,10 @@ export default function NewProposal() {
         status: 'done' as const,
       }));
       setUploadedFiles(prev => {
-        const existingIds = new Set(prev.map(f => f.id));
-        const newFiles = existing.filter(f => !existingIds.has(f.id));
-        return newFiles.length > 0 ? [...prev, ...newFiles] : prev;
+        // Keep only local entries that are still uploading (not yet on server)
+        const stillUploading = prev.filter(f => f.status === 'uploading');
+        // Merge: server files (authoritative) + still-uploading local files
+        return [...serverFiles, ...stillUploading];
       });
     }
   }, [existingDocuments]);
