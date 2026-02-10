@@ -1,0 +1,17 @@
+{
+  "query": "SELECT c.id as cid, c.fullName, (SELECT COUNT(*) FROM bills b WHERE b.customerId = c.id) as bills_count, (SELECT COUNT(*) FROM proposals p WHERE p.customerId = c.id) as proposals_count, (SELECT COUNT(*) FROM customerDocuments d WHERE d.customerId = c.id) as docs_count FROM customers c WHERE c.fullName LIKE '%Brian Vuong%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id as cid, c.fullName, (SELECT COUNT(*) FROM bills b WHERE b.customerId = c.id) as bills_count, (SELECT COUNT(*) FROM proposals p WHERE p.customerId = c.id) as proposals_count, (SELECT COUNT(*) FROM customerDocuments d WHERE d.customerId = c.id) as docs_count FROM customers c WHERE c.fullName LIKE '%Brian Vuong%';",
+  "rows": [
+    {
+      "cid": "180005",
+      "fullName": "Brian Vuong",
+      "bills_count": "1",
+      "proposals_count": "1",
+      "docs_count": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "cid\tfullName\tbills_count\tproposals_count\tdocs_count\n180005\tBrian Vuong\t1\t1\t8\n",
+  "stderr": "",
+  "execution_time_ms": 1515
+}

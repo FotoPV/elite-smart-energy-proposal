@@ -596,3 +596,34 @@
 - [x] Delete old generateSlidesData() function
 - [x] Update SlideData type to new simplified structure
 - [x] All 17 slides generating with full LLM narratives
+
+
+## COMPLETE REWRITE to Match Master Reference (Feb 10)
+- [x] Rewrite generateSlides() with exact 22-slide reference order
+- [x] Add Bill Breakdown slide (donut chart + metrics)
+- [x] Add Usage Benchmarking slide (comparison bar + metric cards)
+- [x] Add Solar Recommendation slide (metrics + Why This Config card)
+- [x] Add Battery Recommendation slide (metrics + government incentive card)
+- [x] Add Why Add a Battery slide (2x2 benefits grid)
+- [x] Add Solar Battery Considerations slide (2x2 warnings grid)
+- [x] Add EV vs Petrol Vehicle slide (conditional)
+- [x] Add Return on Investment slide (line chart + metrics)
+- [x] Add Energy Optimisation Report slide (strategies + projected impact)
+- [x] Add System Integration slide (conditional, appliance cards with photos)
+- [x] Remove Option 1, Option 2, System Comparison, Annual Financial Impact slides
+- [x] Rewrite ALL HTML templates to match reference pixel-perfectly
+- [x] Update narrative enrichment for all new/changed types
+- [x] Test with new customer and verify visual match
+
+
+## Data Field Mismatch Fixes (Feb 10)
+- [x] Fix executive summary field names (dailyUsageKwh→dailyAverageKwh, dailyExportKwh→dailyExport, etc.)
+- [x] Fix usage benchmarking field names (yourDailyAverage→dailyAverage, stateAverage→stateAverageKwh)
+- [x] Fix solar recommendation field names (annualProduction→annualProductionKwh, dailyProduction→dailyProductionKwh)
+- [x] Fix battery recommendation field names (batteryCapacity→capacity, batteryTechnology→technology)
+- [x] Fix financial investment field names (add billReductionPct, firstYearSavings, fix lineItems format)
+- [x] Fix annual energy projection monthlyData format (usage+solar fields)
+- [x] Fix conclusion title from "EXECUTIVE SUMMARY" to "CONCLUSION"
+- [x] Remove duplicate EV slides (ev_analysis, ev_charger) — only ev_vehicle_analysis + ev_vs_petrol remain
+- [x] Verify all 22 slides render correctly with real data (Frieda Lay SA test)
+- [x] All data values populated (no zeros, no NaN, no undefined, no [object Object])

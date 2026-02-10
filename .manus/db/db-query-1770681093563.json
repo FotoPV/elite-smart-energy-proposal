@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, totalUsageKwh, totalAmount, billingDays, peakRateCents, dailySupplyCharge, feedInTariffCents, retailer, peakUsageKwh, offPeakUsageKwh FROM bills WHERE billType = 'electricity' ORDER BY id DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, totalUsageKwh, totalAmount, billingDays, peakRateCents, dailySupplyCharge, feedInTariffCents, retailer, peakUsageKwh, offPeakUsageKwh FROM bills WHERE billType = 'electricity' ORDER BY id DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "180001",
+      "totalUsageKwh": "263.25",
+      "totalAmount": "131.86",
+      "billingDays": "31",
+      "peakRateCents": "49.9100",
+      "dailySupplyCharge": "1.0244",
+      "feedInTariffCents": "10.0000",
+      "retailer": "AGL",
+      "peakUsageKwh": "218.52",
+      "offPeakUsageKwh": "29.60"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttotalUsageKwh\ttotalAmount\tbillingDays\tpeakRateCents\tdailySupplyCharge\tfeedInTariffCents\tretailer\tpeakUsageKwh\toffPeakUsageKwh\n180001\t263.25\t131.86\t31\t49.9100\t1.0244\t10.0000\tAGL\t218.52\t29.60\n",
+  "stderr": "",
+  "execution_time_ms": 1512
+}

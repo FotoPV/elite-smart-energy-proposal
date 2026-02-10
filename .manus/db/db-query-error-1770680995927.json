@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, title, status, JSON_EXTRACT(proposalData, '$.dailyUsageKwh') as dailyUsage, JSON_EXTRACT(proposalData, '$.annualUsageKwh') as annualUsage, JSON_EXTRACT(proposalData, '$.annualCost') as annualCost, JSON_EXTRACT(proposalData, '$.solarSizeKw') as solarSize, JSON_EXTRACT(proposalData, '$.tenYearSavings') as tenYearSavings, JSON_EXTRACT(proposalData, '$.annualSavings') as annualSavings FROM proposals ORDER BY id DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, title, status, JSON_EXTRACT(proposalData, '$.dailyUsageKwh') as dailyUsage, JSON_EXTRACT(proposalData, '$.annualUsageKwh') as annualUsage, JSON_EXTRACT(proposalData, '$.annualCost') as annualCost, JSON_EXTRACT(proposalData, '$.solarSizeKw') as solarSize, JSON_EXTRACT(proposalData, '$.tenYearSavings') as tenYearSavings, JSON_EXTRACT(proposalData, '$.annualSavings') as annualSavings FROM proposals ORDER BY id DESC LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'proposaldata' in 'field list'"
+  ]
+}

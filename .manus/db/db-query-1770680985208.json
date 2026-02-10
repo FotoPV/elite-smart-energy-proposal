@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, customerId, title, status, createdAt FROM proposals ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, customerId, title, status, createdAt FROM proposals ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "270002",
+      "customerId": "240001",
+      "title": "Electrification Proposal for Frieda Lay",
+      "status": "generated",
+      "createdAt": "2026-02-09 23:45:52"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\ttitle\tstatus\tcreatedAt\n270002\t240001\tElectrification Proposal for Frieda Lay\tgenerated\t2026-02-09 23:45:52\n",
+  "stderr": "",
+  "execution_time_ms": 1541
+}

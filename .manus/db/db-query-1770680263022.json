@@ -1,0 +1,9 @@
+{
+  "query": "SELECT c.id, c.fullName, c.email, c.state, p.id as proposalId, p.status FROM customers c LEFT JOIN proposals p ON p.customerId = c.id ORDER BY c.id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id, c.fullName, c.email, c.state, p.id as proposalId, p.status FROM customers c LEFT JOIN proposals p ON p.customerId = c.id ORDER BY c.id DESC LIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1553
+}

@@ -1,0 +1,15 @@
+{
+  "query": "SELECT c.id as customer_id, c.fullName, p.id as proposal_id FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Brian Vuong%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id as customer_id, c.fullName, p.id as proposal_id FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Brian Vuong%';",
+  "rows": [
+    {
+      "customer_id": "180005",
+      "fullName": "Brian Vuong",
+      "proposal_id": "210007"
+    }
+  ],
+  "messages": [],
+  "stdout": "customer_id\tfullName\tproposal_id\n180005\tBrian Vuong\t210007\n",
+  "stderr": "",
+  "execution_time_ms": 1511
+}

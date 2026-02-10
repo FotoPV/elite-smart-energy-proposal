@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, title, status, JSON_EXTRACT(calculations, '$.dailyUsageKwh') as dailyUsage, JSON_EXTRACT(calculations, '$.annualUsageKwh') as annualUsage, JSON_EXTRACT(calculations, '$.annualCost') as annualCost, JSON_EXTRACT(calculations, '$.solarSizeKw') as solarSize, JSON_EXTRACT(calculations, '$.tenYearSavings') as tenYearSavings, JSON_EXTRACT(calculations, '$.annualSavings') as annualSavings, JSON_EXTRACT(calculations, '$.netInvestment') as netInvestment FROM proposals ORDER BY id DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, title, status, JSON_EXTRACT(calculations, '$.dailyUsageKwh') as dailyUsage, JSON_EXTRACT(calculations, '$.annualUsageKwh') as annualUsage, JSON_EXTRACT(calculations, '$.annualCost') as annualCost, JSON_EXTRACT(calculations, '$.solarSizeKw') as solarSize, JSON_EXTRACT(calculations, '$.tenYearSavings') as tenYearSavings, JSON_EXTRACT(calculations, '$.annualSavings') as annualSavings, JSON_EXTRACT(calculations, '$.netInvestment') as netInvestment FROM proposals ORDER BY id DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "270002",
+      "title": "Electrification Proposal for Frieda Lay",
+      "status": "generated",
+      "dailyUsage": "NULL",
+      "annualUsage": "NULL",
+      "annualCost": "NULL",
+      "solarSize": "NULL",
+      "tenYearSavings": "16010",
+      "annualSavings": "NULL",
+      "netInvestment": "13300"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tstatus\tdailyUsage\tannualUsage\tannualCost\tsolarSize\ttenYearSavings\tannualSavings\tnetInvestment\n270002\tElectrification Proposal for Frieda Lay\tgenerated\tNULL\tNULL\tNULL\tNULL\t16010\tNULL\t13300\n",
+  "stderr": "",
+  "execution_time_ms": 1515
+}
