@@ -723,3 +723,13 @@
 - [x] Fix EV slide generator hang/crash issue (unsafe .toLocaleString() on undefined values)
 - [x] Verified Jared's proposal 360002 — all 22 slides rendering correctly
 - [x] All 93 tests passing, EV slides visually verified with correct data
+
+## VPP State Filtering Bug (Feb 11)
+- [x] Fix VPP recommendation — removed Tango Energy (not a real VPP provider)
+- [x] VPP state filtering logic was correct; issue was fake provider in DB
+- [x] Verified 12 legitimate VPP providers remain, all with correct state coverage
+
+## Remove Tango Energy from VPP Providers (Feb 11)
+- [x] Remove Tango Energy from VPP providers DB table (it is NOT a VPP provider)
+- [x] Remove Tango Energy from hardcoded providers list in routers.ts (not in seedData.ts)
+- [x] Customer deleted Ajith's project — will get correct VPP on re-upload
