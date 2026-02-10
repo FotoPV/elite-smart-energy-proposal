@@ -2590,6 +2590,15 @@ function genBatteryConsiderations(slide: SlideContent): string {
 // ---- NEW: EV VS PETROL VEHICLE ----
 function genEVvsPetrol(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
+  const annualPetrolCost = Number(c.annualPetrolCost) || 1800;
+  const annualEvCost = Number(c.annualEvCost) || 173;
+  const annualSavings = Number(c.annualSavings) || 1327;
+  const petrolEfficiency = c.petrolEfficiency || '10.0';
+  const petrolPrice = c.petrolPrice || '1.80';
+  const totalLitres = c.totalLitres || '1,000';
+  const evEfficiency = c.evEfficiency || '15.0';
+  const chargingCostPerKwh = c.chargingCostPerKwh || '0.115';
+  const totalKwhRequired = c.totalKwhRequired || '1,500';
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
@@ -2597,28 +2606,28 @@ function genEVvsPetrol(slide: SlideContent): string {
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1; background: #1a1a1a; border-radius: 8px; padding: 32px;">
           <p style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #FFFFFF; text-transform: uppercase; margin-bottom: 24px;">PETROL VEHICLE</p>
-          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Fuel Efficiency</span><span style="float: right; font-weight: 600;">${c.petrolEfficiency || '10.0'} L / 100km</span></div>
-          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Fuel Price (Avg)</span><span style="float: right; font-weight: 600;">$${c.petrolPrice || '1.80'} / L</span></div>
-          <div style="padding: 12px 0;"><span class="gray" style="font-size: 13px;">Total Fuel Consumed</span><span style="float: right; font-weight: 600;">${c.totalLitres || '1,000'} Litres</span></div>
+          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Fuel Efficiency</span><span style="float: right; font-weight: 600;">${petrolEfficiency} L / 100km</span></div>
+          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Fuel Price (Avg)</span><span style="float: right; font-weight: 600;">$${petrolPrice} / L</span></div>
+          <div style="padding: 12px 0;"><span class="gray" style="font-size: 13px;">Total Fuel Consumed</span><span style="float: right; font-weight: 600;">${totalLitres} Litres</span></div>
           <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #333;">
             <p class="lbl" style="color: #f36710;">ANNUAL FUEL COST</p>
-            <p class="hero-num white" style="font-size: 52px;">$${(c.annualPetrolCost as number || 1800).toLocaleString()}</p>
+            <p class="hero-num white" style="font-size: 52px;">$${annualPetrolCost.toLocaleString()}</p>
           </div>
         </div>
         <div style="flex: 1; background: #1a1a1a; border-radius: 8px; padding: 32px;">
           <p style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; text-transform: uppercase; margin-bottom: 24px;">ELECTRIC VEHICLE</p>
-          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Energy Efficiency</span><span style="float: right; font-weight: 600;">${c.evEfficiency || '15.0'} kWh / 100km</span></div>
-          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Charging Cost (Avg)</span><span style="float: right; font-weight: 600;">$${c.chargingCostPerKwh || '0.115'} / kWh</span></div>
-          <div style="padding: 12px 0;"><span class="gray" style="font-size: 13px;">Total Energy Required</span><span style="float: right; font-weight: 600;">${c.totalKwhRequired || '1,500'} kWh</span></div>
+          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Energy Efficiency</span><span style="float: right; font-weight: 600;">${evEfficiency} kWh / 100km</span></div>
+          <div style="border-bottom: 1px solid #333; padding: 12px 0;"><span class="gray" style="font-size: 13px;">Charging Cost (Avg)</span><span style="float: right; font-weight: 600;">$${chargingCostPerKwh} / kWh</span></div>
+          <div style="padding: 12px 0;"><span class="gray" style="font-size: 13px;">Total Energy Required</span><span style="float: right; font-weight: 600;">${totalKwhRequired} kWh</span></div>
           <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #333;">
             <p class="lbl">ANNUAL CHARGING COST</p>
-            <p class="hero-num aqua" style="font-size: 52px;">$${(c.annualEvCost as number || 173).toLocaleString()}</p>
+            <p class="hero-num aqua" style="font-size: 52px;">$${annualEvCost.toLocaleString()}</p>
           </div>
         </div>
       </div>
       <div style="margin-top: 24px; background: #1a1a1a; border-left: 4px solid #00EAD3; border-radius: 0 8px 8px 0; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center;">
         <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; color: #00EAD3; text-transform: uppercase;">PROJECTED ANNUAL SAVINGS</p>
-        <p class="hero-num aqua" style="font-size: 48px;">$${(c.annualSavings as number || 1327).toLocaleString()}</p>
+        <p class="hero-num aqua" style="font-size: 48px;">$${annualSavings.toLocaleString()}</p>
       </div>
       <div class="copyright">${BRAND.contact.copyright}</div>
     </div>
