@@ -276,7 +276,11 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   // Slide 5: ANNUAL ENERGY PROJECTION (bar chart + insight cards)
   // Solar production varies by month - approximate seasonal factors
   const monthlyFactors: Record<string, number> = { Jan: 1.4, Feb: 1.3, Mar: 1.1, Apr: 0.9, May: 0.7, Jun: 0.6, Jul: 0.6, Aug: 0.7, Sep: 0.9, Oct: 1.1, Nov: 1.3, Dec: 1.4 };
-  const avgDailySolar = data.solarSizeKw * 4.2;
+  // State-specific peak sun hours for accurate solar production estimates
+  const statePSH: Record<string, number> = { VIC: 3.6, NSW: 4.2, QLD: 4.8, SA: 4.5, WA: 4.8, TAS: 3.3, NT: 5.5, ACT: 4.0 };
+  const psh = statePSH[data.state] || 4.0;
+  const performanceRatio = 0.80;
+  const avgDailySolar = data.solarSizeKw * psh * performanceRatio;
   const defaultMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const monthlyProjection = (data.monthlyUsageData && data.monthlyUsageData.length > 0)
     ? data.monthlyUsageData.map(m => ({
@@ -299,7 +303,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       annualUsageKwh: data.annualUsageKwh,
       solarSizeKw: data.solarSizeKw,
       dailyUsageKwh: data.dailyUsageKwh,
-      annualSolarProduction: data.solarSizeKw * 4.2 * 365,
+      annualSolarProduction: Math.round(data.solarSizeKw * psh * performanceRatio * 365),
     }
   });
   
@@ -331,8 +335,10 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       panelWattage: data.panelWattage,
       panelBrand: data.panelBrand,
       panelConfig: `${data.panelCount} x ${data.panelWattage}W Panels`,
-      annualProductionKwh: Math.round(data.solarSizeKw * 4.2 * 365),
-      dailyProductionKwh: parseFloat((data.solarSizeKw * 4.2).toFixed(1)),
+      annualProductionKwh: Math.round(data.solarSizeKw * psh * performanceRatio * 365),
+      dailyProductionKwh: parseFloat((data.solarSizeKw * psh * performanceRatio).toFixed(1)),
+      peakSunHours: psh,
+      performanceRatio: performanceRatio,
       inverterSize: data.inverterSizeKw,
       inverterModel: `${data.inverterBrand || 'Sigenergy'} SigenStor`,
     }
@@ -474,9 +480,9 @@ export function generateSlides(data: ProposalData): SlideContent[] {
         dailyKm: parseFloat(((data.evAnnualKm || 10000) / 365).toFixed(1)),
         vehicleEfficiency: data.evConsumptionPer100km || 15,
         dailyEnergyNeed: parseFloat((((data.evAnnualKm || 10000) / 365) * (data.evConsumptionPer100km || 15) / 100).toFixed(1)),
-        dailySolarGeneration: parseFloat((data.solarSizeKw * 4.2).toFixed(1)),
-        remainingForHome: parseFloat((data.solarSizeKw * 4.2 - ((data.evAnnualKm || 10000) / 365) * (data.evConsumptionPer100km || 15) / 100).toFixed(1)),
-        evPercentOfSolar: parseFloat((((data.evAnnualKm || 10000) / 365) * (data.evConsumptionPer100km || 15) / 100 / (data.solarSizeKw * 4.2) * 100).toFixed(1)),
+        dailySolarGeneration: parseFloat((data.solarSizeKw * psh * performanceRatio).toFixed(1)),
+        remainingForHome: parseFloat((data.solarSizeKw * psh * performanceRatio - ((data.evAnnualKm || 10000) / 365) * (data.evConsumptionPer100km || 15) / 100).toFixed(1)),
+        evPercentOfSolar: parseFloat((((data.evAnnualKm || 10000) / 365) * (data.evConsumptionPer100km || 15) / 100 / (data.solarSizeKw * psh * performanceRatio) * 100).toFixed(1)),
       }
     });
     
@@ -682,7 +688,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       strategies: [
         { title: 'ACTIVE SOLAR SOAKING', borderColor: 'orange', description: `Schedule high-draw appliances (HVAC, pool pump, washing machine) between 10am-3pm to maximize direct solar consumption. Your ${data.solarSizeKw}kW array generates peak output during these hours.` },
         { title: 'WINTER RESILIENCE STRATEGY', borderColor: 'aqua', description: `During reduced solar months (May-August), the ${data.batterySizeKwh}kWh battery provides overnight coverage. ${data.hasGas ? 'Gas heating serves as backup during extended cloudy periods.' : 'Battery scheduling prioritizes essential loads during peak pricing windows.'}` },
-        { title: data.hasEV ? 'SMART EV INTEGRATION' : 'PEAK DEMAND MANAGEMENT', borderColor: 'orange', description: data.hasEV ? `Configure EV charging in Solar Only mode during 10am-3pm. Your daily solar surplus of ${(data.solarSizeKw * 4.2 - data.dailyUsageKwh).toFixed(1)}kWh can charge approximately ${((data.solarSizeKw * 4.2 - data.dailyUsageKwh) / 0.15 * 100 / (data.evAnnualKm || 10000) * 365).toFixed(0)}% of annual EV needs.` : `Battery discharges during peak pricing (3pm-9pm) to avoid expensive grid imports. VPP events provide additional revenue during high-demand periods.` },
+        { title: data.hasEV ? 'SMART EV INTEGRATION' : 'PEAK DEMAND MANAGEMENT', borderColor: 'orange', description: data.hasEV ? `Configure EV charging in Solar Only mode during 10am-3pm. Your daily solar surplus of ${(data.solarSizeKw * psh * performanceRatio - data.dailyUsageKwh).toFixed(1)}kWh can charge approximately ${((data.solarSizeKw * psh * performanceRatio - data.dailyUsageKwh) / 0.15 * 100 / (data.evAnnualKm || 10000) * 365).toFixed(0)}% of annual EV needs.` : `Battery discharges during peak pricing (3pm-9pm) to avoid expensive grid imports. VPP events provide additional revenue during high-demand periods.` },
       ],
       projectedImpact: [
         { label: 'Solar Self-Consumption', value: 'Increase to >65%' },
@@ -3018,7 +3024,9 @@ function genSolarGenerationProfile(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const solarKw = (c.solarKw as number) || 6.6;
   const yearlyUsage = (c.yearlyUsageKwh as number) || 3000;
-  const annualGen = (c.solarAnnualGeneration as number) || solarKw * 365 * 4;
+  const statePSH: Record<string, number> = { VIC: 3.6, NSW: 4.2, QLD: 4.8, SA: 4.5, WA: 4.8, TAS: 3.3, NT: 5.5, ACT: 4.0 };
+  const slidePsh = statePSH[(c.state as string) || 'VIC'] || 4.0;
+  const annualGen = (c.solarAnnualGeneration as number) || Math.round(solarKw * 365 * slidePsh * 0.80);
   
   const monthlyFactors = [
     { month: 'Jan', factor: 1.35 }, { month: 'Feb', factor: 1.25 },
@@ -3392,13 +3400,13 @@ function genSystemSpecifications(slide: SlideContent): string {
                 <span class="gray">Panel Count</span><span style="font-weight: 600;">${panelCount} panels</span>
               </div>
               <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
-                <span class="gray">Panel Wattage</span><span style="font-weight: 600;">400W</span>
+                <span class="gray">Panel Wattage</span><span style="font-weight: 600;">440W</span>
               </div>
               <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
                 <span class="gray">Panel Brand</span><span style="font-weight: 600;">Trina Solar Vertex S+</span>
               </div>
               <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;">
-                <span class="gray">Annual Generation</span><span style="font-weight: 600; color: #00EAD3;">${(solarKw * 365 * 4).toLocaleString()} kWh</span>
+                <span class="gray">Annual Generation</span><span style="font-weight: 600; color: #00EAD3;">${Number(c.annualGeneration || Math.round(solarKw * 365 * (Number(c.peakSunHours) || 3.6) * 0.80)).toLocaleString()} kWh</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span class="gray">Performance Warranty</span><span style="font-weight: 600;">25 years</span>

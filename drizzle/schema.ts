@@ -322,6 +322,8 @@ export interface ProposalCalculations {
   // ========== SOLAR ==========
   recommendedSolarKw?: number;
   solarPanelCount?: number;
+  solarPanelWattage?: number;
+  solarPanelBrand?: string;
   solarAnnualGeneration?: number;
   solarEstimatedCost?: number;
   

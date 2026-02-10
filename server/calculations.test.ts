@@ -238,8 +238,8 @@ describe("Battery Sizing", () => {
     // 20 kWh daily usage
     const result = calculateBatterySize(20, false, false);
     
-    // 20 * 0.45 = 9 kWh, rounds to 10kWh standard size
-    expect(result.recommendedKwh).toBe(10);
+    // 20 * 0.55 / (0.90 * 0.95) = 12.87 kWh, rounds to 15kWh standard size
+    expect(result.recommendedKwh).toBe(15);
   });
 
   it("increases size for EV owners", () => {

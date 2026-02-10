@@ -37,7 +37,48 @@ export const CONSTANTS = {
   DEFAULT_GAS_RATE_CENTS_MJ: 3.5,
   DEFAULT_FEED_IN_TARIFF_CENTS: 5,
   DEFAULT_DAILY_SUPPLY_CHARGE: 1.20,
+  
+  // Solar sizing
+  SOLAR_OVERSIZE_FACTOR: 1.2,       // 120% of usage — industry standard
+  SOLAR_PERFORMANCE_RATIO: 0.80,    // Real-world derating (shading, inverter, temp, wiring)
+  PANEL_WATTAGE: 440,               // Trina Solar Vertex S+ 440W
+  
+  // Battery sizing
+  BATTERY_EVENING_FRACTION: 0.55,   // 55% of daily usage is evening/overnight
+  BATTERY_DOD: 0.90,                // 90% depth of discharge (LiFePO4 SigenStor)
+  BATTERY_EFFICIENCY: 0.95,         // 95% round-trip efficiency
+  BATTERY_EV_BUFFER_KWH: 5,        // Extra 5kWh buffer for EV charging
+  BATTERY_VPP_MINIMUM_KWH: 10,     // Minimum 10kWh for meaningful VPP income
 };
+
+// ============================================
+// STATE-SPECIFIC PEAK SUN HOURS (Annual Average)
+// Source: BOM, 1KOMMA5, SolarChoice, Energy Matters
+// ============================================
+
+export const STATE_PEAK_SUN_HOURS: Record<string, number> = {
+  VIC: 3.6,
+  NSW: 4.2,
+  QLD: 4.8,
+  SA:  4.5,
+  WA:  4.8,
+  TAS: 3.3,
+  ACT: 4.2,
+  NT:  5.5,
+};
+
+// Standard residential solar system sizes (kW)
+const STANDARD_SOLAR_SIZES = [3, 4, 5, 5.5, 6, 6.6, 7, 8, 8.8, 10, 11, 13, 13.2, 15, 17, 20];
+
+// SigenStor battery sizes (kWh) — stackable 5kWh modules
+const STANDARD_BATTERY_SIZES = [5, 10, 15, 20, 25, 30];
+
+function roundToStandardSize(value: number, standardSizes: number[]): number {
+  // Find the smallest standard size >= value, or the largest if value exceeds all
+  const larger = standardSizes.filter(s => s >= value);
+  if (larger.length > 0) return larger[0];
+  return standardSizes[standardSizes.length - 1];
+}
 
 // ============================================
 // USAGE PROJECTIONS
@@ -387,27 +428,27 @@ export function calculateBatterySize(
   hasEv: boolean,
   vppParticipation: boolean
 ): BatteryRecommendation {
-  // Base: cover evening/night usage (typically 40-50% of daily)
-  let recommendedKwh = dailyUsageKwh * 0.45;
-  let reasoning = "Sized to cover typical evening/overnight usage";
+  // Engineering formula: evening/overnight usage with DoD and efficiency derating
+  // Battery kWh = (daily usage × evening fraction) / (DoD × efficiency)
+  let rawKwh = (dailyUsageKwh * CONSTANTS.BATTERY_EVENING_FRACTION) / 
+    (CONSTANTS.BATTERY_DOD * CONSTANTS.BATTERY_EFFICIENCY);
+  let reasoning = `Sized to cover ${Math.round(CONSTANTS.BATTERY_EVENING_FRACTION * 100)}% evening/overnight usage (${round(rawKwh, 1)}kWh raw)`;
   
-  // Add for EV charging
+  // Add EV charging buffer
   if (hasEv) {
-    recommendedKwh += 5; // Extra 5kWh for EV charging buffer
-    reasoning += ", plus EV charging capacity";
+    rawKwh += CONSTANTS.BATTERY_EV_BUFFER_KWH;
+    reasoning += `, plus ${CONSTANTS.BATTERY_EV_BUFFER_KWH}kWh EV charging buffer`;
   }
   
-  // Add for VPP participation
-  if (vppParticipation) {
-    recommendedKwh = Math.max(recommendedKwh, 10); // Minimum 10kWh for VPP
-    reasoning += ", optimized for VPP participation";
+  // VPP minimum for meaningful income
+  if (vppParticipation && rawKwh < CONSTANTS.BATTERY_VPP_MINIMUM_KWH) {
+    rawKwh = CONSTANTS.BATTERY_VPP_MINIMUM_KWH;
+    reasoning += ", optimized for VPP participation (10kWh minimum)";
   }
   
-  // Round to nearest standard size
-  const standardSizes = [5, 7, 10, 13, 15, 20, 26, 30];
-  recommendedKwh = standardSizes.reduce((prev, curr) => 
-    Math.abs(curr - recommendedKwh) < Math.abs(prev - recommendedKwh) ? curr : prev
-  );
+  // Round UP to nearest SigenStor standard size
+  const recommendedKwh = roundToStandardSize(rawKwh, STANDARD_BATTERY_SIZES);
+  reasoning += ` → ${recommendedKwh}kWh SigenStor`;
   
   // Estimated cost ($800-1000 per kWh installed)
   const estimatedCost = recommendedKwh * 900;
@@ -432,37 +473,42 @@ export interface SolarRecommendation {
 
 export function calculateSolarSize(
   yearlyUsageKwh: number,
-  batteryKwh: number,
+  state: string,
   hasEv: boolean
 ): SolarRecommendation {
-  // Target: generate 100-120% of annual usage
-  let targetGeneration = yearlyUsageKwh * 1.1;
+  // State-specific peak sun hours (annual average)
+  const psh = STATE_PEAK_SUN_HOURS[state] || 4.0;
+  const pr = CONSTANTS.SOLAR_PERFORMANCE_RATIO;
+  const oversizeFactor = CONSTANTS.SOLAR_OVERSIZE_FACTOR;
   
-  // Add for battery charging
-  targetGeneration += batteryKwh * 365 * 0.5; // Assume 50% daily battery cycling
+  // Engineering formula: System kW = (Annual usage × oversize factor) / (365 × PSH × PR)
+  // NO battery cycling addition — the 1.2x oversize factor already accounts for
+  // battery charging headroom. The battery stores EXCESS solar, not additional solar.
+  let targetAnnualKwh = yearlyUsageKwh * oversizeFactor;
   
-  // Add for EV
+  // Add EV charging load (actual kWh needed per year)
   if (hasEv) {
-    targetGeneration += CONSTANTS.EV_KM_PER_YEAR / 100 * CONSTANTS.EV_CONSUMPTION_KWH_PER_100KM;
+    const evKwhPerYear = CONSTANTS.EV_KM_PER_YEAR / 100 * CONSTANTS.EV_CONSUMPTION_KWH_PER_100KM;
+    targetAnnualKwh += evKwhPerYear;
   }
   
-  // Convert to system size (assume 4 peak sun hours average in Australia)
-  const recommendedKw = targetGeneration / (365 * 4);
+  // Convert to system size using state-specific PSH and performance ratio
+  const rawKw = targetAnnualKwh / (365 * psh * pr);
   
-  // Round to nearest 0.5kW
-  const roundedKw = Math.ceil(recommendedKw * 2) / 2;
+  // Round UP to nearest standard residential solar size
+  const recommendedKw = roundToStandardSize(rawKw, STANDARD_SOLAR_SIZES);
   
-  // Panel count (assuming 400W panels)
-  const panelCount = Math.ceil(roundedKw * 1000 / 400);
+  // Panel count (440W Trina Solar Vertex S+)
+  const panelCount = Math.ceil(recommendedKw * 1000 / CONSTANTS.PANEL_WATTAGE);
   
-  // Annual generation (more accurate)
-  const annualGeneration = roundedKw * 365 * 4;
+  // Annual generation (using actual PSH and PR for realistic estimate)
+  const annualGeneration = recommendedKw * 365 * psh * pr;
   
   // Estimated cost ($1000-1200 per kW installed)
-  const estimatedCost = roundedKw * 1100;
+  const estimatedCost = recommendedKw * 1100;
   
   return {
-    recommendedKw: roundedKw,
+    recommendedKw,
     panelCount,
     annualGeneration: round(annualGeneration, 0),
     estimatedCost: round(estimatedCost, 0),
@@ -617,7 +663,7 @@ export function generateFullCalculations(
   if (!customer.hasExistingSolar) {
     solar = calculateSolarSize(
       usage.yearlyUsageKwh,
-      battery.recommendedKwh,
+      customer.state,
       customer.hasEV || false
     );
   }
@@ -765,6 +811,8 @@ export function generateFullCalculations(
     // ========== SOLAR ==========
     recommendedSolarKw: solar?.recommendedKw,
     solarPanelCount: solar?.panelCount,
+    solarPanelWattage: CONSTANTS.PANEL_WATTAGE,
+    solarPanelBrand: 'Trina Solar Vertex S+',
     solarAnnualGeneration: solar?.annualGeneration,
     solarEstimatedCost: solar?.estimatedCost,
     
@@ -1169,17 +1217,19 @@ export interface SystemSpecifications {
 export function generateSystemSpecs(
   solarKw: number,
   panelCount: number,
-  batteryKwh: number
+  batteryKwh: number,
+  state: string = 'VIC'
 ): SystemSpecifications {
+  const psh = STATE_PEAK_SUN_HOURS[state] || 4.0;
   return {
     solar: {
       systemSize: solarKw,
       panelCount,
-      panelWattage: 400,
+      panelWattage: CONSTANTS.PANEL_WATTAGE,
       panelBrand: 'Trina Solar Vertex S+',
       inverterSize: Math.ceil(solarKw * 1.2),
       inverterBrand: 'Sigenergy',
-      annualGeneration: round(solarKw * 365 * 4, 0),
+      annualGeneration: round(solarKw * 365 * psh * CONSTANTS.SOLAR_PERFORMANCE_RATIO, 0),
       warrantyYears: 25,
       performanceWarranty: '87.4% output at 25 years',
     },

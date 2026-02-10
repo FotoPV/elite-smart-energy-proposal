@@ -733,3 +733,27 @@
 - [x] Remove Tango Energy from VPP providers DB table (it is NOT a VPP provider)
 - [x] Remove Tango Energy from hardcoded providers list in routers.ts (not in seedData.ts)
 - [x] Customer deleted Ajith's project — will get correct VPP on re-upload
+
+## Sizing Recommendation Investigation (Feb 11)
+- [x] Investigate solar sizing calculation logic — 3 bugs found (double-count, hardcoded PSH, no performance ratio)
+- [x] Investigate battery sizing calculation logic — evening fraction too low, no DoD/efficiency
+- [x] Cross-reference with real customer data (Ajith, Jared, Jon)
+- [x] Fix sizing formulas — complete overhaul implemented
+
+## Sizing Calculation Overhaul (Feb 11)
+- [x] Add state-specific peak sun hours lookup (VIC 3.6, NSW 4.2, QLD 4.8, SA 4.5, WA 4.8, TAS 3.3, NT 5.5, ACT 4.0)
+- [x] Apply 0.80 performance ratio to solar sizing
+- [x] Remove battery cycling double-count from solar target generation
+- [x] Change solar oversize factor from 1.1x to 1.2x
+- [x] Add proper EV kWh addition to solar sizing (evKm/100 * 15 kWh/100km)
+- [x] Update panel wattage from 400W/500W to 440W (Trina Vertex S+)
+- [x] Round solar to standard residential sizes (3-20 kW)
+- [x] Fix battery evening fraction from 0.45 to 0.55
+- [x] Apply DoD (0.90) and efficiency (0.95) to battery sizing
+- [x] Add 5kWh EV buffer to battery sizing
+- [x] Round battery to SigenStor sizes (5, 10, 15, 20, 25, 30 kWh)
+- [x] Update tests for new sizing formulas — all 93 passing
+- [x] Verified corrected sizing for all existing customers
+- [x] Fixed all hardcoded 4.2 PSH in slideGenerator.ts (6 instances)
+- [x] Fixed hardcoded 500W/AIKO panel in routers.ts → 440W Trina Solar Vertex S+
+- [x] Added solarPanelWattage and solarPanelBrand to ProposalCalculations interface
