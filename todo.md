@@ -757,3 +757,10 @@
 - [x] Fixed all hardcoded 4.2 PSH in slideGenerator.ts (6 instances)
 - [x] Fixed hardcoded 500W/AIKO panel in routers.ts → 440W Trina Solar Vertex S+
 - [x] Added solarPanelWattage and solarPanelBrand to ProposalCalculations interface
+
+## Inverter Auto-Sizing (Feb 11)
+- [x] Add inverter auto-sizing function that scales with solar system size
+- [x] Replace hardcoded 8kW inverter across calculations.ts, routers.ts, slideGenerator.ts
+- [x] Inverter sizing uses calculateInverterSize() with 5 tiers (5/5/8/10/15 kW)
+- [x] Update tests for inverter sizing — all 94 tests passing
+- [x] Update prompt document with inverter sizing table

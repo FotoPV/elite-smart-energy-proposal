@@ -73,6 +73,26 @@ const STANDARD_SOLAR_SIZES = [3, 4, 5, 5.5, 6, 6.6, 7, 8, 8.8, 10, 11, 13, 13.2,
 // SigenStor battery sizes (kWh) — stackable 5kWh modules
 const STANDARD_BATTERY_SIZES = [5, 10, 15, 20, 25, 30];
 
+// Standard Sigenergy inverter sizes (kW) — must match or exceed solar system size
+// Sigenergy offers: 5kW (single phase), 8kW (single phase), 10kW (three phase), 15kW (three phase)
+const STANDARD_INVERTER_SIZES: { maxSolar: number; inverterKw: number; phases: number }[] = [
+  { maxSolar: 5,    inverterKw: 5,  phases: 1 },   // Up to 5kW solar → 5kW single phase
+  { maxSolar: 6.6,  inverterKw: 5,  phases: 1 },   // Up to 6.6kW solar → 5kW (CEC allows 133% oversize)
+  { maxSolar: 10,   inverterKw: 8,  phases: 1 },   // Up to 10kW solar → 8kW single phase
+  { maxSolar: 15,   inverterKw: 10, phases: 3 },   // Up to 15kW solar → 10kW three phase
+  { maxSolar: 20,   inverterKw: 15, phases: 3 },   // Up to 20kW solar → 15kW three phase
+];
+
+export function calculateInverterSize(solarKw: number): { inverterKw: number; phases: number } {
+  for (const tier of STANDARD_INVERTER_SIZES) {
+    if (solarKw <= tier.maxSolar) {
+      return { inverterKw: tier.inverterKw, phases: tier.phases };
+    }
+  }
+  // Fallback for very large systems: 15kW three phase
+  return { inverterKw: 15, phases: 3 };
+}
+
 function roundToStandardSize(value: number, standardSizes: number[]): number {
   // Find the smallest standard size >= value, or the largest if value exceeds all
   const larger = standardSizes.filter(s => s >= value);
@@ -1227,7 +1247,7 @@ export function generateSystemSpecs(
       panelCount,
       panelWattage: CONSTANTS.PANEL_WATTAGE,
       panelBrand: 'Trina Solar Vertex S+',
-      inverterSize: Math.ceil(solarKw * 1.2),
+      inverterSize: calculateInverterSize(solarKw).inverterKw,
       inverterBrand: 'Sigenergy',
       annualGeneration: round(solarKw * 365 * psh * CONSTANTS.SOLAR_PERFORMANCE_RATIO, 0),
       warrantyYears: 25,
@@ -1243,10 +1263,10 @@ export function generateSystemSpecs(
       roundTripEfficiency: 95,
     },
     inverter: {
-      size: Math.ceil(solarKw * 1.2),
+      size: calculateInverterSize(solarKw).inverterKw,
       brand: 'Sigenergy',
       type: 'Hybrid (Solar + Battery)',
-      phases: 1,
+      phases: calculateInverterSize(solarKw).phases,
       warrantyYears: 10,
     },
   };

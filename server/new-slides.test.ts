@@ -144,6 +144,33 @@ describe('New Calculation Functions', () => {
       expect(result.solar.warrantyYears).toBe(25);
       expect(result.battery.warrantyYears).toBe(10);
     });
+
+    it('should auto-size inverter based on solar system size', () => {
+      // 5kW solar -> 5kW inverter, single phase
+      const small = generateSystemSpecs(5, 12, 10);
+      expect(small.inverter.size).toBe(5);
+      expect(small.inverter.phases).toBe(1);
+
+      // 6.6kW solar -> 5kW inverter (CEC 133% oversize), single phase
+      const medium = generateSystemSpecs(6.6, 16, 10);
+      expect(medium.inverter.size).toBe(5);
+      expect(medium.inverter.phases).toBe(1);
+
+      // 8.8kW solar -> 8kW inverter, single phase
+      const large = generateSystemSpecs(8.8, 20, 15);
+      expect(large.inverter.size).toBe(8);
+      expect(large.inverter.phases).toBe(1);
+
+      // 13kW solar -> 10kW inverter, three phase
+      const xlarge = generateSystemSpecs(13, 30, 20);
+      expect(xlarge.inverter.size).toBe(10);
+      expect(xlarge.inverter.phases).toBe(3);
+
+      // 20kW solar -> 15kW inverter, three phase
+      const xxlarge = generateSystemSpecs(20, 46, 25);
+      expect(xxlarge.inverter.size).toBe(15);
+      expect(xxlarge.inverter.phases).toBe(3);
+    });
   });
 });
 

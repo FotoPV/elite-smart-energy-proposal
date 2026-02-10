@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { storagePut, storageGet } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
-import { generateFullCalculations } from "./calculations";
+import { generateFullCalculations, calculateInverterSize } from "./calculations";
 import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
 import { narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
 import { generatePptx } from "./pptxGenerator";
@@ -1337,7 +1337,7 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasG
     panelBrand: calc.solarPanelBrand || 'Trina Solar Vertex S+',
     batterySizeKwh: calc.recommendedBatteryKwh || 15,
     batteryBrand: 'Sigenergy SigenStor',
-    inverterSizeKw: 8,
+    inverterSizeKw: calculateInverterSize(calc.recommendedSolarKw || 10).inverterKw,
     inverterBrand: 'Sigenergy',
     systemCost: calc.totalInvestment || 25000,
     rebateAmount: calc.totalRebates || 3000,
