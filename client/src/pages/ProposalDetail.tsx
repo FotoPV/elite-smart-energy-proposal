@@ -42,29 +42,45 @@ async function generatePdfClientSide(
     import('jspdf'),
   ]);
 
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  const pageWidth = 297;
-  const pageHeight = 210;
+  // Use 16:9 custom page size matching slide aspect ratio exactly
+  // 1920:1080 = 16:9. In jsPDF, format array is [width, height] of the page.
+  // For landscape 16:9, width=338.667mm, height=190.5mm
+  const pageWidth = 338.667;
+  const pageHeight = 190.5;
   const slideW = 1920;
   const slideH = 1080;
 
-  // Use an iframe for rendering so @font-face declarations in the full HTML document work
+  const pdf = new jsPDF({
+    orientation: 'l',
+    unit: 'mm',
+    format: [pageWidth, pageHeight], // [width, height] for landscape
+  });
+
+  // Create a full-size offscreen container (NOT an iframe) for reliable rendering
+  // Iframes with left:-9999px don't always render at full width in all browsers
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: ${slideW}px;
+    height: ${slideH}px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -9999;
+  `;
+  document.body.appendChild(wrapper);
+
+  // Still use an iframe inside the wrapper for font isolation
   const iframe = document.createElement('iframe');
   iframe.style.cssText = `
-    position: fixed;
-    left: -9999px;
-    top: 0;
     width: ${slideW}px;
     height: ${slideH}px;
     border: none;
-    z-index: -1;
+    display: block;
   `;
-  document.body.appendChild(iframe);
+  wrapper.appendChild(iframe);
 
   try {
     for (let i = 0; i < slideHtmlArray.length; i++) {
@@ -73,7 +89,30 @@ async function generatePdfClientSide(
       const pct = Math.round(((i + 1) / slideHtmlArray.length) * 100);
       onProgress?.(`Rendering slide ${i + 1} of ${slideHtmlArray.length}...`, pct);
 
-      const slideHtml = slideHtmlArray[i];
+      // Rewrite CDN URLs to same-origin paths (fixes CORS for existing proposals with old URLs)
+      // Replace ALL manuscdn CDN URLs with same-origin paths (fixes CORS for all proposals)
+      let slideHtml = slideHtmlArray[i].replace(
+        /https:\/\/files\.manuscdn\.com\/[^'"\)\s]+/g,
+        (url: string) => {
+          // Font files (any extension)
+          if (url.match(/\.(ttf|otf|woff2?|eot)/i)) {
+            if (/nextsphere|jmxTHIS|BoSrlwm|VKaRCb/i.test(url)) return '/fonts/NextSphere-ExtraBold.ttf';
+            if (/generalsans|JAbOMT|KuYDlP|cDkISn|CbDNMz/i.test(url)) return '/fonts/GeneralSans-Regular.otf';
+            if (/urbanist.*italic|CVAUXs|yTZAvA|SgyKyT|ekiXxR/i.test(url)) return '/fonts/Urbanist-SemiBoldItalic.ttf';
+            if (/urbanist|gqxvhf|qDbgEG|KovhlD|OTIdJM/i.test(url)) return '/fonts/Urbanist-SemiBold.ttf';
+            // Fallback: any unknown .otf is GeneralSans, any unknown .ttf is Urbanist
+            if (url.endsWith('.otf')) return '/fonts/GeneralSans-Regular.otf';
+            return '/fonts/Urbanist-SemiBold.ttf';
+          }
+          // Image files
+          if (url.match(/\.(png|jpg|jpeg|webp|svg)/i)) {
+            if (/efFUlW|cover-bg|ctEkQK/i.test(url)) return '/fonts/cover-bg.png';
+            return '/fonts/LightningEnergy_Logo_Icon_Aqua.png';
+          }
+          return url;
+        }
+      );
+
       const iframeDoc = iframe.contentDocument;
       if (!iframeDoc) continue;
 
@@ -81,24 +120,27 @@ async function generatePdfClientSide(
       const isFullDoc = slideHtml.includes('<!DOCTYPE html>') || slideHtml.includes('<html');
       iframeDoc.open();
       if (isFullDoc) {
-        const overrides = `<style>html,body{width:${slideW}px;height:${slideH}px;overflow:hidden;margin:0;padding:0;}</style>`;
+        const overrides = `<style>html,body{width:${slideW}px!important;height:${slideH}px!important;overflow:hidden!important;margin:0!important;padding:0!important;}</style>`;
         iframeDoc.write(slideHtml.replace('</head>', overrides + '</head>'));
       } else {
-        iframeDoc.write(`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${slideW}px;height:${slideH}px;overflow:hidden;background:#000;color:#fff;}</style></head><body>${slideHtml}</body></html>`);
+        iframeDoc.write(`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${slideW}px!important;height:${slideH}px!important;overflow:hidden!important;background:#000;color:#fff;}</style></head><body>${slideHtml}</body></html>`);
       }
       iframeDoc.close();
 
-      // Wait for fonts and images to load
-      await new Promise(r => setTimeout(r, 800));
+      // Wait for fonts and images to load (increased for CDN fonts)
+      await new Promise(r => setTimeout(r, 1500));
 
-      const body = iframeDoc.body;
-      const canvas = await html2canvas(body, {
-        scale: 1.5,
+      // Capture the documentElement for full-width rendering
+      const captureTarget = iframeDoc.documentElement;
+      const canvas = await html2canvas(captureTarget, {
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#000000',
         width: slideW,
         height: slideH,
+        windowWidth: slideW,
+        windowHeight: slideH,
         logging: false,
       });
 
@@ -108,7 +150,7 @@ async function generatePdfClientSide(
 
     return pdf.output('blob');
   } finally {
-    document.body.removeChild(iframe);
+    document.body.removeChild(wrapper);
   }
 }
 
@@ -491,20 +533,50 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     setIsExporting(true);
     setExportType('pdf');
     setProgress(10);
-    setCurrentStep('Generating PDF...');
+    setCurrentStep('Fetching slides...');
     try {
-      setProgress(30);
-      const result = await exportNativePdfMutation.mutateAsync({ proposalId });
-      setProgress(80);
-      setCurrentStep('Downloading...');
-      if (result.fileUrl) {
-        const link = document.createElement('a');
-        link.href = result.fileUrl;
-        link.download = result.fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Use the HTML-based slides (all 22 slides with narratives) for the PDF
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
+        throw new Error('No slides generated. Please generate the proposal first.');
       }
+      setProgress(15);
+      setCurrentStep(`Rendering ${slidesResult.slides.length} slides...`);
+      const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
+      const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
+        setCurrentStep(step);
+        setProgress(15 + Math.round(pct * 0.65));
+      });
+      setProgress(80);
+      setCurrentStep('Uploading PDF...');
+
+      // Upload to S3 for persistent URL
+      const fileName = `proposal-${proposalId}-${customerName.replace(/\s+/g, '_')}-${Date.now()}.pdf`;
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(pdfBlob);
+      });
+      const uploadResponse = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdfData: base64, fileName: `exports/${fileName}` }),
+      });
+      const uploadResult = await uploadResponse.json();
+
+      setProgress(90);
+      setCurrentStep('Downloading...');
+
+      // Also trigger local download
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       setProgress(100);
       toast.success('PDF exported successfully!');
     } catch (error: any) {
@@ -617,7 +689,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           <FileDown className="mr-3 h-4 w-4 text-[#f36710]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PDF</div>
-            <div className="text-[10px] text-[#808285]">Embedded brand fonts</div>
+            <div className="text-[10px] text-[#808285]">Full proposal with all slides</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem

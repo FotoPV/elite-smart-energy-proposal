@@ -1,0 +1,8 @@
+{
+  "query": "DELETE FROM proposal_slides WHERE proposal_id = 270004; UPDATE proposals SET status = 'draft', slides_generated = 0 WHERE id = 270004;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute DELETE FROM proposal_slides WHERE proposal_id = 270004; UPDATE proposals SET status = 'draft', slides_generated = 0 WHERE id = 270004;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'p6ctqt8enbmi3weqmjdcem.proposal_slides' doesn't exist"
+  ]
+}

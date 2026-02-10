@@ -32,10 +32,10 @@ const C = {
 
 // Font CDN URLs and local cache
 const FONT_CDN = {
-  heading: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/BoSrlwmWTcqXBbDH.ttf',
-  body: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KuYDlPentRPOgmbu.otf',
-  label: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/qDbgEGSyNMpWhJqi.ttf',
-  labelItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/yTZAvApGoYiepfBm.ttf',
+  heading: BRAND.fontUrls.nextSphere,
+  body: BRAND.fontUrls.generalSans,
+  label: BRAND.fontUrls.urbanist,
+  labelItalic: BRAND.fontUrls.urbanistItalic,
 };
 
 const FONT_DIR = path.join(__dirname, 'fonts');

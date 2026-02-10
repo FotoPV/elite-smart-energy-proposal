@@ -9,7 +9,7 @@
 
 @font-face {
   font-family: 'NextSphere';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KyJiGtCWZEOyRutS.ttf') format('truetype');
+  src: url('/fonts/NextSphere-ExtraBold.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: 'GeneralSans';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YXyQKtNsWXINxhqz.otf') format('opentype');
+  src: url('/fonts/GeneralSans-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: 'Urbanist';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/IwTijsrkypfLpHZK.ttf') format('truetype');
+  src: url('/fonts/Urbanist-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -33,7 +33,7 @@
 
 @font-face {
   font-family: 'Urbanist';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/zIpydVeIeSysfLZE.ttf') format('truetype');
+  src: url('/fonts/Urbanist-SemiBoldItalic.ttf') format('truetype');
   font-weight: 600;
   font-style: italic;
   font-display: swap;

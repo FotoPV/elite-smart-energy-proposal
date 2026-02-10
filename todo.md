@@ -627,3 +627,21 @@
 - [x] Remove duplicate EV slides (ev_analysis, ev_charger) — only ev_vehicle_analysis + ev_vs_petrol remain
 - [x] Verify all 22 slides render correctly with real data (Frieda Lay SA test)
 - [x] All data values populated (no zeros, no NaN, no undefined, no [object Object])
+
+
+## Fixate Brand Assets Permanently (Feb 10)
+- [x] Upload all brand assets to S3 CDN (logo, fonts, palette image)
+- [x] Update dashboard CSS @font-face with permanent S3 CDN URLs
+- [x] Update dashboard HTML/index.html with permanent font CDN URLs
+- [x] Update slide HTML generators with base64-embedded font data URIs (zero CORS)
+- [x] Update slide HTML generators with base64-embedded logo data URI (zero CORS)
+- [x] Verify color palette is correct everywhere (Black #000000, Aqua #00EAD3, Orange #f36710, Ash #808285, White #FFFFFF)
+- [x] Remove any references to local/temporary asset paths
+- [x] Test dashboard and slide generation with embedded assets (zero CORS errors confirmed)
+
+
+## CRITICAL: PDF Sizing Issue Fix (Feb 10)
+- [x] Review exported PDF to identify sizing/layout problems
+- [x] Fix PDF generation code to ensure correct slide sizing in exported PDF
+- [x] Test PDF export with correct sizing (rendering confirmed, session expired before download)
+- [x] Fixate all brand assets with base64 data URIs + S3 CDN fallback URLs

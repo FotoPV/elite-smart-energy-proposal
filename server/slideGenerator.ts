@@ -2,6 +2,7 @@
 // Matches exact design from Paul Stokes SA proposal example
 
 import { BRAND } from '../shared/brand';
+import { FONT_NEXTSPHERE_B64, FONT_GENERALSANS_B64, FONT_URBANIST_B64, FONT_URBANIST_ITALIC_B64, LOGO_AQUA_B64, COVER_BG_B64 } from '../shared/fontAssets';
 
 export interface ProposalData {
   // Customer Info
@@ -201,7 +202,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       preparedBy: BRAND.contact.name,
       preparedByTitle: BRAND.contact.title,
       company: BRAND.contact.company,
-      logoUrl: BRAND.logo.aqua,
+      logoUrl: LOGO_URI_AQUA,
       date: new Date().toLocaleDateString('en-AU', { month: 'long', year: 'numeric' }),
     }
   });
@@ -773,7 +774,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       email: BRAND.contact.email,
       website: BRAND.contact.website,
       copyright: BRAND.contact.copyright,
-      logoUrl: BRAND.logo.aqua,
+      logoUrl: LOGO_URI_AQUA,
     }
   });
   
@@ -836,12 +837,20 @@ function getVPPProviders(state: string, hasGas: boolean): Array<{
 // HTML SLIDE GENERATORS - Matching Paul Stokes Best Example
 // ============================================================
 
+// Base64 data URIs for fonts — eliminates ALL CORS issues
+const FONT_URI_NEXTSPHERE = `data:font/ttf;base64,${FONT_NEXTSPHERE_B64}`;
+const FONT_URI_GENERALSANS = `data:font/otf;base64,${FONT_GENERALSANS_B64}`;
+const FONT_URI_URBANIST = `data:font/ttf;base64,${FONT_URBANIST_B64}`;
+const FONT_URI_URBANIST_ITALIC = `data:font/ttf;base64,${FONT_URBANIST_ITALIC_B64}`;
+export const LOGO_URI_AQUA = `data:image/png;base64,${LOGO_AQUA_B64}`;
+const COVER_BG_URI = `data:image/jpeg;base64,${COVER_BG_B64}`;
+
 const SLIDE_STYLES = `
 <style>
-  @font-face { font-family: 'NextSphere'; src: url('${BRAND.fontUrls.nextSphere}') format('truetype'); font-weight: 800; }
-  @font-face { font-family: 'GeneralSans'; src: url('${BRAND.fontUrls.generalSans}') format('opentype'); font-weight: 400; }
-  @font-face { font-family: 'Urbanist'; src: url('${BRAND.fontUrls.urbanist}') format('truetype'); font-weight: 600; }
-  @font-face { font-family: 'UrbanistItalic'; src: url('${BRAND.fontUrls.urbanistItalic}') format('truetype'); font-weight: 600; font-style: italic; }
+  @font-face { font-family: 'NextSphere'; src: url('${FONT_URI_NEXTSPHERE}') format('truetype'); font-weight: 800; }
+  @font-face { font-family: 'GeneralSans'; src: url('${FONT_URI_GENERALSANS}') format('opentype'); font-weight: 400; }
+  @font-face { font-family: 'Urbanist'; src: url('${FONT_URI_URBANIST}') format('truetype'); font-weight: 600; }
+  @font-face { font-family: 'UrbanistItalic'; src: url('${FONT_URI_URBANIST_ITALIC}') format('truetype'); font-weight: 600; font-style: italic; }
   
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -1043,9 +1052,9 @@ export function generateSlideHTML(slide: SlideContent): string {
 function genCover(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
-    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; background: #000000 url('${BRAND.coverBg}') no-repeat right center; background-size: contain;">
+    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; background: #000000 url('${COVER_BG_URI}') no-repeat right center; background-size: contain;">
       <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 60px;">
-        <img src="${BRAND.logo.aqua}" style="width: 50px; height: 50px;" alt="LE" />
+        <img src="${LOGO_URI_AQUA}" style="width: 50px; height: 50px;" alt="LE" />
         <span style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; letter-spacing: 0.15em;">LIGHTNING ENERGY</span>
       </div>
       <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 800px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
@@ -1067,7 +1076,7 @@ function genExecutiveSummary(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 50px; margin-top: 20px;">
         <div style="flex: 1.3;">
@@ -1114,7 +1123,7 @@ function genBillAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1163,7 +1172,7 @@ function genUsageAnalysis(slide: SlideContent): string {
   const maxKwh = Math.max(...benchmarks.map(b => b.kwh), 16);
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1203,7 +1212,7 @@ function genYearlyProjection(slide: SlideContent): string {
   const projection = (c.yearlyProjection as Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1248,7 +1257,7 @@ function genGasFootprint(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1283,7 +1292,7 @@ function genGasAppliances(slide: SlideContent): string {
   const priorities = (c.electrificationPriority as Array<{ name: string; type: string; priority: string; savings: number }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <table style="margin-top: 10px;">
         <tr><th>APPLIANCE</th><th>CURRENT TYPE</th><th>PRIORITY</th><th style="text-align: right;">EST. ANNUAL SAVINGS</th></tr>
@@ -1312,7 +1321,7 @@ function genStrategic(slide: SlideContent): string {
   const considerations = c.considerations as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1361,7 +1370,7 @@ function genBattery(slide: SlideContent): string {
   const total = c.totalCapacity as number;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1411,7 +1420,7 @@ function genSolar(slide: SlideContent): string {
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 30px; margin-top: 10px;">
         <div class="card" style="flex: 1; text-align: center; padding: 30px;">
@@ -1458,7 +1467,7 @@ function genVPPComparison(slide: SlideContent): string {
   const rec = c.recommendedProvider as string;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <table style="margin-top: 10px;">
         <tr><th>PROVIDER</th><th>VPP MODEL</th><th>GAS BUNDLE</th><th>EST. ANNUAL VALUE</th><th>STRATEGIC FIT</th></tr>
@@ -1483,7 +1492,7 @@ function genVPPRecommendation(slide: SlideContent): string {
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="text-align: center; margin-top: 20px;">
         <p class="lbl">SELECTED PARTNER</p>
@@ -1518,7 +1527,7 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
   const features = (c.features as string[]) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1575,7 +1584,7 @@ function genEVAnalysis(slide: SlideContent): string {
   const comparison = (c.comparison as Array<{ scenario: string; costPer100km: number; annualCost: number }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1619,7 +1628,7 @@ function genEVCharger(slide: SlideContent): string {
   const benefits = (c.solarChargingBenefits as string[]) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1656,7 +1665,7 @@ function genElectrificationInvestment(slide: SlideContent): string {
   const items = (c.items as Array<{ item: string; cost: number; rebate: number }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1702,7 +1711,7 @@ function genSavingsSummary(slide: SlideContent): string {
   const maxVal = Math.max(...breakdown.map(b => b.value));
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1752,7 +1761,7 @@ function genFinancial(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1801,7 +1810,7 @@ function genEnvironmental(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1854,7 +1863,7 @@ function genRoadmap(slide: SlideContent): string {
   const steps = c.steps as Array<{ number: string; title: string; description: string; timeline: string; color: string }>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       ${c.narrative ? `<div style="padding: 0 40px; margin-top: 10px; font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : ''}
       <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
@@ -1885,7 +1894,7 @@ function genConclusion(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="margin-top: 20px; padding: 0 20px;">
         <div style="font-size: 15px; line-height: 1.9; color: #FFFFFF; margin-bottom: 24px;">
@@ -1909,7 +1918,7 @@ function genContact(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 60px 80px;">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       <div style="width: 80px; height: 4px; background: #00EAD3; margin-bottom: 24px;"></div>
       <h1 style="font-family: 'NextSphere', sans-serif; font-size: 64px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; margin-bottom: 8px;">${c.preparedBy || BRAND.contact.name}</h1>
       <p style="font-family: 'Urbanist', sans-serif; font-size: 18px; color: #00EAD3; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 48px;">${c.title || BRAND.contact.title}</p>
@@ -1942,7 +1951,7 @@ function genStrategicSiteAssessment(slide: SlideContent): string {
   const photos = (c.sitePhotos as Array<{ url: string; caption: string }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1994,7 +2003,7 @@ function genOption1(slide: SlideContent): string {
   const features = (c.features as string[]) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -2044,7 +2053,7 @@ function genOption2(slide: SlideContent): string {
   const features = (c.features as string[]) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -2104,7 +2113,7 @@ function genSystemComparison(slide: SlideContent): string {
   ];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <table style="margin-top: 10px;">
         <tr>
@@ -2135,7 +2144,7 @@ function genAnnualFinancialImpact(slide: SlideContent): string {
   const totalTurnaround = c.totalTurnaround as number;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; align-items: center; gap: 30px; margin-top: 10px;">
         <div class="card" style="flex: 1; text-align: center; padding: 30px; border-top: 3px solid #f36710;">
@@ -2144,7 +2153,7 @@ function genAnnualFinancialImpact(slide: SlideContent): string {
           <p class="gray">per year</p>
         </div>
         <div style="text-align: center;">
-          <img src="${BRAND.logo.aqua}" style="width: 50px; height: 50px;" alt="LE" />
+          <img src="${LOGO_URI_AQUA}" style="width: 50px; height: 50px;" alt="LE" />
           <p style="font-family: 'NextSphere', sans-serif; font-size: 11px; font-weight: 800; color: #808285; margin-top: 8px; letter-spacing: 0.1em;">TRANSFORMATION</p>
         </div>
         <div class="card" style="flex: 1; text-align: center; padding: 30px; border-top: 3px solid #00EAD3;">
@@ -2204,7 +2213,7 @@ function genInvestmentAnalysis(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -2247,7 +2256,7 @@ function genBillBreakdown(slide: SlideContent): string {
   const supplyPct = c.supplyChargesPercent as number || 15;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 20px;">
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -2295,7 +2304,7 @@ function genAnnualEnergyProjection(slide: SlideContent): string {
   const maxVal = Math.max(...months.map(m => Math.max(m.usage, m.solar)), 2000);
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 16px;">
         <div style="flex: 1.8;">
@@ -2335,7 +2344,7 @@ function genUsageBenchmarking(slide: SlideContent): string {
   const maxBar = Math.max(daily, stateAvg) * 1.3;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 20px;">
         <div style="flex: 1.2; display: flex; align-items: flex-end; gap: 40px; padding: 40px 60px 30px;">
@@ -2380,7 +2389,7 @@ function genSolarRecommendation(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 50px; margin-top: 20px;">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
@@ -2417,7 +2426,7 @@ function genBatteryRecommendation(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 50px; margin-top: 20px;">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
@@ -2461,7 +2470,7 @@ function genWhyBattery(slide: SlideContent): string {
   ];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0; margin-top: 20px; flex: 1;">
         ${benefits.slice(0, 4).map((b, i) => `
@@ -2492,7 +2501,7 @@ function genBatteryConsiderations(slide: SlideContent): string {
   ];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0; margin-top: 20px; flex: 1;">
         ${considerations.slice(0, 4).map((c, i) => `
@@ -2517,7 +2526,7 @@ function genEVvsPetrol(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1; background: #1a1a1a; border-radius: 8px; padding: 32px;">
@@ -2556,7 +2565,7 @@ function genFinancialInvestment(slide: SlideContent): string {
   const lineItems = (c.lineItems as Array<{ label: string; amount: number; isCredit: boolean }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 50px; margin-top: 20px;">
         <div style="flex: 1.2;">
@@ -2611,7 +2620,7 @@ function genReturnOnInvestment(slide: SlideContent): string {
   const scale = midY / maxVal;
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1.8; position: relative; height: 500px;">
@@ -2672,7 +2681,7 @@ function genEnergyOptimisation(slide: SlideContent): string {
   ];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1.2; display: flex; flex-direction: column; gap: 20px;">
@@ -2711,7 +2720,7 @@ function genRequiredElectricalWorks(slide: SlideContent): string {
   const photos = (c.sitePhotos as Array<{ url: string; caption: string }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 20px;">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
@@ -2748,7 +2757,7 @@ function genSystemIntegration(slide: SlideContent): string {
   const appliances = (c.appliances as Array<{ name: string; strategy: string; description: string; photoUrl?: string }>) || [];
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: grid; grid-template-columns: repeat(${Math.min(appliances.length, 3)}, 1fr); gap: 24px; margin-top: 20px;">
         ${appliances.slice(0, 3).map(a => `
@@ -2771,7 +2780,7 @@ function genSystemIntegration(slide: SlideContent): string {
 function genGeneric(slide: SlideContent): string {
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="margin-top: 20px;">
         <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
@@ -2797,7 +2806,7 @@ function genTariffComparison(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Understanding your electricity rate structure')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -2867,7 +2876,7 @@ function genDailyLoadProfile(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Estimated 24-hour energy consumption pattern')}
       <div style="margin-top: 10px;">
         <div style="display: flex; align-items: flex-end; height: 300px; gap: 2px; padding: 0 10px; border-bottom: 1px solid #333;">
@@ -2939,7 +2948,7 @@ function genSolarGenerationProfile(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Monthly solar generation vs household consumption')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.5;">
@@ -2997,7 +3006,7 @@ function genBatteryCycle(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Typical daily battery state of charge pattern')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.5;">
@@ -3070,7 +3079,7 @@ function genGridIndependence(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Your path to energy independence')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1; text-align: center;">
@@ -3142,7 +3151,7 @@ function genRebateBreakdown(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Government incentives reducing your investment')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -3205,7 +3214,7 @@ function genFinancialProjection25yr(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Long-term financial outlook with 3.5% annual inflation')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -3265,7 +3274,7 @@ function genSystemSpecifications(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Complete technical specifications for your system')}
       <div style="display: flex; gap: 30px; margin-top: 10px;">
         ${!hasExistingSolar ? `
@@ -3374,7 +3383,7 @@ function genWarrantyMaintenance(slide: SlideContent): string {
   
   return `
     <div class="slide">
-      <img src="${BRAND.logo.aqua}" class="logo" alt="LE" />
+      <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || 'Comprehensive warranty coverage and maintenance schedule')}
       <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
