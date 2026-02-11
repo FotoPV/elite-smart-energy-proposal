@@ -198,8 +198,31 @@ export default function NewProposal() {
     refetchDocuments();
   }, [selectedCustomerId]);
 
-  const handleRemoveFile = (fileId: string) => {
+  const deleteBill = trpc.bills.delete.useMutation({
+    onSuccess: () => { refetchBills(); toast.success('Bill deleted'); },
+    onError: (err) => toast.error(err.message),
+  });
+  const deleteDocument = trpc.documents.delete.useMutation({
+    onSuccess: () => { refetchDocuments(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleRemoveFile = async (fileId: string) => {
+    // If it's a server-side document, delete from DB too
+    if (fileId.startsWith('existing-')) {
+      const docId = parseInt(fileId.replace('existing-', ''));
+      if (!isNaN(docId)) {
+        deleteDocument.mutate({ id: docId });
+      }
+    }
     setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const handleDeleteElectricityBill = () => {
+    if (!electricityBillId) return;
+    if (!confirm('Delete this electricity bill? You can upload a new one after.')) return;
+    deleteBill.mutate({ id: electricityBillId });
+    setElectricityBillId(null);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -338,9 +361,21 @@ export default function NewProposal() {
                   Electricity Bill (Required)
                 </Label>
                 {electricityBillId ? (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                    <span className="text-green-400 font-medium">Electricity bill uploaded</span>
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                      <span className="text-green-400 font-medium">Electricity bill uploaded</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      onClick={handleDeleteElectricityBill}
+                      disabled={deleteBill.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      {deleteBill.isPending ? 'Deleting...' : 'Replace Bill'}
+                    </Button>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">

@@ -782,3 +782,9 @@
 ## Copyright & Disclaimer (Feb 11)
 - [x] Removed copyright footer from all slides (50 instances) — only on contact/last slide now
 - [x] Added disclaimer text to the last (contact) slide with copyright below it
+
+## Feature: Delete/Replace Uploaded Bills (Feb 12)
+- [x] Backend bills.delete and documents.delete endpoints already existed
+- [x] Added 'Replace Bill' button on electricity bill upload confirmation
+- [x] Added confirmation dialog before deleting electricity bill
+- [x] Fixed handleRemoveFile to call server-side delete for documents too
