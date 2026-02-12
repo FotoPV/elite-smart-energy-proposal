@@ -795,3 +795,10 @@
 - [x] Redesign genCurrentBillBreakdown — replace text with waterfall/stacked bar chart, usage benchmark gauge, bold visuals
 - [x] Test regeneration with existing customer proposal
 - [ ] Verify PDF export renders new visual slides correctly (pending user test)
+
+
+## Feature: Multi-PDF Upload & Replace Button (Feb 12)
+- [x] Enable multiple PDF upload for electricity bills in New Proposal wizard
+- [x] Show uploaded bill list with individual remove/replace options
+- [x] Ensure Replace button is visible after a bill has been uploaded (now shows as 'Remove' per bill)
+- [x] Test multi-bill upload and extraction flow — verified in browser

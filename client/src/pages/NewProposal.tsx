@@ -39,9 +39,13 @@ export default function NewProposal() {
     preselectedCustomerId ? parseInt(preselectedCustomerId) : null
   );
   const [proposalTitle, setProposalTitle] = useState("");
-  const [electricityBillId, setElectricityBillId] = useState<number | null>(null);
+  const [electricityBillIds, setElectricityBillIds] = useState<number[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingType, setUploadingType] = useState<string | null>(null);
+  const [uploadingBillCount, setUploadingBillCount] = useState(0);
+  const elecBillRef = useRef<HTMLInputElement>(null);
+  // Derived: primary bill is the first one (most recent)
+  const electricityBillId = electricityBillIds.length > 0 ? electricityBillIds[0] : null;
 
   // Multi-file upload states
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -88,11 +92,13 @@ export default function NewProposal() {
     onError: (error) => toast.error(error.message)
   });
 
-  // Auto-select existing electricity bill
+  // Auto-select existing electricity bills
   useEffect(() => {
     if (existingBills) {
-      const elecBill = existingBills.find(b => b.billType === 'electricity');
-      if (elecBill) setElectricityBillId(elecBill.id);
+      const elecBills = existingBills.filter(b => b.billType === 'electricity');
+      if (elecBills.length > 0) {
+        setElectricityBillIds(elecBills.map(b => b.id));
+      }
     }
   }, [existingBills]);
 
@@ -125,33 +131,40 @@ export default function NewProposal() {
     }
   }, [selectedCustomer, proposalTitle]);
 
-  const handleElectricityBillUpload = async (file: globalThis.File) => {
-    if (!selectedCustomerId) return;
+  const handleElectricityBillUpload = async (files: globalThis.File[]) => {
+    if (!selectedCustomerId || files.length === 0) return;
     setIsUploading(true);
     setUploadingType('electricity');
-    try {
-      const base64 = await fileToBase64(file);
-      const result = await uploadBill.mutateAsync({
-        customerId: selectedCustomerId,
-        billType: 'electricity',
-        fileData: base64,
-        fileName: file.name
-      });
-      toast.success("Bill uploaded, extracting data...");
+    setUploadingBillCount(files.length);
+    const newIds: number[] = [];
+    for (const file of files) {
       try {
-        await extractBill.mutateAsync({ billId: result.id });
-        toast.success("Bill data extracted successfully");
+        const base64 = await fileToBase64(file);
+        const result = await uploadBill.mutateAsync({
+          customerId: selectedCustomerId,
+          billType: 'electricity',
+          fileData: base64,
+          fileName: file.name
+        });
+        toast.success(`${file.name} uploaded, extracting data...`);
+        try {
+          await extractBill.mutateAsync({ billId: result.id });
+          toast.success(`${file.name} — data extracted`);
+        } catch {
+          toast.error(`${file.name} — extraction failed, you can manually enter data later`);
+        }
+        newIds.push(result.id);
       } catch {
-        toast.error("Extraction failed, you can manually enter data later");
+        toast.error(`Failed to upload ${file.name}`);
       }
-      setElectricityBillId(result.id);
-      refetchBills();
-    } catch {
-      toast.error("Failed to upload bill");
-    } finally {
-      setIsUploading(false);
-      setUploadingType(null);
     }
+    if (newIds.length > 0) {
+      setElectricityBillIds(prev => [...newIds, ...prev]);
+    }
+    refetchBills();
+    setIsUploading(false);
+    setUploadingType(null);
+    setUploadingBillCount(0);
   };
 
   // Multi-file upload handler for photos and PDFs
@@ -218,11 +231,10 @@ export default function NewProposal() {
     setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
-  const handleDeleteElectricityBill = () => {
-    if (!electricityBillId) return;
-    if (!confirm('Delete this electricity bill? You can upload a new one after.')) return;
-    deleteBill.mutate({ id: electricityBillId });
-    setElectricityBillId(null);
+  const handleDeleteElectricityBill = (billId: number) => {
+    if (!confirm('Delete this electricity bill?')) return;
+    deleteBill.mutate({ id: billId });
+    setElectricityBillIds(prev => prev.filter(id => id !== billId));
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -354,55 +366,95 @@ export default function NewProposal() {
               <CardDescription>Upload electricity bill, photos, and supporting documents</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Electricity Bill - Required */}
+              {/* Electricity Bill - Required (Multi-PDF) */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-primary" />
-                  Electricity Bill (Required)
+                  Electricity Bills (Required)
                 </Label>
-                {electricityBillId ? (
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                      <span className="text-green-400 font-medium">Electricity bill uploaded</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      onClick={handleDeleteElectricityBill}
-                      disabled={deleteBill.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      {deleteBill.isPending ? 'Deleting...' : 'Replace Bill'}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload electricity bill (PDF)</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="electricity-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleElectricityBillUpload(file);
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => document.getElementById('electricity-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'electricity' ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Uploading...</>
-                      ) : "Select File"}
-                    </Button>
+                <p className="text-xs text-muted-foreground -mt-1">Upload one or more billing periods for more accurate annual projections</p>
+
+                {/* Hidden multi-file input */}
+                <input
+                  ref={elecBillRef}
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  className="hidden"
+                  disabled={isUploading}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) handleElectricityBillUpload(Array.from(files));
+                    e.target.value = ''; // reset so same file can be re-selected
+                  }}
+                />
+
+                {/* List of uploaded bills */}
+                {electricityBillIds.length > 0 && (
+                  <div className="space-y-2">
+                    {electricityBillIds.map((billId, idx) => {
+                      const bill = existingBills?.find(b => b.id === billId);
+                      return (
+                        <div key={billId} className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <CheckCircle className="h-4 w-4 text-green-400 shrink-0" />
+                            <div className="min-w-0">
+                              <span className="text-green-400 font-medium text-sm block truncate">
+                                {bill?.fileName || `Bill #${billId}`}
+                              </span>
+                              {idx === 0 && <span className="text-[10px] text-primary font-semibold uppercase tracking-wider">Primary</span>}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
+                            onClick={() => handleDeleteElectricityBill(billId)}
+                            disabled={deleteBill.isPending}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
+
+                {/* Upload area — always visible so user can add more */}
+                <div
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center transition-colors hover:border-primary/50 cursor-pointer"
+                  onClick={() => elecBillRef.current?.click()}
+                >
+                  {isUploading && uploadingType === 'electricity' ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Uploading {uploadingBillCount} bill{uploadingBillCount !== 1 ? 's' : ''}...</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      {electricityBillIds.length > 0 ? (
+                        <>
+                          <Plus className="h-6 w-6 text-primary" />
+                          <p className="text-sm text-primary font-medium">Add More Bills</p>
+                          <p className="text-xs text-muted-foreground">Select one or more PDFs</p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-8 w-8 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Upload electricity bill PDFs</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); elecBillRef.current?.click(); }}
+                          >
+                            Select Files
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Divider */}
@@ -567,8 +619,8 @@ export default function NewProposal() {
                     <span>{selectedCustomer?.state}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Electricity Bill:</span>
-                    <span className="text-green-400">Uploaded</span>
+                    <span className="text-muted-foreground">Electricity Bills:</span>
+                    <span className="text-green-400">{electricityBillIds.length} bill{electricityBillIds.length !== 1 ? 's' : ''} uploaded</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Additional Files:</span>
