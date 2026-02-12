@@ -327,6 +327,7 @@ export const appRouter = router({
         customerId: z.number(),
         title: z.string().optional(),
         electricityBillId: z.number().optional(),
+        proposalNotes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const customer = await db.getCustomerById(input.customerId);
@@ -339,6 +340,7 @@ export const appRouter = router({
           userId: ctx.user.id,
           title: input.title || `Proposal for ${customer.fullName}`,
           electricityBillId: input.electricityBillId,
+          proposalNotes: input.proposalNotes || null,
           status: 'draft',
         });
         

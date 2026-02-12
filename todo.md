@@ -833,3 +833,9 @@
 - [x] Investigate why S3-hosted photos are lost during PDF conversion (URL rewriting replaced all CDN images with logo)
 - [x] Fix image loading in PDF renderer — added server-side image proxy (imageProxy.toBase64) to bypass CORS
 - [x] Test PDF download with switchboard and meter photos — VERIFIED: switchboard photo renders correctly on slide 18
+
+## Feature: Proposal Notes in New Proposal Wizard (Feb 13)
+- [x] Add Proposal Notes textarea to Step 2 (Upload) in NewProposal wizard, below photo uploads
+- [x] Wire notes into proposal creation so they persist from the start
+- [x] Keep Proposal Notes on ProposalDetail page for later editing
+- [x] Test notes flow from creation through to regeneration

@@ -46,6 +46,7 @@ export default function NewProposal() {
   const elecBillRef = useRef<HTMLInputElement>(null);
   // Derived: primary bill is the first one (most recent)
   const electricityBillId = electricityBillIds.length > 0 ? electricityBillIds[0] : null;
+  const [proposalNotes, setProposalNotes] = useState('');
 
   // Multi-file upload states
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -281,6 +282,7 @@ export default function NewProposal() {
       customerId: selectedCustomerId,
       title: proposalTitle,
       electricityBillId,
+      proposalNotes: proposalNotes.trim() || undefined,
     });
   };
 
@@ -601,6 +603,23 @@ export default function NewProposal() {
                 </div>
               )}
 
+              {/* Proposal Notes */}
+              <div className="border-t border-border pt-4 mt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-[#00EAD3]" />
+                  <h3 className="text-sm font-semibold text-muted-foreground">PROPOSAL NOTES (Optional)</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Add observations about the install — switchboard condition, existing system details, special requirements. These notes will be included in the AI-generated narrative.
+                </p>
+                <textarea
+                  value={proposalNotes}
+                  onChange={(e) => setProposalNotes(e.target.value)}
+                  placeholder="e.g. Switchboard needs upgrade — old style with ceramic fuses. 3-phase supply confirmed. Customer wants pool heat pump prioritised..."
+                  className="w-full min-h-[100px] p-3 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-[#00EAD3]/50 resize-y"
+                />
+              </div>
+
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setStep(1)}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -660,6 +679,12 @@ export default function NewProposal() {
                       {completedUploads.length > 0
                         ? `${completedUploads.length} file${completedUploads.length !== 1 ? 's' : ''} (${photoCount} photo${photoCount !== 1 ? 's' : ''}, ${pdfCount} PDF${pdfCount !== 1 ? 's' : ''})`
                         : "None"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Proposal Notes:</span>
+                    <span className={proposalNotes.trim() ? "text-green-400" : "text-muted-foreground"}>
+                      {proposalNotes.trim() ? "Included" : "None"}
                     </span>
                   </div>
                 </div>
