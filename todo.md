@@ -828,3 +828,8 @@
 ## UI Polish: Auto-save Indicator & Photo Thumbnails (Feb 13)
 - [x] Auto-save indicator: transition from "Unsaved changes" to green "Saved" checkmark after debounce
 - [x] Photo thumbnails in Regenerate modal: show small thumbnails of uploaded site photos
+
+## Bug Fix: PDF Export Losing Switchboard/Meter Photos (Feb 13)
+- [x] Investigate why S3-hosted photos are lost during PDF conversion (URL rewriting replaced all CDN images with logo)
+- [x] Fix image loading in PDF renderer — added server-side image proxy (imageProxy.toBase64) to bypass CORS
+- [x] Test PDF download with switchboard and meter photos — VERIFIED: switchboard photo renders correctly on slide 18

@@ -70,6 +70,26 @@ export const appRouter = router({
 
 
   // ============================================
+  // IMAGE PROXY (bypasses CORS for PDF rendering)
+  // ============================================
+  imageProxy: router({
+    toBase64: protectedProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await fetch(input.url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const buffer = await response.arrayBuffer();
+          const contentType = response.headers.get('content-type') || 'image/jpeg';
+          const base64 = Buffer.from(buffer).toString('base64');
+          return { dataUri: `data:${contentType};base64,${base64}` };
+        } catch (e: any) {
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `Failed to proxy image: ${e.message}` });
+        }
+      }),
+  }),
+
+  // ============================================
   // CUSTOMER ROUTES
   // ============================================
   customers: router({

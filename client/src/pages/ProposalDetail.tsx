@@ -49,7 +49,8 @@ import {
  */
 async function generatePdfClientSide(
   slideHtmlArray: string[],
-  onProgress?: (step: string, percent: number) => void
+  onProgress?: (step: string, percent: number) => void,
+  proxyImageToBase64?: (url: string) => Promise<string | null>
 ): Promise<Blob> {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
     import('html2canvas-pro'),
@@ -118,14 +119,38 @@ async function generatePdfClientSide(
             if (url.endsWith('.otf')) return '/fonts/GeneralSans-Regular.otf';
             return '/fonts/Urbanist-SemiBold.ttf';
           }
-          // Image files
+          // Image files — only replace known branding assets, preserve customer photos
           if (url.match(/\.(png|jpg|jpeg|webp|svg)/i)) {
             if (/efFUlW|cover-bg|ctEkQK/i.test(url)) return '/fonts/cover-bg.png';
-            return '/fonts/LightningEnergy_Logo_Icon_Aqua.png';
+            // Only replace logo-specific URLs, NOT customer-uploaded photos
+            if (/logo|icon.*aqua|LightningEnergy/i.test(url)) return '/fonts/LightningEnergy_Logo_Icon_Aqua.png';
+            // Customer-uploaded photos (switchboard, meter, roof, documents) — keep original URL
+            // These are served from S3 with public access, html2canvas can fetch them with useCORS
+            return url;
           }
           return url;
         }
       );
+
+      // Convert external image URLs to base64 data URIs via server-side proxy
+      // This bypasses CORS entirely — the server fetches the image and returns base64
+      if (proxyImageToBase64) {
+        const externalImgUrls = slideHtml.match(/https:\/\/[^'"\)\s]+\.(png|jpg|jpeg|webp)/gi) || [];
+        // Deduplicate URLs to avoid redundant proxy calls
+        const uniqueUrls = Array.from(new Set(externalImgUrls));
+        for (const imgUrl of uniqueUrls) {
+          // Skip already-rewritten local paths
+          if (imgUrl.startsWith('/fonts/') || imgUrl.startsWith('data:')) continue;
+          try {
+            const dataUri = await proxyImageToBase64(imgUrl);
+            if (dataUri) {
+              slideHtml = slideHtml.split(imgUrl).join(dataUri);
+            }
+          } catch (e) {
+            console.warn('Failed to proxy image to base64:', imgUrl, e);
+          }
+        }
+      }
 
       const iframeDoc = iframe.contentDocument;
       if (!iframeDoc) continue;
@@ -141,8 +166,29 @@ async function generatePdfClientSide(
       }
       iframeDoc.close();
 
-      // Wait for fonts and images to load (increased for CDN fonts)
-      await new Promise(r => setTimeout(r, 1500));
+      // Wait for fonts to load
+      await new Promise(r => setTimeout(r, 800));
+      
+      // Wait for ALL images (including customer photos from S3) to fully load
+      const iframeImages = Array.from(iframeDoc.querySelectorAll('img'));
+      if (iframeImages.length > 0) {
+        await Promise.all(
+          iframeImages.map(img => {
+            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+            return new Promise<void>((resolve) => {
+              img.onload = () => resolve();
+              img.onerror = () => {
+                console.warn('Image failed to load in PDF:', img.src);
+                resolve(); // Don't block PDF on a single failed image
+              };
+              // Timeout fallback — don't wait forever
+              setTimeout(resolve, 8000);
+            });
+          })
+        );
+      }
+      // Additional settle time for rendering
+      await new Promise(r => setTimeout(r, 500));
 
       // Capture the documentElement for full-width rendering
       const captureTarget = iframeDoc.documentElement;
@@ -282,11 +328,29 @@ function ScaleCalculator({ containerRef }: { containerRef: React.RefObject<HTMLD
 }
 
 // Download PDF button - generates and downloads
+/**
+ * Hook that creates a server-side image proxy function for PDF rendering.
+ * Bypasses CORS by fetching images through the backend and returning base64 data URIs.
+ */
+function useImageProxy() {
+  const proxyMutation = trpc.imageProxy.toBase64.useMutation();
+  return async (url: string): Promise<string | null> => {
+    try {
+      const result = await proxyMutation.mutateAsync({ url });
+      return result.dataUri;
+    } catch (e) {
+      console.warn('Image proxy failed for:', url, e);
+      return null;
+    }
+  };
+}
+
 function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { proposalId: number; customerName: string; size?: 'default' | 'sm' }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
   const utils = trpc.useUtils();
+  const proxyImage = useImageProxy();
   
   const handleDownload = async () => {
     setIsGenerating(true);
@@ -393,6 +457,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
   const calculateMutation = trpc.proposals.calculate.useMutation();
   const generateProgressiveMutation = trpc.proposals.generateProgressive.useMutation();
   const utils = trpc.useUtils();
+  const proxyImage = useImageProxy();
   
   const handleUpdateAndPublish = async () => {
     setIsProcessing(true);
@@ -423,7 +488,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
         setCurrentStep(step);
         setProgress(50 + Math.round(pct * 0.45));
-      });
+      }, proxyImage);
       
       setProgress(95);
       setCurrentStep('Uploading PDF...');
@@ -512,6 +577,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   const exportNativePdfMutation = trpc.proposals.exportNativePdf.useMutation();
   const generateSlideContentMutation = trpc.proposals.generateSlideContent.useMutation();
   const utils = trpc.useUtils();
+  const proxyImage = useImageProxy();
   const [slideContentUrl, setSlideContentUrl] = useState<string | null>(null);
   
   const handleExportPptx = async () => {
@@ -560,7 +626,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
       const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
         setCurrentStep(step);
         setProgress(15 + Math.round(pct * 0.65));
-      });
+      }, proxyImage);
       setProgress(80);
       setCurrentStep('Uploading PDF...');
 
@@ -649,7 +715,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
       const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
         setCurrentStep(step);
         setProgress(20 + Math.round(pct * 0.7));
-      });
+      }, proxyImage);
       setProgress(90);
       setCurrentStep('Preparing download...');
       const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;
@@ -921,6 +987,7 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
   const exportPptxMutation = trpc.proposals.exportPptx.useMutation();
   const generateSlideContentMutation = trpc.proposals.generateSlideContent.useMutation();
   const utils = trpc.useUtils();
+  const proxyImage = useImageProxy();
   
   const colorMap = {
     aqua: { bg: 'bg-[#00EAD3]', hover: 'hover:bg-[#00EAD3]/90', text: 'text-black', border: 'border-[#00EAD3]/30', iconColor: 'text-[#00EAD3]' },
@@ -946,7 +1013,7 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
         const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
           setCurrentStep(step);
           setProgress(15 + Math.round(pct * 0.65));
-        });
+        }, proxyImage);
         setProgress(90);
         setCurrentStep('Downloading...');
         const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}.pdf`;

@@ -1,0 +1,15 @@
+{
+  "query": "SELECT cd.id, cd.documentType, cd.fileUrl FROM customerDocuments cd JOIN proposals p ON cd.customerId = p.customerId WHERE p.id = 540001 AND cd.documentType IN ('switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo') LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT cd.id, cd.documentType, cd.fileUrl FROM customerDocuments cd JOIN proposals p ON cd.customerId = p.customerId WHERE p.id = 540001 AND cd.documentType IN ('switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo') LIMIT 10;",
+  "rows": [
+    {
+      "id": "510001",
+      "documentType": "switchboard_photo",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/540001/6U4pvr6DsX4DNC_Oh4Y8U-79141863734__9192ABD2-DF15-432E-9BC8-7E87499B7296.jpeg"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdocumentType\tfileUrl\n510001\tswitchboard_photo\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/540001/6U4pvr6DsX4DNC_Oh4Y8U-79141863734__9192ABD2-DF15-432E-9BC8-7E87499B7296.jpeg\n",
+  "stderr": "",
+  "execution_time_ms": 1548
+}

@@ -1,0 +1,43 @@
+{
+  "query": "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE();",
+  "rows": [
+    {
+      "TABLE_NAME": "__drizzle_migrations"
+    },
+    {
+      "TABLE_NAME": "users"
+    },
+    {
+      "TABLE_NAME": "bills"
+    },
+    {
+      "TABLE_NAME": "customers"
+    },
+    {
+      "TABLE_NAME": "proposals"
+    },
+    {
+      "TABLE_NAME": "stateRebates"
+    },
+    {
+      "TABLE_NAME": "vppProviders"
+    },
+    {
+      "TABLE_NAME": "customerDocuments"
+    },
+    {
+      "TABLE_NAME": "proposalAccessTokens"
+    },
+    {
+      "TABLE_NAME": "proposalViews"
+    },
+    {
+      "TABLE_NAME": "slideEngagement"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\n__drizzle_migrations\nusers\nbills\ncustomers\nproposals\nstateRebates\nvppProviders\ncustomerDocuments\nproposalAccessTokens\nproposalViews\nslideEngagement\n",
+  "stderr": "",
+  "execution_time_ms": 1577
+}
