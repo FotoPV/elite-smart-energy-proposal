@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { storagePut, storageGet } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
-import { generateFullCalculations, calculateInverterSize } from "./calculations";
+import { generateFullCalculations, calculateInverterSize, averageBills } from "./calculations";
 import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
 import { narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
 import { generatePptx } from "./pptxGenerator";
@@ -15,6 +15,27 @@ import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
 import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, clearProgress } from "./generationProgress";
 
+/**
+ * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
+ * Falls back to the single primary bill if only one exists.
+ */
+async function getAveragedElectricityBill(customerId: number, primaryBillId: number) {
+  const allBills = await db.getBillsByCustomerId(customerId);
+  const elecBills = allBills.filter(b => b.billType === 'electricity');
+  if (elecBills.length === 0) {
+    // Fallback: just get the primary
+    const primary = await db.getBillById(primaryBillId);
+    if (!primary) throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
+    return primary;
+  }
+  // Ensure the primary bill is first in the array
+  const primaryFirst = elecBills.sort((a, b) => {
+    if (a.id === primaryBillId) return -1;
+    if (b.id === primaryBillId) return 1;
+    return 0;
+  });
+  return averageBills(primaryFirst);
+}
 
 // ============================================
 // ADMIN PROCEDURE
@@ -304,7 +325,7 @@ export const appRouter = router({
         // Auto-calculate only (NO old template slides) — LLM progressive generation happens on ProposalDetail
         if (input.electricityBillId) {
           try {
-            const electricityBill = await db.getBillById(input.electricityBillId);
+            const electricityBill = await getAveragedElectricityBill(input.customerId, input.electricityBillId);
             if (electricityBill) {
               const vppProviders = await db.getVppProvidersByState(customer.state);
               const rebates = await db.getRebatesByState(customer.state);
@@ -340,10 +361,7 @@ export const appRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
         }
         
-        const electricityBill = await db.getBillById(proposal.electricityBillId);
-        if (!electricityBill) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-        }
+        const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
         
         // Get VPP providers and rebates
         const vppProviders = await db.getVppProvidersByState(customer.state);
@@ -402,10 +420,7 @@ export const appRouter = router({
           if (!proposal.electricityBillId) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
           }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
+          const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
           const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
@@ -715,10 +730,7 @@ export const appRouter = router({
           if (!proposal.electricityBillId) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
           }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
+          const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
           const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
@@ -782,10 +794,7 @@ export const appRouter = router({
           if (!proposal.electricityBillId) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
           }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
+          const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
           const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
@@ -836,10 +845,7 @@ export const appRouter = router({
           if (!proposal.electricityBillId) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
           }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
+          const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
           const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
@@ -889,10 +895,7 @@ export const appRouter = router({
           if (!proposal.electricityBillId) {
             throw new TRPCError({ code: 'BAD_REQUEST', message: 'Electricity bill required for calculations' });
           }
-          const electricityBill = await db.getBillById(proposal.electricityBillId);
-          if (!electricityBill) {
-            throw new TRPCError({ code: 'NOT_FOUND', message: 'Electricity bill not found' });
-          }
+          const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId);
           const vppProviders = await db.getVppProvidersByState(customer.state);
           const rebates = await db.getRebatesByState(customer.state);
           const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);

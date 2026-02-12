@@ -237,6 +237,31 @@ export default function NewProposal() {
     setElectricityBillIds(prev => prev.filter(id => id !== billId));
   };
 
+  // Drag-and-drop for electricity bills
+  const [billDragActive, setBillDragActive] = useState(false);
+  const handleBillDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBillDragActive(false);
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+    if (files.length > 0) {
+      handleElectricityBillUpload(files);
+    } else {
+      toast.error('Only PDF files are accepted for electricity bills');
+    }
+  }, [handleElectricityBillUpload]);
+  const handleBillDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBillDragActive(true);
+  }, []);
+  const handleBillDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBillDragActive(false);
+  }, []);
+
+  // Drag-and-drop for additional documents
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -421,10 +446,17 @@ export default function NewProposal() {
                   </div>
                 )}
 
-                {/* Upload area — always visible so user can add more */}
+                {/* Upload area — always visible so user can add more (with drag-and-drop) */}
                 <div
-                  className="border-2 border-dashed border-border rounded-lg p-6 text-center transition-colors hover:border-primary/50 cursor-pointer"
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                    billDragActive
+                      ? 'border-primary bg-primary/10 scale-[1.01]'
+                      : 'border-border hover:border-primary/50'
+                  }`}
                   onClick={() => elecBillRef.current?.click()}
+                  onDrop={handleBillDrop}
+                  onDragOver={handleBillDragOver}
+                  onDragLeave={handleBillDragLeave}
                 >
                   {isUploading && uploadingType === 'electricity' ? (
                     <div className="flex flex-col items-center gap-2">
@@ -437,12 +469,12 @@ export default function NewProposal() {
                         <>
                           <Plus className="h-6 w-6 text-primary" />
                           <p className="text-sm text-primary font-medium">Add More Bills</p>
-                          <p className="text-xs text-muted-foreground">Select one or more PDFs</p>
+                          <p className="text-xs text-muted-foreground">Drop PDFs here or click to browse</p>
                         </>
                       ) : (
                         <>
                           <Upload className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">Upload electricity bill PDFs</p>
+                          <p className="text-sm text-muted-foreground">Drop electricity bill PDFs here or click to browse</p>
                           <Button
                             variant="outline"
                             size="sm"

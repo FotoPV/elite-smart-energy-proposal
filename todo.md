@@ -802,3 +802,12 @@
 - [x] Show uploaded bill list with individual remove/replace options
 - [x] Ensure Replace button is visible after a bill has been uploaded (now shows as 'Remove' per bill)
 - [x] Test multi-bill upload and extraction flow — verified in browser
+
+
+## Feature: Multi-Bill Averaging & Drag-and-Drop (Feb 12)
+- [x] Backend: Average usage/cost/rate data across multiple electricity bills for annual projections
+- [x] Backend: Create helper function to merge/average bill data from multiple bill records
+- [x] Backend: Update proposal creation and regeneration to use averaged bill data
+- [x] Frontend: Add drag-and-drop support to the electricity bill upload area
+- [x] Test multi-bill averaging with existing customer data
+- [x] Test drag-and-drop bill upload in browser

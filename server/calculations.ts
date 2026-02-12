@@ -134,6 +134,92 @@ export function calculateUsageProjections(electricityBill: Bill): UsageProjectio
 }
 
 // ============================================
+// MULTI-BILL AVERAGING
+// ============================================
+
+/**
+ * Averages multiple electricity bills into a single synthetic Bill object.
+ * Strategy: normalise every bill to daily rates, average the daily rates across
+ * all bills, then project back to the billing period of the primary (first) bill.
+ * Rates (c/kWh, feed-in) are straight-averaged across bills.
+ */
+export function averageBills(bills: Bill[]): Bill {
+  if (bills.length === 0) throw new Error('No bills to average');
+  if (bills.length === 1) return bills[0];
+
+  const primary = bills[0]; // primary bill is the first one
+
+  // Helper: safe number extraction
+  const num = (v: unknown): number => {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
+  };
+
+  // Collect daily-normalised values from each bill
+  const dailyValues = bills.map(b => {
+    const days = b.billingDays || 90;
+    return {
+      days,
+      dailyUsage: num(b.totalUsageKwh) / days,
+      dailyCost: num(b.totalAmount) / days,
+      dailySupply: num(b.dailySupplyCharge),
+      dailyPeak: num(b.peakUsageKwh) / days,
+      dailyOffPeak: num(b.offPeakUsageKwh) / days,
+      dailyShoulder: num(b.shoulderUsageKwh) / days,
+      dailySolarExports: num(b.solarExportsKwh) / days,
+      peakRate: num(b.peakRateCents),
+      offPeakRate: num(b.offPeakRateCents),
+      shoulderRate: num(b.shoulderRateCents),
+      feedInTariff: num(b.feedInTariffCents),
+    };
+  });
+
+  const count = dailyValues.length;
+  const avg = (fn: (d: typeof dailyValues[0]) => number) =>
+    round(dailyValues.reduce((sum, d) => sum + fn(d), 0) / count, 4);
+
+  // Average daily rates
+  const avgDailyUsage = avg(d => d.dailyUsage);
+  const avgDailyCost = avg(d => d.dailyCost);
+  const avgDailySupply = avg(d => d.dailySupply);
+  const avgDailyPeak = avg(d => d.dailyPeak);
+  const avgDailyOffPeak = avg(d => d.dailyOffPeak);
+  const avgDailyShoulder = avg(d => d.dailyShoulder);
+  const avgDailySolarExports = avg(d => d.dailySolarExports);
+
+  // Average tariff rates (straight average)
+  const avgPeakRate = avg(d => d.peakRate);
+  const avgOffPeakRate = avg(d => d.offPeakRate);
+  const avgShoulderRate = avg(d => d.shoulderRate);
+  const avgFeedInTariff = avg(d => d.feedInTariff);
+
+  // Total billing days across all bills (for reference)
+  const totalBillingDays = dailyValues.reduce((s, d) => s + d.days, 0);
+  // Use average billing period length for the synthetic bill
+  const avgBillingDays = Math.round(totalBillingDays / count);
+
+  // Project daily averages back to the billing period
+  const result: Bill = {
+    ...primary,
+    // Override with averaged values projected to the average billing period
+    billingDays: avgBillingDays,
+    totalUsageKwh: round(avgDailyUsage * avgBillingDays, 2).toString(),
+    totalAmount: round(avgDailyCost * avgBillingDays, 2).toString(),
+    dailySupplyCharge: avgDailySupply.toString(),
+    peakUsageKwh: round(avgDailyPeak * avgBillingDays, 2).toString(),
+    offPeakUsageKwh: round(avgDailyOffPeak * avgBillingDays, 2).toString(),
+    shoulderUsageKwh: round(avgDailyShoulder * avgBillingDays, 2).toString(),
+    solarExportsKwh: round(avgDailySolarExports * avgBillingDays, 2).toString(),
+    peakRateCents: avgPeakRate.toString(),
+    offPeakRateCents: avgOffPeakRate.toString(),
+    shoulderRateCents: avgShoulderRate.toString(),
+    feedInTariffCents: avgFeedInTariff.toString(),
+  };
+
+  return result;
+}
+
+// ============================================
 // GAS ANALYSIS
 // ============================================
 
