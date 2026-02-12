@@ -1196,40 +1196,94 @@ function genExecutiveSummary(slide: SlideContent): string {
 // ---- SLIDE 3: BILL ANALYSIS ----
 function genBillAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
+  const usageCost = Number(c.usageCost) || 0;
+  const supplyCost = Number(c.supplyCost) || 0;
+  const solarCredit = Number(c.solarCredit) || 0;
+  const annualCost = Number(c.annualCost) || 0;
+  const usageRate = Number(c.usageRate) || 0;
+  const feedIn = Number(c.feedInTariff) || 0;
+  const supplyCharge = Number(c.supplyCharge) || 0;
+  const dailyAvgKwh = Number(c.dailyAverageKwh) || 0;
+  const totalGross = usageCost + supplyCost;
+  const usagePct = totalGross > 0 ? Math.round((usageCost / totalGross) * 100) : 70;
+  const supplyPct = 100 - usagePct;
+  const arbitrage = Math.max(0, usageRate - feedIn);
+  // SVG donut params
+  const R = 80;
+  const C = 2 * Math.PI * R; // ~502.65
+  const usageArc = (usagePct / 100) * C;
+  const supplyArc = (supplyPct / 100) * C;
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
-      <div style="display: flex; gap: 60px; margin-top: 10px;">
-        <div style="flex: 1.2;">
+      <div style="display: flex; gap: 50px; margin-top: 10px;">
+        <!-- LEFT: Compact table + Arbitrage visual -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
           <table>
-            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #f36710;">AMOUNT</th></tr>
-            <tr><td>General Usage</td><td class="gray">${(c.annualCost as number / (c.usageRate as number / 100)).toFixed(0)} kWh @ $${(c.usageRate as number / 100).toFixed(4)}/kWh</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.usageCost as number).toLocaleString()}</td></tr>
-            <tr><td>Daily Supply Charge</td><td class="gray">365 days @ $${(c.supplyCharge as number / 100).toFixed(4)}/day</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.supplyCost as number).toLocaleString()}</td></tr>
-            <tr><td>Solar Feed-in Credit</td><td class="gray">@ ${c.feedInTariff}¢/kWh</td><td style="text-align: right; color: #00EAD3;">Credit</td></tr>
-            <tr class="highlight-row"><td style="font-weight: 700; color: #00EAD3;">NET ANNUAL BILL</td><td></td><td style="text-align: right; font-weight: 700; color: #00EAD3; font-size: 20px;">$${(c.annualCost as number).toLocaleString()}</td></tr>
+            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #f36710;">ANNUAL</th></tr>
+            <tr><td>General Usage</td><td class="gray">${dailyAvgKwh.toFixed(1)} kWh/day @ ${usageRate.toFixed(2)}¢/kWh</td><td style="text-align: right; font-weight: 600;">$${Math.round(usageCost).toLocaleString()}</td></tr>
+            <tr><td>Daily Supply Charge</td><td class="gray">365 days @ ${supplyCharge.toFixed(2)}¢/day</td><td style="text-align: right; font-weight: 600;">$${Math.round(supplyCost).toLocaleString()}</td></tr>
+            ${solarCredit > 0 ? `<tr><td>Solar Feed-in Credit</td><td class="gray">@ ${feedIn}¢/kWh</td><td style="text-align: right; color: #00EAD3;">-$${Math.round(solarCredit).toLocaleString()}</td></tr>` : `<tr><td>Solar Feed-in Credit</td><td class="gray">@ ${feedIn}¢/kWh</td><td style="text-align: right; color: #00EAD3;">Credit</td></tr>`}
+            <tr class="highlight-row"><td style="font-weight: 700; color: #00EAD3;">NET ANNUAL BILL</td><td></td><td style="text-align: right; font-weight: 700; color: #00EAD3; font-size: 22px;">$${annualCost.toLocaleString()}</td></tr>
           </table>
-        </div>
-        <div style="flex: 0.8;">
-          <div class="insight-card orange" style="margin-bottom: 24px;">
-            <p class="insight-title">ANALYSIS</p>
-            ${c.narrative ? `<div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div>` : `<p>Your current feed-in tariff of <span class="hl-aqua">${c.feedInTariff}¢/kWh</span> is significantly below the usage rate of <span class="hl-orange">${c.usageRate}¢/kWh</span>. Self-consumption with battery storage will capture the full value of your solar generation.</p>`}
-          </div>
-          <div style="display: flex; gap: 16px;">
-            <div class="card" style="flex: 1; text-align: center;">
-              <p class="lbl">USAGE RATE</p>
-              <p style="font-size: 28px; color: #f36710; font-weight: 600;">${c.usageRate}¢</p>
-              <p class="gray" style="font-size: 11px;">per kWh</p>
+          <!-- ARBITRAGE OPPORTUNITY - Visual -->
+          <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 28px 32px;">
+            <p class="lbl" style="margin-bottom: 16px; font-size: 13px; letter-spacing: 0.15em;">RATE ARBITRAGE OPPORTUNITY</p>
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <div style="flex: 1; text-align: center;">
+                <p class="lbl" style="margin-bottom: 6px;">YOU PAY</p>
+                <p style="font-family: 'GeneralSans', sans-serif; font-size: 52px; font-weight: 700; color: #f36710; line-height: 1;">${usageRate.toFixed(1)}¢</p>
+                <p class="gray" style="font-size: 12px; margin-top: 4px;">per kWh</p>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <svg width="80" height="40" viewBox="0 0 80 40"><path d="M5 20 L55 20" stroke="#f36710" stroke-width="3" fill="none"/><polygon points="55,12 75,20 55,28" fill="#f36710"/></svg>
+                <p style="font-family: 'GeneralSans', sans-serif; font-size: 28px; font-weight: 700; color: #FFFFFF; line-height: 1;">${arbitrage.toFixed(1)}¢</p>
+                <p class="gray" style="font-size: 11px;">GAP PER kWh</p>
+                <svg width="80" height="40" viewBox="0 0 80 40"><path d="M75 20 L25 20" stroke="#00EAD3" stroke-width="3" fill="none"/><polygon points="25,12 5,20 25,28" fill="#00EAD3"/></svg>
+              </div>
+              <div style="flex: 1; text-align: center;">
+                <p class="lbl" style="margin-bottom: 6px;">YOU RECEIVE</p>
+                <p style="font-family: 'GeneralSans', sans-serif; font-size: 52px; font-weight: 700; color: #00EAD3; line-height: 1;">${feedIn.toFixed(1)}¢</p>
+                <p class="gray" style="font-size: 12px; margin-top: 4px;">per kWh exported</p>
+              </div>
             </div>
-            <div class="card" style="flex: 1; text-align: center;">
-              <p class="lbl">FEED-IN</p>
-              <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">${c.feedInTariff}¢</p>
-              <p class="gray" style="font-size: 11px;">per kWh</p>
+            <p style="font-size: 13px; color: #808285; margin-top: 16px; text-align: center; line-height: 1.5;">Every kWh stored in your battery saves <span style="color: #f36710; font-weight: 600;">${arbitrage.toFixed(1)}¢</span> vs exporting to the grid</p>
+          </div>
+        </div>
+        <!-- RIGHT: Donut chart + key metrics -->
+        <div style="flex: 0.8; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+          <p class="lbl" style="align-self: flex-start;">ANNUAL COST BREAKDOWN</p>
+          <div style="position: relative; width: 280px; height: 280px;">
+            <svg viewBox="0 0 200 200" style="width: 280px; height: 280px; transform: rotate(-90deg);">
+              <circle cx="100" cy="100" r="${R}" fill="none" stroke="#222" stroke-width="28" />
+              <circle cx="100" cy="100" r="${R}" fill="none" stroke="#f36710" stroke-width="28" stroke-dasharray="${usageArc} ${C - usageArc}" stroke-dashoffset="0" stroke-linecap="round" />
+              <circle cx="100" cy="100" r="${R}" fill="none" stroke="#00EAD3" stroke-width="28" stroke-dasharray="${supplyArc} ${C - supplyArc}" stroke-dashoffset="-${usageArc}" stroke-linecap="round" />
+            </svg>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #FFFFFF; line-height: 1;">$${annualCost.toLocaleString()}</p>
+              <p class="gray" style="font-size: 12px; margin-top: 4px;">per year</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 30px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Usage ${usagePct}%</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Supply ${supplyPct}%</span></div>
+          </div>
+          <!-- Key metric cards -->
+          <div style="display: flex; gap: 16px; width: 100%;">
+            <div style="flex: 1; background: #111; border: 1px solid #333; border-radius: 8px; padding: 18px; text-align: center;">
+              <p class="lbl">DAILY USAGE</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; line-height: 1; margin-top: 6px;">${dailyAvgKwh.toFixed(1)}</p>
+              <p class="gray" style="font-size: 11px; margin-top: 4px;">kWh / day</p>
+            </div>
+            <div style="flex: 1; background: #111; border: 1px solid #333; border-radius: 8px; padding: 18px; text-align: center;">
+              <p class="lbl">DAILY COST</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 32px; font-weight: 700; color: #f36710; line-height: 1; margin-top: 6px;">$${(Number(c.dailyAverageCost) || annualCost / 365).toFixed(2)}</p>
+              <p class="gray" style="font-size: 11px; margin-top: 4px;">per day</p>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   `;
 }
@@ -2436,50 +2490,114 @@ function genInvestmentAnalysis(slide: SlideContent): string {
   `;
 }
 
-// ---- NEW: BILL BREAKDOWN (donut chart + metrics) ----
+// ---- NEW: BILL BREAKDOWN (waterfall chart + usage gauge + cost bars) ----
 function genBillBreakdown(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const usagePct = c.usageChargesPercent as number || 85;
-  const supplyPct = c.supplyChargesPercent as number || 15;
+  const usagePct = Number(c.usageChargesPercent) || 85;
+  const supplyPct = Number(c.supplyChargesPercent) || 15;
+  const totalAnnual = Number(c.totalAnnualCost) || 0;
+  const dailyAvg = Number(c.dailyAverageCost) || 0;
+  const usageCharges = Number(c.usageCharges) || 0;
+  const supplyCharges = Number(c.supplyCharges) || 0;
+  const maxBar = Math.max(usageCharges, supplyCharges, totalAnnual) || 1;
+  // Monthly cost (annualised)
+  const monthlyCost = totalAnnual / 12;
+  const weeklyCost = totalAnnual / 52;
+  // Waterfall bar widths (percentage of max)
+  const usageBarW = Math.round((usageCharges / totalAnnual) * 100) || 50;
+  const supplyBarW = Math.round((supplyCharges / totalAnnual) * 100) || 50;
   return `
     <div class="slide">
       <img src="${LOGO_URI_AQUA}" class="logo" alt="LE" />
       ${slideHeader(slide.title, slide.subtitle || '')}
-      <div style="display: flex; gap: 60px; margin-top: 20px;">
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-          <div style="position: relative; width: 320px; height: 320px;">
-            <svg viewBox="0 0 200 200" style="width: 320px; height: 320px; transform: rotate(-90deg);">
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#333" stroke-width="30" />
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#f36710" stroke-width="30" stroke-dasharray="${usagePct * 5.026} ${(100 - usagePct) * 5.026}" stroke-dashoffset="0" stroke-linecap="round" />
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#00EAD3" stroke-width="30" stroke-dasharray="${supplyPct * 5.026} ${(100 - supplyPct) * 5.026}" stroke-dashoffset="-${usagePct * 5.026}" stroke-linecap="round" />
-            </svg>
+      <div style="display: flex; gap: 50px; margin-top: 16px;">
+        <!-- LEFT: Big annual cost + waterfall chart -->
+        <div style="flex: 1.1; display: flex; flex-direction: column; gap: 24px;">
+          <!-- Hero annual cost -->
+          <div style="text-align: center; padding: 24px 0;">
+            <p class="lbl" style="font-size: 14px; letter-spacing: 0.2em;">TOTAL ANNUAL ELECTRICITY COST</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 72px; font-weight: 700; color: #f36710; line-height: 1; margin-top: 8px;">$${totalAnnual.toLocaleString()}</p>
           </div>
-          <div style="display: flex; gap: 30px; margin-top: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Usage Charges</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Supply Charges</span></div>
+          <!-- Horizontal waterfall bars -->
+          <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 28px 32px;">
+            <p class="lbl" style="margin-bottom: 20px; font-size: 13px;">COST WATERFALL</p>
+            <!-- Usage bar -->
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 13px; color: #808285;">Usage Charges</span>
+                <span style="font-size: 15px; font-weight: 600; color: #f36710;">$${Math.round(usageCharges).toLocaleString()}</span>
+              </div>
+              <div style="width: 100%; height: 32px; background: #222; border-radius: 6px; overflow: hidden;">
+                <div style="width: ${usageBarW}%; height: 100%; background: linear-gradient(90deg, #f36710, #ff8a3d); border-radius: 6px;"></div>
+              </div>
+            </div>
+            <!-- Supply bar -->
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 13px; color: #808285;">Supply Charges</span>
+                <span style="font-size: 15px; font-weight: 600; color: #00EAD3;">$${Math.round(supplyCharges).toLocaleString()}</span>
+              </div>
+              <div style="width: 100%; height: 32px; background: #222; border-radius: 6px; overflow: hidden;">
+                <div style="width: ${supplyBarW}%; height: 100%; background: linear-gradient(90deg, #00EAD3, #4df5e0); border-radius: 6px;"></div>
+              </div>
+            </div>
+            <!-- Net total bar -->
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 13px; color: #FFFFFF; font-weight: 600;">Net Annual Bill</span>
+                <span style="font-size: 15px; font-weight: 700; color: #FFFFFF;">$${totalAnnual.toLocaleString()}</span>
+              </div>
+              <div style="width: 100%; height: 32px; background: #222; border-radius: 6px; overflow: hidden;">
+                <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #333, #555); border-radius: 6px;"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div style="flex: 1;">
-          <div style="border-bottom: 1px solid #333; padding: 20px 0;">
-            <p class="lbl">TOTAL ANNUAL COST</p>
-            <p class="hero-num orange" style="font-size: 52px;">$${(c.totalAnnualCost as number || 0).toLocaleString()}</p>
+        <!-- RIGHT: Cost breakdown metrics + percentage gauge -->
+        <div style="flex: 0.9; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Cost period cards -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 22px; text-align: center;">
+              <p class="lbl">DAILY</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #FFFFFF; line-height: 1; margin-top: 8px;">$${dailyAvg.toFixed(2)}</p>
+            </div>
+            <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 22px; text-align: center;">
+              <p class="lbl">WEEKLY</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #FFFFFF; line-height: 1; margin-top: 8px;">$${Math.round(weeklyCost).toLocaleString()}</p>
+            </div>
+            <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 22px; text-align: center;">
+              <p class="lbl">MONTHLY</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #FFFFFF; line-height: 1; margin-top: 8px;">$${Math.round(monthlyCost).toLocaleString()}</p>
+            </div>
+            <div style="background: #111; border: 1px solid #f36710; border-radius: 8px; padding: 22px; text-align: center;">
+              <p class="lbl">ANNUAL</p>
+              <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #f36710; line-height: 1; margin-top: 8px;">$${totalAnnual.toLocaleString()}</p>
+            </div>
           </div>
-          <div style="border-bottom: 1px solid #333; padding: 20px 0;">
-            <p class="lbl">DAILY AVERAGE COST</p>
-            <p class="hero-num white" style="font-size: 52px;">$${(c.dailyAverageCost as number || 0).toFixed(2)}</p>
+          <!-- Percentage split visual -->
+          <div style="background: #111; border: 1px solid #333; border-radius: 8px; padding: 24px;">
+            <p class="lbl" style="margin-bottom: 16px;">COST COMPOSITION</p>
+            <div style="display: flex; height: 48px; border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+              <div style="width: ${usagePct}%; background: #f36710; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 16px; font-weight: 700; color: #000;">${usagePct}%</span>
+              </div>
+              <div style="width: ${supplyPct}%; background: #00EAD3; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 16px; font-weight: 700; color: #000;">${supplyPct}%</span>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #f36710; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Usage Charges</span></div>
+              <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #00EAD3; border-radius: 4px;"></div><span style="font-size: 13px; color: #808285;">Supply Charges</span></div>
+            </div>
           </div>
-          <div style="border-bottom: 1px solid #333; padding: 20px 0;">
-            <p class="lbl">USAGE CHARGES</p>
-            <p class="hero-num white" style="font-size: 52px;">~${usagePct}%</p>
+          <!-- 10-year projection callout -->
+          <div style="background: rgba(0, 234, 211, 0.06); border: 1px solid #00EAD3; border-radius: 8px; padding: 20px; text-align: center;">
+            <p class="lbl" style="color: #00EAD3;">10-YEAR COST AT CURRENT RATE</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 42px; font-weight: 700; color: #00EAD3; line-height: 1; margin-top: 8px;">$${Math.round(totalAnnual * 10 * 1.19).toLocaleString()}</p>
+            <p style="font-size: 12px; color: #808285; margin-top: 6px;">Assuming 3.5% annual electricity inflation</p>
           </div>
-          <div style="padding: 20px 0;">
-            <p class="lbl">SUPPLY CHARGES</p>
-            <p class="hero-num white" style="font-size: 52px;">~${supplyPct}%</p>
-          </div>
-          ${c.narrative ? `<div class="insight-card" style="margin-top: 16px;"><p class="insight-title">KEY INSIGHT</p><div style="font-size: 13px; line-height: 1.7; color: #ccc;">${c.narrative}</div></div>` : ''}
         </div>
       </div>
-
     </div>
   `;
 }

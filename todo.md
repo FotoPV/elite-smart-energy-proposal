@@ -788,3 +788,10 @@
 - [x] Added 'Replace Bill' button on electricity bill upload confirmation
 - [x] Added confirmation dialog before deleting electricity bill
 - [x] Fixed handleRemoveFile to call server-side delete for documents too
+
+
+## Feature: Redesign Bill Analysis & Breakdown Slides (Feb 12)
+- [x] Redesign genCurrentBillAnalysis — replace text wall with visual donut chart, bigger rate boxes, arbitrage indicator
+- [x] Redesign genCurrentBillBreakdown — replace text with waterfall/stacked bar chart, usage benchmark gauge, bold visuals
+- [x] Test regeneration with existing customer proposal
+- [ ] Verify PDF export renders new visual slides correctly (pending user test)
