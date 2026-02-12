@@ -20,6 +20,9 @@ import {
   StickyNote,
   Save,
   MessageSquarePlus,
+  CheckCircle,
+  ImageIcon,
+  Camera,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -740,11 +743,20 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
 }
 
 // Regenerate button with modal — shows persistent notes summary + one-off prompt field
-function RegenerateButton({ proposalId, proposalNotes }: { proposalId: number; proposalNotes?: string }) {
+function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalId: number; proposalNotes?: string; customerId?: number }) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [oneOffPrompt, setOneOffPrompt] = useState('');
   const regenerateMutation = trpc.proposals.regenerate.useMutation();
+  
+  // Fetch customer site photos for thumbnail display
+  const { data: customerDocs } = trpc.documents.list.useQuery(
+    { customerId: customerId! },
+    { enabled: !!customerId && showModal }
+  );
+  const sitePhotos = (customerDocs || []).filter(d =>
+    ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
+  );
   
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -805,6 +817,40 @@ function RegenerateButton({ proposalId, proposalNotes }: { proposalId: number; p
               </div>
               <p className="text-sm text-[#808285] whitespace-pre-wrap leading-relaxed" style={{ fontFamily: "'General Sans', sans-serif" }}>
                 {proposalNotes.length > 300 ? proposalNotes.slice(0, 300) + '...' : proposalNotes}
+              </p>
+            </div>
+          )}
+
+          {/* Site Photos Thumbnails */}
+          {sitePhotos.length > 0 && (
+            <div className="rounded-lg border border-[#2a2a2a] bg-[#111] p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Camera className="h-4 w-4 text-[#808285]" />
+                <span
+                  className="text-xs uppercase tracking-wider text-[#808285]"
+                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                >
+                  Site Photos ({sitePhotos.length})
+                </span>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {sitePhotos.map((photo, i) => (
+                  <div key={photo.id || i} className="relative group">
+                    <img
+                      src={photo.fileUrl}
+                      alt={photo.documentType.replace(/_/g, ' ')}
+                      className="h-16 w-16 rounded-md object-cover border border-[#2a2a2a]"
+                    />
+                    <div className="absolute inset-0 rounded-md bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-[8px] text-white text-center px-1 leading-tight" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                        {photo.documentType.replace(/_/g, ' ').replace(/photo|pdf/gi, '').trim()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[9px] text-[#808285] mt-1.5" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                These photos will be referenced by the AI when generating narrative analysis.
               </p>
             </div>
           )}
@@ -1223,8 +1269,14 @@ export default function ProposalDetailPage() {
                 Proposal Notes
               </h3>
             </div>
-            <span className="text-[10px] text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-              {notesSaving ? 'Saving...' : notes !== ((proposal as any)?.proposalNotes || '') ? 'Unsaved changes' : notes ? 'Saved' : ''}
+            <span className="text-[10px] flex items-center gap-1 transition-all duration-300" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              {notesSaving ? (
+                <><Loader2 className="h-3 w-3 animate-spin text-[#808285]" /><span className="text-[#808285]">Saving...</span></>
+              ) : notes !== ((proposal as any)?.proposalNotes || '') ? (
+                <><span className="h-1.5 w-1.5 rounded-full bg-[#f36710] inline-block" /><span className="text-[#f36710]">Unsaved changes</span></>
+              ) : notes ? (
+                <><CheckCircle className="h-3 w-3 text-[#00EAD3]" /><span className="text-[#00EAD3]">Saved</span></>
+              ) : null}
             </span>
           </div>
           <textarea
@@ -1285,7 +1337,7 @@ export default function ProposalDetailPage() {
                 proposalId={proposalId}
                 customerName={customerName}
               />
-              <RegenerateButton proposalId={proposalId} proposalNotes={notes} />
+              <RegenerateButton proposalId={proposalId} proposalNotes={notes} customerId={(proposal as any)?.customerId} />
             </div>
           </div>
         )}

@@ -824,3 +824,7 @@
 - [x] Incorporate switchboard/site photos into generated proposal slides (Required Electrical Works slide)
 - [x] Pass customer document photo URLs through ProposalData to slide generator
 - [x] LLM narrative should reference photos when analysing additional works
+
+## UI Polish: Auto-save Indicator & Photo Thumbnails (Feb 13)
+- [x] Auto-save indicator: transition from "Unsaved changes" to green "Saved" checkmark after debounce
+- [x] Photo thumbnails in Regenerate modal: show small thumbnails of uploaded site photos
