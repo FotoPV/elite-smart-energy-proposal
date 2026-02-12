@@ -432,7 +432,21 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, false);
+        
+        // Fetch customer site photos for slide incorporation
+        const customerDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+        const sitePhotos = customerDocs
+          .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
+          .map(d => ({
+            url: d.fileUrl,
+            caption: d.description || d.documentType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          }));
+        
+        const proposalData = buildProposalData(customer, calc, false, {
+          proposalNotes: (proposal as any).proposalNotes || undefined,
+          regeneratePrompt: (proposal as any).lastRegeneratePrompt || undefined,
+          sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
+        });
         const allSlides = generateSlides(proposalData); // Only active/included slides
         
         // Initialize progress tracking with ALL active slides
@@ -532,6 +546,7 @@ export const appRouter = router({
         title: z.string().optional(),
         status: z.enum(['draft', 'calculating', 'generated', 'exported', 'archived']).optional(),
         electricityBillId: z.number().optional(),
+        proposalNotes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
@@ -577,17 +592,22 @@ export const appRouter = router({
       }),
     
     regenerate: protectedProcedure
-      .input(z.object({ proposalId: z.number() }))
+      .input(z.object({
+        proposalId: z.number(),
+        regeneratePrompt: z.string().optional(), // One-off instructions for this regeneration
+      }))
       .mutation(async ({ ctx, input }) => {
         const proposal = await db.getProposalById(input.proposalId);
         if (!proposal) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
         }
         // Reset to draft with empty slides — this triggers auto-generation on page load
+        // Store the one-off prompt so the generation pipeline can use it
         await db.updateProposal(input.proposalId, {
           status: 'draft',
           slidesData: null,
           slideCount: 0,
+          lastRegeneratePrompt: input.regeneratePrompt || null,
         });
         return { success: true };
       }),
@@ -1278,7 +1298,16 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
   return enriched;
 }
 
-function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasGas: boolean): ProposalData {
+function buildProposalData(
+  customer: Customer,
+  calc: ProposalCalculations,
+  _hasGas: boolean,
+  options?: {
+    proposalNotes?: string;
+    regeneratePrompt?: string;
+    sitePhotos?: Array<{ url: string; caption: string }>;
+  }
+): ProposalData {
   const hasGas = false; // Gas features removed
   const vppName = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE';
   const vppProgram = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName || 'VPP Advantage' : 'VPP Advantage';
@@ -1394,6 +1423,9 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, _hasG
     co2CurrentTonnes: calc.co2CurrentTonnes,
     co2ProjectedTonnes: calc.co2ProjectedTonnes,
     co2ReductionPercent: calc.co2ReductionPercent,
+    proposalNotes: options?.proposalNotes,
+    regeneratePrompt: options?.regeneratePrompt,
+    sitePhotos: options?.sitePhotos,
   };
 }
 

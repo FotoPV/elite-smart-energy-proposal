@@ -811,3 +811,16 @@
 - [x] Frontend: Add drag-and-drop support to the electricity bill upload area
 - [x] Test multi-bill averaging with existing customer data
 - [x] Test drag-and-drop bill upload in browser
+
+
+## Feature: Proposal Notes & Regenerate Prompt (Feb 13)
+- [x] DB: Add proposalNotes column to proposals table
+- [x] Backend: Add endpoint to save/update proposal notes (auto-save)
+- [x] Backend: Update regenerate endpoint to accept one-off prompt instructions
+- [x] Backend: Pass both persistent notes and one-off prompt into LLM narrative generation
+- [x] Frontend: Add persistent "Proposal Notes" text area on ProposalDetail page
+- [x] Frontend: Replace confirm dialog with Regenerate modal showing notes summary + one-off prompt field
+- [x] Test full flow: add notes, regenerate with one-off prompt, verify narratives include both
+- [x] Incorporate switchboard/site photos into generated proposal slides (Required Electrical Works slide)
+- [x] Pass customer document photo URLs through ProposalData to slide generator
+- [x] LLM narrative should reference photos when analysing additional works

@@ -17,6 +17,9 @@ import {
   FileDown,
   Presentation,
   ChevronDown,
+  StickyNote,
+  Save,
+  MessageSquarePlus,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -28,6 +31,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LiveSlideGeneration } from "@/components/LiveSlideGeneration";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 /**
  * Client-side PDF generation: renders each slide HTML in a hidden iframe,
@@ -728,17 +739,23 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   );
 }
 
-// Regenerate button — resets proposal and triggers fresh slide generation
-function RegenerateButton({ proposalId }: { proposalId: number }) {
+// Regenerate button with modal — shows persistent notes summary + one-off prompt field
+function RegenerateButton({ proposalId, proposalNotes }: { proposalId: number; proposalNotes?: string }) {
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [oneOffPrompt, setOneOffPrompt] = useState('');
   const regenerateMutation = trpc.proposals.regenerate.useMutation();
   
   const handleRegenerate = async () => {
-    if (!confirm('Regenerate all slides? This will recalculate and rebuild the entire proposal.')) return;
     setIsRegenerating(true);
     try {
-      await regenerateMutation.mutateAsync({ proposalId });
-      toast.info('Regenerating slides...');
+      await regenerateMutation.mutateAsync({
+        proposalId,
+        regeneratePrompt: oneOffPrompt.trim() || undefined,
+      });
+      toast.info('Regenerating slides with your instructions...');
+      setShowModal(false);
+      setOneOffPrompt('');
       window.location.reload();
     } catch (err: any) {
       toast.error(`Regeneration failed: ${err.message}`);
@@ -747,15 +764,97 @@ function RegenerateButton({ proposalId }: { proposalId: number }) {
   };
   
   return (
-    <button
-      onClick={handleRegenerate}
-      disabled={isRegenerating}
-      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#111] p-4 transition-all hover:border-[#E85D2A] hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50"
-    >
-      <RefreshCw className={`h-5 w-5 text-[#E85D2A] ${isRegenerating ? 'animate-spin' : ''}`} />
-      <span className="text-sm font-medium text-white">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
-      <span className="text-[10px] text-gray-500">Recalculate & rebuild</span>
-    </button>
+    <>
+      <button
+        onClick={() => setShowModal(true)}
+        disabled={isRegenerating}
+        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#111] p-4 transition-all hover:border-[#f36710] hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50"
+      >
+        <RefreshCw className={`h-5 w-5 text-[#f36710] ${isRegenerating ? 'animate-spin' : ''}`} />
+        <span className="text-sm font-medium text-white" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+          {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+        </span>
+        <span className="text-[10px] text-[#808285]">Recalculate & rebuild</span>
+      </button>
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="bg-[#0a0a0a] border-[#1a1a1a] text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle
+              className="text-xl uppercase tracking-wide text-white"
+              style={{ fontFamily: "'Next Sphere', sans-serif" }}
+            >
+              Regenerate Proposal
+            </DialogTitle>
+            <DialogDescription className="text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              Recalculate and rebuild all slides. Your persistent notes will be included automatically.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Persistent Notes Summary */}
+          {proposalNotes && proposalNotes.trim() && (
+            <div className="rounded-lg border border-[#00EAD3]/20 bg-[#00EAD3]/5 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <StickyNote className="h-4 w-4 text-[#00EAD3]" />
+                <span
+                  className="text-xs uppercase tracking-wider text-[#00EAD3]"
+                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                >
+                  Saved Proposal Notes (auto-included)
+                </span>
+              </div>
+              <p className="text-sm text-[#808285] whitespace-pre-wrap leading-relaxed" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                {proposalNotes.length > 300 ? proposalNotes.slice(0, 300) + '...' : proposalNotes}
+              </p>
+            </div>
+          )}
+
+          {/* One-off Prompt */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <MessageSquarePlus className="h-4 w-4 text-[#f36710]" />
+              <label
+                className="text-xs uppercase tracking-wider text-[#f36710]"
+                style={{ fontFamily: "'Urbanist', sans-serif" }}
+              >
+                Additional Instructions (one-off)
+              </label>
+            </div>
+            <textarea
+              value={oneOffPrompt}
+              onChange={(e) => setOneOffPrompt(e.target.value)}
+              placeholder="e.g. Look at switchboard photos and identify additional works required. Emphasise VPP income in executive summary. Focus on AC coupling approach..."
+              className="w-full h-28 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/50 resize-none focus:border-[#f36710] focus:outline-none"
+              style={{ fontFamily: "'General Sans', sans-serif" }}
+            />
+            <p className="text-[10px] text-[#808285] mt-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              These instructions apply to this regeneration only and won't be saved.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              className="border-[#2a2a2a] text-[#808285] hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="bg-[#f36710] hover:bg-[#f36710]/80 text-white"
+            >
+              {isRegenerating ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Regenerating...</>
+              ) : (
+                <><RefreshCw className="mr-2 h-4 w-4" /> Regenerate Slides</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -911,8 +1010,35 @@ export default function ProposalDetailPage() {
   const proposalId = parseInt(params.id || '0');
   const [showLiveGeneration, setShowLiveGeneration] = useState(false);
   const [autoTriggered, setAutoTriggered] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
+  const notesSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
+  
+  const updateNotesMutation = trpc.proposals.update.useMutation({
+    onSuccess: () => setNotesSaving(false),
+    onError: () => setNotesSaving(false),
+  });
+  
+  // Load notes from proposal data
+  useEffect(() => {
+    if (proposal && !notesLoaded) {
+      setNotes((proposal as any).proposalNotes || '');
+      setNotesLoaded(true);
+    }
+  }, [proposal, notesLoaded]);
+  
+  // Auto-save notes with debounce (1.5s after typing stops)
+  const handleNotesChange = (value: string) => {
+    setNotes(value);
+    if (notesSaveTimerRef.current) clearTimeout(notesSaveTimerRef.current);
+    notesSaveTimerRef.current = setTimeout(() => {
+      setNotesSaving(true);
+      updateNotesMutation.mutate({ id: proposalId, proposalNotes: value });
+    }, 1500);
+  };
   const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
     { proposalId },
     { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') }
@@ -1085,6 +1211,34 @@ export default function ProposalDetailPage() {
           </div>
         </div>
 
+        {/* PROPOSAL NOTES — Persistent notes about the install */}
+        <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <StickyNote className="h-4 w-4 text-[#00EAD3]" />
+              <h3
+                className="text-sm uppercase tracking-wider text-[#00EAD3]"
+                style={{ fontFamily: "'Urbanist', sans-serif" }}
+              >
+                Proposal Notes
+              </h3>
+            </div>
+            <span className="text-[10px] text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              {notesSaving ? 'Saving...' : notes !== ((proposal as any)?.proposalNotes || '') ? 'Unsaved changes' : notes ? 'Saved' : ''}
+            </span>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => handleNotesChange(e.target.value)}
+            placeholder="Add notes about this install... e.g. Switchboard needs upgrade, 3-phase system, competitor quoted $8,900 for 10kW, customer wants pool heat pump prioritised..."
+            className="w-full h-24 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/40 resize-none focus:border-[#00EAD3]/50 focus:outline-none"
+            style={{ fontFamily: "'General Sans', sans-serif" }}
+          />
+          <p className="text-[10px] text-[#808285] mt-1.5" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            These notes are automatically included when regenerating the proposal. The AI will reference them in the narrative analysis.
+          </p>
+        </div>
+
         {/* DOWNLOAD & EXPORT — Prominent buttons always visible when slides exist */}
         {hasSlides && (
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-6">
@@ -1131,7 +1285,7 @@ export default function ProposalDetailPage() {
                 proposalId={proposalId}
                 customerName={customerName}
               />
-              <RegenerateButton proposalId={proposalId} />
+              <RegenerateButton proposalId={proposalId} proposalNotes={notes} />
             </div>
           </div>
         )}

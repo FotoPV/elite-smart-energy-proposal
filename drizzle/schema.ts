@@ -127,6 +127,10 @@ export const proposals = mysqlTable("proposals", {
   pptUrl: varchar("pptUrl", { length: 512 }),
   lastExportedAt: timestamp("lastExportedAt"),
   
+  // Custom Notes & Instructions
+  proposalNotes: text("proposalNotes"), // Persistent notes about the install (switchboard, additional works, etc.)
+  lastRegeneratePrompt: text("lastRegeneratePrompt"), // Last one-off prompt used during regeneration
+  
   // Soft Delete
   deletedAt: timestamp("deletedAt"),
   

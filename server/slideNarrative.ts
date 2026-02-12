@@ -81,7 +81,8 @@ VPP Annual Value: $${data.vppAnnualValue}
 CO2 Reduction: ${data.co2ReductionTonnes.toFixed(1)} tonnes/year
 Has EV: ${data.hasEV}${data.hasEV ? ` (${data.evAnnualKm?.toLocaleString()} km/year, saves $${data.evAnnualSavings}/year)` : ''}
 Has Pool: ${data.hasPoolPump}${data.hasPoolPump ? ` (saves $${data.poolPumpSavings}/year)` : ''}
-Monthly Usage Data: ${data.monthlyUsageData?.map(m => `${m.month}: ${m.kwh}kWh`).join(', ') || 'Not available'}`;
+Monthly Usage Data: ${data.monthlyUsageData?.map(m => `${m.month}: ${m.kwh}kWh`).join(', ') || 'Not available'}
+Existing Solar: ${data.existingSolar || 'none'}${data.proposalNotes ? `\n\n--- CONSULTANT NOTES ---\nThe following notes have been added by the Lightning Energy consultant. Incorporate these observations and requirements into your analysis where relevant:\n${data.proposalNotes}` : ''}${data.regeneratePrompt ? `\n\n--- SPECIAL INSTRUCTIONS ---\nThe consultant has provided the following specific instructions for this regeneration. Follow these closely:\n${data.regeneratePrompt}` : ''}${data.sitePhotos && data.sitePhotos.length > 0 ? `\n\n--- SITE PHOTOS ---\nThe following site photos have been uploaded for this customer:\n${data.sitePhotos.map(p => `- ${p.caption}: ${p.url}`).join('\n')}\nReference these photos in your analysis where relevant (e.g., switchboard condition, meter type, roof orientation).` : ''}`;
 }
 
 // ============================================================

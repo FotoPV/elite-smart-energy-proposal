@@ -172,6 +172,10 @@ export interface ProposalData {
   co2CurrentTonnes?: number;
   co2ProjectedTonnes?: number;
   co2ReductionPercent?: number;
+  
+  // Custom Notes & Instructions (for LLM narrative enrichment)
+  proposalNotes?: string;       // Persistent notes about the install
+  regeneratePrompt?: string;    // One-off instructions for this regeneration
 }
 
 export interface SlideContent {
