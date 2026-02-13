@@ -1156,6 +1156,18 @@ export default function ProposalDetailPage() {
     { proposalId },
     { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') }
   );
+
+  // Fetch customer site photos for display on the proposal detail page
+  const customerId = (proposal as any)?.customerId;
+  const { data: customerDocs } = trpc.documents.list.useQuery(
+    { customerId: customerId! },
+    { enabled: !!customerId }
+  );
+  const sitePhotos = (customerDocs || []).filter((d: any) =>
+    ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
+  );
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxLabel, setLightboxLabel] = useState<string>('');
   
   // Auto-trigger LLM progressive generation when proposal has calculations but no slides
   useEffect(() => {
@@ -1357,6 +1369,75 @@ export default function ProposalDetailPage() {
             These notes are automatically included when regenerating the proposal. The AI will reference them in the narrative analysis.
           </p>
         </div>
+
+        {/* SITE PHOTOS — Show uploaded customer photos (switchboard, meter, etc.) */}
+        {sitePhotos.length > 0 && (
+          <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Camera className="h-4 w-4 text-[#00EAD3]" />
+              <h3
+                className="text-sm uppercase tracking-wider text-[#00EAD3]"
+                style={{ fontFamily: "'Urbanist', sans-serif" }}
+              >
+                Site Photos ({sitePhotos.length})
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {sitePhotos.map((photo: any, i: number) => {
+                const typeLabel = photo.documentType
+                  ?.replace(/_/g, ' ')
+                  ?.replace(/photo/i, '')
+                  ?.trim()
+                  ?.replace(/^\w/, (c: string) => c.toUpperCase()) || 'Photo';
+                return (
+                  <div
+                    key={photo.id || i}
+                    className="relative group cursor-pointer rounded-lg overflow-hidden border border-[#2a2a2a] hover:border-[#00EAD3]/50 transition-colors"
+                    onClick={() => { setLightboxUrl(photo.fileUrl); setLightboxLabel(typeLabel); }}
+                  >
+                    <img
+                      src={photo.fileUrl}
+                      alt={typeLabel}
+                      className="w-full h-28 object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
+                      <span
+                        className="text-[10px] text-[#00EAD3] uppercase tracking-wide"
+                        style={{ fontFamily: "'Urbanist', sans-serif" }}
+                      >
+                        {typeLabel}
+                      </span>
+                    </div>
+                    <div className="absolute inset-0 bg-[#00EAD3]/0 group-hover:bg-[#00EAD3]/10 transition-colors flex items-center justify-center">
+                      <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox for full-size photo viewing */}
+        {lightboxUrl && (
+          <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+            <DialogContent className="max-w-4xl bg-[#0a0a0a] border-[#1a1a1a] p-2">
+              <DialogHeader>
+                <DialogTitle
+                  className="text-sm uppercase tracking-wider text-[#00EAD3]"
+                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                >
+                  {lightboxLabel}
+                </DialogTitle>
+              </DialogHeader>
+              <img
+                src={lightboxUrl}
+                alt={lightboxLabel}
+                className="w-full max-h-[75vh] object-contain rounded-lg"
+              />
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* DOWNLOAD & EXPORT — Prominent buttons always visible when slides exist */}
         {hasSlides && (

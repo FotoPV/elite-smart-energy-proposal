@@ -839,3 +839,8 @@
 - [x] Wire notes into proposal creation so they persist from the start
 - [x] Keep Proposal Notes on ProposalDetail page for later editing
 - [x] Test notes flow from creation through to regeneration
+
+## Bug Fix: Missing Electrical Board Photos on Proposal Detail (Feb 13)
+- [x] Investigate missing switchboard/electrical board photos on right side of proposal detail page — no photos panel exists
+- [x] Add Site Photos panel to ProposalDetail page showing uploaded customer photos with full-size viewing
+- [x] Verify photos are visible after fix — switchboard photo confirmed visible with lightbox
