@@ -2203,7 +2203,7 @@ function genStrategicSiteAssessment(slide: SlideContent): string {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               ${photos.slice(0, 4).map(p => `
                 <div>
-                  <img src="${p.url}" crossorigin="anonymous" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; border: 1px solid #333;" alt="${p.caption}" />
+                  <img src="${p.url}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; border: 1px solid #333;" alt="${p.caption}" />
                   <p style="font-size: 11px; color: #808285; margin-top: 6px; text-align: center;">${p.caption}</p>
                 </div>
               `).join('')}
@@ -3071,7 +3071,7 @@ function genRequiredElectricalWorks(slide: SlideContent): string {
           ${photos.length > 0 ? photos.slice(0, 2).map((p, i) => `
             <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
               <div style="border: 1px solid #333; border-radius: 4px; padding: 4px; flex: 1;">
-                <img src="${p.url}" crossorigin="anonymous" style="width: 100%; height: 300px; object-fit: cover; border-radius: 2px;" />
+                <img src="${p.url}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 2px;" />
               </div>
               <p style="font-size: 11px; color: #808285; text-transform: uppercase; text-align: center; letter-spacing: 0.1em;">PHOTO ${String.fromCharCode(65 + i)}: ${p.caption}</p>
             </div>
@@ -3098,7 +3098,7 @@ function genSystemIntegration(slide: SlideContent): string {
       <div style="display: grid; grid-template-columns: repeat(${Math.min(appliances.length, 3)}, 1fr); gap: 24px; margin-top: 20px;">
         ${appliances.slice(0, 3).map(a => `
           <div style="background: #1a1a1a; border-radius: 8px; border-top: 3px solid #f36710; overflow: hidden;">
-            ${a.photoUrl ? `<img src="${a.photoUrl}" crossorigin="anonymous" style="width: 100%; height: 200px; object-fit: cover;" />` : '<div style="height: 200px; background: #111; display: flex; align-items: center; justify-content: center;"><span style="color: #808285;">Photo</span></div>'}
+            ${a.photoUrl ? `<img src="${a.photoUrl}" style="width: 100%; height: 200px; object-fit: cover;" />` : '<div style="height: 200px; background: #111; display: flex; align-items: center; justify-content: center;"><span style="color: #808285;">Photo</span></div>'}
             <div style="padding: 20px;">
               <p style="font-family: 'NextSphere', sans-serif; font-size: 20px; color: #FFFFFF; text-transform: uppercase; margin-bottom: 6px;">${a.name}</p>
               <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">${a.strategy}</p>

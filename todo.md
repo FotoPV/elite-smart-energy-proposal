@@ -844,3 +844,8 @@
 - [x] Investigate missing switchboard/electrical board photos on right side of proposal detail page — no photos panel exists
 - [x] Add Site Photos panel to ProposalDetail page showing uploaded customer photos with full-size viewing
 - [x] Verify photos are visible after fix — switchboard photo confirmed visible with lightbox
+
+## Bug Fix: Required Electrical Works Slide Photos Not Rendering (Feb 13)
+- [x] Remove crossorigin="anonymous" from slide HTML img tags — it blocks S3 images without CORS headers
+- [x] Ensure PDF export still works via server-side proxy (base64 conversion happens at PDF render time, not in slide HTML)
+- [x] Regenerate proposal and verify photos render in both browser view and PDF export
