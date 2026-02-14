@@ -993,3 +993,8 @@
 - [x] Verified: 73 body text instances 15→17px, 26 legend instances 12→14px, etc.
 - [x] Stuart Naylor proposal regenerated with new font sizes
 - [x] All 104 tests passing
+
+## Bug Fix: Photo Rotation Still Incorrect on Existing Photos (Feb 15)
+- [x] Add CSS `image-orientation: from-image` to slide HTML img tags for immediate browser-side fix
+- [ ] Verify the fix works after Regenerate All (user running now)
+- [x] All 104 tests passing
