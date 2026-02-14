@@ -1869,8 +1869,8 @@ function genSiteAssessment(slide: SlideContent): string {
   
   const photoGrid = displayPhotos.map(p => `
     <div style="display: flex; flex-direction: column; gap: 8px;">
-      <div style="width: ${photoWidth}px; height: ${photoHeight}px; background: #222; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-        <img src="${p.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="${p.caption}" />
+      <div style="width: ${photoWidth}px; height: ${photoHeight}px; background: #222; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+        <img src="${p.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="${p.caption}" loading="eager" crossorigin="anonymous" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#808285;font-family:Urbanist,sans-serif;&quot;><svg width=&quot;48&quot; height=&quot;48&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#808285&quot; stroke-width=&quot;1.5&quot;><rect x=&quot;3&quot; y=&quot;3&quot; width=&quot;18&quot; height=&quot;18&quot; rx=&quot;2&quot;/><circle cx=&quot;8.5&quot; cy=&quot;8.5&quot; r=&quot;1.5&quot;/><path d=&quot;M21 15l-5-5L5 21&quot;/></svg><p style=&quot;margin-top:12px;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;&quot;>Photo Loading</p></div>';" />
       </div>
       <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #808285; text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">${p.caption}</p>
     </div>

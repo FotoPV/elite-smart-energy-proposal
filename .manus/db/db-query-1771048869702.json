@@ -1,0 +1,26 @@
+{
+  "query": "SELECT p.id as proposal_id, p.customerId, cd.id as doc_id, cd.documentType, cd.fileUrl, cd.description FROM proposals p JOIN customerDocuments cd ON cd.customerId = p.customerId WHERE p.id = 570001 AND cd.documentType IN ('switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT p.id as proposal_id, p.customerId, cd.id as doc_id, cd.documentType, cd.fileUrl, cd.description FROM proposals p JOIN customerDocuments cd ON cd.customerId = p.customerId WHERE p.id = 570001 AND cd.documentType IN ('switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo')",
+  "rows": [
+    {
+      "proposal_id": "570001",
+      "customerId": "600001",
+      "doc_id": "540002",
+      "documentType": "switchboard_photo",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/600001/-B-gvnz_oegbH9PofoFpQ-IMG_7673.jpeg",
+      "description": "NULL"
+    },
+    {
+      "proposal_id": "570001",
+      "customerId": "600001",
+      "doc_id": "540001",
+      "documentType": "switchboard_photo",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/600001/TwrQ_kY5XwRr32v5uuiS8-IMG_7672.jpeg",
+      "description": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "proposal_id\tcustomerId\tdoc_id\tdocumentType\tfileUrl\tdescription\n570001\t600001\t540002\tswitchboard_photo\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/600001/-B-gvnz_oegbH9PofoFpQ-IMG_7673.jpeg\tNULL\n570001\t600001\t540001\tswitchboard_photo\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/600001/TwrQ_kY5XwRr32v5uuiS8-IMG_7672.jpeg\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1652
+}

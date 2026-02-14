@@ -1048,11 +1048,32 @@ export const appRouter = router({
         description: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        // Decode base64 and upload to S3
-        const buffer = Buffer.from(input.fileData, 'base64');
-        const fileKey = `documents/${input.customerId}/${nanoid()}-${input.fileName}`;
+        // Decode base64
+        let buffer = Buffer.from(input.fileData, 'base64');
+        let mimeType = input.mimeType;
+        let fileName = input.fileName;
         
-        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        // Compress photos to max 1200px wide, JPEG quality 80 for faster slide rendering
+        const isPhoto = ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(input.documentType);
+        if (isPhoto && (input.mimeType.startsWith('image/jpeg') || input.mimeType.startsWith('image/png') || input.mimeType.startsWith('image/webp'))) {
+          try {
+            const sharp = require('sharp');
+            buffer = await sharp(buffer)
+              .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
+              .jpeg({ quality: 82 })
+              .toBuffer();
+            mimeType = 'image/jpeg';
+            // Update filename extension to .jpg
+            fileName = fileName.replace(/\.(png|webp|heic|heif)$/i, '.jpg');
+            console.log(`[document.upload] Compressed photo from ${Buffer.from(input.fileData, 'base64').length} to ${buffer.length} bytes`);
+          } catch (compressErr: any) {
+            console.error('[document.upload] Photo compression failed, using original:', compressErr.message);
+          }
+        }
+        
+        const fileKey = `documents/${input.customerId}/${nanoid()}-${fileName}`;
+        
+        const { url } = await storagePut(fileKey, buffer, mimeType);
         
         // Create document record
         const docId = await db.createCustomerDocument({
@@ -1061,9 +1082,9 @@ export const appRouter = router({
           documentType: input.documentType,
           fileUrl: url,
           fileKey: fileKey,
-          fileName: input.fileName,
+          fileName: fileName,
           fileSize: buffer.length,
-          mimeType: input.mimeType,
+          mimeType: mimeType,
           description: input.description,
         });
         
