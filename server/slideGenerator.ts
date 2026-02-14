@@ -206,23 +206,44 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   const annualSolarProduction = Math.round(data.solarSizeKw * psh * performanceRatio * 365);
   const solarOffset = data.annualUsageKwh > 0 ? Math.round((annualSolarProduction / data.annualUsageKwh) * 100) : 100;
   
-  // Monthly factors for seasonal variation
-  const monthlyFactors: Record<string, number> = { Jan: 1.4, Feb: 1.3, Mar: 1.1, Apr: 0.9, May: 0.7, Jun: 0.6, Jul: 0.6, Aug: 0.7, Sep: 0.9, Oct: 1.1, Nov: 1.3, Dec: 1.4 };
+  // Monthly solar production factors (higher in summer, lower in winter)
+  const solarMonthlyFactors: Record<string, number> = { Jan: 1.4, Feb: 1.3, Mar: 1.1, Apr: 0.9, May: 0.7, Jun: 0.6, Jul: 0.6, Aug: 0.7, Sep: 0.9, Oct: 1.1, Nov: 1.3, Dec: 1.4 };
+  
+  // State-based seasonal USAGE distribution patterns
+  // These reflect real Australian consumption patterns: summer peaks (cooling), winter peaks (heating)
+  const stateUsagePatterns: Record<string, Record<string, number>> = {
+    SA:  { Jan: 1.30, Feb: 1.25, Mar: 1.05, Apr: 0.85, May: 0.80, Jun: 0.85, Jul: 0.85, Aug: 0.80, Sep: 0.85, Oct: 0.95, Nov: 1.10, Dec: 1.35 },
+    VIC: { Jan: 1.15, Feb: 1.10, Mar: 0.95, Apr: 0.85, May: 0.90, Jun: 1.05, Jul: 1.10, Aug: 1.05, Sep: 0.95, Oct: 0.90, Nov: 0.95, Dec: 1.05 },
+    NSW: { Jan: 1.25, Feb: 1.20, Mar: 1.05, Apr: 0.90, May: 0.80, Jun: 0.80, Jul: 0.80, Aug: 0.80, Sep: 0.85, Oct: 0.95, Nov: 1.15, Dec: 1.30 },
+    QLD: { Jan: 1.35, Feb: 1.30, Mar: 1.15, Apr: 0.90, May: 0.75, Jun: 0.70, Jul: 0.70, Aug: 0.70, Sep: 0.80, Oct: 0.95, Nov: 1.20, Dec: 1.35 },
+    WA:  { Jan: 1.35, Feb: 1.30, Mar: 1.10, Apr: 0.85, May: 0.75, Jun: 0.75, Jul: 0.75, Aug: 0.75, Sep: 0.85, Oct: 1.00, Nov: 1.15, Dec: 1.35 },
+    TAS: { Jan: 0.90, Feb: 0.85, Mar: 0.90, Apr: 0.95, May: 1.10, Jun: 1.20, Jul: 1.25, Aug: 1.20, Sep: 1.05, Oct: 0.95, Nov: 0.85, Dec: 0.80 },
+    NT:  { Jan: 1.30, Feb: 1.25, Mar: 1.20, Apr: 1.00, May: 0.75, Jun: 0.65, Jul: 0.65, Aug: 0.70, Sep: 0.80, Oct: 1.00, Nov: 1.20, Dec: 1.30 },
+    ACT: { Jan: 1.15, Feb: 1.10, Mar: 0.95, Apr: 0.85, May: 0.95, Jun: 1.10, Jul: 1.15, Aug: 1.10, Sep: 0.95, Oct: 0.85, Nov: 0.90, Dec: 1.05 },
+  };
+  const usagePattern = stateUsagePatterns[data.state] || stateUsagePatterns['NSW'];
   const defaultMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+  // Normalise usage pattern so total sums to annualUsageKwh
+  const patternSum = defaultMonths.reduce((sum, m) => sum + (usagePattern[m] || 1.0), 0);
   
   const monthlyProjection = (data.monthlyUsageData && data.monthlyUsageData.length > 0)
     ? data.monthlyUsageData.map(m => ({
         month: m.month,
         kwh: Math.round(m.kwh),
         cost: m.cost || Math.round(m.kwh * data.usageRateCentsPerKwh / 100),
-        solar: Math.round(avgDailySolar * (monthlyFactors[m.month.substring(0, 3)] || 1.0) * 30),
+        solar: Math.round(avgDailySolar * (solarMonthlyFactors[m.month.substring(0, 3)] || 1.0) * 30),
       }))
-    : defaultMonths.map(m => ({
-        month: m,
-        kwh: Math.round(data.annualUsageKwh / 12),
-        cost: Math.round((data.annualUsageKwh / 12) * data.usageRateCentsPerKwh / 100),
-        solar: Math.round(avgDailySolar * (monthlyFactors[m] || 1.0) * 30),
-      }));
+    : defaultMonths.map(m => {
+        const factor = usagePattern[m] || 1.0;
+        const monthKwh = Math.round((data.annualUsageKwh * factor) / patternSum);
+        return {
+          month: m,
+          kwh: monthKwh,
+          cost: Math.round(monthKwh * data.usageRateCentsPerKwh / 100),
+          solar: Math.round(avgDailySolar * (solarMonthlyFactors[m] || 1.0) * 30),
+        };
+      });
   
   // Cost calculations
   const usageCostAnnual = data.annualUsageCharge || data.annualUsageKwh * (data.usageRateCentsPerKwh / 100);
@@ -360,8 +381,8 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   slides.push({
     id: slideId++,
     type: 'annual_consumption',
-    title: 'ANNUAL CONSUMPTION ANALYSIS',
-    subtitle: 'Usage vs Solar Production',
+    title: 'SOLAR GENERATION PROFILE',
+    subtitle: 'Monthly Output Estimate',
     content: {
       monthlyData: monthlyProjection,
       annualUsageKwh: data.annualUsageKwh,
@@ -369,6 +390,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       solarSizeKw: data.solarSizeKw,
       solarOffset,
       dailyUsageKwh: data.dailyUsageKwh,
+      state: data.state,
     }
   });
   
@@ -1114,9 +1136,28 @@ function genBillBreakdown(slide: SlideContent): string {
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <div style="position: relative; width: 350px; height: 350px;">
             <svg viewBox="0 0 200 200" width="350" height="350">
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#f36710" stroke-width="30" stroke-dasharray="${usagePct * 5.03} ${(100 - usagePct) * 5.03}" stroke-dashoffset="126" />
-              <circle cx="100" cy="100" r="80" fill="none" stroke="#808285" stroke-width="30" stroke-dasharray="${supplyPct * 5.03} ${(100 - supplyPct) * 5.03}" stroke-dashoffset="${126 - usagePct * 5.03}" />
-              <circle cx="100" cy="100" r="60" fill="#1a1a1a" />
+              <defs>
+                <linearGradient id="usageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ff8a3d" />
+                  <stop offset="100%" stop-color="#f36710" />
+                </linearGradient>
+                <linearGradient id="supplyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#9a9a9a" />
+                  <stop offset="100%" stop-color="#606060" />
+                </linearGradient>
+                <filter id="donutGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                <radialGradient id="centreGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="rgba(243,103,16,0.08)" />
+                  <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+                </radialGradient>
+              </defs>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="url(#usageGrad)" stroke-width="28" stroke-dasharray="${usagePct * 5.03} ${(100 - usagePct) * 5.03}" stroke-dashoffset="126" stroke-linecap="round" filter="url(#donutGlow)" />
+              <circle cx="100" cy="100" r="80" fill="none" stroke="url(#supplyGrad)" stroke-width="28" stroke-dasharray="${supplyPct * 5.03} ${(100 - supplyPct) * 5.03}" stroke-dashoffset="${126 - usagePct * 5.03}" stroke-linecap="round" />
+              <circle cx="100" cy="100" r="62" fill="#1a1a1a" />
+              <circle cx="100" cy="100" r="62" fill="url(#centreGlow)" />
             </svg>
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
               <p style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #fff;">${fmtCurrency(totalCost)}</p>
@@ -1124,8 +1165,8 @@ function genBillBreakdown(slide: SlideContent): string {
             </div>
           </div>
           <div style="display: flex; gap: 40px; margin-top: 30px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; background: #f36710;"></div><span style="color: #808285; font-size: 13px;">Usage (${usagePct}%)</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; background: #808285;"></div><span style="color: #808285; font-size: 13px;">Supply (${supplyPct}%)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #ff8a3d, #f36710);"></div><span style="color: #808285; font-size: 13px;">Usage (${usagePct}%)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #9a9a9a, #606060);"></div><span style="color: #808285; font-size: 13px;">Supply (${supplyPct}%)</span></div>
           </div>
         </div>
       </div>
@@ -1143,61 +1184,89 @@ function genSeasonalUsage(slide: SlideContent): string {
   const annualUsage = c.annualUsageKwh as number || 0;
   const dailyUsage = c.dailyUsageKwh as number || 0;
   
-  // Season colors: Summer=orange, Autumn=grey, Winter=aqua, Spring=white
-  const seasonColor = (month: string): string => {
+  // Season colors and gradients
+  const seasonGradient = (month: string): { color: string; gradStart: string; gradEnd: string } => {
     const m = month.substring(0, 3);
-    if (['Dec', 'Jan', 'Feb'].includes(m)) return '#f36710';
-    if (['Mar', 'Apr', 'May'].includes(m)) return '#808285';
-    if (['Jun', 'Jul', 'Aug'].includes(m)) return '#00EAD3';
-    return '#FFFFFF';
+    if (['Dec', 'Jan', 'Feb'].includes(m)) return { color: '#f36710', gradStart: '#ff8a3d', gradEnd: '#f36710' };
+    if (['Mar', 'Apr', 'May'].includes(m)) return { color: '#808285', gradStart: '#a0a0a5', gradEnd: '#606065' };
+    if (['Jun', 'Jul', 'Aug'].includes(m)) return { color: '#00EAD3', gradStart: '#33FFE8', gradEnd: '#00C4B0' };
+    return { color: '#FFFFFF', gradStart: '#FFFFFF', gradEnd: '#C8C8C8' };
   };
   
   const peakMonth = monthlyData.reduce((max, curr) => curr.kwh > max.kwh ? curr : max, monthlyData[0] || { month: 'Jan', kwh: 0 });
   const lowMonth = monthlyData.reduce((min, curr) => curr.kwh < min.kwh ? curr : min, monthlyData[0] || { month: 'Jan', kwh: 0 });
   const narrative = (c.narrative as string) || '';
   
+  // SVG bar chart dimensions
+  const chartW = 750, chartH = 440;
+  const barW = 44;
+  const barGap = (chartW - barW * 12) / 13;
+  const yMax = Math.ceil(maxKwh * 1.15 / 100) * 100;
+  
   return `
     <div class="slide">
       ${slideNum(slide.id)}
       ${logoBR()}
       ${slideHeader(slide.title, slide.subtitle)}
-      <div style="display: flex; gap: 60px;">
-        <!-- Left: Bar Chart -->
-        <div style="flex: 1.5;">
-          <div style="display: flex; align-items: flex-end; gap: 12px; height: 500px; padding-bottom: 40px;">
-            ${monthlyData.map(m => `
-              <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                <p style="font-size: 11px; color: #808285; margin-bottom: 6px;">${Math.round(m.kwh)}</p>
-                <div style="width: 100%; height: ${Math.round((m.kwh / maxKwh) * 400)}px; background: ${seasonColor(m.month)}; border-radius: 4px 4px 0 0;"></div>
-                <p style="font-size: 12px; color: #808285; margin-top: 8px; font-family: 'Urbanist', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">${m.month.substring(0, 3)}</p>
-              </div>
-            `).join('')}
-          </div>
-          <div style="display: flex; gap: 24px; margin-top: 16px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #f36710;"></div><span style="color: #808285; font-size: 11px;">Summer</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #808285;"></div><span style="color: #808285; font-size: 11px;">Autumn</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3;"></div><span style="color: #808285; font-size: 11px;">Winter</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #FFFFFF;"></div><span style="color: #808285; font-size: 11px;">Spring</span></div>
+      <div style="display: flex; gap: 40px;">
+        <!-- Left: Premium Bar Chart -->
+        <div style="flex: 1.4;">
+          <svg viewBox="0 0 ${chartW} ${chartH + 60}" width="${chartW}" height="${chartH + 60}">
+            <defs>
+              ${monthlyData.map((m, i) => {
+                const g = seasonGradient(m.month);
+                return `<linearGradient id="barGrad${i}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="${g.gradStart}" />
+                  <stop offset="100%" stop-color="${g.gradEnd}" />
+                </linearGradient>
+                <filter id="barGlow${i}"><feGaussianBlur stdDeviation="4" result="blur" /><feFlood flood-color="${g.color}" flood-opacity="0.3" /><feComposite in2="blur" operator="in" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>`;
+              }).join('')}
+            </defs>
+            <!-- Subtle grid lines -->
+            ${Array.from({ length: 5 }, (_, i) => {
+              const v = (yMax / 4) * i;
+              const y = chartH - (v / yMax) * chartH;
+              return `<line x1="0" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(128,130,133,0.15)" stroke-width="1" />`;
+            }).join('')}
+            <!-- Bars with gradient + glow -->
+            ${monthlyData.map((m, i) => {
+              const x = barGap + i * (barW + barGap);
+              const barH = (m.kwh / yMax) * chartH;
+              const y = chartH - barH;
+              return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="url(#barGrad${i})" rx="6" ry="6" filter="url(#barGlow${i})" />
+                <text x="${x + barW / 2}" y="${y - 8}" fill="#808285" font-size="11" text-anchor="middle" font-family="GeneralSans, sans-serif">${Math.round(m.kwh)}</text>`;
+            }).join('')}
+            <!-- Month labels -->
+            ${monthlyData.map((m, i) => {
+              const x = barGap + i * (barW + barGap) + barW / 2;
+              return `<text x="${x}" y="${chartH + 24}" fill="#808285" font-size="12" text-anchor="middle" font-family="Urbanist, sans-serif" text-transform="uppercase" letter-spacing="0.05em">${m.month.substring(0, 3).toUpperCase()}</text>`;
+            }).join('')}
+          </svg>
+          <div style="display: flex; gap: 24px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #ff8a3d, #f36710);"></div><span style="color: #808285; font-size: 12px;">Summer</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #a0a0a5, #606065);"></div><span style="color: #808285; font-size: 12px;">Autumn</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #33FFE8, #00C4B0);"></div><span style="color: #808285; font-size: 12px;">Winter</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #FFFFFF, #C8C8C8);"></div><span style="color: #808285; font-size: 12px;">Spring</span></div>
           </div>
         </div>
         <!-- Right: Metrics -->
-        <div style="flex: 0.8; display: flex; flex-direction: column; gap: 16px;">
-          <div class="card">
+        <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">ANNUAL CONSUMPTION</p>
-            <p class="hero-num white" style="font-size: 36px;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 16px; color: #808285;">kWh</span></p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 36px; font-weight: 700; color: #fff; margin: 4px 0;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 16px; color: #808285; font-weight: 400;">kWh</span></p>
           </div>
-          <div class="card">
+          <div style="border-left: 4px solid #808285; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">DAILY AVERAGE</p>
-            <p class="hero-num white" style="font-size: 36px;">${dailyUsage.toFixed(1)} <span style="font-size: 16px; color: #808285;">kWh</span></p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 36px; font-weight: 700; color: #fff; margin: 4px 0;">${dailyUsage.toFixed(1)} <span style="font-size: 16px; color: #808285; font-weight: 400;">kWh</span></p>
           </div>
-          <div class="card">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">PEAK MONTH</p>
-            <p class="hero-num orange" style="font-size: 30px;">${peakMonth.month}</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #f36710; margin: 4px 0;">${peakMonth.month}</p>
             <p style="color: #808285; font-size: 14px;">${Math.round(peakMonth.kwh).toLocaleString()} kWh</p>
           </div>
-          <div class="card">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">LOWEST MONTH</p>
-            <p class="hero-num aqua" style="font-size: 30px;">${lowMonth.month}</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #00EAD3; margin: 4px 0;">${lowMonth.month}</p>
             <p style="color: #808285; font-size: 14px;">${Math.round(lowMonth.kwh).toLocaleString()} kWh</p>
           </div>
           ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 8px;">${narrative}</div>` : ''}
@@ -1218,52 +1287,111 @@ function genAnnualConsumption(slide: SlideContent): string {
   const solarSize = c.solarSizeKw as number || 0;
   const offset = c.solarOffset as number || 0;
   const narrative = (c.narrative as string) || '';
-  const maxVal = Math.max(...monthlyData.map(m => Math.max(m.kwh, m.solar)), 1);
+  const state = (c.state as string) || 'NSW';
   
-  // Build SVG area chart
-  const chartW = 900, chartH = 400;
-  const xStep = chartW / (monthlyData.length - 1 || 1);
-  const usagePts = monthlyData.map((m, i) => `${i * xStep},${chartH - (m.kwh / maxVal) * chartH}`).join(' ');
-  const solarPts = monthlyData.map((m, i) => `${i * xStep},${chartH - (m.solar / maxVal) * chartH}`).join(' ');
-  const usageArea = `0,${chartH} ${usagePts} ${(monthlyData.length - 1) * xStep},${chartH}`;
-  const solarArea = `0,${chartH} ${solarPts} ${(monthlyData.length - 1) * xStep},${chartH}`;
+  // Find max value for chart scaling (use solar as bars, consumption as line)
+  const maxSolar = Math.max(...monthlyData.map(m => m.solar), 1);
+  const maxKwh = Math.max(...monthlyData.map(m => m.kwh), 1);
+  const maxVal = Math.max(maxSolar, maxKwh) * 1.1; // 10% headroom
+  
+  // Determine seasonal variance info
+  const winterMonths = ['Jun', 'Jul', 'Aug'];
+  const summerMonths = ['Nov', 'Dec', 'Jan', 'Feb'];
+  const winterDeficit = monthlyData.filter(m => winterMonths.includes(m.month.substring(0, 3))).some(m => m.kwh > m.solar);
+  const summerAvg = monthlyData.filter(m => summerMonths.includes(m.month.substring(0, 3))).reduce((s, m) => s + m.solar, 0) / 4;
+  
+  // Build SVG bar chart with consumption line overlay
+  const chartW = 750, chartH = 380;
+  const barW = 42;
+  const barGap = (chartW - barW * 12) / 13;
+  
+  // Y-axis scale
+  const yMax = Math.ceil(maxVal / 500) * 500;
+  const yTicks = [];
+  for (let v = 0; v <= yMax; v += 500) yTicks.push(v);
+  
+  // Bar positions
+  const bars = monthlyData.map((m, i) => {
+    const x = barGap + i * (barW + barGap);
+    const barH = (m.solar / yMax) * chartH;
+    const y = chartH - barH;
+    return { x, y, barH, month: m.month, solar: m.solar, kwh: m.kwh };
+  });
+  
+  // Consumption line points (smooth curve through bar centres)
+  const linePts = bars.map(b => {
+    const cx = b.x + barW / 2;
+    const cy = chartH - (b.kwh / yMax) * chartH;
+    return { cx, cy };
+  });
+  
+  // Build smooth cubic bezier path for consumption line
+  let linePath = `M ${linePts[0].cx},${linePts[0].cy}`;
+  for (let i = 1; i < linePts.length; i++) {
+    const prev = linePts[i - 1];
+    const curr = linePts[i];
+    const cpx = (prev.cx + curr.cx) / 2;
+    linePath += ` C ${cpx},${prev.cy} ${cpx},${curr.cy} ${curr.cx},${curr.cy}`;
+  }
   
   return `
     <div class="slide">
       ${slideNum(slide.id)}
       ${logoBR()}
       ${slideHeader(slide.title, slide.subtitle)}
-      <div style="display: flex; gap: 60px;">
-        <!-- Left: Area Chart -->
-        <div style="flex: 1.5;">
-          <svg viewBox="0 0 ${chartW} ${chartH + 40}" width="${chartW}" height="${chartH + 40}">
-            <polygon points="${usageArea}" fill="rgba(243,103,16,0.15)" />
-            <polyline points="${usagePts}" fill="none" stroke="#f36710" stroke-width="2.5" />
-            <polygon points="${solarArea}" fill="rgba(0,234,211,0.15)" />
-            <polyline points="${solarPts}" fill="none" stroke="#00EAD3" stroke-width="2.5" />
-            ${monthlyData.map((m, i) => `<text x="${i * xStep}" y="${chartH + 25}" fill="#808285" font-size="12" text-anchor="middle" font-family="Urbanist">${m.month.substring(0, 3)}</text>`).join('')}
+      <div style="display: flex; gap: 40px;">
+        <!-- Left: Bar Chart with Line Overlay -->
+        <div style="flex: 1.4;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: #f36710;"></div><span style="color: #808285; font-size: 13px; font-family: GeneralSans, sans-serif;">Consumption (kWh)</span></div>
+          </div>
+          <svg viewBox="0 0 ${chartW} ${chartH + 50}" width="${chartW}" height="${chartH + 50}">
+            <defs>
+              <linearGradient id="solarBarGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#33FFE8" />
+                <stop offset="100%" stop-color="#00C4B0" />
+              </linearGradient>
+              <filter id="solarBarGlow"><feGaussianBlur stdDeviation="4" result="blur" /><feFlood flood-color="#00EAD3" flood-opacity="0.25" /><feComposite in2="blur" operator="in" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+              <filter id="lineGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feFlood flood-color="#f36710" flood-opacity="0.5" /><feComposite in2="blur" operator="in" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            </defs>
+            <!-- Subtle grid lines -->
+            ${yTicks.map(v => {
+              const y = chartH - (v / yMax) * chartH;
+              return `<line x1="0" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(128,130,133,0.12)" stroke-width="1" />`;
+            }).join('')}
+            <!-- Y-axis labels -->
+            ${yTicks.map(v => {
+              const y = chartH - (v / yMax) * chartH;
+              return `<text x="-8" y="${y + 4}" fill="#808285" font-size="11" text-anchor="end" font-family="GeneralSans, sans-serif">${v.toLocaleString()}</text>`;
+            }).join('')}
+            <!-- Bars (solar generation) with gradient + glow -->
+            ${bars.map(b => `<rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.barH}" fill="url(#solarBarGrad)" rx="5" ry="5" filter="url(#solarBarGlow)" />`).join('')}
+            <!-- Consumption line (smooth curve) with glow -->
+            <path d="${linePath}" fill="none" stroke="#f36710" stroke-width="3" stroke-linecap="round" filter="url(#lineGlow)" />
+            <!-- Consumption dots with glow ring -->
+            ${linePts.map(p => `<circle cx="${p.cx}" cy="${p.cy}" r="6" fill="none" stroke="rgba(243,103,16,0.3)" stroke-width="3" /><circle cx="${p.cx}" cy="${p.cy}" r="4" fill="#f36710" />`).join('')}
+            <!-- X-axis month labels -->
+            ${bars.map(b => `<text x="${b.x + barW / 2}" y="${chartH + 22}" fill="#808285" font-size="12" text-anchor="middle" font-family="Urbanist, sans-serif">${b.month.substring(0, 3)}</text>`).join('')}
           </svg>
-          <div style="display: flex; gap: 30px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; background: #f36710;"></div><span style="color: #808285; font-size: 12px;">Consumption</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; background: #00EAD3;"></div><span style="color: #808285; font-size: 12px;">Solar Production</span></div>
-          </div>
         </div>
-        <!-- Right: Metrics -->
-        <div style="flex: 0.8; display: flex; flex-direction: column; gap: 16px;">
-          <div class="card">
-            <p class="lbl">ANNUAL CONSUMPTION</p>
-            <p class="hero-num orange" style="font-size: 36px;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 16px; color: #808285;">kWh</span></p>
+        <!-- Right: Info Cards -->
+        <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+            <p class="lbl">ANNUAL GENERATION</p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 38px; font-weight: 700; color: #00EAD3; margin: 4px 0;">${Math.round(annualSolar).toLocaleString()} <span style="font-size: 16px; color: #808285; font-weight: 400;">KWH</span></p>
+            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${offset}% of current annual usage. ${offset > 100 ? 'Significant surplus available for battery charging and VPP export.' : 'Solar covers the majority of annual consumption with battery optimisation.'}</p>
           </div>
-          <div class="card">
-            <p class="lbl">SOLAR PRODUCTION</p>
-            <p class="hero-num aqua" style="font-size: 36px;">${Math.round(annualSolar).toLocaleString()} <span style="font-size: 16px; color: #808285;">kWh</span></p>
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+            <p class="lbl">SEASONAL VARIANCE</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: ${winterDeficit ? '#f36710' : '#00EAD3'}; margin: 4px 0; text-transform: uppercase;">${winterDeficit ? 'WINTER DEFICIT' : 'BALANCED PROFILE'}</p>
+            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${winterDeficit ? `June-August consumption exceeds generation. Grid and battery support required during ${state === 'QLD' || state === 'NT' ? 'wet' : 'heating'} season.` : 'Solar generation closely matches consumption patterns year-round.'}</p>
           </div>
-          <div class="card aqua-b">
-            <p class="lbl">SOLAR OFFSET</p>
-            <p class="hero-num aqua" style="font-size: 48px;">${offset}%</p>
-            <p style="color: #808285; font-size: 13px;">${solarSize}kW system covers ${offset}% of annual usage</p>
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+            <p class="lbl">SUMMER PERFORMANCE</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #ffffff; margin: 4px 0;">PEAK SURPLUS</p>
+            <p style="color: #808285; font-size: 13px; line-height: 1.5;">Nov-Feb generation (avg ${Math.round(summerAvg).toLocaleString()}+ kWh/mo) maximises VPP credits and bill offsets.</p>
           </div>
-          ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 8px;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 4px;">${narrative}</div>` : ''}
         </div>
       </div>
     </div>
@@ -1282,50 +1410,107 @@ function genProjectedAnnualCost(slide: SlideContent): string {
   const cumSavings = c.cumulativeSavings25yr as number || 0;
   const narrative = (c.narrative as string) || '';
   
-  const maxCost = Math.max(...costProjection.map(p => p.withoutSolar), 1);
-  const chartW = 900, chartH = 400;
+  const maxCost = Math.max(...costProjection.map(p => p.withoutSolar), 1) * 1.1;
+  const chartW = 750, chartH = 380;
   const xStep = chartW / (costProjection.length - 1 || 1);
-  const withoutPts = costProjection.map((p, i) => `${i * xStep},${chartH - (p.withoutSolar / maxCost) * chartH}`).join(' ');
-  const withPts = costProjection.map((p, i) => `${i * xStep},${chartH - (p.withSolar / maxCost) * chartH}`).join(' ');
+  
+  // Build smooth bezier paths
+  const pts = (key: 'withoutSolar' | 'withSolar') => costProjection.map((p, i) => ({
+    x: i * xStep,
+    y: chartH - (p[key] / maxCost) * chartH
+  }));
+  const buildPath = (points: Array<{x: number; y: number}>): string => {
+    let d = `M ${points[0].x},${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      const cpx = (points[i - 1].x + points[i].x) / 2;
+      d += ` C ${cpx},${points[i - 1].y} ${cpx},${points[i].y} ${points[i].x},${points[i].y}`;
+    }
+    return d;
+  };
+  const buildArea = (points: Array<{x: number; y: number}>): string => {
+    return buildPath(points) + ` L ${points[points.length - 1].x},${chartH} L ${points[0].x},${chartH} Z`;
+  };
+  const withoutPoints = pts('withoutSolar');
+  const withPoints = pts('withSolar');
+  const withoutPath = buildPath(withoutPoints);
+  const withPath = buildPath(withPoints);
+  const withoutArea = buildArea(withoutPoints);
+  const withArea = buildArea(withPoints);
+  
+  // Y-axis ticks
+  const yMax = Math.ceil(maxCost / 1000) * 1000;
+  const yTicks: number[] = [];
+  for (let v = 0; v <= yMax; v += Math.ceil(yMax / 5 / 1000) * 1000) yTicks.push(v);
   
   return `
     <div class="slide">
       ${slideNum(slide.id)}
       ${logoBR()}
       ${slideHeader(slide.title, slide.subtitle)}
-      <div style="display: flex; gap: 60px;">
-        <!-- Left: Line Chart -->
-        <div style="flex: 1.5;">
-          <svg viewBox="0 0 ${chartW} ${chartH + 40}" width="${chartW}" height="${chartH + 40}">
-            <polyline points="${withoutPts}" fill="none" stroke="#f36710" stroke-width="2.5" />
-            <polyline points="${withPts}" fill="none" stroke="#00EAD3" stroke-width="2.5" />
+      <div style="display: flex; gap: 40px;">
+        <!-- Left: Premium Line Chart -->
+        <div style="flex: 1.4;">
+          <svg viewBox="0 0 ${chartW} ${chartH + 50}" width="${chartW}" height="${chartH + 50}">
+            <defs>
+              <linearGradient id="orangeAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(243,103,16,0.25)" />
+                <stop offset="100%" stop-color="rgba(243,103,16,0)" />
+              </linearGradient>
+              <linearGradient id="aquaAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(0,234,211,0.2)" />
+                <stop offset="100%" stop-color="rgba(0,234,211,0)" />
+              </linearGradient>
+              <filter id="orangeLineGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feFlood flood-color="#f36710" flood-opacity="0.4" /><feComposite in2="blur" operator="in" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+              <filter id="aquaLineGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feFlood flood-color="#00EAD3" flood-opacity="0.4" /><feComposite in2="blur" operator="in" /><feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            </defs>
+            <!-- Subtle grid lines -->
+            ${yTicks.map(v => {
+              const y = chartH - (v / maxCost) * chartH;
+              return `<line x1="0" y1="${y}" x2="${chartW}" y2="${y}" stroke="rgba(128,130,133,0.12)" stroke-width="1" />
+                <text x="-8" y="${y + 4}" fill="#808285" font-size="10" text-anchor="end" font-family="GeneralSans, sans-serif">$${(v / 1000).toFixed(0)}k</text>`;
+            }).join('')}
+            <!-- Area fills -->
+            <path d="${withoutArea}" fill="url(#orangeAreaGrad)" />
+            <path d="${withArea}" fill="url(#aquaAreaGrad)" />
+            <!-- Lines with glow -->
+            <path d="${withoutPath}" fill="none" stroke="#f36710" stroke-width="3" stroke-linecap="round" filter="url(#orangeLineGlow)" />
+            <path d="${withPath}" fill="none" stroke="#00EAD3" stroke-width="3" stroke-linecap="round" filter="url(#aquaLineGlow)" />
+            <!-- Key data point dots -->
+            ${[0, 10, 25].map(yr => {
+              const i = yr;
+              if (i >= costProjection.length) return '';
+              const wx = withoutPoints[i].x, wy = withoutPoints[i].y;
+              const sx = withPoints[i].x, sy = withPoints[i].y;
+              return `<circle cx="${wx}" cy="${wy}" r="5" fill="#f36710" /><circle cx="${sx}" cy="${sy}" r="5" fill="#00EAD3" />`;
+            }).join('')}
+            <!-- X-axis year labels -->
             ${[0, 5, 10, 15, 20, 25].map(yr => {
               const x = (yr / 25) * chartW;
-              return `<text x="${x}" y="${chartH + 25}" fill="#808285" font-size="12" text-anchor="middle" font-family="Urbanist">YR ${yr}</text>`;
+              return `<text x="${x}" y="${chartH + 25}" fill="#808285" font-size="12" text-anchor="middle" font-family="Urbanist, sans-serif">YR ${yr}</text>`;
             }).join('')}
           </svg>
           <div style="display: flex; gap: 30px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; background: #f36710;"></div><span style="color: #808285; font-size: 12px;">Without Solar (3.5% inflation)</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; background: #00EAD3;"></div><span style="color: #808285; font-size: 12px;">With Solar + Battery</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; border-radius: 2px; background: #f36710; box-shadow: 0 0 6px rgba(243,103,16,0.5);"></div><span style="color: #808285; font-size: 12px;">Without Solar (3.5% inflation)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 20px; height: 3px; border-radius: 2px; background: #00EAD3; box-shadow: 0 0 6px rgba(0,234,211,0.5);"></div><span style="color: #808285; font-size: 12px;">With Solar + Battery</span></div>
           </div>
         </div>
         <!-- Right: Metrics -->
-        <div style="flex: 0.8; display: flex; flex-direction: column; gap: 16px;">
-          <div class="card">
+        <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">CURRENT ANNUAL COST</p>
-            <p class="hero-num orange" style="font-size: 32px;">${fmtCurrency(currentCost)}</p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(currentCost)}</p>
           </div>
-          <div class="card">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">YEAR 10 (NO ACTION)</p>
-            <p class="hero-num orange" style="font-size: 32px;">${fmtCurrency(yr10)}</p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(yr10)}</p>
           </div>
-          <div class="card">
+          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">YEAR 25 (NO ACTION)</p>
-            <p class="hero-num orange" style="font-size: 32px;">${fmtCurrency(yr25)}</p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(yr25)}</p>
           </div>
-          <div class="card aqua-b">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(0,234,211,0.05); border: 1px solid rgba(0,234,211,0.2);">
             <p class="lbl">25-YEAR CUMULATIVE SAVINGS</p>
-            <p class="hero-num aqua" style="font-size: 36px;">${fmtCurrency(cumSavings)}</p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 36px; font-weight: 700; color: #00EAD3; margin: 4px 0;">${fmtCurrency(cumSavings)}</p>
           </div>
           ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 8px;">${narrative}</div>` : ''}
         </div>
@@ -1881,25 +2066,30 @@ function genFinancialImpactAnalysis(slide: SlideContent): string {
             <p style="color: #808285; font-size: 12px; margin-top: 4px;">Lifetime savings: ${fmtCurrency(lifetime)}</p>
           </div>
         </div>
-        <!-- Right: Annual Benefit Breakdown -->
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Right: Annual Benefit Breakdown with gradient bars -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
           <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">ANNUAL BENEFIT BREAKDOWN</p>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            ${benefits.map(b => `
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #222;">
-                <div>
-                  <p style="color: #fff; font-size: 15px; font-weight: 600;">${b.category}</p>
-                  <p style="color: #808285; font-size: 12px;">${b.percent}% of total benefit</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${benefits.map((b, i) => {
+              const barColors = i === 0 ? 'linear-gradient(90deg, #33FFE8, #00C4B0)' : i === 1 ? 'linear-gradient(90deg, #ff8a3d, #f36710)' : 'linear-gradient(90deg, #a0a0a5, #808285)';
+              return `
+              <div style="padding: 14px 20px; background: rgba(255,255,255,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <p style="color: #fff; font-size: 14px; font-weight: 600;">${b.category}</p>
+                  <p style="font-family: GeneralSans, sans-serif; font-size: 24px; font-weight: 700; color: #00EAD3;">${fmtCurrency(b.value)}</p>
                 </div>
-                <p class="hero-num aqua" style="font-size: 28px;">${fmtCurrency(b.value)}</p>
-              </div>
-            `).join('')}
+                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">
+                  <div style="width: ${b.percent}%; height: 100%; background: ${barColors}; border-radius: 4px; box-shadow: 0 0 8px rgba(0,234,211,0.3);"></div>
+                </div>
+                <p style="color: #808285; font-size: 11px; margin-top: 4px;">${b.percent}% of total benefit</p>
+              </div>`;
+            }).join('')}
           </div>
-          <div style="background: #2a1a0a; border: 1px solid #f36710; padding: 24px; text-align: center;">
+          <div style="background: rgba(0,234,211,0.05); border: 1px solid rgba(0,234,211,0.25); padding: 20px; text-align: center; border-radius: 4px;">
             <p class="lbl">TOTAL ANNUAL BENEFIT</p>
-            <p class="hero-num aqua" style="font-size: 48px;">${fmtCurrency(totalBenefit)}<span style="font-size: 18px; color: #808285;">/year</span></p>
+            <p style="font-family: GeneralSans, sans-serif; font-size: 44px; font-weight: 700; color: #00EAD3; margin: 4px 0;">${fmtCurrency(totalBenefit)}<span style="font-size: 18px; color: #808285; font-weight: 400;">/year</span></p>
           </div>
-          <p style="color: #808285; font-size: 13px; font-style: italic;">Values are estimates based on current electricity rates and VPP program terms. Actual results may vary based on usage patterns, grid conditions, and program changes.</p>
+          <p style="color: #808285; font-size: 12px; font-style: italic; line-height: 1.5;">Values are estimates based on current electricity rates and VPP program terms. Actual results may vary based on usage patterns, grid conditions, and program changes.</p>
         </div>
       </div>
     </div>

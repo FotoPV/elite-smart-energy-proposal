@@ -860,3 +860,23 @@
 - [x] Update calculations.ts and routers.ts for any data/logic changes
 - [x] Test generation with SA customer and verify against PDF
 - [x] Save checkpoint after cloning is complete
+
+
+## Bug Fix: Seasonal Usage Slide Showing Flat Data (Feb 14)
+- [x] Fix monthly usage distribution — all 12 months showing identical values (annual/12)
+- [x] Apply state-based seasonal distribution patterns (SA summer/winter peaks)
+- [x] Fix Peak Month and Lowest Month detection (both showing Jan at same value)
+- [x] Test with SA customer and verify seasonal variation in bar chart
+
+## Update Annual Consumption Slide to Match Reference PDF (Feb 14)
+- [x] Redesign slide 6 (Annual Consumption) to match Solar Generation Profile from reference PDF
+- [x] Replace area chart with aqua bar chart (solar generation) + orange consumption line overlay
+- [x] Add three info cards on right: Annual Generation, Seasonal Variance, Summer Performance
+- [x] Verify seasonal usage slide (slide 5) now shows state-based variation correctly
+
+## Premium Chart Visualisation Upgrades (Feb 14)
+- [x] Upgrade Seasonal Usage (slide 5) — gradient bars, rounded tops, glow effects
+- [x] Upgrade Solar Generation Profile (slide 6) — gradient bars, glowing consumption line, polished cards
+- [x] Upgrade Projected Annual Cost (slide 7) — gradient area fills, smooth curves, glow effects
+- [x] Upgrade Financial Impact Analysis (slide 17) — premium ROI/payback visualisation
+- [x] Ensure all charts use rounded bars, smooth bezier curves, gradient fills, subtle glow
