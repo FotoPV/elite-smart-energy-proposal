@@ -967,3 +967,14 @@
 - [x] Fix captions — now show simple "Switchboard Photo" labels instead of full analysis text
 - [x] Verified: Stuart Naylor proposal regenerated with both photos loading correctly, simple captions, real AI data in assessment panel
 - [x] All 104 tests passing
+
+## Regenerate All Button on Dashboard (Feb 15)
+- [x] Add admin.recompressPhotos endpoint to re-process all existing photos with EXIF rotation
+- [x] Add admin.regenerateAll endpoint to reset all proposals to draft
+- [x] Add admin.batchGenerate endpoint to sequentially regenerate all proposals in background
+- [x] Add admin.batchProgress polling endpoint for real-time progress tracking
+- [x] Add batchProgressStore in-memory store for batch progress
+- [x] Add "Regenerate All" button to Proposals page with confirmation dialog
+- [x] Add 3-step progress UI: Fix Photo Rotation → Reset Proposals → Generate All Slides
+- [x] Add live progress bar during batch generation
+- [x] All 104 tests passing

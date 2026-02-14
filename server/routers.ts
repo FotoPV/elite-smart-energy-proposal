@@ -14,6 +14,7 @@ import { generatePptx } from "./pptxGenerator";
 import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
 import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, clearProgress } from "./generationProgress";
+import { eq } from "drizzle-orm";
 
 /**
  * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
@@ -47,6 +48,21 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+// ============================================
+// BATCH PROGRESS STORE
+// ============================================
+
+interface BatchProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  current: { id: number; title: string } | null;
+  results: Array<{ id: number; title: string; status: string; slideCount?: number }>;
+  status: 'running' | 'complete' | 'error';
+}
+
+const batchProgressStore = new Map<string, BatchProgress>();
 
 // ============================================
 // APP ROUTER
@@ -1099,6 +1115,7 @@ export const appRouter = router({
           try {
             const sharp = require('sharp');
             buffer = await sharp(buffer)
+              .rotate() // Auto-rotate based on EXIF orientation data
               .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
               .jpeg({ quality: 82 })
               .toBuffer();
@@ -1251,6 +1268,282 @@ export const appRouter = router({
       
       return { success: true, count: rebates.length };
     }),
+
+    // Re-compress all existing photos with EXIF rotation correction
+    recompressPhotos: adminProcedure.mutation(async () => {
+      const sharp = require('sharp');
+      const allCustomers = await db.searchCustomers(0); // Get all customers (userId 0 won't match but we need a different approach)
+      
+      // Get all photo documents directly from DB
+      const { getDb: getDbConn } = await import('./db');
+      const dbConn = await getDbConn();
+      if (!dbConn) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+      
+      const { customerDocuments: docsTable } = await import('../drizzle/schema');
+      const allDocs = await dbConn.select().from(docsTable);
+      const photoDocs = allDocs.filter(d => 
+        ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
+      );
+      
+      let processed = 0;
+      let failed = 0;
+      const results: Array<{ id: number; fileName: string; status: string; oldSize?: number; newSize?: number }> = [];
+      
+      for (const doc of photoDocs) {
+        try {
+          // Download original from S3
+          const response = await fetch(doc.fileUrl);
+          if (!response.ok) {
+            results.push({ id: doc.id, fileName: doc.fileName, status: `fetch failed: ${response.status}` });
+            failed++;
+            continue;
+          }
+          const originalBuffer = Buffer.from(await response.arrayBuffer());
+          const oldSize = originalBuffer.length;
+          
+          // Re-process with EXIF rotation + compression
+          const newBuffer = await sharp(originalBuffer)
+            .rotate() // Auto-rotate based on EXIF orientation
+            .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 82 })
+            .toBuffer();
+          
+          // Re-upload to same key (overwrite)
+          const fileKey = doc.fileKey;
+          const { url: newUrl } = await storagePut(fileKey, newBuffer, 'image/jpeg');
+          
+          // Update DB record with new URL and size
+          await dbConn.update(docsTable).set({
+            fileUrl: newUrl,
+            fileSize: newBuffer.length,
+            mimeType: 'image/jpeg',
+          }).where(eq(docsTable.id, doc.id));
+          
+          results.push({ id: doc.id, fileName: doc.fileName, status: 'success', oldSize, newSize: newBuffer.length });
+          processed++;
+        } catch (err: any) {
+          results.push({ id: doc.id, fileName: doc.fileName, status: `error: ${err.message}` });
+          failed++;
+        }
+      }
+      
+      return { success: true, total: photoDocs.length, processed, failed, results };
+    }),
+
+    // Regenerate ALL proposals — resets all non-deleted proposals to draft and triggers sequential regeneration
+    regenerateAll: adminProcedure.mutation(async ({ ctx }) => {
+      const allProposals = await db.searchProposals(ctx.user.id);
+      const eligibleProposals = allProposals.filter(p => p.electricityBillId);
+      
+      // Reset all eligible proposals to draft (clear calculations + slides)
+      let resetCount = 0;
+      for (const proposal of eligibleProposals) {
+        try {
+          await db.updateProposal(proposal.id, {
+            status: 'draft',
+            slidesData: null,
+            slideCount: 0,
+            calculations: null,
+          });
+          resetCount++;
+        } catch (err: any) {
+          console.error(`[regenerateAll] Failed to reset proposal ${proposal.id}:`, err.message);
+        }
+      }
+      
+      return { 
+        success: true, 
+        totalProposals: allProposals.length,
+        eligibleProposals: eligibleProposals.length,
+        resetCount,
+        message: `${resetCount} proposals reset to draft. Open each proposal to trigger regeneration, or use the batch generate endpoint.`
+      };
+    }),
+
+    // Batch generate: sequentially regenerate all draft proposals with electricity bills
+    batchGenerate: adminProcedure.mutation(async ({ ctx }) => {
+      const allProposals = await db.searchProposals(ctx.user.id);
+      const draftProposals = allProposals.filter(p => p.status === 'draft' && p.electricityBillId);
+      
+      let completed = 0;
+      let failed = 0;
+      const results: Array<{ id: number; title: string; status: string; slideCount?: number }> = [];
+      
+      // Store batch progress in memory for polling
+      const batchId = `batch-${Date.now()}`;
+      batchProgressStore.set(batchId, {
+        total: draftProposals.length,
+        completed: 0,
+        failed: 0,
+        current: null,
+        results: [],
+        status: 'running',
+      });
+      
+      // Run generation in background (don't await — return immediately with batchId)
+      (async () => {
+        for (const proposal of draftProposals) {
+          let batchProg = batchProgressStore.get(batchId);
+          if (batchProg) batchProg.current = { id: proposal.id, title: proposal.title || 'Untitled' };
+          
+          try {
+            const customer = await db.getCustomerById(proposal.customerId);
+            if (!customer) {
+              results.push({ id: proposal.id, title: proposal.title || 'Untitled', status: 'error: customer not found' });
+              failed++;
+              if (batchProg) { batchProg.failed = failed; batchProg.results = [...results]; }
+              continue;
+            }
+            
+            // Calculate
+            const electricityBill = await getAveragedElectricityBill(proposal.customerId, proposal.electricityBillId!);
+            const vppProviders = await db.getVppProvidersByState(customer.state);
+            const rebates = await db.getRebatesByState(customer.state);
+            const calculations = generateFullCalculations(customer, electricityBill, null, vppProviders, rebates);
+            await db.updateProposal(proposal.id, { calculations, status: 'draft' });
+            
+            // Fetch site photos
+            const customerDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+            const sitePhotos = customerDocs
+              .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
+              .map(d => {
+                const typeLabels: Record<string, string> = {
+                  switchboard_photo: 'Switchboard Photo',
+                  meter_photo: 'Meter Photo',
+                  roof_photo: 'Roof Photo',
+                  property_photo: 'Property Photo',
+                };
+                return {
+                  url: d.fileUrl,
+                  caption: typeLabels[d.documentType] || 'Site Photo',
+                  analysis: d.extractedData ? (typeof d.extractedData === 'string' ? JSON.parse(d.extractedData) : d.extractedData) : null,
+                  documentType: d.documentType,
+                };
+              });
+            
+            // Aggregate switchboard analysis
+            const switchboardAnalyses = sitePhotos
+              .filter(p => p.documentType === 'switchboard_photo' && p.analysis)
+              .map(p => p.analysis);
+            const switchboardAnalysis: ProposalData['switchboardAnalysis'] = switchboardAnalyses.length > 0 ? {
+              boardCondition: switchboardAnalyses[0].boardCondition || 'unknown',
+              mainSwitchRating: switchboardAnalyses.find((a: any) => a.mainSwitchRating)?.mainSwitchRating || null,
+              mainSwitchType: switchboardAnalyses.find((a: any) => a.mainSwitchType)?.mainSwitchType || null,
+              totalCircuits: switchboardAnalyses.find((a: any) => a.totalCircuits)?.totalCircuits || null,
+              usedCircuits: switchboardAnalyses.find((a: any) => a.usedCircuits)?.usedCircuits || null,
+              availableCircuits: switchboardAnalyses.find((a: any) => a.availableCircuits)?.availableCircuits || null,
+              hasRcd: switchboardAnalyses.some((a: any) => a.hasRcd),
+              rcdCount: switchboardAnalyses.find((a: any) => a.rcdCount)?.rcdCount || null,
+              hasSpaceForSolar: switchboardAnalyses.some((a: any) => a.hasSpaceForSolar),
+              hasSpaceForBattery: switchboardAnalyses.some((a: any) => a.hasSpaceForBattery),
+              upgradeRequired: switchboardAnalyses.some((a: any) => a.upgradeRequired),
+              upgradeReason: switchboardAnalyses.find((a: any) => a.upgradeReason)?.upgradeReason || null,
+              warnings: switchboardAnalyses.flatMap((a: any) => a.warnings || []),
+              confidence: Math.round(switchboardAnalyses.reduce((sum: number, a: any) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
+            } : undefined;
+            
+            const calc = calculations as ProposalCalculations;
+            const proposalData = buildProposalData(customer, calc, false, {
+              proposalNotes: (proposal as any).proposalNotes || undefined,
+              sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
+              switchboardAnalysis,
+            });
+            const allSlides = generateSlides(proposalData);
+            
+            // Initialize progress tracking
+            const slideInfo = allSlides.map(s => ({ type: s.type, title: s.title }));
+            initProgress(proposal.id, slideInfo);
+            
+            const slidesData: Array<{ type: string; title: string; html: string; s3Key?: string; isIncluded: boolean }> = 
+              allSlides.map(s => ({ type: s.type, title: s.title, html: '', isIncluded: true }));
+            
+            // Generate each slide
+            for (let i = 0; i < allSlides.length; i++) {
+              updateSlideProgress(proposal.id, i, { status: 'generating' });
+              
+              let slideHtml = '';
+              try {
+                const enrichedSlide = await enrichSlideWithNarrative(allSlides[i], proposalData);
+                slideHtml = generateSlideHTML(enrichedSlide);
+                updateSlideProgress(proposal.id, i, { status: 'complete', html: slideHtml });
+              } catch (err: any) {
+                try {
+                  slideHtml = generateSlideHTML(allSlides[i]);
+                  updateSlideProgress(proposal.id, i, { status: 'complete', html: slideHtml });
+                } catch (err2: any) {
+                  slideHtml = `<div style="width:1920px;height:1080px;background:#000;display:flex;align-items:center;justify-content:center;"><p style="color:#808285;">Slide generation error</p></div>`;
+                  updateSlideProgress(proposal.id, i, { status: 'complete', html: slideHtml });
+                }
+              }
+              
+              // Upload to S3
+              try {
+                const s3Key = `slides/${proposal.id}/slide-${i}-${Date.now()}.html`;
+                await storagePut(s3Key, slideHtml, 'text/html');
+                slidesData[i].s3Key = s3Key;
+                slidesData[i].html = '';
+              } catch (s3Err: any) {
+                slidesData[i].html = slideHtml;
+              }
+              
+              // 2s delay between slides
+              if (i < allSlides.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              }
+            }
+            
+            // Save to DB
+            const includedCount = slidesData.filter(s => s.s3Key || s.html).length;
+            await db.updateProposal(proposal.id, {
+              slidesData,
+              slideCount: includedCount,
+              status: 'generated',
+            });
+            setGenerationStatus(proposal.id, 'complete');
+            
+            results.push({ id: proposal.id, title: proposal.title || 'Untitled', status: 'success', slideCount: includedCount });
+            completed++;
+            console.log(`[batchGenerate] Completed proposal ${proposal.id} (${completed}/${draftProposals.length})`);
+          } catch (err: any) {
+            results.push({ id: proposal.id, title: proposal.title || 'Untitled', status: `error: ${err.message}` });
+            failed++;
+            console.error(`[batchGenerate] Failed proposal ${proposal.id}:`, err.message);
+          }
+          
+          batchProg = batchProgressStore.get(batchId);
+          if (batchProg) {
+            batchProg.completed = completed;
+            batchProg.failed = failed;
+            batchProg.results = [...results];
+          }
+        }
+        
+        const finalProg = batchProgressStore.get(batchId);
+        if (finalProg) {
+          finalProg.status = 'complete';
+          finalProg.current = null;
+        }
+        console.log(`[batchGenerate] Batch complete: ${completed} succeeded, ${failed} failed out of ${draftProposals.length}`);
+      })();
+      
+      return { 
+        success: true, 
+        batchId,
+        totalDraft: draftProposals.length,
+        message: `Batch generation started for ${draftProposals.length} proposals. Poll batchProgress for updates.`
+      };
+    }),
+
+    // Poll batch generation progress
+    batchProgress: adminProcedure
+      .input(z.object({ batchId: z.string() }))
+      .query(async ({ input }) => {
+        const progress = batchProgressStore.get(input.batchId);
+        if (!progress) {
+          return { status: 'not_found' as const, total: 0, completed: 0, failed: 0, current: null, results: [] };
+        }
+        return progress;
+      }),
   }),
 });
 

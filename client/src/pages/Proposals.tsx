@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   FileText, 
   Search, 
@@ -13,7 +13,13 @@ import {
   Trash2,
   Eye,
   Download,
-  Filter
+  Filter,
+  RefreshCw,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  ImageIcon,
+  Zap
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -29,12 +35,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
+
+type BatchStep = 'idle' | 'confirm' | 'recompressing' | 'resetting' | 'generating' | 'complete' | 'error';
 
 export default function Proposals() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [batchStep, setBatchStep] = useState<BatchStep>('idle');
+  const [batchId, setBatchId] = useState<string | null>(null);
+  const [batchError, setBatchError] = useState<string | null>(null);
+  const [recompressResult, setRecompressResult] = useState<{ total: number; processed: number; failed: number } | null>(null);
+  const [resetResult, setResetResult] = useState<{ resetCount: number; eligibleProposals: number } | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   const { data: proposals, isLoading, refetch } = trpc.proposals.list.useQuery({
     search: searchTerm,
@@ -49,6 +71,91 @@ export default function Proposals() {
     onError: (error) => toast.error(error.message)
   });
 
+  const recompressPhotos = trpc.admin.recompressPhotos.useMutation({
+    onSuccess: (data) => {
+      setRecompressResult({ total: data.total, processed: data.processed, failed: data.failed });
+      setBatchStep('resetting');
+      // Automatically proceed to reset
+      regenerateAll.mutate();
+    },
+    onError: (error) => {
+      setBatchError(`Photo recompression failed: ${error.message}`);
+      setBatchStep('error');
+    }
+  });
+
+  const regenerateAll = trpc.admin.regenerateAll.useMutation({
+    onSuccess: (data) => {
+      setResetResult({ resetCount: data.resetCount, eligibleProposals: data.eligibleProposals });
+      setBatchStep('generating');
+      // Automatically proceed to batch generate
+      batchGenerate.mutate();
+    },
+    onError: (error) => {
+      setBatchError(`Reset failed: ${error.message}`);
+      setBatchStep('error');
+    }
+  });
+
+  const batchGenerate = trpc.admin.batchGenerate.useMutation({
+    onSuccess: (data) => {
+      setBatchId(data.batchId);
+    },
+    onError: (error) => {
+      setBatchError(`Batch generation failed: ${error.message}`);
+      setBatchStep('error');
+    }
+  });
+
+  // Poll batch progress
+  const { data: batchProgress, refetch: refetchProgress } = trpc.admin.batchProgress.useQuery(
+    { batchId: batchId || '' },
+    { enabled: !!batchId && batchStep === 'generating', refetchInterval: 3000 }
+  );
+
+  // Auto-complete when batch finishes
+  useEffect(() => {
+    if (batchProgress && batchProgress.status === 'complete') {
+      setBatchStep('complete');
+      refetch();
+    }
+  }, [batchProgress]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
+
+  const handleRegenerateAll = () => {
+    setBatchStep('confirm');
+    setBatchError(null);
+    setRecompressResult(null);
+    setResetResult(null);
+    setBatchId(null);
+  };
+
+  const startBatchProcess = () => {
+    setBatchStep('recompressing');
+    recompressPhotos.mutate();
+  };
+
+  const closeDialog = () => {
+    setBatchStep('idle');
+    setBatchError(null);
+    setRecompressResult(null);
+    setResetResult(null);
+    setBatchId(null);
+  };
+
+  const isDialogOpen = batchStep !== 'idle';
+  const isProcessing = ['recompressing', 'resetting', 'generating'].includes(batchStep);
+
+  const generatedCount = proposals?.filter(p => p.status === 'generated' || p.status === 'exported').length || 0;
+  const draftCount = proposals?.filter(p => p.status === 'draft').length || 0;
+  const totalCount = proposals?.length || 0;
+
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
@@ -62,19 +169,37 @@ export default function Proposals() {
               All uploaded customer bills and photos
             </p>
           </div>
-          <button 
-            onClick={() => setLocation("/proposals/new")}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
-            style={{ 
-              fontFamily: "'Urbanist', sans-serif",
-              fontWeight: 600,
-              backgroundColor: '#00EAD3',
-              color: '#000000'
-            }}
-          >
-            <PlusCircle className="h-4 w-4" />
-            NEW PROPOSAL
-          </button>
+          <div className="flex items-center gap-3">
+            {totalCount > 0 && (
+              <button 
+                onClick={handleRegenerateAll}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
+                style={{ 
+                  fontFamily: "'Urbanist', sans-serif",
+                  fontWeight: 600,
+                  backgroundColor: 'rgba(0,234,211,0.1)',
+                  color: '#00EAD3',
+                  border: '1px solid rgba(0,234,211,0.3)'
+                }}
+              >
+                <RefreshCw className="h-4 w-4" />
+                REGENERATE ALL
+              </button>
+            )}
+            <button 
+              onClick={() => setLocation("/proposals/new")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
+              style={{ 
+                fontFamily: "'Urbanist', sans-serif",
+                fontWeight: 600,
+                backgroundColor: '#00EAD3',
+                color: '#000000'
+              }}
+            >
+              <PlusCircle className="h-4 w-4" />
+              NEW PROPOSAL
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -218,6 +343,237 @@ export default function Proposals() {
           © Lightning Energy — Architect George Fotopoulos
         </div>
       </div>
+
+      {/* Regenerate All Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open && !isProcessing) closeDialog(); }}>
+        <DialogContent 
+          className="sm:max-w-lg"
+          style={{ 
+            backgroundColor: '#1a1a1a', 
+            border: '1px solid rgba(0,234,211,0.2)',
+            color: '#ffffff'
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle 
+              className="text-xl uppercase tracking-tight text-white flex items-center gap-2"
+              style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}
+            >
+              <Zap className="h-5 w-5" style={{ color: '#00EAD3' }} />
+              Regenerate All Proposals
+            </DialogTitle>
+            <DialogDescription 
+              className="text-sm mt-2"
+              style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}
+            >
+              {batchStep === 'confirm' && (
+                <>This will re-process all photos with correct rotation, recalculate all proposals, and regenerate all slides with the latest fixes. This process runs in the background and may take several minutes.</>
+              )}
+              {batchStep === 'recompressing' && 'Step 1/3 — Re-processing all photos with EXIF rotation correction...'}
+              {batchStep === 'resetting' && 'Step 2/3 — Resetting all proposals to draft status...'}
+              {batchStep === 'generating' && 'Step 3/3 — Generating slides for all proposals...'}
+              {batchStep === 'complete' && 'All proposals have been regenerated successfully.'}
+              {batchStep === 'error' && 'An error occurred during the batch process.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            {/* Step indicators */}
+            <div className="space-y-3">
+              {/* Step 1: Recompress Photos */}
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{
+                  backgroundColor: batchStep === 'recompressing' ? 'rgba(0,234,211,0.15)' : 
+                    recompressResult ? 'rgba(0,234,211,0.1)' : 'rgba(128,130,133,0.1)',
+                  border: `1px solid ${batchStep === 'recompressing' ? 'rgba(0,234,211,0.5)' : 
+                    recompressResult ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
+                }}>
+                  {batchStep === 'recompressing' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                  ) : recompressResult ? (
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                  ) : (
+                    <ImageIcon className="h-4 w-4" style={{ color: '#808285' }} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                    Fix Photo Rotation
+                  </p>
+                  {recompressResult && (
+                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      {recompressResult.processed} of {recompressResult.total} photos re-processed
+                      {recompressResult.failed > 0 && ` (${recompressResult.failed} failed)`}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Step 2: Reset Proposals */}
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{
+                  backgroundColor: batchStep === 'resetting' ? 'rgba(0,234,211,0.15)' : 
+                    resetResult ? 'rgba(0,234,211,0.1)' : 'rgba(128,130,133,0.1)',
+                  border: `1px solid ${batchStep === 'resetting' ? 'rgba(0,234,211,0.5)' : 
+                    resetResult ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
+                }}>
+                  {batchStep === 'resetting' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                  ) : resetResult ? (
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" style={{ color: '#808285' }} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                    Reset Proposals
+                  </p>
+                  {resetResult && (
+                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      {resetResult.resetCount} of {resetResult.eligibleProposals} proposals reset to draft
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Step 3: Generate Slides */}
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{
+                  backgroundColor: batchStep === 'generating' ? 'rgba(0,234,211,0.15)' : 
+                    batchStep === 'complete' ? 'rgba(0,234,211,0.1)' : 'rgba(128,130,133,0.1)',
+                  border: `1px solid ${batchStep === 'generating' ? 'rgba(0,234,211,0.5)' : 
+                    batchStep === 'complete' ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
+                }}>
+                  {batchStep === 'generating' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                  ) : batchStep === 'complete' ? (
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                  ) : (
+                    <Zap className="h-4 w-4" style={{ color: '#808285' }} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                    Generate All Slides
+                  </p>
+                  {batchProgress && batchStep === 'generating' && (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between text-xs mb-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                        <span>
+                          {batchProgress.completed + batchProgress.failed} of {batchProgress.total} proposals
+                          {batchProgress.current && (
+                            <span style={{ color: '#00EAD3' }}> — {batchProgress.current.title}</span>
+                          )}
+                        </span>
+                        <span>{Math.round(((batchProgress.completed + batchProgress.failed) / Math.max(batchProgress.total, 1)) * 100)}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(128,130,133,0.2)' }}>
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${((batchProgress.completed + batchProgress.failed) / Math.max(batchProgress.total, 1)) * 100}%`,
+                            backgroundColor: '#00EAD3'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {batchStep === 'complete' && batchProgress && (
+                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      {batchProgress.completed} succeeded, {batchProgress.failed} failed
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Error display */}
+            {batchStep === 'error' && batchError && (
+              <div className="p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#ef4444' }} />
+                <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#ef4444' }}>
+                  {batchError}
+                </p>
+              </div>
+            )}
+
+            {/* Summary stats for confirm step */}
+            {batchStep === 'confirm' && (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(128,130,133,0.08)', border: '1px solid rgba(128,130,133,0.15)' }}>
+                  <p className="text-lg text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>{totalCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Total</p>
+                </div>
+                <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(0,234,211,0.05)', border: '1px solid rgba(0,234,211,0.15)' }}>
+                  <p className="text-lg" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#00EAD3' }}>{generatedCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Generated</p>
+                </div>
+                <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.15)' }}>
+                  <p className="text-lg" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#FFA500' }}>{draftCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Draft</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            {batchStep === 'confirm' && (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={closeDialog}
+                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
+                >
+                  Cancel
+                </Button>
+                <button 
+                  onClick={startBatchProcess}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
+                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Start Regeneration
+                </button>
+              </>
+            )}
+            {batchStep === 'complete' && (
+              <button 
+                onClick={closeDialog}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
+                style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Done
+              </button>
+            )}
+            {batchStep === 'error' && (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={closeDialog}
+                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
+                >
+                  Close
+                </Button>
+                <button 
+                  onClick={startBatchProcess}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
+                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Retry
+                </button>
+              </>
+            )}
+            {isProcessing && (
+              <p className="text-xs w-full text-center" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                Please keep this window open. Processing in background...
+              </p>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
