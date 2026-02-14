@@ -984,3 +984,12 @@
 - [x] Replaced dynamic import of schema with static import for customerDocuments table
 - [x] Fixed Buffer type mismatch with proper cast
 - [x] All 104 tests passing
+
+## Increase Subtext Font Sizes Across All Slides (Feb 15)
+- [x] Audited all 217 font-size declarations across slideGenerator.ts
+- [x] Bumped all subtext sizes (11-17px) by +2px using Python script
+- [x] SVG font-size attributes also bumped (10→12, 11→13, 12→14)
+- [x] Heading sizes (24px+) left unchanged
+- [x] Verified: 73 body text instances 15→17px, 26 legend instances 12→14px, etc.
+- [x] Stuart Naylor proposal regenerated with new font sizes
+- [x] All 104 tests passing
