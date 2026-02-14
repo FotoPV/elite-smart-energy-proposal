@@ -521,6 +521,12 @@ export const appRouter = router({
             // Keep HTML in slidesData as fallback if S3 fails
             slidesData[i].html = slideHtml;
           }
+          
+          // Paced generation — 2s delay between slides to reduce server load
+          // and provide a smoother, more deliberate progress experience
+          if (i < allSlides.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
         }
         
         // Save to DB — slidesData now contains only metadata + s3Keys (no huge HTML)

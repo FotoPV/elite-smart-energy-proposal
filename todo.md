@@ -924,10 +924,10 @@
 
 
 ## Verification: Contrast, Regeneration, PDF Export (Feb 14)
-- [ ] Check Bills & Photos page for contrast/visibility
-- [ ] Check Bin page for contrast/visibility
-- [ ] Regenerate Frieda Lay proposal — verify electrical assessment slide + 85% CO2 cap
-- [ ] Test PDF export on regenerated proposal — verify all slides render correctly
+- [x] Check Bills & Photos page for contrast/visibility
+- [x] Check Bin page for contrast/visibility
+- [x] Regenerate Frieda Lay proposal — verified 85% CO2 cap, 17 slides (no switchboard photos so no electrical slide)
+- [x] Test PDF export on Stuart Naylor — 18 slides, both switchboard photos loaded perfectly, 85% carbon reduction confirmed
 
 
 ## Bug Fix: Switchboard Photos Failing to Load in Electrical Assessment Slide (Feb 14)
@@ -935,3 +935,11 @@
 - [x] Investigated URL/path issue — URLs are valid but photos are 4-7MB causing PDF render timeout
 - [x] Added server-side image compression (sharp) — photos now compressed to max 1600x1200 JPEG quality 82 on upload
 - [x] Future uploads will be much smaller, preventing PDF rendering failures
+
+
+## Slide Generation Delay + Photo Re-compression (Feb 14)
+- [x] Add 2-second delay between slide generations for smoother UX and reduced server load
+- [x] Write migration script to re-compress all existing oversized photos in S3
+- [x] Run migration script — 18/18 photos compressed, 0 failures, 52.4MB saved
+- [x] Test regeneration with delay — verified smooth 2-second gaps between slides
+- [x] Verify compressed photos load correctly — both switchboard photos render perfectly in PDF (page 14)
