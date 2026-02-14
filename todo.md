@@ -960,3 +960,10 @@
 - [x] Build batch reset script — all 28 proposals reset to draft for on-demand regeneration
 - [x] 2-second delay between slides already implemented
 - [x] Proposals regenerate with all fixes when opened and Generate Slides is clicked
+
+## Bug Fix: Electrical Assessment Slide Photos Not Loading (Feb 15)
+- [x] Fix img alt text — changed to concise "Site Photo" instead of full analysis summary
+- [x] Fix image URLs — removed crossorigin="anonymous" attribute that was blocking S3 CDN images
+- [x] Fix captions — now show simple "Switchboard Photo" labels instead of full analysis text
+- [x] Verified: Stuart Naylor proposal regenerated with both photos loading correctly, simple captions, real AI data in assessment panel
+- [x] All 104 tests passing

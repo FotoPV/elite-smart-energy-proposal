@@ -459,12 +459,22 @@ export const appRouter = router({
         const customerDocs = await db.getDocumentsByCustomerId(proposal.customerId);
         const sitePhotos = customerDocs
           .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
-          .map(d => ({
-            url: d.fileUrl,
-            caption: d.description || d.documentType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-            analysis: d.extractedData ? (typeof d.extractedData === 'string' ? JSON.parse(d.extractedData) : d.extractedData) : null,
-            documentType: d.documentType,
-          }));
+          .map((d, idx) => {
+            // Use simple labels for captions — NOT the full analysis text
+            const typeLabels: Record<string, string> = {
+              switchboard_photo: 'Switchboard Photo',
+              meter_photo: 'Meter Photo',
+              roof_photo: 'Roof Photo',
+              property_photo: 'Property Photo',
+            };
+            const baseLabel = typeLabels[d.documentType] || 'Site Photo';
+            return {
+              url: d.fileUrl,
+              caption: baseLabel,
+              analysis: d.extractedData ? (typeof d.extractedData === 'string' ? JSON.parse(d.extractedData) : d.extractedData) : null,
+              documentType: d.documentType,
+            };
+          });
         
         // Aggregate switchboard analysis from all analysed switchboard photos
         const switchboardAnalyses = sitePhotos
