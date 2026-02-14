@@ -978,3 +978,9 @@
 - [x] Add 3-step progress UI: Fix Photo Rotation → Reset Proposals → Generate All Slides
 - [x] Add live progress bar during batch generation
 - [x] All 104 tests passing
+
+## Bug Fix: recompressPhotos "Dynamic require of sharp" error (Feb 15)
+- [x] Fix sharp import — replaced dynamic require('sharp') with static ESM import
+- [x] Replaced dynamic import of schema with static import for customerDocuments table
+- [x] Fixed Buffer type mismatch with proper cast
+- [x] All 104 tests passing

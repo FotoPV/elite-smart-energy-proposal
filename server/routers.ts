@@ -15,6 +15,8 @@ import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
 import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, clearProgress } from "./generationProgress";
 import { eq } from "drizzle-orm";
+import sharp from "sharp";
+import { customerDocuments as docsTable } from "../drizzle/schema";
 
 /**
  * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
@@ -1113,12 +1115,11 @@ export const appRouter = router({
         const isPhoto = ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(input.documentType);
         if (isPhoto && (input.mimeType.startsWith('image/jpeg') || input.mimeType.startsWith('image/png') || input.mimeType.startsWith('image/webp'))) {
           try {
-            const sharp = require('sharp');
             buffer = await sharp(buffer)
               .rotate() // Auto-rotate based on EXIF orientation data
               .resize(1600, 1200, { fit: 'inside', withoutEnlargement: true })
               .jpeg({ quality: 82 })
-              .toBuffer();
+              .toBuffer() as Buffer<ArrayBuffer>;
             mimeType = 'image/jpeg';
             // Update filename extension to .jpg
             fileName = fileName.replace(/\.(png|webp|heic|heif)$/i, '.jpg');
@@ -1271,15 +1272,12 @@ export const appRouter = router({
 
     // Re-compress all existing photos with EXIF rotation correction
     recompressPhotos: adminProcedure.mutation(async () => {
-      const sharp = require('sharp');
       const allCustomers = await db.searchCustomers(0); // Get all customers (userId 0 won't match but we need a different approach)
       
       // Get all photo documents directly from DB
-      const { getDb: getDbConn } = await import('./db');
-      const dbConn = await getDbConn();
+      const dbConn = await db.getDb();
       if (!dbConn) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
       
-      const { customerDocuments: docsTable } = await import('../drizzle/schema');
       const allDocs = await dbConn.select().from(docsTable);
       const photoDocs = allDocs.filter(d => 
         ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
