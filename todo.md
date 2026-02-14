@@ -943,3 +943,20 @@
 - [x] Run migration script — 18/18 photos compressed, 0 failures, 52.4MB saved
 - [x] Test regeneration with delay — verified smooth 2-second gaps between slides
 - [x] Verify compressed photos load correctly — both switchboard photos render perfectly in PDF (page 14)
+
+
+## Wire Switchboard AI Analysis into Electrical Assessment Slide (Feb 14)
+- [x] Read switchboard analysis data from customer documents and pass to slide generator
+- [x] Replace generic "ASSESSED/VERIFIED" labels with real AI-extracted data (circuit count, RCD status, board condition)
+- [x] Handle cases where no AI analysis exists (fallback to generic labels)
+- [x] Batch-analysed all 29 switchboard photos with LLM vision — 29/29 successful, zero failures
+
+## Tighten Narrative Text to Executive-Briefing Style (Feb 14)
+- [x] Reduce LLM narrative prompts from 40-80 words to 25-40 words per section
+- [x] Make text sharper, more data-forward, fewer filler sentences
+- [x] Update master system prompt for concise executive-briefing tone
+
+## Auto-Regeneration Queue for Remaining Draft Proposals (Feb 14)
+- [x] Build batch reset script — all 28 proposals reset to draft for on-demand regeneration
+- [x] 2-second delay between slides already implemented
+- [x] Proposals regenerate with all fixes when opened and Generate Slides is clicked

@@ -462,12 +462,36 @@ export const appRouter = router({
           .map(d => ({
             url: d.fileUrl,
             caption: d.description || d.documentType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            analysis: d.extractedData ? (typeof d.extractedData === 'string' ? JSON.parse(d.extractedData) : d.extractedData) : null,
+            documentType: d.documentType,
           }));
+        
+        // Aggregate switchboard analysis from all analysed switchboard photos
+        const switchboardAnalyses = sitePhotos
+          .filter(p => p.documentType === 'switchboard_photo' && p.analysis)
+          .map(p => p.analysis);
+        const switchboardAnalysis: ProposalData['switchboardAnalysis'] = switchboardAnalyses.length > 0 ? {
+          boardCondition: switchboardAnalyses[0].boardCondition || 'unknown',
+          mainSwitchRating: switchboardAnalyses.find(a => a.mainSwitchRating)?.mainSwitchRating || null,
+          mainSwitchType: switchboardAnalyses.find(a => a.mainSwitchType)?.mainSwitchType || null,
+          totalCircuits: switchboardAnalyses.find(a => a.totalCircuits)?.totalCircuits || null,
+          usedCircuits: switchboardAnalyses.find(a => a.usedCircuits)?.usedCircuits || null,
+          availableCircuits: switchboardAnalyses.find(a => a.availableCircuits)?.availableCircuits || null,
+          hasRcd: switchboardAnalyses.some(a => a.hasRcd),
+          rcdCount: switchboardAnalyses.find(a => a.rcdCount)?.rcdCount || null,
+          hasSpaceForSolar: switchboardAnalyses.some(a => a.hasSpaceForSolar),
+          hasSpaceForBattery: switchboardAnalyses.some(a => a.hasSpaceForBattery),
+          upgradeRequired: switchboardAnalyses.some(a => a.upgradeRequired),
+          upgradeReason: switchboardAnalyses.find(a => a.upgradeReason)?.upgradeReason || null,
+          warnings: switchboardAnalyses.flatMap(a => a.warnings || []),
+          confidence: Math.round(switchboardAnalyses.reduce((sum, a) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
+        } : undefined;
         
         const proposalData = buildProposalData(customer, calc, false, {
           proposalNotes: (proposal as any).proposalNotes || undefined,
           regeneratePrompt: (proposal as any).lastRegeneratePrompt || undefined,
           sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
+          switchboardAnalysis,
         });
         const allSlides = generateSlides(proposalData); // Only active/included slides
         
@@ -1333,6 +1357,7 @@ function buildProposalData(
     proposalNotes?: string;
     regeneratePrompt?: string;
     sitePhotos?: Array<{ url: string; caption: string }>;
+    switchboardAnalysis?: ProposalData['switchboardAnalysis'];
   }
 ): ProposalData {
   const hasGas = false; // Gas features removed
@@ -1453,6 +1478,7 @@ function buildProposalData(
     proposalNotes: options?.proposalNotes,
     regeneratePrompt: options?.regeneratePrompt,
     sitePhotos: options?.sitePhotos,
+    switchboardAnalysis: options?.switchboardAnalysis,
   };
 }
 

@@ -16,8 +16,8 @@ import type { ProposalData } from './slideGenerator';
 const SYSTEM_PROMPT = `You are a senior energy consultant at Lightning Energy, Australia's premier solar and battery advisory firm. You write concise, authoritative analysis for high-net-worth residential customers considering solar + battery investments.
 
 WRITING STYLE:
-- Write CONCISE paragraphs — maximum 2-3 sentences per paragraph
-- Maximum 2 short paragraphs per section (total 4-6 sentences)
+- Write ULTRA-CONCISE text — maximum 2 sentences per section
+- Maximum 1 short paragraph per section (25-40 words total)
 - Bold key financial figures using <b> tags (e.g., <b>$1,471</b>)
 - Use <span class="hl-aqua"> for positive/savings figures
 - Use <span class="hl-orange"> for costs/current spend figures  
@@ -28,7 +28,7 @@ WRITING STYLE:
 - Australian English spelling (analyse, optimise, colour, etc.)
 - NEVER use emoji, bullet points, numbered lists, or informal language
 - NEVER fabricate data — only reference numbers provided in the data context
-- Keep total text under 80 words per section`;
+- Keep total text under 40 words per section — every word must earn its place`;
 
 async function generateNarrative(slideType: string, dataContext: string, specificPrompt: string): Promise<string> {
   try {
@@ -186,8 +186,8 @@ export async function narrativeBatteryOption(data: ProposalData, optionNumber: 1
 ${optionNumber === 1 ? 'This is the PRIMARY recommendation — the premium choice.' : 'This is the ALTERNATIVE option — a more budget-conscious choice with slightly smaller capacity.'}
 
 Return JSON:
-- "whyRecommend": 2-3 sentences explaining why this specific system is recommended for this customer. Reference their usage pattern, VPP compatibility, and technical advantages.
-- "financialAnalysis": 2-3 sentences on the financial case — cost of ~$${Math.round(data.netInvestment * costMultiplier).toLocaleString()} after rebates, payback period, and long-term value proposition.
+- "whyRecommend": 1-2 sentences (under 30 words) on why this system matches their usage pattern and VPP compatibility.
+- "financialAnalysis": 1-2 sentences (under 30 words) on the financial case — ~$${Math.round(data.netInvestment * costMultiplier).toLocaleString()} after rebates, payback, and ROI.
 
 Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
     ],
@@ -302,13 +302,13 @@ export async function narrativeRoadmap(data: ProposalData): Promise<string> {
 export async function narrativeTariffComparison(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Tariff Rate Comparison', ctx,
-    `Write 2 paragraphs analysing this customer's tariff rate structure. Discuss the spread between peak rate (${data.billPeakRateCents || data.usageRateCentsPerKwh}¢/kWh) and feed-in tariff (${data.feedInTariffCentsPerKwh}¢/kWh), and what this means for battery arbitrage opportunity. Explain how time-of-use tariffs create value for battery storage — buying low (solar/off-peak) and consuming during peak. Reference the daily supply charge of ${data.supplyChargeCentsPerDay}¢/day as a fixed cost that cannot be avoided.`);
+    `Write 1-2 sentences (under 40 words) on the tariff arbitrage opportunity. Peak rate ${data.billPeakRateCents || data.usageRateCentsPerKwh}¢ vs feed-in ${data.feedInTariffCentsPerKwh}¢ — what this spread means for battery value. Use <span class="hl-aqua"> and <span class="hl-orange"> for emphasis.`);
 }
 
 export async function narrativeDailyLoadProfile(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Daily Load Profile', ctx,
-    `Write 2 paragraphs about this customer's estimated daily energy consumption pattern. Their daily average is ${data.dailyUsageKwh.toFixed(1)} kWh. Discuss typical residential load patterns — morning and evening peaks, midday solar generation window, and overnight base load. ${data.hasEV ? 'Include EV charging impact on overnight consumption.' : ''} ${data.hasPoolPump ? 'Include pool pump load during daytime hours.' : ''} Explain how the proposed battery system captures solar excess during midday for evening peak use.`);
+    `Write 1-2 sentences (under 40 words) on this customer's ${data.dailyUsageKwh.toFixed(1)}kWh daily load profile — morning/evening peaks and how the battery captures midday solar for evening use. ${data.hasEV ? 'Mention EV charging.' : ''} ${data.hasPoolPump ? 'Mention pool pump.' : ''}`);
 }
 
 export async function narrativeSolarGeneration(data: ProposalData): Promise<string> {
@@ -316,13 +316,13 @@ export async function narrativeSolarGeneration(data: ProposalData): Promise<stri
   const annualGen = data.solarSizeKw * 365 * 4;
   const coverage = Math.round((annualGen / data.annualUsageKwh) * 100);
   return generateNarrative('Solar Generation vs Consumption', ctx,
-    `Write 2 paragraphs comparing the proposed ${data.solarSizeKw}kW solar system's annual generation (~${annualGen.toLocaleString()} kWh) against the household's annual consumption (${data.annualUsageKwh.toLocaleString()} kWh). The solar coverage ratio is approximately ${coverage}%. Discuss seasonal variation — summer months generating 30-35% more than winter — and how the battery bridges this gap. Explain self-consumption optimisation strategies.`);
+    `Write 1-2 sentences (under 40 words) comparing ${data.solarSizeKw}kW solar generation (~${annualGen.toLocaleString()}kWh/year) vs consumption (${data.annualUsageKwh.toLocaleString()}kWh). Coverage: ${coverage}%. Note seasonal variation and battery's role bridging the gap.`);
 }
 
 export async function narrativeBatteryCycle(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Battery Charge & Discharge Cycle', ctx,
-    `Write 2 paragraphs explaining the typical daily charge/discharge cycle of the proposed ${data.batterySizeKwh}kWh ${data.batteryBrand} battery. Describe the cycle: overnight base load discharge (30% → 15%), morning solar charging (6am-12pm), peak solar saturation (12pm-5pm reaching 100%), evening peak discharge (6pm-10pm), and overnight base load. ${data.hasEV ? 'Include how EV charging integrates with the battery cycle during off-peak hours.' : ''} Explain the 90% depth of discharge and 95% round-trip efficiency.`);
+    `Write 1-2 sentences (under 40 words) on the ${data.batterySizeKwh}kWh ${data.batteryBrand} daily cycle — solar charging midday, evening peak discharge, 90% depth of discharge, 95% round-trip efficiency. ${data.hasEV ? 'Mention EV integration.' : ''}`);
 }
 
 export async function narrativeGridIndependence(data: ProposalData): Promise<string> {
@@ -332,14 +332,14 @@ export async function narrativeGridIndependence(data: ProposalData): Promise<str
   const batteryContrib = data.batterySizeKwh * 365 * 0.8 * 0.95;
   const selfSufficiency = Math.min(Math.round(((solarSelfConsumed + batteryContrib) / data.annualUsageKwh) * 100), 100);
   return generateNarrative('Grid Independence Analysis', ctx,
-    `Write 2 paragraphs about this customer's path from 100% grid dependence to approximately ${selfSufficiency}% energy self-sufficiency. Explain how the ${data.solarSizeKw}kW solar system and ${data.batterySizeKwh}kWh battery work together — solar self-consumption, battery contribution, and remaining grid import. Discuss the financial and resilience benefits of reduced grid dependence, including protection against future price rises and blackout resilience.`);
+    `Write 1-2 sentences (under 40 words) on achieving ${selfSufficiency}% self-sufficiency with ${data.solarSizeKw}kW solar + ${data.batterySizeKwh}kWh battery. Cover the financial and resilience benefits of reduced grid dependence.`);
 }
 
 export async function narrativeRebateBreakdown(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   const savingsPercent = data.systemCost > 0 ? Math.round((data.rebateAmount / data.systemCost) * 100) : 0;
   return generateNarrative('Rebate & Incentive Breakdown', ctx,
-    `Write 2 paragraphs about the government rebates and incentives available for this ${data.state} customer. Total rebates of $${data.rebateAmount.toLocaleString()} reduce the gross investment of $${data.systemCost.toLocaleString()} by ${savingsPercent}% to a net cost of $${data.netInvestment.toLocaleString()}. Discuss the specific rebate programs (Federal STCs for solar, state battery rebates if applicable). Emphasise that these rebates are subject to change and acting now secures the current incentive levels.`);
+    `Write 1-2 sentences (under 40 words) on rebates: $${data.rebateAmount.toLocaleString()} reduces $${data.systemCost.toLocaleString()} by ${savingsPercent}% to $${data.netInvestment.toLocaleString()} net. Mention Federal STCs and ${data.state} incentives are time-limited. Use <span class="hl-aqua"> for savings.`);
 }
 
 export async function narrativeFinancialProjection25yr(data: ProposalData): Promise<string> {
@@ -347,19 +347,19 @@ export async function narrativeFinancialProjection25yr(data: ProposalData): Prom
   const twentyFiveYr = data.twentyFiveYearSavings || data.annualSavings * 25;
   const roi = Math.round((twentyFiveYr / data.netInvestment) * 100);
   return generateNarrative('25-Year Financial Projection', ctx,
-    `Write 2 paragraphs about the long-term financial outlook. The $${data.netInvestment.toLocaleString()} investment pays back in ${data.paybackYears.toFixed(1)} years, generates $${data.tenYearSavings.toLocaleString()} in 10-year savings, and $${twentyFiveYr.toLocaleString()} over 25 years — a ${roi}% return on investment. Factor in 3.5% annual electricity price inflation which accelerates the value proposition over time. Compare this return to traditional investment vehicles (term deposits, shares) to contextualise the financial opportunity.`);
+    `Write 1-2 sentences (under 40 words) on the 25-year outlook: $${data.netInvestment.toLocaleString()} investment, ${data.paybackYears.toFixed(1)}-year payback, $${twentyFiveYr.toLocaleString()} total savings (${roi}% ROI). Compare to traditional investments. Use <span class="hl-aqua"> for returns.`);
 }
 
 export async function narrativeSystemSpecs(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('System Specifications', ctx,
-    `Write 2 paragraphs about the technical specifications of the recommended system. The ${data.solarSizeKw}kW solar array uses ${data.panelCount} x ${data.panelBrand} ${data.panelWattage}W panels — discuss why this panel technology was selected (efficiency, shade performance, warranty). The ${data.batterySizeKwh}kWh ${data.batteryBrand} battery uses LFP chemistry — explain why LFP is preferred for residential (safety, longevity, thermal stability). The ${data.inverterSizeKw}kW ${data.inverterBrand} hybrid inverter manages all energy flows — discuss its role as the system brain.`);
+    `Write 1-2 sentences (under 40 words) on system specs: ${data.panelCount}x ${data.panelBrand} ${data.panelWattage}W panels, ${data.batterySizeKwh}kWh ${data.batteryBrand} LFP battery, ${data.inverterSizeKw}kW ${data.inverterBrand} hybrid inverter. Highlight why each component was selected.`);
 }
 
 export async function narrativeWarrantyMaintenance(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Warranty & Maintenance', ctx,
-    `Write 2 paragraphs about the warranty coverage and maintenance requirements. Solar panels carry a 25-year performance warranty (87.4% output at year 25). The ${data.batteryBrand} battery has a 10-year/6,000 cycle warranty. The inverter carries a 10-year manufacturer warranty. Discuss the minimal maintenance requirements — annual panel cleaning, system health checks — and how Lightning Energy provides ongoing monitoring and support. Emphasise that the system is largely maintenance-free with automatic firmware updates.`);
+    `Write 1-2 sentences (under 40 words) on warranty: 25-year panel warranty, 10-year ${data.batteryBrand} battery warranty (6,000 cycles), 10-year inverter warranty. Minimal maintenance — annual cleaning and Lightning Energy monitoring included.`);
 }
 
 // Export all narrative generators as a map for easy lookup

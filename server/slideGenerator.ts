@@ -164,6 +164,22 @@ export interface ProposalData {
   
   // Site Assessment
   sitePhotos?: Array<{ url: string; caption: string }>;
+  switchboardAnalysis?: {
+    boardCondition: string;
+    mainSwitchRating: number | null;
+    mainSwitchType: string | null;
+    totalCircuits: number | null;
+    usedCircuits: number | null;
+    availableCircuits: number | null;
+    hasRcd: boolean;
+    rcdCount: number | null;
+    hasSpaceForSolar: boolean;
+    hasSpaceForBattery: boolean;
+    upgradeRequired: boolean;
+    upgradeReason: string | null;
+    warnings: string[];
+    confidence: number;
+  };
   
   // Environmental
   co2ReductionTonnes: number;
@@ -542,6 +558,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
         solarSizeKw: data.solarSizeKw,
         batterySizeKwh: data.batterySizeKwh,
         existingSolar: data.existingSolar,
+        switchboardAnalysis: data.switchboardAnalysis,
         headerRight: 'Installation Readiness',
       }
     });
@@ -1861,6 +1878,7 @@ function genSiteAssessment(slide: SlideContent): string {
   const batteryKwh = c.batterySizeKwh as number || 0;
   const state = c.state as string || '';
   const existingSolar = c.existingSolar as string || 'none';
+  const swb = c.switchboardAnalysis as ProposalData['switchboardAnalysis'] | undefined;
   
   // Build photo grid (up to 4 photos)
   const displayPhotos = photos.slice(0, 4);
@@ -1878,6 +1896,50 @@ function genSiteAssessment(slide: SlideContent): string {
   
   // Installation readiness checklist
   const existingSolarLabel = existingSolar === 'none' ? 'New Installation' : existingSolar === 'under_5_years' ? 'Existing System (<5 yrs)' : 'Existing System (>5 yrs)';
+  
+  // Use real switchboard analysis data when available, fallback to generic labels
+  const boardCondition = swb?.boardCondition || 'unknown';
+  const conditionColor = boardCondition === 'good' ? '#00EAD3' : boardCondition === 'fair' ? '#F5A623' : boardCondition === 'poor' ? '#FF4444' : '#808285';
+  const conditionLabel = boardCondition.toUpperCase();
+  
+  // Switchboard capacity line
+  const swbCapacity = swb?.mainSwitchRating 
+    ? `${swb.mainSwitchRating}A ${swb.mainSwitchType || 'MAIN SWITCH'}`.toUpperCase()
+    : 'ASSESSED';
+  
+  // Circuit details
+  const circuitInfo = swb?.totalCircuits 
+    ? `${swb.usedCircuits || 0}/${swb.totalCircuits} CIRCUITS USED`
+    : 'VERIFIED';
+  
+  // RCD status
+  const rcdStatus = swb 
+    ? (swb.hasRcd ? `${swb.rcdCount || 1} RCD PRESENT` : 'RCD REQUIRED')
+    : 'REQUIRED';
+  const rcdColor = swb?.hasRcd ? '#00EAD3' : '#F5A623';
+  
+  // Space assessment
+  const spaceStatus = swb 
+    ? (swb.hasSpaceForSolar && swb.hasSpaceForBattery ? 'SPACE AVAILABLE' : swb.hasSpaceForSolar ? 'SOLAR SPACE OK' : 'UPGRADE NEEDED')
+    : `${state} COMPLIANT`;
+  const spaceColor = (!swb || (swb.hasSpaceForSolar && swb.hasSpaceForBattery)) ? '#00EAD3' : '#F5A623';
+  
+  // Overall site status
+  const upgradeNeeded = swb?.upgradeRequired || false;
+  const siteStatus = upgradeNeeded ? 'UPGRADE REQUIRED' : 'READY FOR INSTALLATION';
+  const siteStatusColor = upgradeNeeded ? '#F5A623' : '#00EAD3';
+  
+  // Warnings section
+  const warningsHtml = (swb?.warnings && swb.warnings.length > 0) ? `
+    <div class="card" style="border-color: #F5A623;">
+      <p class="lbl" style="color: #F5A623;">INSPECTOR NOTES</p>
+      <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+        ${swb.warnings.slice(0, 3).map(w => `
+          <p style="color: #ccc; font-size: 13px; line-height: 1.4;">• ${w}</p>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
   
   return `
     <div class="slide">
@@ -1901,29 +1963,34 @@ function genSiteAssessment(slide: SlideContent): string {
             <p style="color: #fff; font-family: 'GeneralSans', sans-serif; font-size: 22px; font-weight: 600; margin-top: 4px;">${batteryKwh}kWh Battery</p>
           </div>
           <div class="card">
-            <p class="lbl">ELECTRICAL REQUIREMENTS</p>
+            <p class="lbl">SWITCHBOARD INSPECTION</p>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #808285; font-size: 14px;">Switchboard Capacity</span>
-                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">ASSESSED</span>
+                <span style="color: #808285; font-size: 14px;">Board Condition</span>
+                <span style="color: ${conditionColor}; font-size: 14px; font-weight: 600;">${conditionLabel}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #808285; font-size: 14px;">Meter Configuration</span>
-                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">VERIFIED</span>
+                <span style="color: #808285; font-size: 14px;">Main Switch</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">${swbCapacity}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #808285; font-size: 14px;">Grid Connection</span>
-                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">${state} COMPLIANT</span>
+                <span style="color: #808285; font-size: 14px;">Circuit Configuration</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">${circuitInfo}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: #808285; font-size: 14px;">Safety Switches (RCD)</span>
-                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">REQUIRED</span>
+                <span style="color: ${rcdColor}; font-size: 14px; font-weight: 600;">${rcdStatus}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #808285; font-size: 14px;">Installation Space</span>
+                <span style="color: ${spaceColor}; font-size: 14px; font-weight: 600;">${spaceStatus}</span>
               </div>
             </div>
           </div>
-          <div class="card aqua-b" style="text-align: center; padding: 20px;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px;">SITE STATUS</p>
-            <p style="font-family: 'GeneralSans', sans-serif; font-size: 24px; color: #fff; font-weight: 700;">READY FOR INSTALLATION</p>
+          ${warningsHtml}
+          <div class="card aqua-b" style="text-align: center; padding: 20px; border-color: ${siteStatusColor};">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: ${siteStatusColor}; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px;">SITE STATUS</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 24px; color: #fff; font-weight: 700;">${siteStatus}</p>
           </div>
         </div>
       </div>
