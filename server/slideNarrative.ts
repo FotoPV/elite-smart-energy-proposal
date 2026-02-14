@@ -13,21 +13,22 @@
 import { invokeLLM } from './_core/llm';
 import type { ProposalData } from './slideGenerator';
 
-const SYSTEM_PROMPT = `You are a senior energy consultant at Lightning Energy, Australia's premier solar and battery advisory firm. You write in-depth, professional analysis for high-net-worth residential customers considering solar + battery investments.
+const SYSTEM_PROMPT = `You are a senior energy consultant at Lightning Energy, Australia's premier solar and battery advisory firm. You write concise, authoritative analysis for high-net-worth residential customers considering solar + battery investments.
 
 WRITING STYLE:
-- Write in complete, flowing paragraphs — NEVER use bullet points or numbered lists
+- Write CONCISE paragraphs — maximum 2-3 sentences per paragraph
+- Maximum 2 short paragraphs per section (total 4-6 sentences)
 - Bold key financial figures using <b> tags (e.g., <b>$1,471</b>)
 - Use <span class="hl-aqua"> for positive/savings figures
 - Use <span class="hl-orange"> for costs/current spend figures  
 - Use <span class="hl-white"> for neutral emphasis
 - Be specific and data-driven — reference the customer's actual numbers
-- Write 2-3 paragraphs per section, each 3-5 sentences
-- Sound like a trusted advisor, not a salesperson
+- Every sentence must deliver value — no filler, no repetition
+- Sound like a trusted advisor delivering a boardroom briefing
 - Australian English spelling (analyse, optimise, colour, etc.)
-- Reference seasonal patterns, time-of-use tariffs, and grid dynamics where relevant
-- NEVER use emoji or informal language
-- NEVER fabricate data — only reference numbers provided in the data context`;
+- NEVER use emoji, bullet points, numbered lists, or informal language
+- NEVER fabricate data — only reference numbers provided in the data context
+- Keep total text under 80 words per section`;
 
 async function generateNarrative(slideType: string, dataContext: string, specificPrompt: string): Promise<string> {
   try {
@@ -99,12 +100,12 @@ export async function narrativeExecutiveSummary(data: ProposalData): Promise<{ o
       { role: 'user', content: `CUSTOMER DATA:\n${ctx}\n\nGenerate 4 narrative sections for an Executive Summary slide. Each section should be 2-3 sentences of rich analysis.
 
 Return JSON with these keys:
-- "overview": A compelling opening paragraph summarising the entire proposal opportunity. Reference the transformation from $${data.annualCost}/year to ${projectedCost < 0 ? 'a $' + Math.abs(projectedCost) + ' annual credit' : '$' + projectedCost + '/year'}.
-- "financialCard": Analysis of the financial transformation — current spend vs projected, savings breakdown, ROI context.
-- "systemCard": Why this specific system configuration (${data.solarSizeKw}kW solar + ${data.batterySizeKwh}kWh ${data.batteryBrand}) is the strategic choice for this customer.
-- "urgencyCard": Time-sensitive factors — rebate deadlines, rising electricity costs, seasonal considerations based on their usage pattern.
+- "overview": One compelling sentence summarising the proposal opportunity. Reference the transformation from $${data.annualCost}/year to ${projectedCost < 0 ? 'a $' + Math.abs(projectedCost) + ' annual credit' : '$' + projectedCost + '/year'}.
+- "financialCard": 1-2 sentences on the financial transformation — current spend vs projected savings.
+- "systemCard": 1-2 sentences on why this system (${data.solarSizeKw}kW solar + ${data.batterySizeKwh}kWh ${data.batteryBrand}) is the right choice.
+- "urgencyCard": 1-2 sentences on time-sensitive factors — rebates, rising costs.
 
-Each value should be 2-3 sentences of professional analysis using <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
+Keep each value under 40 words. Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
     ],
     response_format: {
       type: 'json_schema',
@@ -143,11 +144,7 @@ Each value should be 2-3 sentences of professional analysis using <b>, <span cla
 export async function narrativeBillAnalysis(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Current Bill Analysis', ctx,
-    `Write 2-3 paragraphs analysing this customer's current electricity bill. Cover:
-    1. Their overall cost structure — what proportion is usage vs supply charges
-    2. The gap between their usage rate (${data.usageRateCentsPerKwh}¢) and feed-in tariff (${data.feedInTariffCentsPerKwh}¢) — this is the key arbitrage opportunity
-    3. How their daily usage of ${data.dailyUsageKwh.toFixed(1)}kWh compares to Australian household benchmarks (small: 7.5kWh, medium: 12.7kWh, large: 14.7kWh)
-    Use <span class="hl-orange"> for current costs and <span class="hl-aqua"> for opportunities.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) analysing this customer's electricity bill. Cover their cost structure, the arbitrage gap between usage rate (${data.usageRateCentsPerKwh}¢) and feed-in tariff (${data.feedInTariffCentsPerKwh}¢), and how their ${data.dailyUsageKwh.toFixed(1)}kWh daily usage compares to benchmarks. Use <span class="hl-orange"> for costs and <span class="hl-aqua"> for opportunities.`);
 }
 
 export async function narrativeUsageAnalysis(data: ProposalData): Promise<string> {
@@ -156,12 +153,7 @@ export async function narrativeUsageAnalysis(data: ProposalData): Promise<string
   const lowMonth = data.monthlyUsageData?.reduce((min, curr) => curr.kwh < min.kwh ? curr : min, data.monthlyUsageData[0]);
   
   return generateNarrative('Detailed Usage Analysis', ctx,
-    `Write 2-3 paragraphs analysing the customer's monthly usage patterns. Their peak month is ${peakMonth?.month || 'winter'} at ${peakMonth?.kwh || 'N/A'}kWh and lowest is ${lowMonth?.month || 'spring'} at ${lowMonth?.kwh || 'N/A'}kWh.
-    Cover:
-    1. Seasonal variation — what drives the peaks (heating/cooling) and what this means for solar sizing
-    2. The ratio between peak and low months — is this a highly variable or stable load?
-    3. How battery storage addresses the evening peak demand gap when solar isn't generating
-    Use <span class="hl-aqua"> for solar/savings references and <span class="hl-orange"> for cost/problem references.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) analysing usage patterns. Peak month: ${peakMonth?.month || 'winter'} at ${peakMonth?.kwh || 'N/A'}kWh, lowest: ${lowMonth?.month || 'spring'} at ${lowMonth?.kwh || 'N/A'}kWh. Cover seasonal variation drivers and how battery storage addresses evening peak demand. Use <span class="hl-aqua"> for solar/savings and <span class="hl-orange"> for costs.`);
 }
 
 export async function narrativeYearlyProjection(data: ProposalData): Promise<string> {
@@ -169,23 +161,13 @@ export async function narrativeYearlyProjection(data: ProposalData): Promise<str
   const tenYearNoAction = Math.round(data.annualCost * 10 * Math.pow(1.035, 5)); // rough 10yr with inflation
   
   return generateNarrative('Yearly Cost Projection', ctx,
-    `Write 2-3 paragraphs about the long-term cost trajectory. Without action, at 3.5% annual electricity inflation, this customer's $${data.annualCost}/year bill becomes approximately $${Math.round(data.annualCost * Math.pow(1.035, 10))}/year in 10 years and $${Math.round(data.annualCost * Math.pow(1.035, 25))}/year in 25 years.
-    Cover:
-    1. The compounding effect of electricity price inflation on their current bill
-    2. How the solar + battery system creates a hedge against rising prices
-    3. The cumulative 25-year savings of $${(data.twentyFiveYearSavings || data.annualSavings * 25).toLocaleString()} and what that means in real terms
-    Use <span class="hl-orange"> for escalating costs and <span class="hl-aqua"> for savings/protection.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on the long-term cost trajectory. At 3.5% inflation, their $${data.annualCost}/year becomes ~$${Math.round(data.annualCost * Math.pow(1.035, 10))}/year in 10 years. Cover compounding inflation impact and how solar + battery hedges against it. 25-year savings: $${(data.twentyFiveYearSavings || data.annualSavings * 25).toLocaleString()}. Use <span class="hl-orange"> for costs and <span class="hl-aqua"> for savings.`);
 }
 
 export async function narrativeStrategicAssessment(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Strategic Site Assessment', ctx,
-    `Write 3 paragraphs providing a strategic assessment of this customer's property and energy situation. This should read like a professional site audit report.
-    Cover:
-    1. SOLAR OPPORTUNITY: Based on their ${data.state} location, roof orientation considerations, and ${data.solarSizeKw}kW system capacity — why this is an excellent candidate for solar
-    2. FEED-IN TARIFF EROSION: The current ${data.feedInTariffCentsPerKwh}¢/kWh feed-in rate is declining across Australia. Battery storage captures the full ${data.usageRateCentsPerKwh}¢/kWh value instead
-    3. VPP REVENUE STREAM: The ${data.vppProvider} partnership adds $${data.vppAnnualValue}/year in additional income, effectively creating a third revenue stream beyond self-consumption and feed-in
-    Each paragraph should be 3-4 sentences of substantive analysis.`);
+    `Write 1 concise paragraph (4-5 sentences max, under 80 words total) providing a strategic assessment. Cover: ${data.state} solar opportunity with ${data.solarSizeKw}kW system, feed-in tariff erosion (${data.feedInTariffCentsPerKwh}¢ vs ${data.usageRateCentsPerKwh}¢ usage rate), and ${data.vppProvider} VPP adding $${data.vppAnnualValue}/year. Keep it authoritative and concise.`);
 }
 
 export async function narrativeBatteryOption(data: ProposalData, optionNumber: 1 | 2): Promise<{ whyRecommend: string; financialAnalysis: string }> {
@@ -241,12 +223,7 @@ Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
 export async function narrativeVPPRecommendation(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('VPP Recommendation', ctx,
-    `Write 2-3 paragraphs explaining why ${data.vppProvider} (${data.vppProgram}) is the recommended VPP provider for this customer.
-    Cover:
-    1. Why this provider was selected from the 13 evaluated — what makes them the best strategic fit
-    2. The income breakdown — daily credits, event payments, and how the $${data.vppAnnualValue}/year value is achieved
-    3. How VPP participation works in practice — what the customer experiences day-to-day and during grid events
-    Use <span class="hl-aqua"> for income/savings figures.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on why ${data.vppProvider} (${data.vppProgram}) is recommended. Cover why selected from 13 providers, the $${data.vppAnnualValue}/year income, and how it works in practice. Use <span class="hl-aqua"> for income figures.`);
 }
 
 export async function narrativeAnnualFinancialImpact(data: ProposalData): Promise<string> {
@@ -254,49 +231,19 @@ export async function narrativeAnnualFinancialImpact(data: ProposalData): Promis
   const projectedCost = data.annualCost - data.annualSavings;
   
   return generateNarrative('Annual Financial Impact', ctx,
-    `Write 2-3 paragraphs analysing the complete annual financial transformation.
-    Before: $${data.annualCost}/year electricity cost.
-    After: ${projectedCost < 0 ? '$' + Math.abs(projectedCost) + '/year CREDIT (the customer is now earning money)' : '$' + projectedCost + '/year (reduced cost)'}.
-    Total Annual Turnaround: $${data.annualSavings.toLocaleString()}/year.
-    
-    Cover:
-    1. The before/after transformation — what changes and why
-    2. Itemised savings breakdown: solar self-consumption, battery arbitrage, VPP income ($${data.vppAnnualValue}), feed-in credits${data.hasEV ? ', EV fuel savings ($' + data.evAnnualSavings + ')' : ''}
-    3. The concept of "Total Annual Turnaround" — this isn't just savings, it's a complete financial reversal
-    Use <span class="hl-orange"> for before/costs and <span class="hl-aqua"> for after/savings.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on the financial transformation. Before: $${data.annualCost}/year. After: ${projectedCost < 0 ? '$' + Math.abs(projectedCost) + '/year credit' : '$' + projectedCost + '/year'}. Total turnaround: $${data.annualSavings.toLocaleString()}/year. Cover the key savings drivers. Use <span class="hl-orange"> for costs and <span class="hl-aqua"> for savings.`);
 }
 
 export async function narrativeInvestmentAnalysis(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Investment Analysis', ctx,
-    `Write 2-3 paragraphs providing a rigorous investment analysis.
-    Gross cost: $${data.systemCost.toLocaleString()}
-    Rebates: $${data.rebateAmount.toLocaleString()}
-    Net investment: $${data.netInvestment.toLocaleString()}
-    Annual return: $${data.annualSavings.toLocaleString()} (${Math.round(data.annualSavings / data.netInvestment * 100)}% ROI)
-    Payback: ${data.paybackYears.toFixed(1)} years
-    
-    Cover:
-    1. Compare this investment to traditional alternatives — term deposits (4-5%), shares (7-10%), property. This system delivers ${Math.round(data.annualSavings / data.netInvestment * 100)}% annual return, tax-free
-    2. The accelerating returns — as electricity prices rise 3.5%/year, the savings grow while the investment is fixed
-    3. The 20-year cumulative cashflow — when does the system become pure profit, and what's the total lifetime value
-    Use <span class="hl-aqua"> for returns/savings and <span class="hl-orange"> for costs.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on the investment case. Net investment: $${data.netInvestment.toLocaleString()}, annual return: $${data.annualSavings.toLocaleString()} (${Math.round(data.annualSavings / data.netInvestment * 100)}% ROI), payback: ${data.paybackYears.toFixed(1)} years. Compare to traditional investments. Use <span class="hl-aqua"> for returns and <span class="hl-orange"> for costs.`);
 }
 
 export async function narrativeEnvironmentalImpact(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Environmental Impact', ctx,
-    `Write 2-3 paragraphs on the environmental impact of this system.
-    Annual CO2 reduction: ${data.co2ReductionTonnes.toFixed(1)} tonnes
-    25-year CO2 reduction: ${(data.co2ReductionTonnes * 25).toFixed(0)} tonnes
-    Trees equivalent: ${data.treesEquivalent || Math.round(data.co2ReductionTonnes * 45)} per year
-    Energy independence: ${data.energyIndependenceScore || 85}%
-    
-    Cover:
-    1. The tangible environmental impact — what ${data.co2ReductionTonnes.toFixed(1)} tonnes of CO2 actually means in real-world terms
-    2. Energy independence — moving from 100% grid-dependent to ${data.energyIndependenceScore || 85}% self-sufficient
-    3. The broader contribution — how residential solar + battery systems contribute to Australia's renewable energy transition
-    Keep the tone authoritative and factual, not preachy.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on environmental impact. Annual CO2 reduction: ${data.co2ReductionTonnes.toFixed(1)} tonnes, 25-year: ${(data.co2ReductionTonnes * 25).toFixed(0)} tonnes, trees equivalent: ${data.treesEquivalent || Math.round(data.co2ReductionTonnes * 45)}/year. Cover the tangible impact and energy independence (${data.energyIndependenceScore || 85}%). Authoritative and factual tone.`);
 }
 
 export async function narrativeFinalRecommendation(data: ProposalData): Promise<{ financial: string; strategic: string; urgency: string }> {
@@ -309,11 +256,11 @@ export async function narrativeFinalRecommendation(data: ProposalData): Promise<
       { role: 'user', content: `CUSTOMER DATA:\n${ctx}\n\nGenerate the FINAL RECOMMENDATION — the closing executive summary that drives action.
 
 Return JSON:
-- "financial": FINANCIAL TRANSFORMATION — 2-3 sentences on the complete financial picture. Reference the transformation from $${data.annualCost}/year to ${projectedCost < 0 ? 'a $' + Math.abs(projectedCost) + ' annual credit' : '$' + projectedCost + '/year'}. This is the headline number.
-- "strategic": STRATEGIC CHOICE — 2-3 sentences on why ${data.batteryBrand} + ${data.vppProvider} is the optimal combination. Reference specific technical and financial advantages.
-- "urgency": URGENCY — 2-3 sentences on why acting now is critical. Reference rebate availability, rising electricity costs, and seasonal timing.
+- "financial": 1-2 sentences on the financial transformation from $${data.annualCost}/year to ${projectedCost < 0 ? '$' + Math.abs(projectedCost) + ' annual credit' : '$' + projectedCost + '/year'}.
+- "strategic": 1-2 sentences on why ${data.batteryBrand} + ${data.vppProvider} is the optimal combination.
+- "urgency": 1-2 sentences on why acting now is critical — rebates and rising costs.
 
-Each should be compelling, data-driven, and end with a clear implication. Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
+Keep each under 40 words. Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
     ],
     response_format: {
       type: 'json_schema',
@@ -349,7 +296,7 @@ Each should be compelling, data-driven, and end with a clear implication. Use <b
 export async function narrativeRoadmap(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Recommended Roadmap', ctx,
-    `Write a brief introductory paragraph (2-3 sentences) for the implementation roadmap. Explain the phased approach — from approval through installation to optimisation — and why this structured timeline ensures the best outcome. Reference the specific system components (${data.panelBrand} panels, ${data.batteryBrand} battery, ${data.vppProvider} VPP activation).`);
+    `Write 1-2 sentences introducing the implementation roadmap. Mention the phased approach from approval to installation to VPP activation with ${data.panelBrand} panels and ${data.batteryBrand} battery. Keep under 40 words.`);
 }
 
 export async function narrativeTariffComparison(data: ProposalData): Promise<string> {

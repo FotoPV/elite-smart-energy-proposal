@@ -880,3 +880,29 @@
 - [x] Upgrade Projected Annual Cost (slide 7) — gradient area fills, smooth curves, glow effects
 - [x] Upgrade Financial Impact Analysis (slide 17) — premium ROI/payback visualisation
 - [x] Ensure all charts use rounded bars, smooth bezier curves, gradient fills, subtle glow
+
+
+## Colour Shift: Reduce Orange, Increase Aqua (Feb 14)
+- [x] Audit all orange (#f36710 / #E8731A) usage across all 17 slide templates
+- [x] Change orange accents to aqua where appropriate (borders, highlights, decorative elements)
+- [x] Keep orange ONLY for cost/negative figures in narrative text (hl-orange spans)
+- [x] Increase aqua presence in headers, borders, chart elements, decorative accents
+- [ ] Regenerate and verify the colour balance across all slides
+
+
+## Premium Design Overhaul — Reduce Text, Increase Readability (Feb 14)
+- [ ] Update CSS base styles — larger fonts, more padding, premium spacing
+- [ ] Reduce narrative text across all slides — 1-2 sentences max per section
+- [ ] Increase key number font sizes to 60-72px hero numbers
+- [ ] Add more white space and breathing room between elements
+- [ ] Update narrative prompts to generate shorter, punchier text (2-3 sentences not paragraphs)
+- [ ] Fix Considerations slide (slide 9) — larger text, less density
+- [ ] Regenerate and verify premium design
+
+
+## Bug Fix - Carbon Reduction Shows 0% for Existing Solar Customers (Feb 14)
+- [x] Fix calculateCo2Reduction receiving 0 solar generation for existing solar customers
+- [x] Estimate solar generation from bill export data (annualExports / 0.7) for existing solar customers
+- [x] Fix regenerate mutation to also clear calculations (was reusing stale cached values)
+- [x] Verified: Stuart Naylor (proposal 570001) now shows 100% carbon reduction instead of 0%
+- [x] All 104 tests passing, TypeScript compiles clean

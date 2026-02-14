@@ -665,6 +665,8 @@ const SLIDE_STYLES = `
     padding: 60px 80px;
     position: relative;
     overflow: hidden;
+    font-size: 16px;
+    line-height: 1.6;
   }
   
   /* Standard header: NextSphere title + aqua line */
@@ -676,7 +678,7 @@ const SLIDE_STYLES = `
   }
   .slide-title {
     font-family: 'NextSphere', sans-serif;
-    font-size: 52px;
+    font-size: 56px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -686,7 +688,7 @@ const SLIDE_STYLES = `
   }
   .slide-subtitle {
     font-family: 'UrbanistItalic', 'Urbanist', sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     color: #00EAD3;
     font-style: italic;
     letter-spacing: 0.05em;
@@ -697,7 +699,7 @@ const SLIDE_STYLES = `
     width: 100%;
     height: 1px;
     background: #00EAD3;
-    margin-bottom: 36px;
+    margin-bottom: 40px;
   }
   
   /* Alternate header: Urbanist title left + grey italic / aqua subtitle right + ORANGE line */
@@ -735,7 +737,7 @@ const SLIDE_STYLES = `
   .orange-line {
     width: 100%;
     height: 2px;
-    background: #f36710;
+    background: #00EAD3;
     margin-bottom: 36px;
   }
   
@@ -766,6 +768,7 @@ const SLIDE_STYLES = `
     font-family: 'GeneralSans', sans-serif;
     font-weight: 700;
     line-height: 1;
+    font-size: 48px;
   }
   .hero-num.aqua { color: #00EAD3; }
   .hero-num.white { color: #FFFFFF; }
@@ -774,39 +777,39 @@ const SLIDE_STYLES = `
   /* Labels */
   .lbl {
     font-family: 'Urbanist', sans-serif;
-    font-size: 12px;
+    font-size: 15px;
     color: #808285;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
   
   /* Cards */
   .card {
     background: rgba(255,255,255,0.02);
     border: 1px solid #333;
-    padding: 24px;
+    padding: 28px 32px;
   }
   .card.aqua-b { border-color: #00EAD3; }
-  .card.orange-b { border-color: #f36710; }
+  .card.orange-b { border-color: #00EAD3; }
   
   /* Insight cards */
   .insight-card {
     background: #222;
-    padding: 24px 28px;
+    padding: 28px 32px;
     border-left: 4px solid #00EAD3;
   }
-  .insight-card.orange { border-left-color: #f36710; }
+  .insight-card.orange { border-left-color: #00EAD3; }
   .insight-card .insight-title {
     font-family: 'Urbanist', sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
-    color: #f36710;
+    color: #00EAD3;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-  .insight-card p { color: #808285; font-size: 14px; line-height: 1.6; }
+  .insight-card p { color: #808285; font-size: 15px; line-height: 1.65; }
   .insight-card .hl-aqua { color: #00EAD3; font-weight: 600; }
   .insight-card .hl-orange { color: #f36710; font-weight: 600; }
   .insight-card .hl-white { color: #FFFFFF; font-weight: 600; }
@@ -814,22 +817,22 @@ const SLIDE_STYLES = `
   /* Badges */
   .badge { display: inline-block; padding: 4px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
   .badge.yes { background: #00EAD3; color: #000; }
-  .badge.no { background: #f36710; color: #000; }
+  .badge.no { background: #808285; color: #000; }
   .badge.recommended { color: #00EAD3; font-weight: 700; }
   
   /* Tables */
   table { width: 100%; border-collapse: collapse; }
   th {
     font-family: 'Urbanist', sans-serif;
-    font-size: 11px;
-    color: #f36710;
+    font-size: 12px;
+    color: #00EAD3;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-align: left;
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-bottom: 1px solid #333;
   }
-  td { padding: 14px 16px; border-bottom: 1px solid #2a2a2a; font-size: 15px; color: #ccc; }
+  td { padding: 16px 18px; border-bottom: 1px solid #2a2a2a; font-size: 16px; color: #ccc; }
   
   /* Colors */
   .aqua { color: #00EAD3; }
@@ -936,7 +939,7 @@ function genCover(slide: SlideContent): string {
       </div>
       <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 800px;">IN-DEPTH ELECTRICITY BILL ANALYSIS</h1>
       <div style="position: absolute; bottom: 80px; left: 80px; display: flex; align-items: flex-start; gap: 16px;">
-        <div style="width: 4px; height: 50px; background: #f36710; border-radius: 2px;"></div>
+        <div style="width: 4px; height: 50px; background: #00EAD3; border-radius: 2px;"></div>
         <div>
           <p style="font-family: 'Urbanist', sans-serif; font-size: 20px; color: #00EAD3; font-weight: 600;">${slide.title}</p>
           <p style="font-family: 'GeneralSans', sans-serif; font-size: 16px; color: #00EAD3;">${c.address}</p>
@@ -972,7 +975,7 @@ function genExecutiveSummary(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; height: 820px;">
         <!-- Left: Key Findings -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">KEY FINDINGS</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">KEY FINDINGS</p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
             <div class="card">
               <p class="lbl">ANNUAL ELECTRICITY COST</p>
@@ -991,11 +994,11 @@ function genExecutiveSummary(slide: SlideContent): string {
               <p class="hero-num aqua" style="font-size: 42px;">${fmtCurrency(savings)}<span style="font-size: 18px; color: #808285;">/yr</span></p>
             </div>
           </div>
-          ${narrative ? `<div style="color: #808285; font-size: 14px; line-height: 1.7;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="color: #808285; font-size: 15px; line-height: 1.7;">${narrative}</div>` : ''}
         </div>
         <!-- Right: Strategic Recommendations -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">STRATEGIC RECOMMENDATIONS</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">STRATEGIC RECOMMENDATIONS</p>
           <div style="display: flex; flex-direction: column; gap: 16px;">
             <div class="insight-card">
               <div class="insight-title">SOLAR + BATTERY SYSTEM</div>
@@ -1009,7 +1012,7 @@ function genExecutiveSummary(slide: SlideContent): string {
               <div class="insight-title">VPP INCOME</div>
               <p>Enrol in ${c.vppProvider} VPP program for additional <span class="hl-aqua">${fmtCurrency(c.vppAnnualValue as number || 0)}/year</span> in grid participation credits.</p>
             </div>
-            ${stratRec ? `<div style="color: #808285; font-size: 13px; line-height: 1.6; margin-top: 8px;">${stratRec}</div>` : ''}
+            ${stratRec ? `<div style="color: #808285; font-size: 15px; line-height: 1.6; margin-top: 8px;">${stratRec}</div>` : ''}
           </div>
         </div>
       </div>
@@ -1038,7 +1041,7 @@ function genBillAnalysis(slide: SlideContent): string {
       <div style="display: flex; gap: 60px;">
         <!-- Left: Customer Details Table -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">ACCOUNT DETAILS</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">ACCOUNT DETAILS</p>
           <table>
             <tr><td style="color: #808285; width: 180px;">Account Holder</td><td style="color: #fff; font-weight: 600;">${c.customerName}</td></tr>
             <tr><td style="color: #808285;">Service Address</td><td style="color: #fff;">${c.address}, ${c.state}</td></tr>
@@ -1047,34 +1050,34 @@ function genBillAnalysis(slide: SlideContent): string {
             <tr><td style="color: #808285;">Daily Average</td><td style="color: #fff;">${(c.dailyAverageKwh as number || 0).toFixed(1)} kWh</td></tr>
             <tr><td style="color: #808285;">Annual Cost</td><td style="color: #f36710; font-weight: 700;">${fmtCurrency(c.annualCost as number || 0)}</td></tr>
           </table>
-          ${narrative ? `<div style="margin-top: 24px; color: #808285; font-size: 13px; line-height: 1.7;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="margin-top: 24px; color: #808285; font-size: 15px; line-height: 1.7;">${narrative}</div>` : ''}
         </div>
         <!-- Right: Tariff Rate Cards -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">CURRENT TARIFF STRUCTURE</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">CURRENT TARIFF STRUCTURE</p>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${peakRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">PEAK RATE</p><p style="color: #808285; font-size: 13px;">Weekdays 3pm-9pm</p></div>
+              <div><p class="lbl">PEAK RATE</p><p style="color: #808285; font-size: 15px;">Weekdays 3pm-9pm</p></div>
               <p class="hero-num orange" style="font-size: 36px;">${peakRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${offPeakRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">OFF-PEAK RATE</p><p style="color: #808285; font-size: 13px;">10pm-7am</p></div>
+              <div><p class="lbl">OFF-PEAK RATE</p><p style="color: #808285; font-size: 15px;">10pm-7am</p></div>
               <p class="hero-num aqua" style="font-size: 36px;">${offPeakRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${shoulderRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">SHOULDER RATE</p><p style="color: #808285; font-size: 13px;">7am-3pm, 9pm-10pm</p></div>
+              <div><p class="lbl">SHOULDER RATE</p><p style="color: #808285; font-size: 15px;">7am-3pm, 9pm-10pm</p></div>
               <p class="hero-num white" style="font-size: 36px;">${shoulderRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${!peakRate && !offPeakRate && !shoulderRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">USAGE RATE (FLAT)</p><p style="color: #808285; font-size: 13px;">All times</p></div>
+              <div><p class="lbl">USAGE RATE (FLAT)</p><p style="color: #808285; font-size: 15px;">All times</p></div>
               <p class="hero-num orange" style="font-size: 36px;">${usageRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">DAILY SUPPLY CHARGE</p><p style="color: #808285; font-size: 13px;">Fixed daily cost</p></div>
+              <div><p class="lbl">DAILY SUPPLY CHARGE</p><p style="color: #808285; font-size: 15px;">Fixed daily cost</p></div>
               <p class="hero-num white" style="font-size: 36px;">${supplyCharge.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/day</span></p>
             </div>
             <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div><p class="lbl">FEED-IN TARIFF</p><p style="color: #808285; font-size: 13px;">Solar export credit</p></div>
+              <div><p class="lbl">FEED-IN TARIFF</p><p style="color: #808285; font-size: 15px;">Solar export credit</p></div>
               <p class="hero-num aqua" style="font-size: 36px;">${feedIn.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
             </div>
           </div>
@@ -1113,7 +1116,7 @@ function genBillBreakdown(slide: SlideContent): string {
             <div><p class="lbl">BILLING PERIOD</p><p style="color: #fff; font-size: 15px;">${c.billPeriodStart} — ${c.billPeriodEnd}</p></div>
             <div style="text-align: right;"><p class="lbl">BILL TOTAL</p><p style="color: #f36710; font-size: 20px; font-weight: 700;">${fmtCurrency(c.billTotalAmount as number || totalCost / 4)}</p></div>
           </div>` : ''}
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">ANNUAL COST BREAKDOWN</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">ANNUAL COST BREAKDOWN</p>
           <table>
             <tr><td style="color: #808285;">Usage Charges</td><td style="color: #f36710; text-align: right; font-weight: 600;">${fmtCurrency(usageCharges)}</td><td style="color: #808285; text-align: right;">${usagePct}%</td></tr>
             <tr><td style="color: #808285;">Supply Charges</td><td style="color: #fff; text-align: right; font-weight: 600;">${fmtCurrency(supplyCharges)}</td><td style="color: #808285; text-align: right;">${supplyPct}%</td></tr>
@@ -1130,7 +1133,7 @@ function genBillBreakdown(slide: SlideContent): string {
               <p class="hero-num orange" style="font-size: 32px;">${fmtCurrency(totalCost / 12)}</p>
             </div>
           </div>
-          ${narrative ? `<div style="margin-top: 20px; color: #808285; font-size: 13px; line-height: 1.6;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="margin-top: 20px; color: #808285; font-size: 15px; line-height: 1.6;">${narrative}</div>` : ''}
         </div>
         <!-- Right: Donut Chart -->
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -1165,8 +1168,8 @@ function genBillBreakdown(slide: SlideContent): string {
             </div>
           </div>
           <div style="display: flex; gap: 40px; margin-top: 30px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #ff8a3d, #f36710);"></div><span style="color: #808285; font-size: 13px;">Usage (${usagePct}%)</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #9a9a9a, #606060);"></div><span style="color: #808285; font-size: 13px;">Supply (${supplyPct}%)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #ff8a3d, #f36710);"></div><span style="color: #808285; font-size: 15px;">Usage (${usagePct}%)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #9a9a9a, #606060);"></div><span style="color: #808285; font-size: 15px;">Supply (${supplyPct}%)</span></div>
           </div>
         </div>
       </div>
@@ -1187,7 +1190,7 @@ function genSeasonalUsage(slide: SlideContent): string {
   // Season colors and gradients
   const seasonGradient = (month: string): { color: string; gradStart: string; gradEnd: string } => {
     const m = month.substring(0, 3);
-    if (['Dec', 'Jan', 'Feb'].includes(m)) return { color: '#f36710', gradStart: '#ff8a3d', gradEnd: '#f36710' };
+    if (['Dec', 'Jan', 'Feb'].includes(m)) return { color: '#FF9E6D', gradStart: '#FFB088', gradEnd: '#FF9E6D' };
     if (['Mar', 'Apr', 'May'].includes(m)) return { color: '#808285', gradStart: '#a0a0a5', gradEnd: '#606065' };
     if (['Jun', 'Jul', 'Aug'].includes(m)) return { color: '#00EAD3', gradStart: '#33FFE8', gradEnd: '#00C4B0' };
     return { color: '#FFFFFF', gradStart: '#FFFFFF', gradEnd: '#C8C8C8' };
@@ -1243,7 +1246,7 @@ function genSeasonalUsage(slide: SlideContent): string {
             }).join('')}
           </svg>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #ff8a3d, #f36710);"></div><span style="color: #808285; font-size: 12px;">Summer</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #FFB088, #FF9E6D);"></div><span style="color: #808285; font-size: 12px;">Summer</span></div>
             <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #a0a0a5, #606065);"></div><span style="color: #808285; font-size: 12px;">Autumn</span></div>
             <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #33FFE8, #00C4B0);"></div><span style="color: #808285; font-size: 12px;">Winter</span></div>
             <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, #FFFFFF, #C8C8C8);"></div><span style="color: #808285; font-size: 12px;">Spring</span></div>
@@ -1251,7 +1254,7 @@ function genSeasonalUsage(slide: SlideContent): string {
         </div>
         <!-- Right: Metrics -->
         <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">ANNUAL CONSUMPTION</p>
             <p style="font-family: GeneralSans, sans-serif; font-size: 36px; font-weight: 700; color: #fff; margin: 4px 0;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 16px; color: #808285; font-weight: 400;">kWh</span></p>
           </div>
@@ -1259,15 +1262,15 @@ function genSeasonalUsage(slide: SlideContent): string {
             <p class="lbl">DAILY AVERAGE</p>
             <p style="font-family: GeneralSans, sans-serif; font-size: 36px; font-weight: 700; color: #fff; margin: 4px 0;">${dailyUsage.toFixed(1)} <span style="font-size: 16px; color: #808285; font-weight: 400;">kWh</span></p>
           </div>
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">PEAK MONTH</p>
-            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #f36710; margin: 4px 0;">${peakMonth.month}</p>
-            <p style="color: #808285; font-size: 14px;">${Math.round(peakMonth.kwh).toLocaleString()} kWh</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #00EAD3; margin: 4px 0;">${peakMonth.month}</p>
+            <p style="color: #808285; font-size: 15px;">${Math.round(peakMonth.kwh).toLocaleString()} kWh</p>
           </div>
           <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">LOWEST MONTH</p>
             <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #00EAD3; margin: 4px 0;">${lowMonth.month}</p>
-            <p style="color: #808285; font-size: 14px;">${Math.round(lowMonth.kwh).toLocaleString()} kWh</p>
+            <p style="color: #808285; font-size: 15px;">${Math.round(lowMonth.kwh).toLocaleString()} kWh</p>
           </div>
           ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 8px;">${narrative}</div>` : ''}
         </div>
@@ -1343,7 +1346,7 @@ function genAnnualConsumption(slide: SlideContent): string {
         <!-- Left: Bar Chart with Line Overlay -->
         <div style="flex: 1.4;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: #f36710;"></div><span style="color: #808285; font-size: 13px; font-family: GeneralSans, sans-serif;">Consumption (kWh)</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: #f36710;"></div><span style="color: #808285; font-size: 15px; font-family: GeneralSans, sans-serif;">Consumption (kWh)</span></div>
           </div>
           <svg viewBox="0 0 ${chartW} ${chartH + 50}" width="${chartW}" height="${chartH + 50}">
             <defs>
@@ -1376,20 +1379,20 @@ function genAnnualConsumption(slide: SlideContent): string {
         </div>
         <!-- Right: Info Cards -->
         <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">ANNUAL GENERATION</p>
             <p style="font-family: GeneralSans, sans-serif; font-size: 38px; font-weight: 700; color: #00EAD3; margin: 4px 0;">${Math.round(annualSolar).toLocaleString()} <span style="font-size: 16px; color: #808285; font-weight: 400;">KWH</span></p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${offset}% of current annual usage. ${offset > 100 ? 'Significant surplus available for battery charging and VPP export.' : 'Solar covers the majority of annual consumption with battery optimisation.'}</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.5;">${offset}% of current annual usage. ${offset > 100 ? 'Significant surplus available for battery charging and VPP export.' : 'Solar covers the majority of annual consumption with battery optimisation.'}</p>
           </div>
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">SEASONAL VARIANCE</p>
-            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: ${winterDeficit ? '#f36710' : '#00EAD3'}; margin: 4px 0; text-transform: uppercase;">${winterDeficit ? 'WINTER DEFICIT' : 'BALANCED PROFILE'}</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${winterDeficit ? `June-August consumption exceeds generation. Grid and battery support required during ${state === 'QLD' || state === 'NT' ? 'wet' : 'heating'} season.` : 'Solar generation closely matches consumption patterns year-round.'}</p>
+            <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: ${winterDeficit ? '#FF9E6D' : '#00EAD3'}; margin: 4px 0; text-transform: uppercase;">${winterDeficit ? 'WINTER DEFICIT' : 'BALANCED PROFILE'}</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.5;">${winterDeficit ? `June-August consumption exceeds generation. Grid and battery support required during ${state === 'QLD' || state === 'NT' ? 'wet' : 'heating'} season.` : 'Solar generation closely matches consumption patterns year-round.'}</p>
           </div>
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">SUMMER PERFORMANCE</p>
             <p style="font-family: NextSphere, sans-serif; font-size: 28px; font-weight: 800; color: #ffffff; margin: 4px 0;">PEAK SURPLUS</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">Nov-Feb generation (avg ${Math.round(summerAvg).toLocaleString()}+ kWh/mo) maximises VPP credits and bill offsets.</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.5;">Nov-Feb generation (avg ${Math.round(summerAvg).toLocaleString()}+ kWh/mo) maximises VPP credits and bill offsets.</p>
           </div>
           ${narrative ? `<div style="color: #808285; font-size: 12px; line-height: 1.6; margin-top: 4px;">${narrative}</div>` : ''}
         </div>
@@ -1496,16 +1499,16 @@ function genProjectedAnnualCost(slide: SlideContent): string {
         </div>
         <!-- Right: Metrics -->
         <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
-            <p class="lbl">CURRENT ANNUAL COST</p>
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+            <p class="lbl">CURRENT ANNUAL</p>T</p>
             <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(currentCost)}</p>
           </div>
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
             <p class="lbl">YEAR 10 (NO ACTION)</p>
             <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(yr10)}</p>
           </div>
-          <div style="border-left: 4px solid #f36710; padding: 16px 20px; background: rgba(255,255,255,0.03);">
-            <p class="lbl">YEAR 25 (NO ACTION)</p>
+          <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(255,255,255,0.03);">
+            <p class="lbl">25-YEAR PROJECTION</p>>
             <p style="font-family: GeneralSans, sans-serif; font-size: 32px; font-weight: 700; color: #f36710; margin: 4px 0;">${fmtCurrency(yr25)}</p>
           </div>
           <div style="border-left: 4px solid #00EAD3; padding: 16px 20px; background: rgba(0,234,211,0.05); border: 1px solid rgba(0,234,211,0.2);">
@@ -1538,16 +1541,16 @@ function genBatteryBenefits(slide: SlideContent): string {
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px;">
         ${topRow.map(b => `
           <div class="card" style="border-top: 3px solid #00EAD3;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">${b.title}</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${b.description}</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">${b.title}</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.5;">${b.description}</p>
           </div>
         `).join('')}
       </div>
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
         ${bottomRow.map(b => `
           <div class="card" style="border-top: 3px solid #00EAD3;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">${b.title}</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${b.description}</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">${b.title}</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.5;">${b.description}</p>
           </div>
         `).join('')}
       </div>
@@ -1572,8 +1575,8 @@ function genBatteryConsiderations(slide: SlideContent): string {
         <!-- Left: 6 Factor Cards (3 rows x 2 cols) -->
         <div style="flex: 1.5; display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           ${considerations.map(con => `
-            <div style="background: #222; padding: 20px; border-top: 3px solid #f36710;">
-              <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">${con.title}</p>
+            <div style="background: #222; padding: 20px; border-top: 3px solid #00EAD3;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">${con.title}</p>
               <p style="color: #808285; font-size: 12px; line-height: 1.5;">${con.description}</p>
             </div>
           `).join('')}
@@ -1582,8 +1585,8 @@ function genBatteryConsiderations(slide: SlideContent): string {
         <div style="flex: 0.8; display: flex; flex-direction: column; justify-content: center;">
           <div class="card" style="border-color: #444;">
             <p style="font-family: 'GeneralSans', sans-serif; font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 12px;">Balanced View</p>
-            <div style="width: 40px; height: 2px; background: #f36710; margin-bottom: 16px;"></div>
-            <p style="font-family: 'UrbanistItalic', sans-serif; font-style: italic; color: #808285; font-size: 14px; line-height: 1.7;">"${balancedView}"</p>
+            <div style="width: 40px; height: 2px; background: #00EAD3; margin-bottom: 16px;"></div>
+            <p style="font-family: 'UrbanistItalic', sans-serif; font-style: italic; color: #808285; font-size: 16px; line-height: 1.7;">"${balancedView}"</p>
           </div>
         </div>
       </div>
@@ -1615,43 +1618,43 @@ function genBatteryStorage(slide: SlideContent): string {
           <div class="card" style="text-align: center; padding: 30px;">
             <p class="hero-num white" style="font-size: 72px;">${totalKwh} <span style="font-size: 28px;">KWH</span></p>
             <p class="lbl" style="margin-top: 8px;">TOTAL INSTALLED CAPACITY</p>
-            <p style="color: #00EAD3; font-size: 14px; margin-top: 8px;">${moduleConfig}</p>
+            <p style="color: #00EAD3; font-size: 15px; margin-top: 8px;">${moduleConfig}</p>
           </div>
           <!-- Why This Capacity -->
           <div class="card">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS CAPACITY?</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.6;">This massive storage capacity ensures complete overnight coverage and enables aggressive VPP trading during peak demand events. The modular design allows future expansion as your energy needs grow.</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS CAPACITY?</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.6;">This massive storage capacity ensures complete overnight coverage and enables aggressive VPP trading during peak demand events. The modular design allows future expansion as your energy needs grow.</p>
           </div>
           <!-- Technical Edge -->
           <div class="card">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">TECHNICAL EDGE</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">TECHNICAL EDGE</p>
             <div style="display: flex; flex-direction: column; gap: 6px;">
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">LFP Technology</span> — 6,000+ cycle lifespan</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">High Voltage</span> — Superior efficiency</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">Modular Design</span> — Scalable capacity</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">98% DoD</span> — Maximum usable energy</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">LFP Technology</span> — 6,000+ cycle lifespan</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">High Voltage</span> — Superior efficiency</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">Modular Design</span> — Scalable capacity</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">98% DoD</span> — Maximum usable energy</p>
             </div>
           </div>
         </div>
         <!-- Right Column -->
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Strategic Capacity Allocation</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">Strategic Capacity Allocation</p>
           <!-- Stacked Bar -->
           <div style="display: flex; height: 50px; width: 100%;">
-            <div style="flex: ${eveningUse}; background: #00EAD3; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 13px; font-weight: 700;">EVENING USE (${eveningUse}%)</span></div>
-            <div style="flex: ${vppTrading}; background: #f36710; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 13px; font-weight: 700;">VPP TRADING (${vppTrading}%)</span></div>
-            <div style="flex: ${backup}; background: #808285; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 13px; font-weight: 700;">BACKUP (${backup}%)</span></div>
+            <div style="flex: ${eveningUse}; background: #00EAD3; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 15px; font-weight: 700;">EVENING USE (${eveningUse}%)</span></div>
+            <div style="flex: ${vppTrading}; background: #00EAD3; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 15px; font-weight: 700;">VPP TRADING (${vppTrading}%)</span></div>
+            <div style="flex: ${backup}; background: #808285; display: flex; align-items: center; justify-content: center;"><span style="color: #000; font-size: 15px; font-weight: 700;">BACKUP (${backup}%)</span></div>
           </div>
           <div style="display: flex; gap: 16px;">
-            <div style="flex: 1;"><p style="color: #00EAD3; font-size: 14px; font-weight: 600;">Home Power</p><p style="color: #808285; font-size: 12px;">Overnight household consumption from stored solar</p></div>
-            <div style="flex: 1;"><p style="color: #f36710; font-size: 14px; font-weight: 600;">Income Generation</p><p style="color: #808285; font-size: 12px;">VPP grid events and peak demand trading</p></div>
-            <div style="flex: 1;"><p style="color: #808285; font-size: 14px; font-weight: 600;">Safety Reserve</p><p style="color: #808285; font-size: 12px;">Blackout protection and emergency backup</p></div>
+            <div style="flex: 1;"><p style="color: #00EAD3; font-size: 15px; font-weight: 600;">Home Power</p><p style="color: #808285; font-size: 12px;">Overnight household consumption from stored solar</p></div>
+            <div style="flex: 1;"><p style="color: #00EAD3; font-size: 15px; font-weight: 600;">Income Generation</p><p style="color: #808285; font-size: 12px;">VPP grid events and peak demand trading</p></div>
+            <div style="flex: 1;"><p style="color: #808285; font-size: 15px; font-weight: 600;">Safety Reserve</p><p style="color: #808285; font-size: 12px;">Blackout protection and emergency backup</p></div>
           </div>
           <!-- The Result -->
           <div class="card orange-b" style="margin-top: auto;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">THE RESULT</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">THE RESULT</p>
             <p style="color: #fff; font-size: 16px; font-weight: 600;">You effectively become your own power plant.</p>
-            <p style="color: #808285; font-size: 13px; margin-top: 6px;">Complete energy independence during peak hours with revenue generation from surplus capacity.</p>
+            <p style="color: #808285; font-size: 15px; margin-top: 6px;">Complete energy independence during peak hours with revenue generation from surplus capacity.</p>
           </div>
         </div>
       </div>
@@ -1682,16 +1685,16 @@ function genSolarPV(slide: SlideContent): string {
           <div class="card" style="text-align: center; padding: 30px;">
             <p class="hero-num white" style="font-size: 72px;">${sizeKw} <span style="font-size: 28px;">KW</span></p>
             <p class="lbl" style="margin-top: 8px;">TOTAL SOLAR CAPACITY</p>
-            <p style="color: #00EAD3; font-size: 14px; margin-top: 8px;">${panelConfig}</p>
+            <p style="color: #00EAD3; font-size: 15px; margin-top: 8px;">${panelConfig}</p>
           </div>
           <!-- Premium Hardware -->
           <div class="card">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">PREMIUM HARDWARE</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">PREMIUM HARDWARE</p>
             <div style="display: flex; flex-direction: column; gap: 6px;">
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">Panels:</span> ${c.panelBrand} ${c.panelWattage}W — Tier 1 manufacturer</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">Inverter:</span> ${c.inverterBrand} ${c.inverterSize}kW Hybrid</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">Warranty:</span> 25-year panel performance guarantee</p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #00EAD3;">Aesthetics:</span> All-black panels for premium appearance</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">Panels:</span> ${c.panelBrand} ${c.panelWattage}W — Tier 1 manufacturer</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">Inverter:</span> ${c.inverterBrand} ${c.inverterSize}kW Hybrid</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">Warranty:</span> 25-year panel performance guarantee</p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #00EAD3;">Aesthetics:</span> All-black panels for premium appearance</p>
             </div>
           </div>
         </div>
@@ -1699,15 +1702,15 @@ function genSolarPV(slide: SlideContent): string {
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
           <!-- Annual Production -->
           <div class="card" style="text-align: center; padding: 30px;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; font-weight: 600;">ANNUAL PRODUCTION</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; font-weight: 600;">ANNUAL PRODUCTION</p>
             <p class="hero-num white" style="font-size: 64px;">${Math.round(annualProd).toLocaleString()} <span style="font-size: 24px;">KWH</span></p>
             <p class="lbl" style="margin-top: 8px;">ESTIMATED YEARLY GENERATION</p>
-            <p style="color: #808285; font-size: 14px; margin-top: 12px;">This system is perfectly sized to cover your annual usage of ~${Math.round(annualUsage).toLocaleString()} kWh, delivering a <span style="color: #00EAD3; font-weight: 600;">${offset}% offset</span> of your consumption.</p>
+            <p style="color: #808285; font-size: 15px; margin-top: 12px;">This system is perfectly sized to cover your annual usage of ~${Math.round(annualUsage).toLocaleString()} kWh, delivering a <span style="color: #00EAD3; font-weight: 600;">${offset}% offset</span> of your consumption.</p>
           </div>
           <!-- Why This Size -->
           <div class="card">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS SIZE?</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.6;">The ${sizeKw}kW system is strategically sized to exceed your annual consumption, ensuring surplus generation for battery charging, VPP participation, and feed-in credits. This oversizing strategy maximises your return on investment while future-proofing for increased consumption (EV charging, heat pump hot water).</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS SIZE?</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.6;">The ${sizeKw}kW system is strategically sized to exceed your annual consumption, ensuring surplus generation for battery charging, VPP participation, and feed-in credits. This oversizing strategy maximises your return on investment while future-proofing for increased consumption (EV charging, heat pump hot water).</p>
           </div>
         </div>
       </div>
@@ -1736,33 +1739,33 @@ function genFinancialImpact(slide: SlideContent): string {
       <div style="display: flex; gap: 30px; margin-bottom: 30px;">
         <div class="card" style="flex: 1; text-align: center; padding: 40px;">
           <p class="hero-num aqua" style="font-size: 64px;">${fmtCurrency(annualSavings)}</p>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 12px; font-weight: 600;">EST. ANNUAL SAVINGS</p>
-          <p style="color: #808285; font-size: 14px; margin-top: 8px;">Day 1 Bill Reduction: ${billRedPct}%</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 12px; font-weight: 600;">EST. ANNUAL SAVINGS</p>
+          <p style="color: #808285; font-size: 15px; margin-top: 8px;">Day 1 Bill Reduction: ${billRedPct}%</p>
         </div>
         <div class="card" style="flex: 1; text-align: center; padding: 40px;">
           <p class="hero-num aqua" style="font-size: 64px;">${Math.floor(payback)}-${Math.ceil(payback)}</p>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 12px; font-weight: 600;">YEAR PAYBACK</p>
-          <p style="color: #808285; font-size: 14px; margin-top: 8px;">Tax-Free Return on Investment</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 12px; font-weight: 600;">YEAR PAYBACK</p>
+          <p style="color: #808285; font-size: 15px; margin-top: 8px;">Tax-Free Return on Investment</p>
         </div>
       </div>
       <!-- Bottom Row: 3 metrics in dark maroon card -->
-      <div style="background: #2a1a0a; border: 1px solid #f36710; padding: 40px; display: flex; justify-content: space-around;">
+      <div style="background: rgba(0,234,211,0.05); border: 1px solid #00EAD3; padding: 40px; display: flex; justify-content: space-around;">
         <div style="text-align: center;">
           <p class="hero-num aqua" style="font-size: 48px;">${roi}%</p>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">TOTAL ROI (25 YEARS)</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">TOTAL ROI (25 YEARS)</p>
         </div>
         <div style="width: 1px; background: #444;"></div>
         <div style="text-align: center;">
           <p class="hero-num aqua" style="font-size: 48px;">${fmtCurrency(npv)}</p>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">NET PRESENT VALUE</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">NET PRESENT VALUE</p>
         </div>
         <div style="width: 1px; background: #444;"></div>
         <div style="text-align: center;">
           <p class="hero-num aqua" style="font-size: 48px;">${irr}%</p>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">INTERNAL RATE OF RETURN</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;">INTERNAL RATE OF RETURN</p>
         </div>
       </div>
-      <p style="color: #808285; font-size: 13px; font-style: italic; margin-top: 24px; text-align: center;">By leveraging battery storage for peak arbitrage and VPP participation, this system delivers returns that significantly exceed traditional investment vehicles.</p>
+      <p style="color: #808285; font-size: 15px; font-style: italic; margin-top: 24px; text-align: center;">By leveraging battery storage for peak arbitrage and VPP participation, this system delivers returns that significantly exceed traditional investment vehicles.</p>
     </div>
   `;
 }
@@ -1796,21 +1799,21 @@ function genEnvironmentalImpact(slide: SlideContent): string {
             <p class="hero-num aqua" style="font-size: 56px;">${co2Projected.toFixed(1)} <span style="font-size: 24px;">TONNES</span></p>
           </div>
           <div class="card aqua-b" style="text-align: center; padding: 30px;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px;">TOTAL REDUCTION</p>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px;">TOTAL REDUCTION</p>
             <p class="hero-num white" style="font-size: 96px;">${reductionPct}%</p>
           </div>
         </div>
         <!-- Right: 3 Equivalency Cards -->
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; justify-content: center;">
           <div class="card" style="display: flex; align-items: center; gap: 20px;">
-            <div style="width: 50px; height: 50px; background: #f36710; display: flex; align-items: center; justify-content: center; font-size: 24px;">🌲</div>
+            <div style="width: 50px; height: 50px; background: #00EAD3; display: flex; align-items: center; justify-content: center; font-size: 24px;">🌲</div>
             <div>
               <p class="lbl">EQUIVALENT TO PLANTING</p>
               <p style="font-family: 'Urbanist', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase; font-weight: 600;">~${trees} TREES ANNUALLY</p>
             </div>
           </div>
           <div class="card" style="display: flex; align-items: center; gap: 20px;">
-            <div style="width: 50px; height: 50px; background: #f36710; display: flex; align-items: center; justify-content: center; font-size: 24px;">🚗</div>
+            <div style="width: 50px; height: 50px; background: #00EAD3; display: flex; align-items: center; justify-content: center; font-size: 24px;">🚗</div>
             <div>
               <p class="lbl">EQUIVALENT TO REMOVING</p>
               <p style="font-family: 'Urbanist', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase; font-weight: 600;">${cars} CARS FROM THE ROAD</p>
@@ -1850,7 +1853,7 @@ function genStrategicPathway(slide: SlideContent): string {
               <span style="font-family: 'GeneralSans', sans-serif; font-size: 36px; font-weight: 700; color: #00EAD3; min-width: 60px;">${s.number}</span>
               <div>
                 <p style="font-family: 'GeneralSans', sans-serif; font-size: 17px; color: #fff; font-weight: 600;">${s.title}</p>
-                <p style="color: #808285; font-size: 13px; margin-top: 4px;">${s.description}</p>
+                <p style="color: #808285; font-size: 15px; margin-top: 4px;">${s.description}</p>
               </div>
             </div>
           `).join('')}
@@ -1858,8 +1861,8 @@ function genStrategicPathway(slide: SlideContent): string {
         <!-- Right: Investment Summary Card -->
         <div style="flex: 0.8; display: flex; align-items: center;">
           <div class="card" style="width: 100%; padding: 30px;">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #f36710; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">INVESTMENT SUMMARY</p>
-            <div style="width: 40px; height: 2px; background: #f36710; margin-bottom: 24px;"></div>
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 600;">INVESTMENT SUMMARY</p>
+            <div style="width: 40px; height: 2px; background: #00EAD3; margin-bottom: 24px;"></div>
             <div style="margin-bottom: 24px;">
               <p class="lbl">TOTAL SYSTEM COST (EST.)</p>
               <p class="hero-num white" style="font-size: 40px;">${inv.totalCostRange || '$18K - $22K'}</p>
@@ -1896,7 +1899,7 @@ function genContact(slide: SlideContent): string {
       <div style="display: flex; gap: 60px;">
         <!-- Left: Next Steps -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px; font-weight: 600;">NEXT STEPS</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px; font-weight: 600;">NEXT STEPS</p>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${[
               { num: '01', text: 'Schedule Site Assessment' },
@@ -1913,7 +1916,7 @@ function genContact(slide: SlideContent): string {
         </div>
         <!-- Right: Contact Details -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #f36710; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;">PREPARED BY</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;">PREPARED BY</p>
           <p style="font-family: 'NextSphere', sans-serif; font-size: 36px; color: #fff; text-transform: uppercase; margin-bottom: 8px;">${c.preparedBy}</p>
           <p style="color: #808285; font-size: 16px;">${c.title}</p>
           <p style="color: #00EAD3; font-size: 16px; margin-bottom: 30px;">${c.company}</p>
@@ -1967,17 +1970,17 @@ function genVPPRecommendation(slide: SlideContent): string {
         <!-- Left: Why + Value Cards -->
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
           <div class="card">
-            <p style="color: #f36710; font-size: 16px; font-weight: 600; margin-bottom: 10px;">Why ${program || provider}?</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.6;">After analyzing 13 providers, ${provider} offers the best combination of VPP earnings, gas bundling, and compatibility with your ${batteryBrand} system.</p>
+            <p style="color: #00EAD3; font-size: 16px; font-weight: 600; margin-bottom: 10px;">Why ${program || provider}?</p>
+            <p style="color: #808285; font-size: 15px; line-height: 1.6;">After analyzing 13 providers, ${provider} offers the best combination of VPP earnings, gas bundling, and compatibility with your ${batteryBrand} system.</p>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #fff; font-weight: 600;">Gas + Electricity Bundle</span><br/><span style="color: #666; font-size: 12px;">Maximize savings with dual fuel discounts</span></p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #fff; font-weight: 600;">${batteryBrand.split(' ')[0]} Compatible</span><br/><span style="color: #666; font-size: 12px;">Fully supported by your new battery system</span></p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #fff; font-weight: 600;">No Lock-in Contract</span><br/><span style="color: #666; font-size: 12px;">Flexibility to switch if rates change</span></p>
-              <p style="color: #808285; font-size: 13px;">✓ <span style="color: #fff; font-weight: 600;">20% Reserve Protection</span><br/><span style="color: #666; font-size: 12px;">Ensures backup power during blackouts</span></p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #fff; font-weight: 600;">Gas + Electricity Bundle</span><br/><span style="color: #666; font-size: 12px;">Maximize savings with dual fuel discounts</span></p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #fff; font-weight: 600;">${batteryBrand.split(' ')[0]} Compatible</span><br/><span style="color: #666; font-size: 12px;">Fully supported by your new battery system</span></p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #fff; font-weight: 600;">No Lock-in Contract</span><br/><span style="color: #666; font-size: 12px;">Flexibility to switch if rates change</span></p>
+              <p style="color: #808285; font-size: 15px;">✓ <span style="color: #fff; font-weight: 600;">20% Reserve Protection</span><br/><span style="color: #666; font-size: 12px;">Ensures backup power during blackouts</span></p>
             </div>
           </div>
           <!-- Value Cards -->
-          <div style="background: #2a1a0a; border: 1px solid #f36710; padding: 24px; display: flex; gap: 30px;">
+          <div style="background: rgba(0,234,211,0.05); border: 1px solid #00EAD3; padding: 24px; display: flex; gap: 30px;">
             <div style="flex: 1; text-align: center;">
               <p class="hero-num aqua" style="font-size: 36px;">~${fmtCurrency(firstYrValue)}</p>
               <p class="lbl" style="margin-top: 6px;">FIRST YEAR VALUE</p>
@@ -1994,11 +1997,11 @@ function genVPPRecommendation(slide: SlideContent): string {
           <table>
             <thead>
               <tr>
-                <th style="color: #f36710;">Provider</th>
-                <th style="color: #f36710;">Gas Bundle</th>
-                <th style="color: #f36710;">${batteryBrand.split(' ')[0]} Support</th>
-                <th style="color: #f36710;">VPP Value (Year 1)</th>
-                <th style="color: #f36710;">Verdict</th>
+                <th style="color: #00EAD3;">Provider</th>
+                <th style="color: #00EAD3;">Gas Bundle</th>
+                <th style="color: #00EAD3;">${batteryBrand.split(' ')[0]} Support</th>
+                <th style="color: #00EAD3;">VPP Value (Year 1)</th>
+                <th style="color: #00EAD3;">Verdict</th>
               </tr>
             </thead>
             <tbody>
@@ -2014,12 +2017,12 @@ function genVPPRecommendation(slide: SlideContent): string {
             </tbody>
           </table>
           <div>
-            <p style="font-family: 'UrbanistItalic', sans-serif; font-size: 16px; color: #f36710; font-style: italic; margin-bottom: 12px;">Implementation Steps</p>
+            <p style="font-family: 'UrbanistItalic', sans-serif; font-size: 16px; color: #00EAD3; font-style: italic; margin-bottom: 12px;">Implementation Steps</p>
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              <p style="color: #808285; font-size: 13px;">Proceed with ${solarKw}kW Solar + ${batteryKwh}kWh Battery installation.</p>
-              <p style="color: #808285; font-size: 13px;">Register system with ${provider} "${program}" VPP.</p>
-              <p style="color: #808285; font-size: 13px;">Switch Gas account to ${provider} to activate bundle discounts.</p>
-              <p style="color: #808285; font-size: 13px;">Link Everyday Rewards account for additional points.</p>
+              <p style="color: #808285; font-size: 15px;">Proceed with ${solarKw}kW Solar + ${batteryKwh}kWh Battery installation.</p>
+              <p style="color: #808285; font-size: 15px;">Register system with ${provider} "${program}" VPP.</p>
+              <p style="color: #808285; font-size: 15px;">Switch Gas account to ${provider} to activate bundle discounts.</p>
+              <p style="color: #808285; font-size: 15px;">Link Everyday Rewards account for additional points.</p>
             </div>
           </div>
         </div>
@@ -2050,8 +2053,8 @@ function genFinancialImpactAnalysis(slide: SlideContent): string {
       <div style="display: flex; gap: 60px;">
         <!-- Left: 3 Stacked Metric Cards -->
         <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
-          <div class="card" style="border-left: 4px solid #f36710; padding: 24px;">
-            <p class="lbl">NET SYSTEM COST</p>
+          <div class="card" style="border-left: 4px solid #00EAD3; padding: 24px;">
+            <p class="lbl">SYSTEM COST</p>
             <p class="hero-num white" style="font-size: 42px;">${fmtCurrency(netCost)}</p>
             <p style="color: #808285; font-size: 12px; margin-top: 4px;">After ${fmtCurrency(rebates)} in rebates</p>
           </div>
@@ -2060,7 +2063,7 @@ function genFinancialImpactAnalysis(slide: SlideContent): string {
             <p class="hero-num aqua" style="font-size: 42px;">${payback.toFixed(1)} <span style="font-size: 18px;">YEARS</span></p>
             <p style="color: #808285; font-size: 12px; margin-top: 4px;">Without VPP: ${paybackNoVpp.toFixed(1)} years</p>
           </div>
-          <div class="card" style="border-left: 4px solid #f36710; padding: 24px;">
+          <div class="card" style="border-left: 4px solid #00EAD3; padding: 24px;">
             <p class="lbl">25-YEAR ROI</p>
             <p class="hero-num orange" style="font-size: 42px;">${roi}%</p>
             <p style="color: #808285; font-size: 12px; margin-top: 4px;">Lifetime savings: ${fmtCurrency(lifetime)}</p>
@@ -2075,7 +2078,7 @@ function genFinancialImpactAnalysis(slide: SlideContent): string {
               return `
               <div style="padding: 14px 20px; background: rgba(255,255,255,0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <p style="color: #fff; font-size: 14px; font-weight: 600;">${b.category}</p>
+                  <p style="color: #fff; font-size: 15px; font-weight: 600;">${b.category}</p>
                   <p style="font-family: GeneralSans, sans-serif; font-size: 24px; font-weight: 700; color: #00EAD3;">${fmtCurrency(b.value)}</p>
                 </div>
                 <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;">

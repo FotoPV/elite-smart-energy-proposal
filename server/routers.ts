@@ -625,10 +625,12 @@ export const appRouter = router({
         }
         // Reset to draft with empty slides — this triggers auto-generation on page load
         // Store the one-off prompt so the generation pipeline can use it
+        // Also clear calculations so they get recalculated with latest logic
         await db.updateProposal(input.proposalId, {
           status: 'draft',
           slidesData: null,
           slideCount: 0,
+          calculations: null,
           lastRegeneratePrompt: input.regeneratePrompt || null,
         });
         return { success: true };

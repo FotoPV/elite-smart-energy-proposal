@@ -1,0 +1,18 @@
+{
+  "query": "SELECT b.id, b.customerId, b.totalUsageKwh, b.solarExportsKwh, b.feedInTariffCents, b.billingDays FROM bills b JOIN customers c ON b.customerId = c.id WHERE c.fullName LIKE '%Stuart%' AND b.billType = 'electricity'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT b.id, b.customerId, b.totalUsageKwh, b.solarExportsKwh, b.feedInTariffCents, b.billingDays FROM bills b JOIN customers c ON b.customerId = c.id WHERE c.fullName LIKE '%Stuart%' AND b.billType = 'electricity'",
+  "rows": [
+    {
+      "id": "450001",
+      "customerId": "600001",
+      "totalUsageKwh": "1110.02",
+      "solarExportsKwh": "5016.94",
+      "feedInTariffCents": "10.0000",
+      "billingDays": "92"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\ttotalUsageKwh\tsolarExportsKwh\tfeedInTariffCents\tbillingDays\n450001\t600001\t1110.02\t5016.94\t10.0000\t92\n",
+  "stderr": "",
+  "execution_time_ms": 1504
+}

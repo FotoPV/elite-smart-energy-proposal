@@ -1,0 +1,20 @@
+{
+  "query": "SELECT c.id as customerId, c.fullName, c.existingSolar, b.totalUsageKwh, b.solarExportsKwh, b.feedInTariffCents, b.billingDays, b.totalAmount FROM bills b JOIN customers c ON b.customerId = c.id WHERE c.fullName LIKE '%Naylor%' AND b.billType = 'electricity'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id as customerId, c.fullName, c.existingSolar, b.totalUsageKwh, b.solarExportsKwh, b.feedInTariffCents, b.billingDays, b.totalAmount FROM bills b JOIN customers c ON b.customerId = c.id WHERE c.fullName LIKE '%Naylor%' AND b.billType = 'electricity'",
+  "rows": [
+    {
+      "customerId": "600001",
+      "fullName": "Stuart Naylor",
+      "existingSolar": "over_5_years",
+      "totalUsageKwh": "1110.02",
+      "solarExportsKwh": "5016.94",
+      "feedInTariffCents": "10.0000",
+      "billingDays": "92",
+      "totalAmount": "230.82"
+    }
+  ],
+  "messages": [],
+  "stdout": "customerId\tfullName\texistingSolar\ttotalUsageKwh\tsolarExportsKwh\tfeedInTariffCents\tbillingDays\ttotalAmount\n600001\tStuart Naylor\tover_5_years\t1110.02\t5016.94\t10.0000\t92\t230.82\n",
+  "stderr": "",
+  "execution_time_ms": 1572
+}
