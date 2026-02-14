@@ -529,7 +529,25 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 14: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
+  // Slide 14: ELECTRICAL ASSESSMENT & SITE PHOTOS (conditional — only if sitePhotos exist)
+  if (data.sitePhotos && data.sitePhotos.length > 0) {
+    slides.push({
+      id: slideId++,
+      type: 'site_assessment',
+      title: 'ELECTRICAL ASSESSMENT',
+      subtitle: 'SITE INSPECTION',
+      content: {
+        sitePhotos: data.sitePhotos,
+        state: data.state,
+        solarSizeKw: data.solarSizeKw,
+        batterySizeKwh: data.batterySizeKwh,
+        existingSolar: data.existingSolar,
+        headerRight: 'Installation Readiness',
+      }
+    });
+  }
+  
+  // Slide 15: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
   slides.push({
     id: slideId++,
     type: 'strategic_pathway',
@@ -659,14 +677,14 @@ const SLIDE_STYLES = `
   .slide {
     width: 1920px;
     height: 1080px;
-    background: #1a1a1a;
+    background: #000000;
     color: #FFFFFF;
     font-family: 'GeneralSans', sans-serif;
-    padding: 60px 80px;
+    padding: 60px 90px;
     position: relative;
     overflow: hidden;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 18px;
+    line-height: 1.7;
   }
   
   /* Standard header: NextSphere title + aqua line */
@@ -678,13 +696,13 @@ const SLIDE_STYLES = `
   }
   .slide-title {
     font-family: 'NextSphere', sans-serif;
-    font-size: 56px;
+    font-size: 48px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     color: #FFFFFF;
-    line-height: 1.1;
-    max-width: 75%;
+    line-height: 1.15;
+    max-width: 80%;
   }
   .slide-subtitle {
     font-family: 'UrbanistItalic', 'Urbanist', sans-serif;
@@ -768,7 +786,7 @@ const SLIDE_STYLES = `
     font-family: 'GeneralSans', sans-serif;
     font-weight: 700;
     line-height: 1;
-    font-size: 48px;
+    font-size: 56px;
   }
   .hero-num.aqua { color: #00EAD3; }
   .hero-num.white { color: #FFFFFF; }
@@ -777,39 +795,39 @@ const SLIDE_STYLES = `
   /* Labels */
   .lbl {
     font-family: 'Urbanist', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     color: #808285;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 8px;
+    letter-spacing: 0.18em;
+    margin-bottom: 10px;
   }
   
   /* Cards */
   .card {
     background: rgba(255,255,255,0.02);
-    border: 1px solid #333;
-    padding: 28px 32px;
+    border: 1px solid #2a2a2a;
+    padding: 32px 36px;
   }
   .card.aqua-b { border-color: #00EAD3; }
   .card.orange-b { border-color: #00EAD3; }
   
   /* Insight cards */
   .insight-card {
-    background: #222;
-    padding: 28px 32px;
-    border-left: 4px solid #00EAD3;
+    background: #111;
+    padding: 32px 36px;
+    border-left: 3px solid #333;
   }
-  .insight-card.orange { border-left-color: #00EAD3; }
+  .insight-card.orange { border-left-color: #333; }
   .insight-card .insight-title {
     font-family: 'Urbanist', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: #00EAD3;
+    color: #FFFFFF;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
   }
-  .insight-card p { color: #808285; font-size: 15px; line-height: 1.65; }
+  .insight-card p { color: #999; font-size: 16px; line-height: 1.75; }
   .insight-card .hl-aqua { color: #00EAD3; font-weight: 600; }
   .insight-card .hl-orange { color: #f36710; font-weight: 600; }
   .insight-card .hl-white { color: #FFFFFF; font-weight: 600; }
@@ -832,7 +850,7 @@ const SLIDE_STYLES = `
     padding: 14px 18px;
     border-bottom: 1px solid #333;
   }
-  td { padding: 16px 18px; border-bottom: 1px solid #2a2a2a; font-size: 16px; color: #ccc; }
+  td { padding: 18px 20px; border-bottom: 1px solid #1a1a1a; font-size: 17px; color: #ccc; }
   
   /* Colors */
   .aqua { color: #00EAD3; }
@@ -903,6 +921,7 @@ export function generateSlideHTML(slide: SlideContent): string {
       case 'solar_pv': content = genSolarPV(slide); break;
       case 'financial_impact': content = genFinancialImpact(slide); break;
       case 'environmental_impact': content = genEnvironmentalImpact(slide); break;
+      case 'site_assessment': content = genSiteAssessment(slide); break;
       case 'strategic_pathway': content = genStrategicPathway(slide); break;
       case 'contact': content = genContact(slide); break;
       case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
@@ -972,47 +991,47 @@ function genExecutiveSummary(slide: SlideContent): string {
       ${slideNum(slide.id)}
       ${logoBR()}
       ${slideHeader(slide.title, slide.subtitle)}
-      <div style="display: flex; gap: 60px; height: 820px;">
-        <!-- Left: Key Findings -->
+      <div style="display: flex; gap: 70px;">
+        <!-- Left: Key Metrics -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">KEY FINDINGS</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #808285; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 28px;">KEY FINDINGS</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 36px;">
             <div class="card">
-              <p class="lbl">ANNUAL ELECTRICITY COST</p>
-              <p class="hero-num orange" style="font-size: 42px;">${fmtCurrency(annualCost)}</p>
+              <p class="lbl">ANNUAL COST</p>
+              <p class="hero-num orange" style="font-size: 48px;">${fmtCurrency(annualCost)}</p>
             </div>
             <div class="card">
-              <p class="lbl">DAILY AVERAGE USAGE</p>
-              <p class="hero-num white" style="font-size: 42px;">${dailyUsage.toFixed(1)} <span style="font-size: 20px; color: #808285;">kWh</span></p>
+              <p class="lbl">DAILY USAGE</p>
+              <p class="hero-num white" style="font-size: 48px;">${dailyUsage.toFixed(1)} <span style="font-size: 22px; color: #808285;">kWh</span></p>
             </div>
             <div class="card">
               <p class="lbl">ANNUAL CONSUMPTION</p>
-              <p class="hero-num white" style="font-size: 42px;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 20px; color: #808285;">kWh</span></p>
+              <p class="hero-num white" style="font-size: 48px;">${Math.round(annualUsage).toLocaleString()} <span style="font-size: 22px; color: #808285;">kWh</span></p>
             </div>
             <div class="card">
               <p class="lbl">PROJECTED SAVINGS</p>
-              <p class="hero-num aqua" style="font-size: 42px;">${fmtCurrency(savings)}<span style="font-size: 18px; color: #808285;">/yr</span></p>
+              <p class="hero-num aqua" style="font-size: 48px;">${fmtCurrency(savings)}<span style="font-size: 20px; color: #808285;">/yr</span></p>
             </div>
           </div>
-          ${narrative ? `<div style="color: #808285; font-size: 15px; line-height: 1.7;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="color: #999; font-size: 17px; line-height: 1.8;">${narrative}</div>` : ''}
         </div>
         <!-- Right: Strategic Recommendations -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 24px;">STRATEGIC RECOMMENDATIONS</p>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #808285; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 28px;">STRATEGIC RECOMMENDATIONS</p>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="insight-card">
               <div class="insight-title">SOLAR + BATTERY SYSTEM</div>
-              <p>Install a ${c.systemSize}kW solar array with ${c.batterySize}kWh battery storage to achieve <span class="hl-aqua">${billRedPct}% bill reduction</span> and <span class="hl-aqua">${offset}% solar offset</span>.</p>
+              <p>${c.systemSize}kW solar + ${c.batterySize}kWh battery delivering <span class="hl-aqua">${billRedPct}% bill reduction</span> and <span class="hl-aqua">${offset}% solar offset</span>.</p>
             </div>
             <div class="insight-card">
               <div class="insight-title">FINANCIAL RETURN</div>
-              <p>Payback in <span class="hl-aqua">${payback.toFixed(1)} years</span> with 10-year net benefit of <span class="hl-aqua">${fmtCurrency(tenYr)}</span>. Tax-free returns exceeding traditional investments.</p>
+              <p>Payback in <span class="hl-aqua">${payback.toFixed(1)} years</span>. 10-year net benefit: <span class="hl-aqua">${fmtCurrency(tenYr)}</span>.</p>
             </div>
             <div class="insight-card">
               <div class="insight-title">VPP INCOME</div>
-              <p>Enrol in ${c.vppProvider} VPP program for additional <span class="hl-aqua">${fmtCurrency(c.vppAnnualValue as number || 0)}/year</span> in grid participation credits.</p>
+              <p>${c.vppProvider} VPP: <span class="hl-aqua">${fmtCurrency(c.vppAnnualValue as number || 0)}/year</span> in grid participation credits.</p>
             </div>
-            ${stratRec ? `<div style="color: #808285; font-size: 15px; line-height: 1.6; margin-top: 8px;">${stratRec}</div>` : ''}
+            ${stratRec ? `<div style="color: #999; font-size: 16px; line-height: 1.7; margin-top: 8px;">${stratRec}</div>` : ''}
           </div>
         </div>
       </div>
@@ -1041,7 +1060,7 @@ function genBillAnalysis(slide: SlideContent): string {
       <div style="display: flex; gap: 60px;">
         <!-- Left: Customer Details Table -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">ACCOUNT DETAILS</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #808285; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 20px;">ACCOUNT DETAILS</p>
           <table>
             <tr><td style="color: #808285; width: 180px;">Account Holder</td><td style="color: #fff; font-weight: 600;">${c.customerName}</td></tr>
             <tr><td style="color: #808285;">Service Address</td><td style="color: #fff;">${c.address}, ${c.state}</td></tr>
@@ -1050,35 +1069,35 @@ function genBillAnalysis(slide: SlideContent): string {
             <tr><td style="color: #808285;">Daily Average</td><td style="color: #fff;">${(c.dailyAverageKwh as number || 0).toFixed(1)} kWh</td></tr>
             <tr><td style="color: #808285;">Annual Cost</td><td style="color: #f36710; font-weight: 700;">${fmtCurrency(c.annualCost as number || 0)}</td></tr>
           </table>
-          ${narrative ? `<div style="margin-top: 24px; color: #808285; font-size: 15px; line-height: 1.7;">${narrative}</div>` : ''}
+          ${narrative ? `<div style="margin-top: 28px; color: #999; font-size: 17px; line-height: 1.8;">${narrative}</div>` : ''}
         </div>
         <!-- Right: Tariff Rate Cards -->
         <div style="flex: 1;">
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">CURRENT TARIFF STRUCTURE</p>
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #808285; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 20px;">CURRENT TARIFF STRUCTURE</p>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${peakRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">PEAK RATE</p><p style="color: #808285; font-size: 15px;">Weekdays 3pm-9pm</p></div>
-              <p class="hero-num orange" style="font-size: 36px;">${peakRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
+              <p class="hero-num orange" style="font-size: 42px;">${peakRate.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${offPeakRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">OFF-PEAK RATE</p><p style="color: #808285; font-size: 15px;">10pm-7am</p></div>
-              <p class="hero-num aqua" style="font-size: 36px;">${offPeakRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
+              <p class="hero-num aqua" style="font-size: 42px;">${offPeakRate.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${shoulderRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">SHOULDER RATE</p><p style="color: #808285; font-size: 15px;">7am-3pm, 9pm-10pm</p></div>
-              <p class="hero-num white" style="font-size: 36px;">${shoulderRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
+              <p class="hero-num white" style="font-size: 42px;">${shoulderRate.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             ${!peakRate && !offPeakRate && !shoulderRate ? `<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">USAGE RATE (FLAT)</p><p style="color: #808285; font-size: 15px;">All times</p></div>
-              <p class="hero-num orange" style="font-size: 36px;">${usageRate.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
+              <p class="hero-num orange" style="font-size: 42px;">${usageRate.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/kWh</span></p>
             </div>` : ''}
             <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">DAILY SUPPLY CHARGE</p><p style="color: #808285; font-size: 15px;">Fixed daily cost</p></div>
-              <p class="hero-num white" style="font-size: 36px;">${supplyCharge.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/day</span></p>
+              <p class="hero-num white" style="font-size: 42px;">${supplyCharge.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/day</span></p>
             </div>
             <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
               <div><p class="lbl">FEED-IN TARIFF</p><p style="color: #808285; font-size: 15px;">Solar export credit</p></div>
-              <p class="hero-num aqua" style="font-size: 36px;">${feedIn.toFixed(1)}<span style="font-size: 16px; color: #808285;">¢/kWh</span></p>
+              <p class="hero-num aqua" style="font-size: 42px;">${feedIn.toFixed(1)}<span style="font-size: 18px; color: #808285;">¢/kWh</span></p>
             </div>
           </div>
         </div>
@@ -1825,6 +1844,86 @@ function genEnvironmentalImpact(slide: SlideContent): string {
               <p class="lbl">25-YEAR IMPACT</p>
               <p style="font-family: 'Urbanist', sans-serif; font-size: 22px; color: #fff; text-transform: uppercase; font-weight: 600;">PREVENT ${co2_25yr} TONNES CO2</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// SLIDE: ELECTRICAL ASSESSMENT & SITE PHOTOS
+// ============================================================
+function genSiteAssessment(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const photos = (c.sitePhotos as Array<{ url: string; caption: string }>) || [];
+  const solarKw = c.solarSizeKw as number || 0;
+  const batteryKwh = c.batterySizeKwh as number || 0;
+  const state = c.state as string || '';
+  const existingSolar = c.existingSolar as string || 'none';
+  
+  // Build photo grid (up to 4 photos)
+  const displayPhotos = photos.slice(0, 4);
+  const photoWidth = displayPhotos.length <= 2 ? 420 : 320;
+  const photoHeight = displayPhotos.length <= 2 ? 340 : 260;
+  
+  const photoGrid = displayPhotos.map(p => `
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="width: ${photoWidth}px; height: ${photoHeight}px; background: #222; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <img src="${p.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="${p.caption}" />
+      </div>
+      <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #808285; text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">${p.caption}</p>
+    </div>
+  `).join('');
+  
+  // Installation readiness checklist
+  const existingSolarLabel = existingSolar === 'none' ? 'New Installation' : existingSolar === 'under_5_years' ? 'Existing System (<5 yrs)' : 'Existing System (>5 yrs)';
+  
+  return `
+    <div class="slide">
+      ${slideNum(slide.id)}
+      ${logoBR()}
+      ${altHeader(slide.title, c.headerRight as string || 'Installation Readiness', existingSolarLabel.toUpperCase())}
+      <div style="display: flex; gap: 60px;">
+        <!-- Left: Site Photos -->
+        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px;">
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">SITE INSPECTION PHOTOS</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+            ${photoGrid}
+          </div>
+        </div>
+        <!-- Right: Assessment Summary -->
+        <div style="flex: 0.8; display: flex; flex-direction: column; gap: 16px;">
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">INSTALLATION REQUIREMENTS</p>
+          <div class="card">
+            <p class="lbl">PROPOSED SYSTEM</p>
+            <p style="color: #00EAD3; font-family: 'GeneralSans', sans-serif; font-size: 28px; font-weight: 700;">${solarKw}kW Solar</p>
+            <p style="color: #fff; font-family: 'GeneralSans', sans-serif; font-size: 22px; font-weight: 600; margin-top: 4px;">${batteryKwh}kWh Battery</p>
+          </div>
+          <div class="card">
+            <p class="lbl">ELECTRICAL REQUIREMENTS</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #808285; font-size: 14px;">Switchboard Capacity</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">ASSESSED</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #808285; font-size: 14px;">Meter Configuration</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">VERIFIED</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #808285; font-size: 14px;">Grid Connection</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">${state} COMPLIANT</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #808285; font-size: 14px;">Safety Switches (RCD)</span>
+                <span style="color: #00EAD3; font-size: 14px; font-weight: 600;">REQUIRED</span>
+              </div>
+            </div>
+          </div>
+          <div class="card aqua-b" style="text-align: center; padding: 20px;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px;">SITE STATUS</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 24px; color: #fff; font-weight: 700;">READY FOR INSTALLATION</p>
           </div>
         </div>
       </div>

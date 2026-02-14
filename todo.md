@@ -906,3 +906,10 @@
 - [x] Fix regenerate mutation to also clear calculations (was reusing stale cached values)
 - [x] Verified: Stuart Naylor (proposal 570001) now shows 100% carbon reduction instead of 0%
 - [x] All 104 tests passing, TypeScript compiles clean
+
+
+## Electrical Status & Photos + CO2 Cap + Premium Design (Feb 14)
+- [x] Investigate and fix electrical status & site photos missing from generated slides
+- [x] Cap CO2 reduction percentage at 85% to account for residual grid dependency
+- [x] Continue premium design overhaul — reduce text, increase readability for high-net-worth audience
+- [x] Regenerate all existing proposals with corrected calculations (27 proposals reset to draft, regenerate on-demand)

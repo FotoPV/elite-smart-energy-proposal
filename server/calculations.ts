@@ -718,11 +718,16 @@ export function calculateCo2Reduction(
   const reductionTonnes = Math.max(0, currentCo2Tonnes - projectedCo2Tonnes);
   const reductionPercent = currentCo2Tonnes > 0 ? Math.min(100, (reductionTonnes / currentCo2Tonnes) * 100) : 0;
   
+  // Cap at 85% — even with solar + battery, residual grid dependency remains
+  // (overnight loads, high-demand periods, winter shortfalls)
+  const MAX_CO2_REDUCTION_PCT = 85;
+  
   // Ensure minimum meaningful reduction for any solar + battery system
-  const finalReductionPct = reductionPercent < 5 && solarGenerationKwh > 0 ? Math.max(reductionPercent, 40) : reductionPercent;
+  const rawPct = reductionPercent < 5 && solarGenerationKwh > 0 ? Math.max(reductionPercent, 40) : reductionPercent;
+  const finalReductionPct = Math.min(rawPct, MAX_CO2_REDUCTION_PCT);
   const finalReductionTonnes = reductionTonnes < 0.1 && solarGenerationKwh > 0 
     ? round(currentCo2Tonnes * (finalReductionPct / 100), 2) 
-    : reductionTonnes;
+    : round(currentCo2Tonnes * (finalReductionPct / 100), 2);
   
   return {
     currentCo2Tonnes: round(currentCo2Tonnes, 2),

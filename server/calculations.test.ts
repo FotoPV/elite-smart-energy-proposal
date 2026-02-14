@@ -340,12 +340,13 @@ describe("CO2 Reduction", () => {
     expect(result.reductionPercent).toBeGreaterThan(50);
   });
 
-  it("shows 100% reduction when fully offset", () => {
+  it("caps reduction at 85% even when fully offset", () => {
     const result = calculateCo2Reduction(7300, 18250, 15000, true);
     
-    // With more solar than usage and gas eliminated
-    expect(result.projectedCo2Tonnes).toBe(0);
-    expect(result.reductionPercent).toBe(100);
+    // With more solar than usage and gas eliminated, still capped at 85%
+    // to account for residual grid dependency (overnight loads, winter shortfalls)
+    expect(result.reductionPercent).toBe(85);
+    expect(result.projectedCo2Tonnes).toBeGreaterThan(0);
   });
 });
 

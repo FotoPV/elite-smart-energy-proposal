@@ -1,0 +1,150 @@
+{
+  "query": "SELECT id, status, customerId FROM proposals ORDER BY id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, status, customerId FROM proposals ORDER BY id",
+  "rows": [
+    {
+      "id": "270003",
+      "status": "generated",
+      "customerId": "240001"
+    },
+    {
+      "id": "270004",
+      "status": "generated",
+      "customerId": "240002"
+    },
+    {
+      "id": "300001",
+      "status": "draft",
+      "customerId": "270001"
+    },
+    {
+      "id": "300002",
+      "status": "generated",
+      "customerId": "270001"
+    },
+    {
+      "id": "330001",
+      "status": "generated",
+      "customerId": "360001"
+    },
+    {
+      "id": "330002",
+      "status": "generated",
+      "customerId": "360001"
+    },
+    {
+      "id": "360001",
+      "status": "generated",
+      "customerId": "390001"
+    },
+    {
+      "id": "360002",
+      "status": "generated",
+      "customerId": "390001"
+    },
+    {
+      "id": "390001",
+      "status": "generated",
+      "customerId": "420001"
+    },
+    {
+      "id": "390002",
+      "status": "generated",
+      "customerId": "420001"
+    },
+    {
+      "id": "390003",
+      "status": "generated",
+      "customerId": "360001"
+    },
+    {
+      "id": "390004",
+      "status": "generated",
+      "customerId": "420001"
+    },
+    {
+      "id": "390005",
+      "status": "generated",
+      "customerId": "270001"
+    },
+    {
+      "id": "390006",
+      "status": "generated",
+      "customerId": "360001"
+    },
+    {
+      "id": "420001",
+      "status": "generated",
+      "customerId": "450001"
+    },
+    {
+      "id": "450001",
+      "status": "generated",
+      "customerId": "480001"
+    },
+    {
+      "id": "480001",
+      "status": "generated",
+      "customerId": "480001"
+    },
+    {
+      "id": "510001",
+      "status": "generated",
+      "customerId": "510001"
+    },
+    {
+      "id": "540001",
+      "status": "generated",
+      "customerId": "540001"
+    },
+    {
+      "id": "570001",
+      "status": "generated",
+      "customerId": "600001"
+    },
+    {
+      "id": "600001",
+      "status": "generated",
+      "customerId": "540001"
+    },
+    {
+      "id": "630001",
+      "status": "generated",
+      "customerId": "630001"
+    },
+    {
+      "id": "660001",
+      "status": "generated",
+      "customerId": "630001"
+    },
+    {
+      "id": "690001",
+      "status": "generated",
+      "customerId": "630001"
+    },
+    {
+      "id": "720001",
+      "status": "generated",
+      "customerId": "630001"
+    },
+    {
+      "id": "750001",
+      "status": "generated",
+      "customerId": "660001"
+    },
+    {
+      "id": "780001",
+      "status": "generated",
+      "customerId": "690001"
+    },
+    {
+      "id": "810001",
+      "status": "generated",
+      "customerId": "510001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tcustomerId\n270003\tgenerated\t240001\n270004\tgenerated\t240002\n300001\tdraft\t270001\n300002\tgenerated\t270001\n330001\tgenerated\t360001\n330002\tgenerated\t360001\n360001\tgenerated\t390001\n360002\tgenerated\t390001\n390001\tgenerated\t420001\n390002\tgenerated\t420001\n390003\tgenerated\t360001\n390004\tgenerated\t420001\n390005\tgenerated\t270001\n390006\tgenerated\t360001\n420001\tgenerated\t450001\n450001\tgenerated\t480001\n480001\tgenerated\t480001\n510001\tgenerated\t510001\n540001\tgenerated\t540001\n570001\tgenerated\t600001\n600001\tgenerated\t540001\n630001\tgenerated\t630001\n660001\tgenerated\t630001\n690001\tgenerated\t630001\n720001\tgenerated\t630001\n750001\tgenerated\t660001\n780001\tgenerated\t690001\n810001\tgenerated\t510001\n",
+  "stderr": "",
+  "execution_time_ms": 1492
+}
