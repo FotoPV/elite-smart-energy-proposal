@@ -18,8 +18,8 @@ const sampleProposalData: ProposalData = {
   gasAnnualCost: 1200,
   solarSizeKw: 10,
   panelCount: 20,
-  panelWattage: 500,
-  panelBrand: "AIKO Neostar",
+  panelWattage: 440,
+  panelBrand: "Trina Solar Vertex S+",
   batterySizeKwh: 24,
   batteryBrand: "Sigenergy SigenStor",
   inverterSizeKw: 8,
@@ -30,7 +30,7 @@ const sampleProposalData: ProposalData = {
   annualSavings: 3710,
   paybackYears: 6.0,
   tenYearSavings: 37100,
-  vppProvider: "ENGIE",
+  vppProvider: "AGL",
   vppProgram: "VPP Advantage",
   vppAnnualValue: 450,
   hasGasBundle: true,
@@ -44,10 +44,9 @@ const sampleProposalData: ProposalData = {
 };
 
 describe("generateSlides", () => {
-  it("generates the correct number of slides", () => {
+  it("generates 17 slides for the new structure", () => {
     const slides = generateSlides(sampleProposalData);
-    // Should have at least 14 slides (cover through conclusion)
-    expect(slides.length).toBeGreaterThanOrEqual(14);
+    expect(slides.length).toBe(17);
   });
 
   it("includes cover slide with customer name", () => {
@@ -57,6 +56,12 @@ describe("generateSlides", () => {
     expect(coverSlide?.title).toBe("Paul Stokes");
   });
 
+  it("includes executive summary slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "executive_summary");
+    expect(slide).toBeDefined();
+  });
+
   it("includes bill analysis slide", () => {
     const slides = generateSlides(sampleProposalData);
     const billSlide = slides.find(s => s.type === "bill_analysis");
@@ -64,44 +69,90 @@ describe("generateSlides", () => {
     expect(billSlide?.content.annualCost).toBe(2800);
   });
 
-  it("includes EV analysis slide when hasEV is true", () => {
+  it("includes bill breakdown slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const evSlide = slides.find(s => s.type === "ev_analysis");
-    expect(evSlide).toBeDefined();
-    expect(evSlide?.content.annualKm).toBe(10000);
+    const slide = slides.find(s => s.type === "bill_breakdown");
+    expect(slide).toBeDefined();
   });
 
-  it("excludes EV analysis slide when hasEV is false", () => {
-    const dataWithoutEV = { ...sampleProposalData, hasEV: false, evAnnualKm: undefined };
-    const slides = generateSlides(dataWithoutEV);
-    const evSlide = slides.find(s => s.type === "ev_analysis");
-    expect(evSlide).toBeUndefined();
+  it("includes seasonal usage slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "seasonal_usage");
+    expect(slide).toBeDefined();
   });
 
-  it("includes VPP comparison slide", () => {
+  it("includes annual consumption slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const vppSlide = slides.find(s => s.type === "vpp_comparison");
-    expect(vppSlide).toBeDefined();
+    const slide = slides.find(s => s.type === "annual_consumption");
+    expect(slide).toBeDefined();
   });
 
-  it("includes financial investment slide with correct values", () => {
+  it("includes projected annual cost slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const financialSlide = slides.find(s => s.type === "financial_investment");
-    expect(financialSlide).toBeDefined();
-    expect(financialSlide?.content.netInvestment).toBe(22200);
-    expect(financialSlide?.content.paybackYears).toBe(6.0);
+    const slide = slides.find(s => s.type === "projected_annual_cost");
+    expect(slide).toBeDefined();
   });
 
-  it("includes conclusion slide", () => {
+  it("includes battery benefits slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const conclusionSlide = slides.find(s => s.type === "conclusion");
-    expect(conclusionSlide).toBeDefined();
+    const slide = slides.find(s => s.type === "battery_benefits");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes battery considerations slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "battery_considerations");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes battery storage slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "battery_storage");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes solar PV slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "solar_pv");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes financial impact slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "financial_impact");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes environmental impact slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "environmental_impact");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes strategic pathway slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "strategic_pathway");
+    expect(slide).toBeDefined();
   });
 
   it("includes contact slide", () => {
     const slides = generateSlides(sampleProposalData);
     const contactSlide = slides.find(s => s.type === "contact");
     expect(contactSlide).toBeDefined();
+  });
+
+  it("includes VPP recommendation slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "vpp_recommendation");
+    expect(slide).toBeDefined();
+  });
+
+  it("includes financial impact analysis slide", () => {
+    const slides = generateSlides(sampleProposalData);
+    const slide = slides.find(s => s.type === "financial_impact_analysis");
+    expect(slide).toBeDefined();
+    expect(slide?.content.netSystemCost).toBe(22200);
+    expect(slide?.content.paybackYears).toBe(6.0);
   });
 });
 
@@ -117,15 +168,14 @@ describe("generateSlideHTML", () => {
     expect(html).toContain("Lightning Energy");
   });
 
-  it("generates valid HTML for financial investment slide", () => {
+  it("generates valid HTML for financial impact analysis slide", () => {
     const slides = generateSlides(sampleProposalData);
-    const financialSlide = slides.find(s => s.type === "financial_investment");
-    expect(financialSlide).toBeDefined();
+    const slide = slides.find(s => s.type === "financial_impact_analysis");
+    expect(slide).toBeDefined();
     
-    const html = generateSlideHTML(financialSlide!);
+    const html = generateSlideHTML(slide!);
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain("$22,200");
-    expect(html).toContain("YRS");
   });
 
   it("includes brand colors in generated HTML", () => {
@@ -134,8 +184,7 @@ describe("generateSlideHTML", () => {
     
     // Check for brand colors
     expect(html).toContain("#00EAD3"); // Aqua
-    expect(html).toContain("#f36710"); // Orange (Burnt Orange)
-    expect(html).toContain("#000000"); // Black background
+    expect(html).toContain("#1a1a1a"); // Dark charcoal background
   });
 
   it("includes copyright in generated HTML", () => {
@@ -168,5 +217,28 @@ describe("slide data structure", () => {
     for (let i = 0; i < slides.length; i++) {
       expect(slides[i].id).toBe(i + 1);
     }
+  });
+
+  it("slides follow the correct order", () => {
+    const slides = generateSlides(sampleProposalData);
+    const types = slides.map(s => s.type);
+    
+    expect(types[0]).toBe("cover");
+    expect(types[1]).toBe("executive_summary");
+    expect(types[2]).toBe("bill_analysis");
+    expect(types[3]).toBe("bill_breakdown");
+    expect(types[4]).toBe("seasonal_usage");
+    expect(types[5]).toBe("annual_consumption");
+    expect(types[6]).toBe("projected_annual_cost");
+    expect(types[7]).toBe("battery_benefits");
+    expect(types[8]).toBe("battery_considerations");
+    expect(types[9]).toBe("battery_storage");
+    expect(types[10]).toBe("solar_pv");
+    expect(types[11]).toBe("financial_impact");
+    expect(types[12]).toBe("environmental_impact");
+    expect(types[13]).toBe("strategic_pathway");
+    expect(types[14]).toBe("contact");
+    expect(types[15]).toBe("vpp_recommendation");
+    expect(types[16]).toBe("financial_impact_analysis");
   });
 });

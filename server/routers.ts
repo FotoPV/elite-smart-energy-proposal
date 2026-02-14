@@ -1225,34 +1225,52 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
         enriched.content.narrative = narrative;
         break;
       }
-      case 'annual_energy_projection': {
-        const narrative = await narrativeYearlyProjection(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'usage_benchmarking': {
+      case 'seasonal_usage': {
         const narrative = await narrativeUsageAnalysis(data);
         enriched.content.narrative = narrative;
         break;
       }
-      case 'solar_recommendation': {
-        const narrative = await narrativeStrategicAssessment(data);
+      case 'annual_consumption': {
+        const narrative = await narrativeUsageAnalysis(data);
         enriched.content.narrative = narrative;
         break;
       }
-      case 'battery_recommendation': {
+      case 'projected_annual_cost': {
+        const narrative = await narrativeYearlyProjection(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'battery_benefits': {
+        // No LLM narrative needed — content is data-driven
+        break;
+      }
+      case 'battery_considerations': {
+        // No LLM narrative needed — content is data-driven
+        break;
+      }
+      case 'battery_storage': {
         const narrative = await narrativeBatteryOption(data, 1);
         enriched.content.narrativeWhy = narrative.whyRecommend;
         break;
       }
-      case 'why_battery': {
-        const narrative = await narrativeBatteryOption(data, 1);
-        enriched.content.narrative = narrative.whyRecommend;
+      case 'solar_pv': {
+        const narrative = await narrativeStrategicAssessment(data);
+        enriched.content.narrative = narrative;
         break;
       }
-      case 'battery_considerations': {
-        const narrative = await narrativeBatteryOption(data, 2);
-        enriched.content.narrative = narrative.whyRecommend;
+      case 'financial_impact': {
+        const narrative = await narrativeInvestmentAnalysis(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'environmental_impact': {
+        const narrative = await narrativeEnvironmentalImpact(data);
+        enriched.content.narrative = narrative;
+        break;
+      }
+      case 'strategic_pathway': {
+        const narrative = await narrativeRoadmap(data);
+        enriched.content.narrative = narrative;
         break;
       }
       case 'vpp_recommendation': {
@@ -1260,54 +1278,12 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
         enriched.content.narrative = narrative;
         break;
       }
-      case 'ev_analysis': {
-        const narrative = await narrativeEnvironmentalImpact(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'ev_vs_petrol': {
-        const narrative = await narrativeEnvironmentalImpact(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'financial_investment': {
+      case 'financial_impact_analysis': {
         const narrative = await narrativeInvestmentAnalysis(data);
         enriched.content.narrative = narrative;
         break;
       }
-      case 'return_on_investment': {
-        const narrative = await narrativeInvestmentAnalysis(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'roadmap': {
-        const narrative = await narrativeRoadmap(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'energy_optimisation': {
-        const narrative = await narrativeStrategicAssessment(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'required_electrical_works': {
-        const narrative = await narrativeStrategicAssessment(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'system_integration': {
-        const narrative = await narrativeEnvironmentalImpact(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
-      case 'conclusion': {
-        const narrative = await narrativeFinalRecommendation(data);
-        enriched.content.narrativeSummary = narrative.financial;
-        enriched.content.narrativeFinancial = narrative.strategic;
-        enriched.content.recommendation = narrative.urgency;
-        break;
-      }
-      // Slides without narrative (cover, contact, vpp_comparison)
+      // Slides without narrative (cover, contact, battery_benefits, battery_considerations)
       // just pass through without LLM enrichment
       default:
         break;

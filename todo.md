@@ -849,3 +849,14 @@
 - [x] Remove crossorigin="anonymous" from slide HTML img tags — it blocks S3 images without CORS headers
 - [x] Ensure PDF export still works via server-side proxy (base64 conversion happens at PDF render time, not in slide HTML)
 - [x] Regenerate proposal and verify photos render in both browser view and PDF export
+
+
+## Clone Steve Zafiriou SA Proposal PDF — Exact Slide Match (Feb 14)
+- [x] Deep dive analysis of all pages in Steve Zafiriou SA proposal PDF
+- [x] Document every slide layout, chart type, content structure, and design detail
+- [x] Compare PDF slides against current generator output — identify all differences
+- [x] Update slideGenerator.ts HTML templates to match PDF exactly
+- [x] Update slideNarrative.ts prompts to match PDF content style
+- [x] Update calculations.ts and routers.ts for any data/logic changes
+- [x] Test generation with SA customer and verify against PDF
+- [x] Save checkpoint after cloning is complete
