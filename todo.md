@@ -913,3 +913,11 @@
 - [x] Cap CO2 reduction percentage at 85% to account for residual grid dependency
 - [x] Continue premium design overhaul — reduce text, increase readability for high-net-worth audience
 - [x] Regenerate all existing proposals with corrected calculations (27 proposals reset to draft, regenerate on-demand)
+
+
+## Bug Fix: Extremely Poor Visibility/Contrast on Dashboard (Feb 14)
+- [x] Fix grey text on black background — increase to white (#FFFFFF) for all body text
+- [x] Fix form elements (dropdowns, inputs) — increase border contrast and text brightness
+- [x] Fix subtitle/description text — too dark grey, needs to be lighter (#b0b0b0 minimum)
+- [x] Fix step indicators — improve contrast for inactive steps
+- [x] Verify all pages (New Proposal, Bills & Photos, Bin) have readable text
