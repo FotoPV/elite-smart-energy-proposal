@@ -998,3 +998,15 @@
 - [x] Add CSS `image-orientation: from-image` to slide HTML img tags for immediate browser-side fix
 - [ ] Verify the fix works after Regenerate All (user running now)
 - [x] All 104 tests passing
+
+## VPP Section Audit — Stuck on AGL? (Feb 15)
+- [x] Audited all VPP references in slideGenerator.ts, routers.ts, calculations.ts
+- [x] Root cause: hardcoded getVPPProviders() function with static 5-provider list (Origin, AGL, EnergyAustralia, Diamond, ENGIE)
+- [x] Root cause: buildProposalData fallback defaulted to ENGIE when selectedVppProvider was missing
+- [x] DB has 12 VPP providers seeded — calculations engine correctly selects top provider per state
+- [x] Fix: Added vppProviderComparison to ProposalData interface
+- [x] Fix: Pass vppProviderComparison through buildProposalData from calculations
+- [x] Fix: Replaced hardcoded getVPPProviders() with real comparison data from calculations
+- [x] Fix: Updated fallback from ENGIE to use top-ranked provider from comparison
+- [x] Removed hardcoded getVPPProviders() function entirely
+- [x] 0 TypeScript errors, all 104 tests passing

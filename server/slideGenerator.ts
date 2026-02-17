@@ -95,6 +95,7 @@ export interface ProposalData {
   vppDailyCreditAnnual?: number;
   vppEventPaymentsAnnual?: number;
   vppBundleDiscount?: number;
+  vppProviderComparison?: Array<{ provider: string; programName: string; hasGasBundle: boolean; estimatedAnnualValue: number; strategicFit: string }>;
   
   // EV (optional)
   hasEV: boolean;
@@ -286,8 +287,15 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   const batteryModuleCount = Math.ceil(data.batterySizeKwh / moduleSize);
   const usableCapacity = Math.round(data.batterySizeKwh * 0.95);
   
-  // VPP providers for comparison table
-  const vppProviders = getVPPProviders(data.state, data.hasGasBundle);
+  // VPP providers for comparison table — use real data from calculations
+  const vppProviders = (data.vppProviderComparison || []).map((p, i) => ({
+    provider: p.provider,
+    program: p.programName,
+    gasBundle: p.hasGasBundle,
+    batterySupport: true,
+    annualValue: `~$${Math.round(p.estimatedAnnualValue).toLocaleString()}`,
+    verdict: i === 0 ? 'RECOMMENDED' : p.strategicFit === 'excellent' ? 'Excellent Fit' : p.strategicFit === 'good' ? 'Strong Alternative' : p.strategicFit === 'moderate' ? 'Moderate Fit' : 'Lower Returns',
+  }));
   
   // Slide 1: COVER
   slides.push({
@@ -657,18 +665,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
 // HELPER FUNCTIONS
 // ============================================================
 
-function getVPPProviders(state: string, hasGas: boolean): Array<{
-  provider: string; program: string; gasBundle: boolean; batterySupport: boolean; annualValue: string; verdict: string;
-}> {
-  const providers = [
-    { provider: 'Origin Energy', program: 'Origin Loop', gasBundle: true, batterySupport: true, annualValue: '~$550', verdict: 'RECOMMENDED' },
-    { provider: 'AGL', program: 'Night Saver', gasBundle: true, batterySupport: true, annualValue: '~$280', verdict: 'Strong Alternative' },
-    { provider: 'EnergyAustralia', program: 'PowerResponse', gasBundle: true, batterySupport: true, annualValue: '~$180', verdict: 'Lower Returns' },
-    { provider: 'Diamond Energy', program: 'GridCredits', gasBundle: false, batterySupport: true, annualValue: '~$450', verdict: 'No Gas Bundle' },
-    { provider: 'ENGIE', program: 'VPP Advantage', gasBundle: true, batterySupport: false, annualValue: 'N/A', verdict: 'Not Compatible' },
-  ];
-  return providers;
-}
+// getVPPProviders removed — now uses real vppProviderComparison data from calculations
 
 // ============================================================
 // HTML SLIDE GENERATORS

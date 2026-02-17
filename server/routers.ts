@@ -1662,8 +1662,10 @@ function buildProposalData(
   }
 ): ProposalData {
   const hasGas = false; // Gas features removed
-  const vppName = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE';
-  const vppProgram = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName || 'VPP Advantage' : 'VPP Advantage';
+  // Use the top-ranked VPP provider from the comparison, falling back to the selectedVppProvider field
+  const topVpp = calc.vppProviderComparison?.[0];
+  const vppName = topVpp?.provider || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name : calc.selectedVppProvider) || 'Origin';
+  const vppProgram = topVpp?.programName || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName : '') || 'Loop VPP';
   return {
     customerName: customer.fullName,
     address: customer.address || '',
@@ -1732,6 +1734,7 @@ function buildProposalData(
     vppDailyCreditAnnual: calc.vppDailyCreditAnnual,
     vppEventPaymentsAnnual: calc.vppEventPaymentsAnnual,
     vppBundleDiscount: calc.vppBundleDiscount,
+    vppProviderComparison: calc.vppProviderComparison,
     existingSolar: (customer.existingSolar as 'none' | 'under_5_years' | 'over_5_years') || 'none',
     hasEV: customer.hasEV ?? false,
     evAnnualKm: calc.evKmPerYear || 10000,
