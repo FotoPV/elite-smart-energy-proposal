@@ -668,20 +668,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     }
   });
   
-  // Slide 13: ENVIRONMENTAL IMPACT — Carbon Reduction
-  slides.push({
-    id: slideId++,
-    type: 'environmental_impact',
-    title: `${co2ReductionPct}% CARBON REDUCTION THROUGH SOLAR + BATTERY INSTALLATION`,
-    content: {
-      co2Current,
-      co2Projected,
-      co2ReductionPct,
-      treesEquiv,
-      carsRemoved,
-      co2_25yr,
-    }
-  });
+  // (Environmental Impact slide removed — space reallocated to Scope of Electrical Works)
   
   // Slide 14: ELECTRICAL ASSESSMENT & SITE PHOTOS (conditional — only if sitePhotos exist)
   if (data.sitePhotos && data.sitePhotos.length > 0) {
@@ -702,25 +689,40 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 15: SCOPE OF ELECTRICAL WORKS (conditional — only if switchboard analysis exists)
+  // Slide 14-15: SCOPE OF ELECTRICAL WORKS (split across 2 slides for full detail)
   if (data.switchboardAnalysis) {
+    const scopeContent = {
+      switchboardAnalysis: data.switchboardAnalysis,
+      meterAnalysis: data.meterAnalysis,
+      cableRunAnalysis: data.cableRunAnalysis,
+      cableSizing: data.cableSizing,
+      solarSizeKw: data.solarSizeKw,
+      batterySizeKwh: data.batterySizeKwh,
+      inverterBrand: data.inverterBrand,
+      inverterSizeKw: data.inverterSizeKw,
+      batteryBrand: data.batteryBrand,
+      state: data.state,
+    };
+    // Page 1: Board Layout + Assessment Cards
     slides.push({
       id: slideId++,
-      type: 'scope_of_works',
+      type: 'scope_of_works_1',
       title: 'SCOPE OF ELECTRICAL WORKS',
-      subtitle: 'PRE & POST INSTALLATION',
+      subtitle: 'SWITCHBOARD & SITE ASSESSMENT',
       content: {
-        switchboardAnalysis: data.switchboardAnalysis,
-        meterAnalysis: data.meterAnalysis,
-        cableRunAnalysis: data.cableRunAnalysis,
-        cableSizing: data.cableSizing,
-        solarSizeKw: data.solarSizeKw,
-        batterySizeKwh: data.batterySizeKwh,
-        inverterBrand: data.inverterBrand,
-        inverterSizeKw: data.inverterSizeKw,
-        batteryBrand: data.batteryBrand,
-        state: data.state,
+        ...scopeContent,
         headerRight: 'Installer Assessment',
+      }
+    });
+    // Page 2: Scope Items + Costs + Cable Sizing + Total
+    slides.push({
+      id: slideId++,
+      type: 'scope_of_works_2',
+      title: 'SCOPE OF ELECTRICAL WORKS',
+      subtitle: 'UPGRADE REQUIREMENTS & COST ESTIMATES',
+      content: {
+        ...scopeContent,
+        headerRight: 'Preliminary Quote',
       }
     });
   }
@@ -1087,9 +1089,10 @@ export function generateSlideHTML(slide: SlideContent): string {
       case 'battery_storage': content = genBatteryStorage(slide); break;
       case 'solar_pv': content = genSolarPV(slide); break;
       case 'financial_impact': content = genFinancialImpact(slide); break;
-      case 'environmental_impact': content = genEnvironmentalImpact(slide); break;
       case 'site_assessment': content = genSiteAssessment(slide); break;
       case 'scope_of_works': content = genScopeOfWorks(slide); break;
+      case 'scope_of_works_1': content = genScopeOfWorks1(slide); break;
+      case 'scope_of_works_2': content = genScopeOfWorks2(slide); break;
       case 'strategic_pathway': content = genStrategicPathway(slide); break;
       case 'contact': content = genContact(slide); break;
       case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
@@ -2484,6 +2487,341 @@ function genScopeOfWorks(slide: SlideContent): string {
             <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em;">SYSTEM TO BE INSTALLED</p>
             <p style="font-family: 'GeneralSans', sans-serif; font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">${solarKw}kW ${inverterBrand} + ${batteryKwh}kWh ${batteryBrand}</p>
           </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// SCOPE OF WORKS — PAGE 1: Board Layout + Assessment Cards
+// ============================================================
+function genScopeOfWorks1(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const swb = c.switchboardAnalysis as ProposalData['switchboardAnalysis'] | undefined;
+  const cableRun = c.cableRunAnalysis as ProposalData['cableRunAnalysis'] | undefined;
+  const solarKw = c.solarSizeKw as number || 0;
+  const batteryKwh = c.batterySizeKwh as number || 0;
+
+  if (!swb) return genGeneric(slide);
+
+  // Phase configuration
+  const phaseLabel = swb.phaseConfiguration === 'single' ? 'SINGLE PHASE' : swb.phaseConfiguration === 'three' ? 'THREE PHASE' : 'UNKNOWN';
+  const phaseColor = swb.phaseConfiguration !== 'unknown' ? '#00EAD3' : '#F5A623';
+  const phaseSource = swb.phaseConfirmationSource || 'Visual inspection';
+
+  // Metering
+  const meter = c.meterAnalysis as ProposalData['meterAnalysis'] | undefined;
+  const meterLabel = meter?.meterType || swb.meterType || 'Unknown';
+  const meterBiDi = (meter?.isBidirectional ?? swb.meterIsBidirectional) === true ? 'YES' : (meter?.isBidirectional ?? swb.meterIsBidirectional) === false ? 'NO' : 'UNKNOWN';
+  const meterBiDiColor = (meter?.isBidirectional ?? swb.meterIsBidirectional) === true ? '#00EAD3' : (meter?.isBidirectional ?? swb.meterIsBidirectional) === false ? '#F5A623' : '#808285';
+  const meterSwapNeeded = meter?.meterSwapRequired ?? swb.meterSwapRequired;
+  const meterSwapLabel = meterSwapNeeded ? 'REQUIRED' : 'NOT REQUIRED';
+  const meterSwapColor = meterSwapNeeded ? '#F5A623' : '#00EAD3';
+  const meterNumber = meter?.meterNumber || null;
+  const meterNmi = meter?.nmi || null;
+  const meterBrand = meter?.meterBrand || null;
+  const meterModel = meter?.meterModel || null;
+  const meterSwapReason = meter?.meterSwapReason || swb.meterNotes || null;
+
+  // Cable assessment
+  const cableAdequate = swb.existingCableSizeAdequate === true ? 'ADEQUATE' : swb.existingCableSizeAdequate === false ? 'UPGRADE NEEDED' : 'TO BE ASSESSED';
+  const cableColor = swb.existingCableSizeAdequate === true ? '#00EAD3' : swb.existingCableSizeAdequate === false ? '#F5A623' : '#808285';
+
+  // Build PRE board layout
+  const currentBreakers = (swb.circuitBreakers || []).slice(0, 12);
+  const preBoard = currentBreakers.length > 0 ? currentBreakers.map(cb => `
+    <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+      <div style="width: 20px; height: 20px; background: ${cb.isUsed ? '#333' : '#1a1a1a'}; border: 1px solid ${cb.isUsed ? '#555' : '#333'}; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 10px; color: ${cb.isUsed ? '#ccc' : '#555'};">${cb.position}</span>
+      </div>
+      <span style="font-size: 12px; color: ${cb.isUsed ? '#ccc' : '#555'}; font-family: 'Urbanist', sans-serif;">${cb.rating}A ${cb.type}</span>
+      <span style="font-size: 11px; color: #808285; margin-left: auto; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${cb.label || (cb.isUsed ? 'In Use' : 'Empty')}</span>
+    </div>
+  `).join('') : `
+    <div style="padding: 8px 0;">
+      <p style="color: #808285; font-size: 13px;">Main Switch: ${swb.mainSwitchRating || '?'}A ${swb.mainSwitchType || ''}</p>
+      <p style="color: #808285; font-size: 13px; margin-top: 4px;">${swb.usedCircuits || '?'}/${swb.totalCircuits || '?'} circuits used</p>
+      <p style="color: #808285; font-size: 13px; margin-top: 4px;">${swb.availableCircuits || '?'} positions available</p>
+    </div>
+  `;
+
+  // Build POST board layout
+  const solarPos = swb.proposedSolarBreakerPosition;
+  const batteryPos = swb.proposedBatteryBreakerPosition;
+  const solarBreaker = swb.proposedSolarBreakerRating || '32A MCB';
+  const batteryBreaker = swb.proposedBatteryBreakerRating || '32A MCB';
+
+  const postAdditions = `
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">${solarBreaker}</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">Solar PV${solarPos ? ` (Pos ${solarPos})` : ''}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">${batteryBreaker}</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">Battery${batteryPos ? ` (Pos ${batteryPos})` : ''}</span>
+      </div>
+      ${swb.proposedAcIsolatorLocation ? `
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">AC Isolator</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">${swb.proposedAcIsolatorLocation}</span>
+      </div>` : ''}
+      ${swb.proposedDcIsolatorLocation ? `
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(245,166,35,0.15); border: 2px solid #F5A623; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #F5A623; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #F5A623; font-family: 'Urbanist', sans-serif; font-weight: 600;">DC Isolator</span>
+        <span style="font-size: 11px; color: #F5A623; margin-left: auto;">${swb.proposedDcIsolatorLocation}</span>
+      </div>` : ''}
+    </div>
+  `;
+
+  // Site status
+  const upgradeRequired = swb.upgradeRequired;
+  const statusColor = upgradeRequired ? '#F5A623' : '#00EAD3';
+  const statusLabel = upgradeRequired ? 'UPGRADE REQUIRED' : 'INSTALLATION READY';
+
+  // Inspector notes
+  const inspectorNotes = ((swb as any).notes || []).slice(0, 3) as string[];
+  const warnings = ((swb as any).warnings || []).slice(0, 2) as string[];
+
+  return `
+    <div class="slide">
+      ${slideNum(slide.id)}
+      ${logoBR()}
+      ${altHeader(slide.title, c.headerRight as string || 'Installer Assessment', phaseLabel)}
+      <div style="display: flex; gap: 40px;">
+        <!-- Left Column: Pre/Post Board Layout -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+          <!-- PRE-INSTALLATION -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #F5A623; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">CURRENT BOARD LAYOUT</p>
+              <span style="font-size: 12px; color: #808285;">${swb.mainSwitchRating || '?'}A ${swb.mainSwitchType || 'Main'}</span>
+            </div>
+            ${preBoard}
+          </div>
+          <!-- Cable Run Photo -->
+          ${cableRun?.photoUrl ? `
+          <div class="card" style="padding: 10px;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 11px; color: #F5A623; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 6px;">CABLE RUN — ${cableRun.cableRunDistanceMetres ? cableRun.cableRunDistanceMetres.toFixed(1) + 'm' : 'MEASURED'}</p>
+            <img src="${cableRun.photoUrl}" style="width: 100%; max-height: 120px; object-fit: contain; border-radius: 4px;" />
+          </div>` : ''}
+          <!-- POST-INSTALLATION -->
+          <div class="card" style="padding: 16px; border-color: #00EAD3;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">PROPOSED ADDITIONS</p>
+              <span style="font-size: 12px; color: #00EAD3;">${solarKw}kW + ${batteryKwh}kWh</span>
+            </div>
+            ${postAdditions}
+          </div>
+        </div>
+
+        <!-- Right Column: Assessment Cards + Site Status -->
+        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Phase + Metering + Cable Row -->
+          <div style="display: flex; gap: 12px;">
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">PHASE CONFIG</p>
+              <p style="color: ${phaseColor}; font-size: 18px; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${phaseLabel}</p>
+              <p style="color: #808285; font-size: 11px; margin-top: 4px;">${phaseSource}</p>
+            </div>
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">METERING</p>
+              <p style="color: ${meterBiDiColor}; font-size: 14px; font-weight: 600;">Bi-Di: ${meterBiDi}</p>
+              <p style="color: ${meterSwapColor}; font-size: 12px; margin-top: 4px;">Swap: ${meterSwapLabel}</p>
+              ${meterNumber ? `<p style="color: #808285; font-size: 10px; margin-top: 4px;">Meter #${meterNumber}</p>` : ''}
+              ${meterNmi ? `<p style="color: #808285; font-size: 10px; margin-top: 2px;">NMI: ${meterNmi}</p>` : ''}
+              ${meterBrand || meterModel ? `<p style="color: #808285; font-size: 10px; margin-top: 2px;">${[meterBrand, meterModel].filter(Boolean).join(' ')}</p>` : ''}
+              ${meterSwapReason ? `<p style="color: #808285; font-size: 10px; margin-top: 2px; font-style: italic;">${meterSwapReason.substring(0, 60)}${meterSwapReason.length > 60 ? '...' : ''}</p>` : ''}
+            </div>
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">CABLE RUN</p>
+              ${cableRun?.cableRunDistanceMetres ? `
+                <p style="color: #00EAD3; font-size: 18px; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableRun.cableRunDistanceMetres.toFixed(1)}m</p>
+                <p style="color: #808285; font-size: 11px; margin-top: 4px;">${cableRun.installationMethod || 'Measured'}</p>
+              ` : `
+                <p style="color: ${cableColor}; font-size: 14px; font-weight: 600;">${cableAdequate}</p>
+                ${swb.cableAssessment ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.cableAssessment.substring(0, 80)}${swb.cableAssessment.length > 80 ? '...' : ''}</p>` : ''}
+              `}
+            </div>
+          </div>
+
+          <!-- Inspector Notes -->
+          ${inspectorNotes.length > 0 || warnings.length > 0 ? `
+          <div class="card" style="padding: 16px; flex: 1;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 12px;">INSPECTOR NOTES</p>
+            ${warnings.map(w => `
+              <div style="display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #222;">
+                <span style="color: #FF4444; font-size: 14px; min-width: 16px;">&#9888;</span>
+                <p style="font-size: 13px; color: #FF4444; line-height: 1.5;">${w}</p>
+              </div>
+            `).join('')}
+            ${inspectorNotes.map((n: string) => `
+              <div style="display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #222;">
+                <span style="color: #808285; font-size: 14px; min-width: 16px;">&#8226;</span>
+                <p style="font-size: 13px; color: #999; line-height: 1.5;">${n}</p>
+              </div>
+            `).join('')}
+          </div>` : ''}
+
+          <!-- Site Status -->
+          <div class="card" style="padding: 20px; text-align: center; border-color: ${statusColor};">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: ${statusColor}; text-transform: uppercase; letter-spacing: 0.15em;">SITE STATUS</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 22px; color: #fff; font-weight: 700; margin-top: 6px;">${statusLabel}</p>
+            ${swb.upgradeReason ? `<p style="font-size: 12px; color: #808285; margin-top: 8px; line-height: 1.5;">${swb.upgradeReason.substring(0, 150)}${swb.upgradeReason.length > 150 ? '...' : ''}</p>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// SCOPE OF WORKS — PAGE 2: Scope Items + Costs + Cable Sizing
+// ============================================================
+function genScopeOfWorks2(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const swb = c.switchboardAnalysis as ProposalData['switchboardAnalysis'] | undefined;
+  const cableRun = c.cableRunAnalysis as ProposalData['cableRunAnalysis'] | undefined;
+  const cableSizing = c.cableSizing as ProposalData['cableSizing'] | undefined;
+  const solarKw = c.solarSizeKw as number || 0;
+  const batteryKwh = c.batterySizeKwh as number || 0;
+  const inverterBrand = c.inverterBrand as string || 'Hybrid Inverter';
+  const inverterSizeKw = c.inverterSizeKw as number || 0;
+  const batteryBrand = c.batteryBrand as string || 'Battery';
+
+  if (!swb) return genGeneric(slide);
+
+  // Phase label for header
+  const phaseLabel = swb.phaseConfiguration === 'single' ? 'SINGLE PHASE' : swb.phaseConfiguration === 'three' ? 'THREE PHASE' : 'UNKNOWN';
+
+  // Scope items — NO LIMIT, show all items
+  const scopeItems = swb.upgradeScope || [];
+  let totalCostHtml = '';
+  try {
+    const totalCost = calculateTotalCostRange(scopeItems);
+    if (totalCost) {
+      totalCostHtml = `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 2px solid #00EAD3; margin-top: 12px;">
+          <span style="font-size: 16px; color: #00EAD3; font-weight: 700; font-family: 'Urbanist', sans-serif; letter-spacing: 0.05em;">ESTIMATED TOTAL</span>
+          <span style="font-size: 22px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${totalCost.formatted}</span>
+        </div>
+        <p style="font-size: 11px; color: #555; font-style: italic; margin-top: 6px;">Estimates based on standard Australian electrical contractor rates. Final pricing subject to site inspection.</p>
+      `;
+    }
+  } catch (e) { /* fallback: no total */ }
+
+  const scopeHtml = scopeItems.length > 0 ? scopeItems.map(item => {
+    const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#00EAD3';
+    const priorityLabel = item.priority.toUpperCase();
+    return `
+      <div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #222;">
+        <span style="font-size: 12px; color: ${priorityColor}; font-weight: 700; min-width: 100px; font-family: 'Urbanist', sans-serif; letter-spacing: 0.05em;">${priorityLabel}</span>
+        <div style="flex: 1;">
+          <p style="font-size: 15px; color: #fff; font-weight: 600; font-family: 'Urbanist', sans-serif;">${item.item}</p>
+          <p style="font-size: 13px; color: #808285; margin-top: 3px; line-height: 1.4;">${item.detail}</p>
+        </div>
+        ${item.estimatedCost ? `<span style="font-size: 15px; color: #F5A623; font-weight: 600; font-family: 'GeneralSans', sans-serif; white-space: nowrap; min-width: 100px; text-align: right;">${item.estimatedCost}</span>` : ''}
+      </div>
+    `;
+  }).join('') : `
+    <div style="padding: 12px 0;">
+      <p style="color: #00EAD3; font-size: 15px; font-weight: 600;">No additional upgrades identified</p>
+      <p style="color: #808285; font-size: 13px; margin-top: 4px;">Board is ready for solar + battery installation</p>
+    </div>
+  `;
+
+  return `
+    <div class="slide">
+      ${slideNum(slide.id)}
+      ${logoBR()}
+      ${altHeader(slide.title, c.headerRight as string || 'Preliminary Quote', phaseLabel)}
+      <div style="display: flex; gap: 40px;">
+        <!-- Left Column: Scope Items + Costs -->
+        <div style="flex: 1.3; display: flex; flex-direction: column;">
+          <p style="font-family: 'Urbanist', sans-serif; font-size: 16px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 16px;">UPGRADE REQUIREMENTS & COST ESTIMATES</p>
+          <div style="display: flex; flex-direction: column;">
+            ${scopeHtml}
+          </div>
+          ${totalCostHtml}
+        </div>
+
+        <!-- Right Column: Cable Sizing + System Summary -->
+        <div style="flex: 0.7; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Cable Sizing Reference Table -->
+          ${cableSizing ? `
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">CABLE SIZING</p>
+              <span style="font-size: 11px; color: #808285;">AS/NZS 3008.1.1</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+              <div style="background: rgba(0,234,211,0.08); border-radius: 4px; padding: 10px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">AC CABLE</p>
+                <p style="font-size: 18px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.acCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.acCableType}</p>
+              </div>
+              <div style="background: rgba(0,234,211,0.08); border-radius: 4px; padding: 10px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">DC CABLE</p>
+                <p style="font-size: 18px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.dcCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.dcCableType}</p>
+              </div>
+              <div style="background: rgba(0,234,211,0.08); border-radius: 4px; padding: 10px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">EARTH</p>
+                <p style="font-size: 18px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.earthCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">Cu Earth</p>
+              </div>
+              ${cableSizing.batteryCableSize ? `
+              <div style="background: rgba(245,166,35,0.08); border-radius: 4px; padding: 10px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">BATTERY</p>
+                <p style="font-size: 18px; color: #F5A623; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.batteryCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.batteryCableType || 'Battery Cable'}</p>
+              </div>` : ''}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid #222;">
+              <p style="font-size: 11px; color: ${cableSizing.acVoltageDropCompliant ? '#00EAD3' : '#FF4444'}; font-weight: 600;">V-Drop: ${cableSizing.acVoltageDrop.toFixed(1)}% ${cableSizing.acVoltageDropCompliant ? '\u2713 COMPLIANT' : '\u2717 EXCEEDS LIMIT'}</p>
+              <p style="font-size: 10px; color: #808285;">Run: ${cableSizing.runDistanceMetres}m</p>
+            </div>
+            ${cableSizing.referenceTable && cableSizing.referenceTable.length > 0 ? `
+            <div style="margin-top: 8px; border-top: 1px solid #222; padding-top: 6px;">
+              <p style="font-size: 10px; color: #808285; margin-bottom: 4px;">DISTANCE REFERENCE:</p>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                ${cableSizing.referenceTable.map(r => `
+                  <div style="background: ${r.compliant ? 'rgba(0,234,211,0.06)' : 'rgba(255,68,68,0.06)'}; border: 1px solid ${r.compliant ? '#333' : '#442222'}; border-radius: 3px; padding: 3px 6px;">
+                    <span style="font-size: 9px; color: ${r.compliant ? '#ccc' : '#FF4444'};">${r.distanceRange}: ${r.recommendedCable} (${r.voltageDropPercent.toFixed(1)}%)</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>` : ''}
+            <p style="font-size: 9px; color: #555; margin-top: 6px; font-style: italic;">${cableSizing.disclaimer}</p>
+          </div>` : ''}
+
+          <!-- System being installed summary -->
+          <div class="card aqua-b" style="padding: 16px; text-align: center;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em;">SYSTEM TO BE INSTALLED</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 18px; color: #fff; font-weight: 700; margin-top: 6px;">${solarKw}kW ${inverterBrand}</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 18px; color: #fff; font-weight: 700; margin-top: 2px;">${batteryKwh}kWh ${batteryBrand}</p>
+          </div>
+
+          <!-- Cable run pricing note -->
+          ${cableRun?.cableRunDistanceMetres ? `
+          <div class="card" style="padding: 14px; border-color: #F5A623;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 11px; color: #F5A623; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 6px;">CABLE RUN PRICING NOTE</p>
+            <p style="font-size: 12px; color: #999; line-height: 1.5;">Measured distance: <span style="color: #fff; font-weight: 600;">${cableRun.cableRunDistanceMetres.toFixed(1)}m</span></p>
+            <p style="font-size: 11px; color: #808285; margin-top: 4px;">1\u00D8 16mm: $33/m after 10m | 3\u00D8 16mm: $55/m after 5m</p>
+          </div>` : ''}
         </div>
       </div>
     </div>

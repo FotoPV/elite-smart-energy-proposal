@@ -9,7 +9,7 @@ import { storagePut, storageGet } from "./storage";
 import { extractElectricityBillData, validateElectricityBillData } from "./billExtraction";
 import { generateFullCalculations, calculateInverterSize, averageBills } from "./calculations";
 import { generateSlides, generateSlideHTML, type ProposalData, type SlideContent } from './slideGenerator';
-import { narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeInvestmentAnalysis, narrativeEnvironmentalImpact, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
+import { narrativeExecutiveSummary, narrativeBillAnalysis, narrativeUsageAnalysis, narrativeYearlyProjection, narrativeStrategicAssessment, narrativeBatteryOption, narrativeVPPRecommendation, narrativeInvestmentAnalysis, narrativeFinalRecommendation, narrativeRoadmap } from './slideNarrative';
 import { generatePptx } from "./pptxGenerator";
 import { generatePdf as generateNativePdf } from "./pdfGenerator";
 import { nanoid } from "nanoid";
@@ -2137,11 +2137,7 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
         enriched.content.narrative = narrative;
         break;
       }
-      case 'environmental_impact': {
-        const narrative = await narrativeEnvironmentalImpact(data);
-        enriched.content.narrative = narrative;
-        break;
-      }
+      // environmental_impact slide removed — space reallocated to Scope of Electrical Works
       case 'strategic_pathway': {
         const narrative = await narrativeRoadmap(data);
         enriched.content.narrative = narrative;

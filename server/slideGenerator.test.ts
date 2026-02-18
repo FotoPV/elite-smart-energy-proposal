@@ -44,9 +44,9 @@ const sampleProposalData: ProposalData = {
 };
 
 describe("generateSlides", () => {
-  it("generates 17 slides for the new structure", () => {
+  it("generates 16 slides for the new structure (environmental_impact removed)", () => {
     const slides = generateSlides(sampleProposalData);
-    expect(slides.length).toBe(17);
+    expect(slides.length).toBe(16);
   });
 
   it("includes cover slide with customer name", () => {
@@ -123,10 +123,10 @@ describe("generateSlides", () => {
     expect(slide).toBeDefined();
   });
 
-  it("includes environmental impact slide", () => {
+  it("does not include environmental impact slide (removed)", () => {
     const slides = generateSlides(sampleProposalData);
     const slide = slides.find(s => s.type === "environmental_impact");
-    expect(slide).toBeDefined();
+    expect(slide).toBeUndefined();
   });
 
   it("includes strategic pathway slide", () => {
@@ -235,10 +235,10 @@ describe("slide data structure", () => {
     expect(types[9]).toBe("battery_storage");
     expect(types[10]).toBe("solar_pv");
     expect(types[11]).toBe("financial_impact");
-    expect(types[12]).toBe("environmental_impact");
-    expect(types[13]).toBe("strategic_pathway");
-    expect(types[14]).toBe("contact");
-    expect(types[15]).toBe("vpp_recommendation");
-    expect(types[16]).toBe("financial_impact_analysis");
+    // environmental_impact removed — replaced by scope_of_works split
+    expect(types[12]).toBe("strategic_pathway");
+    expect(types[13]).toBe("contact");
+    expect(types[14]).toBe("vpp_recommendation");
+    expect(types[15]).toBe("financial_impact_analysis");
   });
 });

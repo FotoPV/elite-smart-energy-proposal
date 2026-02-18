@@ -1218,3 +1218,14 @@
 - [x] Regenerate slides and verify cable run pricing on Scope of Electrical Works slide (slide 14)
 - [x] Verify ESTIMATED TOTAL includes cable run cost ($3,009-$5,879)
 - [x] Fixed switchboard expansion keyword match (added 'switchboard expansion' to STANDARD_COST_RATES)
+
+## Slide Restructure - Remove Environmental Impact, Split Scope of Works (Feb 19)
+- [ ] Remove environmental_impact slide type from slideGenerator.ts
+- [ ] Remove environmental_impact from slide ordering in routers.ts
+- [ ] Split scope_of_works into scope_of_works_1 (switchboard layout, upgrade items with costs, cable run)
+- [ ] Create scope_of_works_2 (metering requirements, site status, inspector notes, ESTIMATED TOTAL)
+- [ ] Update slide ordering to include both scope slides
+- [ ] Keep total slide count at 19 (remove 1 + add 1 = net zero)
+- [ ] Update tests for new slide structure
+- [ ] Regenerate Peter Chu's proposal and verify both scope slides render correctly
+- [ ] Verify no content is cut off in PDF export
