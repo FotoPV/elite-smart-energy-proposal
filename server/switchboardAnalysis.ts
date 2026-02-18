@@ -362,6 +362,50 @@ Return your analysis as a JSON object with the following structure:
 }
 
 /**
+ * Cable run pricing per metre (16mm cable including installation).
+ * Single-phase: $33/m — gateway both ways after 10m free run.
+ * Three-phase: $55/m — gateway both ways after 5m free run.
+ */
+const CABLE_RUN_RATES = {
+  singlePhase: { ratePerMetre: 33, freeMetres: 10, cableSpec: '16mm single phase' },
+  threePhase:  { ratePerMetre: 55, freeMetres: 5,  cableSpec: '16mm 3 phase' },
+} as const;
+
+/**
+ * Calculate a cable run cost scope item based on measured distance and phase configuration.
+ * Returns null if no cable run data is available.
+ */
+export function calculateCableRunCostItem(
+  distanceMetres: number,
+  phaseConfig: 'single' | 'three' | string
+): UpgradeScopeItem | null {
+  if (!distanceMetres || distanceMetres <= 0) return null;
+
+  const isThreePhase = phaseConfig === 'three' || phaseConfig === '3-phase' || phaseConfig === 'three-phase';
+  const rate = isThreePhase ? CABLE_RUN_RATES.threePhase : CABLE_RUN_RATES.singlePhase;
+
+  const chargeableMetres = Math.max(0, distanceMetres - rate.freeMetres);
+  const totalCost = Math.round(chargeableMetres * rate.ratePerMetre);
+
+  // If within free run, no cost
+  if (chargeableMetres <= 0) {
+    return {
+      item: `Battery Cable Run (${rate.cableSpec})`,
+      detail: `${distanceMetres.toFixed(1)}m measured — within ${rate.freeMetres}m included allowance (gateway both ways). No additional cable cost.`,
+      priority: 'required',
+      estimatedCost: '$0',
+    };
+  }
+
+  return {
+    item: `Battery Cable Run (${rate.cableSpec})`,
+    detail: `${distanceMetres.toFixed(1)}m measured — ${rate.freeMetres}m included, ${chargeableMetres.toFixed(1)}m chargeable at $${rate.ratePerMetre}/m (gateway both ways).`,
+    priority: 'required',
+    estimatedCost: `$${totalCost.toLocaleString('en-AU')}`,
+  };
+}
+
+/**
  * Standard Australian electrical contractor rates for common solar/battery installation works.
  * Used as fallback when LLM doesn't provide cost estimates.
  */

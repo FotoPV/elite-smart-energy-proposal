@@ -1190,3 +1190,17 @@
 - [x] Feed roof data into Solar Generation Profile slide (orientation, tilt, shading notes)
 - [x] Update aggregateSiteData helper to include roof analysis
 - [x] Test with a proposal that has roof photos
+
+## BUG FIX - Site Photos Missing in PDF Export (Feb 18) [CRITICAL]
+- [x] Investigate why cable run and aerial/roof photos render as black empty boxes in PDF
+- [x] Fix image URL handling in site_assessment slide HTML for PDF rendering
+- [x] Verify switchboard photo loads (it does) — compare URL format with failing photos
+- [x] Test PDF export with all photo types rendering correctly
+
+## Feature - Cable Run Pricing in Cost Estimator (Feb 18)
+- [x] Add cable run distance-based pricing: 1-phase $33/m (16mm, gateway both ways after 10m)
+- [x] Add cable run distance-based pricing: 3-phase $55/m (16mm, gateway both ways after 5m)
+- [x] Integrate cable run cost into Scope of Electrical Works slide
+- [x] Use actual cable run distance from cableRunAnalysis when available
+- [x] Add cable run line item to estimated total
+- [x] Test with Fayyaz Khan's proposal (21.3m cable run)

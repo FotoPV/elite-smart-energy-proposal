@@ -363,7 +363,7 @@ function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { pro
     try {
       setCurrentStep('Fetching slides...');
       setProgress(10);
-      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId, embedImages: true });
       
       if (!slidesResult?.slides || slidesResult.slides.length === 0) {
         throw new Error('No slides generated. Run calculations and generate slides first.');
@@ -620,7 +620,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     setCurrentStep('Fetching slides...');
     try {
       // Use the HTML-based slides (all 22 slides with narratives) for the PDF
-      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId, embedImages: true });
       if (!slidesResult?.slides || slidesResult.slides.length === 0) {
         throw new Error('No slides generated. Please generate the proposal first.');
       }
@@ -710,7 +710,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     setProgress(10);
     setCurrentStep('Fetching slides...');
     try {
-      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
+      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId, embedImages: true });
       if (!slidesResult?.slides || slidesResult.slides.length === 0) {
         throw new Error('No slides generated.');
       }
@@ -1007,11 +1007,12 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
       if (type === 'pdf' || type === 'html-pdf') {
         setCurrentStep('Fetching slides...');
         setProgress(10);
-        const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
-        if (!slidesResult?.slides || slidesResult.slides.length === 0) {
-          throw new Error('No slides generated. Please generate the proposal first.');
+       const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId, embedImages: true });
+      
+      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
+        throw new Error('No slides generated. Please generate the proposal first.');
         }
-        setProgress(15);
+      setProgress(15);
         setCurrentStep(`Rendering ${slidesResult.slides.length} slides...`);
         const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
         const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {

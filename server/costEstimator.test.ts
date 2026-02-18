@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyFallbackCostEstimates, calculateTotalCostRange } from './switchboardAnalysis';
+import { applyFallbackCostEstimates, calculateTotalCostRange, calculateCableRunCostItem } from './switchboardAnalysis';
 
 describe('Cost Estimator', () => {
   describe('applyFallbackCostEstimates', () => {
@@ -140,6 +140,86 @@ describe('Cost Estimator', () => {
       expect(result!.min).toBe(1500);
       expect(result!.max).toBe(3500);
       expect(result!.formatted).toBe('$1,500-$3,500');
+    });
+  });
+
+  describe('calculateCableRunCostItem', () => {
+    it('calculates single-phase cable run cost for 21.3m (Fayyaz Khan)', () => {
+      const result = calculateCableRunCostItem(21.3, 'single');
+      expect(result).not.toBeNull();
+      expect(result!.item).toContain('16mm single phase');
+      // 21.3m - 10m free = 11.3m chargeable at $33/m = $373
+      expect(result!.estimatedCost).toBe('$373');
+      expect(result!.detail).toContain('21.3m measured');
+      expect(result!.detail).toContain('10m included');
+      expect(result!.detail).toContain('11.3m chargeable');
+      expect(result!.detail).toContain('$33/m');
+      expect(result!.priority).toBe('required');
+    });
+
+    it('calculates three-phase cable run cost for 21.3m', () => {
+      const result = calculateCableRunCostItem(21.3, 'three');
+      expect(result).not.toBeNull();
+      expect(result!.item).toContain('16mm 3 phase');
+      // 21.3m - 5m free = 16.3m chargeable at $55/m = $897
+      expect(result!.estimatedCost).toBe('$897');
+      expect(result!.detail).toContain('5m included');
+      expect(result!.detail).toContain('$55/m');
+    });
+
+    it('returns $0 when distance is within free allowance (single phase)', () => {
+      const result = calculateCableRunCostItem(8.0, 'single');
+      expect(result).not.toBeNull();
+      expect(result!.estimatedCost).toBe('$0');
+      expect(result!.detail).toContain('within 10m included allowance');
+    });
+
+    it('returns $0 when distance is within free allowance (three phase)', () => {
+      const result = calculateCableRunCostItem(4.5, 'three');
+      expect(result).not.toBeNull();
+      expect(result!.estimatedCost).toBe('$0');
+      expect(result!.detail).toContain('within 5m included allowance');
+    });
+
+    it('returns null for zero distance', () => {
+      const result = calculateCableRunCostItem(0, 'single');
+      expect(result).toBeNull();
+    });
+
+    it('returns null for negative distance', () => {
+      const result = calculateCableRunCostItem(-5, 'single');
+      expect(result).toBeNull();
+    });
+
+    it('handles exactly 10m single-phase (boundary)', () => {
+      const result = calculateCableRunCostItem(10.0, 'single');
+      expect(result).not.toBeNull();
+      expect(result!.estimatedCost).toBe('$0');
+    });
+
+    it('handles 3-phase string variants', () => {
+      const r1 = calculateCableRunCostItem(15, '3-phase');
+      const r2 = calculateCableRunCostItem(15, 'three-phase');
+      expect(r1).not.toBeNull();
+      expect(r2).not.toBeNull();
+      expect(r1!.item).toContain('3 phase');
+      expect(r2!.item).toContain('3 phase');
+      // 15m - 5m = 10m at $55/m = $550
+      expect(r1!.estimatedCost).toBe('$550');
+      expect(r2!.estimatedCost).toBe('$550');
+    });
+
+    it('integrates with calculateTotalCostRange', () => {
+      const cableItem = calculateCableRunCostItem(21.3, 'single')!;
+      const items = [
+        { item: 'Main switch', detail: '', priority: 'required' as const, estimatedCost: '$250-$450' },
+        cableItem,
+      ];
+      const total = calculateTotalCostRange(items);
+      expect(total).not.toBeNull();
+      // $250 + $373 = $623 min, $450 + $373 = $823 max
+      expect(total!.min).toBe(623);
+      expect(total!.max).toBe(823);
     });
   });
 });

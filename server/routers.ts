@@ -17,7 +17,7 @@ import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, cl
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { customerDocuments as docsTable } from "../drizzle/schema";
-import { applyFallbackCostEstimates } from './switchboardAnalysis';
+import { applyFallbackCostEstimates, calculateCableRunCostItem } from './switchboardAnalysis';
 
 /**
  * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
@@ -609,6 +609,17 @@ export const appRouter = router({
           }
         }
 
+        // === Inject Cable Run Cost into Upgrade Scope ===
+        if (switchboardAnalysis && cableRunAnalysis?.cableRunDistanceMetres) {
+          const cableRunCostItem = calculateCableRunCostItem(
+            cableRunAnalysis.cableRunDistanceMetres,
+            switchboardAnalysis.phaseConfiguration || 'single'
+          );
+          if (cableRunCostItem) {
+            switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+          }
+        }
+
         // === Cable Sizing Calculation (AS/NZS 3008.1.1) ===
         let cableSizing: ProposalData['cableSizing'] = undefined;
         const phaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';
@@ -879,6 +890,7 @@ export const appRouter = router({
       .input(z.object({
         proposalId: z.number(),
         slideIndex: z.number().optional(),
+        embedImages: z.boolean().optional(), // Pre-fetch external images and embed as base64 data URIs
       }))
       .query(async ({ ctx, input }) => {
         const proposal = await db.getProposalById(input.proposalId);
@@ -915,6 +927,62 @@ export const appRouter = router({
             return { id: idx + 1, type: s.type, title: s.title, html };
           })
         );
+        
+        // Server-side image embedding: pre-fetch ALL external image URLs and convert to base64 data URIs.
+        // This is the definitive fix for missing photos in PDF export — eliminates ALL CORS issues
+        // because the server can fetch from any CDN without browser restrictions.
+        if (input.embedImages) {
+          console.log(`[getSlideHtml] Embedding images for ${resolvedSlides.length} slides...`);
+          
+          // Collect all unique external image URLs across all slides
+          const allImageUrls = new Set<string>();
+          const imgSrcRegex = /src="(https?:\/\/[^"]+)"/g;
+          for (const slide of resolvedSlides) {
+            let match;
+            const regex = new RegExp(imgSrcRegex.source, imgSrcRegex.flags);
+            while ((match = regex.exec(slide.html)) !== null) {
+              const url = match[1];
+              // Skip font files and non-image resources
+              if (url.match(/\.(ttf|otf|woff2?|eot|css|js)$/i)) continue;
+              allImageUrls.add(url);
+            }
+          }
+          
+          if (allImageUrls.size > 0) {
+            console.log(`[getSlideHtml] Pre-fetching ${allImageUrls.size} external images...`);
+            const urlToDataUri = new Map<string, string>();
+            
+            // Fetch all images in parallel with timeout
+            await Promise.allSettled(
+              Array.from(allImageUrls).map(async (url) => {
+                try {
+                  const controller = new AbortController();
+                  const timeout = setTimeout(() => controller.abort(), 20000); // 20s per image
+                  const resp = await fetch(url, { signal: controller.signal });
+                  clearTimeout(timeout);
+                  if (!resp.ok) {
+                    console.warn(`[getSlideHtml] Image fetch failed: ${url} (${resp.status})`);
+                    return;
+                  }
+                  const contentType = resp.headers.get('content-type') || 'image/jpeg';
+                  const buffer = Buffer.from(await resp.arrayBuffer());
+                  urlToDataUri.set(url, `data:${contentType};base64,${buffer.toString('base64')}`);
+                } catch (err: any) {
+                  console.warn(`[getSlideHtml] Image fetch error: ${url} — ${err.message}`);
+                }
+              })
+            );
+            
+            console.log(`[getSlideHtml] Embedded ${urlToDataUri.size}/${allImageUrls.size} images as base64`);
+            
+            // Replace URLs in all slide HTML
+            for (const slide of resolvedSlides) {
+              urlToDataUri.forEach((dataUri, url) => {
+                slide.html = slide.html.split(`src="${url}"`).join(`src="${dataUri}"`);
+              });
+            }
+          }
+        }
         
         if (input.slideIndex !== undefined) {
           const slide = resolvedSlides[input.slideIndex];
@@ -1833,6 +1901,17 @@ export const appRouter = router({
               }
             }
 
+            // === Inject Cable Run Cost into Upgrade Scope ===
+            if (switchboardAnalysis && batchCableRunAnalysis?.cableRunDistanceMetres) {
+              const cableRunCostItem = calculateCableRunCostItem(
+                batchCableRunAnalysis.cableRunDistanceMetres,
+                switchboardAnalysis.phaseConfiguration || 'single'
+              );
+              if (cableRunCostItem) {
+                switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+              }
+            }
+
             // === Cable Sizing Calculation ===
             let batchCableSizing: ProposalData['cableSizing'] = undefined;
             const batchPhaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';
@@ -2194,6 +2273,17 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations,
     }
   }
   
+  // === Inject Cable Run Cost into Upgrade Scope ===
+  if (switchboardAnalysis && cableRunAnalysis?.cableRunDistanceMetres) {
+    const cableRunCostItem = calculateCableRunCostItem(
+      cableRunAnalysis.cableRunDistanceMetres,
+      switchboardAnalysis.phaseConfiguration || 'single'
+    );
+    if (cableRunCostItem) {
+      switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+    }
+  }
+
   // Cable sizing calculation
   let cableSizing: ProposalData['cableSizing'] = undefined;
   const phaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';

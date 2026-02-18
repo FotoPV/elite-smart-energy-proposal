@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, documentType, fileUrl, fileName FROM customerDocuments WHERE customerId = (SELECT customerId FROM proposals WHERE id = 1020001 LIMIT 1) ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, documentType, fileUrl, fileName FROM customerDocuments WHERE customerId = (SELECT customerId FROM proposals WHERE id = 1020001 LIMIT 1) ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "930002",
+      "documentType": "cable_run_photo",
+      "fileUrl": "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg",
+      "fileName": "Fayyaz_Cable_Run_21m.jpg"
+    },
+    {
+      "id": "930001",
+      "documentType": "solar_proposal_pdf",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/pj4l87f79zCNc6xt7OD6W-Solar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf",
+      "fileName": "Solar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf"
+    },
+    {
+      "id": "810002",
+      "documentType": "switchboard_photo",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/AnYHhhoN1GiFw3jR7diav-162M_Switchboard.jpg",
+      "fileName": "162M_Switchboard.jpg"
+    },
+    {
+      "id": "810001",
+      "documentType": "meter_photo",
+      "fileUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/Cg8RHEwkDjlb_dPFkHjbz-162M_Smart_Meter.jpg",
+      "fileName": "162M_Smart_Meter.jpg"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdocumentType\tfileUrl\tfileName\n930002\tcable_run_photo\thttps://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg\tFayyaz_Cable_Run_21m.jpg\n930001\tsolar_proposal_pdf\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/pj4l87f79zCNc6xt7OD6W-Solar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf\tSolar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf\n810002\tswitchboard_photo\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/AnYHhhoN1GiFw3jR7diav-162M_Switchboard.jpg\t162M_Switchboard.jpg\n810001\tmeter_photo\thttps://d2xsxph8kpxj0f.cloudfront.net/310419663031440910/P6CTqT8eNBMi3wEqmJdcEm/documents/1020001/Cg8RHEwkDjlb_dPFkHjbz-162M_Smart_Meter.jpg\t162M_Smart_Meter.jpg\n",
+  "stderr": "",
+  "execution_time_ms": 1519
+}

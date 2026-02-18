@@ -9,7 +9,74 @@ export interface SlideData {
 }
 
 /**
- * Generate a PDF from proposal slides using Puppeteer
+ * Fetch an image URL and return a base64 data URI.
+ * Falls back to the original URL if fetch fails.
+ */
+async function fetchImageAsDataUri(url: string): Promise<string> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout per image
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!resp.ok) {
+      console.warn(`[pdfExport] Failed to fetch image ${url}: ${resp.status}`);
+      return url;
+    }
+    const contentType = resp.headers.get('content-type') || 'image/jpeg';
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    return `data:${contentType};base64,${buffer.toString('base64')}`;
+  } catch (err: any) {
+    console.warn(`[pdfExport] Error fetching image ${url}: ${err.message}`);
+    return url;
+  }
+}
+
+/**
+ * Find all image src URLs in HTML and replace them with base64 data URIs.
+ * This ensures Puppeteer doesn't need to make external network requests for images.
+ */
+async function embedImagesAsBase64(html: string): Promise<string> {
+  // Match all src="https://..." patterns (S3 URLs and other external images)
+  const imgRegex = /src="(https?:\/\/[^"]+)"/g;
+  const matches: { full: string; url: string }[] = [];
+  let match;
+  while ((match = imgRegex.exec(html)) !== null) {
+    matches.push({ full: match[0], url: match[1] });
+  }
+
+  if (matches.length === 0) return html;
+
+  // Deduplicate URLs
+  const uniqueUrls = Array.from(new Set(matches.map(m => m.url)));
+  console.log(`[pdfExport] Pre-fetching ${uniqueUrls.length} images for PDF embedding...`);
+
+  // Fetch all images in parallel
+  const urlToDataUri = new Map<string, string>();
+  const results = await Promise.allSettled(
+    uniqueUrls.map(async (url) => {
+      const dataUri = await fetchImageAsDataUri(url);
+      urlToDataUri.set(url, dataUri);
+    })
+  );
+
+  // Count successes
+  const embedded = results.filter(r => r.status === 'fulfilled').length;
+  console.log(`[pdfExport] Successfully embedded ${embedded}/${uniqueUrls.length} images as base64`);
+
+  // Replace all URLs with data URIs
+  let result = html;
+  urlToDataUri.forEach((dataUri, url) => {
+    // Replace all occurrences of this URL
+    result = result.split(`src="${url}"`).join(`src="${dataUri}"`);
+  });
+
+  return result;
+}
+
+/**
+ * Generate a PDF from proposal slides using Puppeteer.
+ * All external images are pre-fetched and embedded as base64 data URIs
+ * to prevent missing/broken images in the PDF output.
  */
 export async function generateProposalPdf(
   slides: SlideData[],
@@ -17,7 +84,12 @@ export async function generateProposalPdf(
   proposalTitle: string
 ): Promise<Buffer> {
   // Generate full HTML document with all slides
-  const html = generateFullHtml(slides, customerName, proposalTitle);
+  let html = generateFullHtml(slides, customerName, proposalTitle);
+  
+  // Pre-fetch all external images and embed as base64 data URIs
+  // This is the critical fix — Puppeteer's networkidle0 doesn't reliably
+  // wait for all S3 images, causing them to render as black boxes
+  html = await embedImagesAsBase64(html);
   
   // Launch Puppeteer and generate PDF
   const browser = await puppeteer.launch({
@@ -28,8 +100,23 @@ export async function generateProposalPdf(
   try {
     const page = await browser.newPage();
     
-    // Set content and wait for fonts to load
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // Set content — with base64 images embedded, we only need to wait for fonts
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 60000 });
+    
+    // Additional safety: wait for all images to be fully decoded
+    await page.evaluate(() => {
+      return Promise.all(
+        Array.from(document.querySelectorAll('img')).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise<void>((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Don't block on failed images
+            // Timeout after 10s per image
+            setTimeout(() => resolve(), 10000);
+          });
+        })
+      );
+    });
     
     // Generate PDF with landscape orientation for slides
     const pdfBuffer = await page.pdf({
