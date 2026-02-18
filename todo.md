@@ -1204,3 +1204,16 @@
 - [x] Use actual cable run distance from cableRunAnalysis when available
 - [x] Add cable run line item to estimated total
 - [x] Test with Fayyaz Khan's proposal (21.3m cable run)
+
+## Cleanup - Remove All Test Customers from Dropdown (Feb 19)
+- [x] Identify all test customers in the database (10 found: IDs 1110001, 1140001, 1140002, 1170001-1170003, 1200001-1200004)
+- [x] Remove test customers from the customers table (10 deleted, 0 proposals, 0 docs)
+- [x] Remove associated proposals and documents for test customers
+- [x] Verify dropdown only shows real customers (19 remaining)
+
+## Beta Test - Peter Chu Cable Run Pricing Verification (Feb 19)
+- [ ] Check Peter Chu's cable run distance and phase configuration
+- [ ] Verify cable run cost item appears in scope items endpoint
+- [ ] Check if cable run photo exists for Peter Chu
+- [ ] Regenerate slides and verify cable run pricing on Scope of Electrical Works slide
+- [ ] Verify ESTIMATED TOTAL includes cable run cost
