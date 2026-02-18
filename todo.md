@@ -1057,3 +1057,8 @@
 - [x] Verify Inverter: Sigenergy SigenStor EC 10.0 SP-9999W 9,999W Hybrid ✅
 - [x] All extracted specs correctly flowing into generated slides
 - [ ] Test PDF export
+
+## Remove Solar Proposal Upload from Bill Analysis Page (Feb 18)
+- [x] Remove the Solar Proposal upload section from ProposalDetail.tsx (now in New Proposal wizard)
+- [x] Remove related state/handlers for solar proposal upload from ProposalDetail (handleSolarProposalUpload, isUploadingSolarProposal, isAnalysingSolarProposal, solarProposalSpecs, uploadDocumentMutation, analyzeSolarProposalMutation)
+- [x] 0 TypeScript errors, all 104 tests passing
