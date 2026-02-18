@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT p.id, c.customer_name,\n       JSON_EXTRACT(p.calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(p.calculations, '$.batterySizeKwh') as batterySizeKwh,\n       p.slide_count\nFROM proposals p\nJOIN customers c ON p.customer_id = c.id\nWHERE p.status = 'generated'\nORDER BY p.id DESC\nLIMIT 28\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute \nSELECT p.id, c.customer_name,\n       JSON_EXTRACT(p.calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(p.calculations, '$.batterySizeKwh') as batterySizeKwh,\n       p.slide_count\nFROM proposals p\nJOIN customers c ON p.customer_id = c.id\nWHERE p.status = 'generated'\nORDER BY p.id DESC\nLIMIT 28\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'p.customer_id' in 'on clause'"
+  ]
+}

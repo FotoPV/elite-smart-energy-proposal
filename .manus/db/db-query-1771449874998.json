@@ -1,0 +1,178 @@
+{
+  "query": "\nSELECT id,\n       JSON_EXTRACT(calculations, '$.customerName') as customerName,\n       JSON_EXTRACT(calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(calculations, '$.batterySizeKwh') as batterySizeKwh\nFROM proposals\nWHERE status = 'generated'\nORDER BY id DESC\nLIMIT 28\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute \nSELECT id,\n       JSON_EXTRACT(calculations, '$.customerName') as customerName,\n       JSON_EXTRACT(calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(calculations, '$.batterySizeKwh') as batterySizeKwh\nFROM proposals\nWHERE status = 'generated'\nORDER BY id DESC\nLIMIT 28\n",
+  "rows": [
+    {
+      "id": "1050001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "1020002",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "1020001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "990002",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "990001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "960002",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "960001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "930001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "900001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "870001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "840002",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "840001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "810001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "780001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "750001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "720001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "600001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "570001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "540001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "510001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "480001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "420001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "390006",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "390005",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "390004",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "360001",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "300002",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    },
+    {
+      "id": "270004",
+      "customerName": "NULL",
+      "batteryBrand": "NULL",
+      "batterySizeKwh": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerName\tbatteryBrand\tbatterySizeKwh\n1050001\tNULL\tNULL\tNULL\n1020002\tNULL\tNULL\tNULL\n1020001\tNULL\tNULL\tNULL\n990002\tNULL\tNULL\tNULL\n990001\tNULL\tNULL\tNULL\n960002\tNULL\tNULL\tNULL\n960001\tNULL\tNULL\tNULL\n930001\tNULL\tNULL\tNULL\n900001\tNULL\tNULL\tNULL\n870001\tNULL\tNULL\tNULL\n840002\tNULL\tNULL\tNULL\n840001\tNULL\tNULL\tNULL\n810001\tNULL\tNULL\tNULL\n780001\tNULL\tNULL\tNULL\n750001\tNULL\tNULL\tNULL\n720001\tNULL\tNULL\tNULL\n600001\tNULL\tNULL\tNULL\n570001\tNULL\tNULL\tNULL\n540001\tNULL\tNULL\tNULL\n510001\tNULL\tNULL\tNULL\n480001\tNULL\tNULL\tNULL\n420001\tNULL\tNULL\tNULL\n390006\tNULL\tNULL\tNULL\n390005\tNULL\tNULL\tNULL\n390004\tNULL\tNULL\tNULL\n360001\tNULL\tNULL\tNULL\n300002\tNULL\tNULL\tNULL\n270004\tNULL\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1538
+}

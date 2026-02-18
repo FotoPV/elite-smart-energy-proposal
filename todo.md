@@ -1238,3 +1238,9 @@
 - [x] Pass batteryCount and batteryModuleKwh from solar proposal specs through to slide generator
 - [x] Regenerate Michael Palumbieri's proposal — verified FoxESS CQ6-L6 shows correctly across all 19 slides (0 Sigenergy references)
 - [x] All 136 tests passing
+
+## Bulk Regenerate All Proposals — Apply Brand-Aware Battery Fix (Feb 19)
+- [x] Trigger Regenerate All to rebuild every existing proposal with corrected battery brand logic
+- [x] Monitor batch generation progress — 28 succeeded, 0 failed
+- [x] Spot-checked 3 proposals: Michael Palumbieri (FoxESS CQ6-L6), Peter Chu (GoodWe), Boris Sirota (Sigenergy default) — all correct
+- [x] All 28 proposals now show correct battery brand from solar proposal specs

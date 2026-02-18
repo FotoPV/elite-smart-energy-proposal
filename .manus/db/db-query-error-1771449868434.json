@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT id,\n       JSON_EXTRACT(calculations, '$.customerName') as customerName,\n       JSON_EXTRACT(calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(calculations, '$.batterySizeKwh') as batterySizeKwh,\n       slide_count\nFROM proposals\nWHERE status = 'generated'\nORDER BY id DESC\nLIMIT 28\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute \nSELECT id,\n       JSON_EXTRACT(calculations, '$.customerName') as customerName,\n       JSON_EXTRACT(calculations, '$.batteryBrand') as batteryBrand,\n       JSON_EXTRACT(calculations, '$.batterySizeKwh') as batterySizeKwh,\n       slide_count\nFROM proposals\nWHERE status = 'generated'\nORDER BY id DESC\nLIMIT 28\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'slide_count' in 'field list'"
+  ]
+}
