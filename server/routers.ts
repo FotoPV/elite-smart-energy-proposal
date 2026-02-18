@@ -2432,6 +2432,8 @@ function buildProposalData(
     panelBrand,
     batterySizeKwh: batteryKwh,
     batteryBrand,
+    batteryCount: sp?.batteryCount || undefined,
+    batteryModuleKwh: sp?.batterySizeKwh || undefined,  // Per-unit kWh from solar proposal
     inverterSizeKw: inverterKw,
     inverterBrand,
     estimatedAnnualProductionKwh: sp?.estimatedAnnualProductionKwh || undefined,

@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, fullName, state FROM customers WHERE fullName LIKE '%Palumbieri%' OR fullName LIKE '%Michael P%' ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, state FROM customers WHERE fullName LIKE '%Palumbieri%' OR fullName LIKE '%Michael P%' ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "1230006",
+      "fullName": "Michael Palumbieri",
+      "state": "VIC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\n1230006\tMichael Palumbieri\tVIC\n",
+  "stderr": "",
+  "execution_time_ms": 1522
+}

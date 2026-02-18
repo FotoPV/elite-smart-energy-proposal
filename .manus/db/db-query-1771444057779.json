@@ -1,0 +1,18 @@
+{
+  "query": "SELECT p.id, c.fullName, c.state, p.status, p.slideCount, p.createdAt FROM proposals p JOIN customers c ON p.customerId = c.id WHERE c.fullName LIKE '%Palumbieri%' ORDER BY p.id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT p.id, c.fullName, c.state, p.status, p.slideCount, p.createdAt FROM proposals p JOIN customers c ON p.customerId = c.id WHERE c.fullName LIKE '%Palumbieri%' ORDER BY p.id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "1050001",
+      "fullName": "Michael Palumbieri",
+      "state": "VIC",
+      "status": "generated",
+      "slideCount": "19",
+      "createdAt": "2026-02-18 19:38:17"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\tstatus\tslideCount\tcreatedAt\n1050001\tMichael Palumbieri\tVIC\tgenerated\t19\t2026-02-18 19:38:17\n",
+  "stderr": "",
+  "execution_time_ms": 1514
+}

@@ -76,6 +76,8 @@ export interface ProposalData {
   panelBrand: string;
   batterySizeKwh: number;
   batteryBrand: string;
+  batteryCount?: number;       // Number of battery units (from solar proposal, defaults to calculated)
+  batteryModuleKwh?: number;   // Per-module kWh (from solar proposal, defaults to brand-specific)
   inverterSizeKw: number;
   inverterBrand: string;
   estimatedAnnualProductionKwh?: number;  // From solar proposal extraction (overrides calculated value)
@@ -394,9 +396,22 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   const npv25yr = Math.round((data.twentyFiveYearSavings || data.annualSavings * 25) - data.netInvestment);
   const irr = data.netInvestment > 0 ? parseFloat((data.annualSavings / data.netInvestment * 100).toFixed(1)) : 0;
   
-  // Battery modules calculation
-  const moduleSize = 8.06;
-  const batteryModuleCount = Math.ceil(data.batterySizeKwh / moduleSize);
+  // Battery modules calculation — brand-aware
+  // Known module sizes by brand (kWh per module)
+  const BRAND_MODULE_SIZES: Record<string, number> = {
+    'Sigenergy': 8.06,
+    'SigenStor': 8.06,
+    'GoodWe': 8.3,
+    'Tesla': 13.5,
+    'BYD': 12.8,
+    'Enphase': 5.0,
+    'Pylontech': 3.55,
+    'Alpha ESS': 5.7,
+  };
+  // Determine module size: use explicit value, or look up by brand, or default to total capacity (single unit)
+  const brandKey = Object.keys(BRAND_MODULE_SIZES).find(k => data.batteryBrand.includes(k));
+  const moduleSize = data.batteryModuleKwh || (brandKey ? BRAND_MODULE_SIZES[brandKey] : data.batterySizeKwh);
+  const batteryModuleCount = data.batteryCount || Math.ceil(data.batterySizeKwh / moduleSize);
   const usableCapacity = Math.round(data.batterySizeKwh * 0.95);
   
   // VPP providers for comparison table — use real data from calculations
@@ -602,7 +617,9 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       batteryBrand: data.batteryBrand,
       moduleCount: batteryModuleCount,
       moduleSize,
-      moduleConfig: `${batteryModuleCount} × ${data.batteryBrand.includes('GoodWe') ? 'GoodWe GW8.3' : 'Sigenergy'} Modules (${usableCapacity} kWh Usable)`,
+      moduleConfig: batteryModuleCount === 1
+        ? `${data.batteryBrand} (${usableCapacity} kWh Usable)`
+        : `${batteryModuleCount} × ${data.batteryBrand.split(' ')[0]} Modules (${usableCapacity} kWh Usable)`,
       technology: 'LFP',
       depthOfDischarge: '98%',
       headerRight: 'Ultimate Independence',

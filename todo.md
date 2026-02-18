@@ -1220,12 +1220,21 @@
 - [x] Fixed switchboard expansion keyword match (added 'switchboard expansion' to STANDARD_COST_RATES)
 
 ## Slide Restructure - Remove Environmental Impact, Split Scope of Works (Feb 19)
-- [ ] Remove environmental_impact slide type from slideGenerator.ts
-- [ ] Remove environmental_impact from slide ordering in routers.ts
-- [ ] Split scope_of_works into scope_of_works_1 (switchboard layout, upgrade items with costs, cable run)
-- [ ] Create scope_of_works_2 (metering requirements, site status, inspector notes, ESTIMATED TOTAL)
-- [ ] Update slide ordering to include both scope slides
-- [ ] Keep total slide count at 19 (remove 1 + add 1 = net zero)
-- [ ] Update tests for new slide structure
-- [ ] Regenerate Peter Chu's proposal and verify both scope slides render correctly
-- [ ] Verify no content is cut off in PDF export
+- [x] Remove environmental_impact slide type from slideGenerator.ts
+- [x] Remove environmental_impact from slide ordering in routers.ts
+- [x] Split scope_of_works into scope_of_works_1 (switchboard layout, upgrade items with costs, cable run)
+- [x] Create scope_of_works_2 (metering requirements, site status, inspector notes, ESTIMATED TOTAL)
+- [x] Update slide ordering to include both scope slides
+- [x] Keep total slide count at 19 (remove 1 + add 1 = net zero)
+- [x] Update tests for new slide structure
+- [x] Regenerate Peter Chu's proposal and verify both scope slides render correctly
+- [x] Verify no content is cut off in PDF export
+
+## Bug Fix - Incorrect Battery Brand for Michael Palumbieri (Feb 19)
+- [x] Investigate Michael Palumbieri (VIC) customer data — battery brand showing as Sigenergy instead of correct FoxESS brand
+- [x] Root cause: hardcoded 'Sigenergy' fallback in moduleConfig (line 605 slideGenerator.ts) + hardcoded 8.06 module size
+- [x] Fix: brand-aware module calculation with BRAND_MODULE_SIZES lookup table (Sigenergy, GoodWe, Tesla, BYD, Enphase, Pylontech, Alpha ESS)
+- [x] Fix: dynamic moduleConfig — single unit shows "FoxESS CQ6-L6 (34 kWh Usable)", multi-module shows "N × Brand Modules"
+- [x] Pass batteryCount and batteryModuleKwh from solar proposal specs through to slide generator
+- [x] Regenerate Michael Palumbieri's proposal — verified FoxESS CQ6-L6 shows correctly across all 19 slides (0 Sigenergy references)
+- [x] All 136 tests passing
