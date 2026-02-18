@@ -1256,3 +1256,11 @@
 - [x] Test end-to-end with Michael Palumbieri (18m single phase = $264 cable run cost)
 - [x] Verified: Battery Cable Run (16mm single phase) — $264 appears on Scope slide 15
 - [x] Verified: Cable sizing table shows 10mm² AC cable, V-Drop 1.5% COMPLIANT, Run 18m
+
+## Bug Fix - Cable Run Missing from PDF + Input Placement (Feb 19)
+- [x] Cable run charges ARE appearing in fresh PDF export — Luke's PDF was from before regeneration with cable run
+- [x] Cable Run Distance input IS already above Site Photos (order: Notes → Cable Run → Cost Estimates → Site Photos → Download)
+- [x] Verified: Battery Cable Run (16mm single phase) $264 appears on page 15 of fresh PDF
+- [x] Verified: ESTIMATED TOTAL $1,584-$3,364 correct in PDF
+- [x] Verified: Cable Run Pricing Note shows on right column (18.0m measured, $33/m after 10m)
+- [x] Verified: System shows 7.35kW FoxESS KH10 + 35.94kWh FoxESS CQ6-L6 (correct brand)
