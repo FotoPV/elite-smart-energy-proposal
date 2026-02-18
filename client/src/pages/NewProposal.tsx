@@ -7,7 +7,7 @@ import { useLocation, useSearch } from "wouter";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { 
   ArrowLeft, ArrowRight, Users, Upload, Zap, CheckCircle, FileText,
-  Loader2, Camera, X, Eye, Trash2, Plus, ImageIcon
+  Loader2, Camera, X, Eye, Trash2, Plus, ImageIcon, Sun
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
@@ -53,6 +53,13 @@ export default function NewProposal() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const multiFileRef = useRef<HTMLInputElement>(null);
 
+  // Solar Proposal upload states
+  const solarProposalRef = useRef<HTMLInputElement>(null);
+  const [isUploadingSolarProposal, setIsUploadingSolarProposal] = useState(false);
+  const [isAnalysingSolarProposal, setIsAnalysingSolarProposal] = useState(false);
+  const [solarProposalSpecs, setSolarProposalSpecs] = useState<any>(null);
+  const [solarProposalFileName, setSolarProposalFileName] = useState<string | null>(null);
+
   const { data: customers, refetch: refetchCustomers } = trpc.customers.list.useQuery({});
   const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
@@ -85,6 +92,7 @@ export default function NewProposal() {
   const uploadBill = trpc.bills.upload.useMutation();
   const extractBill = trpc.bills.extract.useMutation();
   const uploadDocument = trpc.documents.upload.useMutation();
+  const analyzeSolarProposal = trpc.documents.analyzeSolarProposal.useMutation();
   const createProposal = trpc.proposals.create.useMutation({
     onSuccess: (data) => {
       toast.success("Proposal created");
@@ -102,6 +110,18 @@ export default function NewProposal() {
       }
     }
   }, [existingBills]);
+
+  // Load existing solar proposal specs from documents
+  useEffect(() => {
+    if (existingDocuments) {
+      const solarDoc = existingDocuments.find((d: any) => d.documentType === 'solar_proposal_pdf');
+      if (solarDoc?.extractedData && !solarProposalSpecs) {
+        const specs = typeof solarDoc.extractedData === 'string' ? JSON.parse(solarDoc.extractedData) : solarDoc.extractedData;
+        setSolarProposalSpecs(specs);
+        setSolarProposalFileName(solarDoc.fileName || 'Solar Proposal');
+      }
+    }
+  }, [existingDocuments]);
 
   // Load existing documents into uploaded files list
   // When server data arrives, replace the entire list with server entries
@@ -131,6 +151,36 @@ export default function NewProposal() {
       setProposalTitle(`Electrification Proposal for ${selectedCustomer.fullName}`);
     }
   }, [selectedCustomer, proposalTitle]);
+
+  const handleSolarProposalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedCustomerId) return;
+    setIsUploadingSolarProposal(true);
+    try {
+      const base64 = await fileToBase64(file);
+      const result = await uploadDocument.mutateAsync({
+        customerId: selectedCustomerId,
+        documentType: 'solar_proposal_pdf',
+        fileData: base64,
+        fileName: file.name,
+        mimeType: file.type || 'application/pdf',
+      });
+      toast.success('Solar proposal uploaded, analysing system specs...');
+      setIsAnalysingSolarProposal(true);
+      const result2 = await analyzeSolarProposal.mutateAsync({
+        documentId: result.documentId,
+      });
+      setSolarProposalSpecs(result2.specs);
+      setSolarProposalFileName(file.name);
+      toast.success('System specs extracted successfully!');
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setIsUploadingSolarProposal(false);
+      setIsAnalysingSolarProposal(false);
+      e.target.value = '';
+    }
+  };
 
   const handleElectricityBillUpload = async (files: globalThis.File[]) => {
     if (!selectedCustomerId || files.length === 0) return;
@@ -491,10 +541,107 @@ export default function NewProposal() {
                 </div>
               </div>
 
+              {/* Solar Proposal Upload Section */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="flex items-center gap-2">
+                    <Sun className="h-4 w-4 text-[#f36710]" />
+                    Solar Proposal (Optional)
+                  </Label>
+                  {solarProposalSpecs && (
+                    <span className="text-[10px] text-[#00EAD3] flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      Specs extracted
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">Upload the System Details page from the solar proposal to extract exact panel, inverter, and battery specs</p>
+
+                <input
+                  ref={solarProposalRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="hidden"
+                  disabled={isUploadingSolarProposal || isAnalysingSolarProposal}
+                  onChange={handleSolarProposalUpload}
+                />
+
+                {solarProposalSpecs ? (
+                  <div className="space-y-3">
+                    {/* Uploaded file indicator */}
+                    {solarProposalFileName && (
+                      <div className="flex items-center justify-between p-2.5 rounded-lg bg-green-500/10 border border-green-500/30">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CheckCircle className="h-4 w-4 text-green-400 shrink-0" />
+                          <span className="text-green-400 font-medium text-sm truncate">{solarProposalFileName}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#f36710] hover:text-[#f36710]/80 hover:bg-[#f36710]/10 shrink-0 h-7 text-xs"
+                          onClick={() => solarProposalRef.current?.click()}
+                          disabled={isUploadingSolarProposal || isAnalysingSolarProposal}
+                        >
+                          <Upload className="h-3 w-3 mr-1" />
+                          Replace
+                        </Button>
+                      </div>
+                    )}
+                    {/* 4-card spec display */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg border border-border bg-muted/30 p-2.5">
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Solar System</div>
+                        <div className="text-sm font-semibold">{solarProposalSpecs.solarSystemSizeKw}kW</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{solarProposalSpecs.solarPanelCount} × {solarProposalSpecs.solarPanelWattage}W {solarProposalSpecs.solarPanelBrand} {solarProposalSpecs.solarPanelModel || ''}</div>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/30 p-2.5">
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Battery Storage</div>
+                        <div className="text-sm font-semibold">{solarProposalSpecs.batterySizeKwh}kWh</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{solarProposalSpecs.batteryCount} × {solarProposalSpecs.batteryBrand} {solarProposalSpecs.batteryModel || ''}</div>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/30 p-2.5">
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Inverter</div>
+                        <div className="text-sm font-semibold">{solarProposalSpecs.inverterBrand} {solarProposalSpecs.inverterSizeW ? (solarProposalSpecs.inverterSizeW / 1000).toFixed(1) : ''}kW</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{solarProposalSpecs.inverterModel || ''} {solarProposalSpecs.inverterPhase ? `(${solarProposalSpecs.inverterPhase}-phase)` : ''}</div>
+                      </div>
+                      <div className="rounded-lg border border-border bg-muted/30 p-2.5">
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Est. Production</div>
+                        <div className="text-sm font-semibold">{solarProposalSpecs.estimatedAnnualProductionKwh?.toLocaleString() || 'N/A'} kWh/yr</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">Efficiency: {solarProposalSpecs.systemEfficiencyPercent || 'N/A'}%</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                      isUploadingSolarProposal || isAnalysingSolarProposal
+                        ? 'border-[#f36710]/50 bg-[#f36710]/5'
+                        : 'border-border hover:border-[#f36710]/50'
+                    }`}
+                    onClick={() => !isUploadingSolarProposal && !isAnalysingSolarProposal && solarProposalRef.current?.click()}
+                  >
+                    {isUploadingSolarProposal || isAnalysingSolarProposal ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#f36710]" />
+                        <p className="text-sm text-muted-foreground">
+                          {isAnalysingSolarProposal ? 'Analysing system specs...' : 'Uploading solar proposal...'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Sun className="h-8 w-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Drop system details page here or click to browse</p>
+                        <p className="text-xs text-muted-foreground/60">Supports images (JPG, PNG) and PDFs</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Divider */}
               <div className="border-t border-border pt-6">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-1">ADDITIONAL DOCUMENTS (Optional)</h3>
-                <p className="text-xs text-muted-foreground mb-4">Upload multiple photos (switchboard, roof, meter) and PDFs (solar proposals, quotes)</p>
+                <p className="text-xs text-muted-foreground mb-4">Upload multiple photos (switchboard, roof, meter) and PDFs (quotes, other documents)</p>
               </div>
 
               {/* Multi-file drop zone */}
@@ -672,6 +819,14 @@ export default function NewProposal() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Electricity Bills:</span>
                     <span className="text-green-400">{electricityBillIds.length} bill{electricityBillIds.length !== 1 ? 's' : ''} uploaded</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Solar Proposal:</span>
+                    <span className={solarProposalSpecs ? "text-green-400" : "text-muted-foreground"}>
+                      {solarProposalSpecs
+                        ? `${solarProposalSpecs.solarSystemSizeKw}kW • ${solarProposalSpecs.batterySizeKwh}kWh • ${solarProposalSpecs.inverterBrand}`
+                        : "None (will use calculated defaults)"}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Additional Files:</span>

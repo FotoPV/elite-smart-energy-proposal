@@ -1027,3 +1027,15 @@
 - [x] Fixed mutation handler to store inner specs object correctly
 - [x] Added PDF support to extraction (file_url type for PDFs, image_url for images)
 - [x] Verified: Battery slide shows 16kWh Sigenergy, Solar slide shows 10.925kW LONGi 475W panels
+
+## Move Solar Proposal Upload into New Proposal Wizard (Feb 18)
+- [x] Add dedicated Solar Proposal upload section to Step 2 (Upload) in NewProposal wizard
+- [x] Position between Electricity Bills and Additional Documents sections
+- [x] Show 4-card spec confirmation UI inline after AI extraction completes (Solar System, Battery, Inverter, Est. Production)
+- [x] Pass extracted specs through to Step 3 (Create) summary (shows "10.925kW • 16kWh • Sigenergy" in green)
+- [x] Keep the Replace functionality on ProposalDetail page for updating specs after creation
+- [x] Test end-to-end: upload test image in wizard → 4 cards display → summary shows specs
+- [x] Load existing solar proposal specs when customer has prior upload
+- [x] Upload zone with Sun icon, drag-and-drop support, analysing spinner
+- [x] Green "Specs extracted" badge after successful extraction
+- [x] 0 TypeScript errors, all 104 tests passing
