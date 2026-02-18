@@ -475,6 +475,31 @@ export const appRouter = router({
         
         // Fetch customer site photos for slide incorporation
         const customerDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+        
+        // Auto-analyze switchboard photos that haven't been analyzed yet
+        const unanalyzedSwitchboardPhotos = customerDocs.filter(
+          d => d.documentType === 'switchboard_photo' && !d.extractedData && d.fileUrl
+        );
+        if (unanalyzedSwitchboardPhotos.length > 0) {
+          console.log(`[generateProgressive] Auto-analyzing ${unanalyzedSwitchboardPhotos.length} switchboard photo(s) for proposal ${input.proposalId}`);
+          const { analyzeSwitchboardPhoto, generateSwitchboardReport } = await import('./switchboardAnalysis');
+          for (const doc of unanalyzedSwitchboardPhotos) {
+            try {
+              const analysis = await analyzeSwitchboardPhoto(doc.fileUrl);
+              const report = generateSwitchboardReport(analysis);
+              await db.updateCustomerDocument(doc.id, {
+                extractedData: JSON.stringify(analysis),
+                description: report,
+              });
+              // Update the in-memory doc so sitePhotos picks it up below
+              (doc as any).extractedData = analysis;
+              console.log(`[generateProgressive] Switchboard analysis complete for doc ${doc.id} (${doc.fileName}), confidence: ${analysis.confidence}%`);
+            } catch (err: any) {
+              console.error(`[generateProgressive] Failed to auto-analyze switchboard photo ${doc.id}:`, err.message);
+            }
+          }
+        }
+        
         const sitePhotos = customerDocs
           .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
           .map((d, idx) => {
@@ -513,6 +538,23 @@ export const appRouter = router({
           upgradeReason: switchboardAnalyses.find(a => a.upgradeReason)?.upgradeReason || null,
           warnings: switchboardAnalyses.flatMap(a => a.warnings || []),
           confidence: Math.round(switchboardAnalyses.reduce((sum, a) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
+          // Enhanced installer-level fields
+          circuitBreakers: switchboardAnalyses.flatMap(a => a.circuitBreakers || []),
+          phaseConfiguration: switchboardAnalyses.find(a => a.phaseConfiguration && a.phaseConfiguration !== 'unknown')?.phaseConfiguration || 'unknown',
+          phaseConfirmationSource: switchboardAnalyses.find(a => a.phaseConfirmationSource)?.phaseConfirmationSource || null,
+          meterType: switchboardAnalyses.find(a => a.meterType)?.meterType || null,
+          meterIsBidirectional: switchboardAnalyses.find(a => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
+          meterSwapRequired: switchboardAnalyses.some(a => a.meterSwapRequired),
+          meterNotes: switchboardAnalyses.find(a => a.meterNotes)?.meterNotes || null,
+          upgradeScope: switchboardAnalyses.flatMap(a => a.upgradeScope || []),
+          proposedSolarBreakerPosition: switchboardAnalyses.find(a => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
+          proposedSolarBreakerRating: switchboardAnalyses.find(a => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
+          proposedBatteryBreakerPosition: switchboardAnalyses.find(a => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
+          proposedBatteryBreakerRating: switchboardAnalyses.find(a => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
+          proposedDcIsolatorLocation: switchboardAnalyses.find(a => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
+          proposedAcIsolatorLocation: switchboardAnalyses.find(a => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+          cableAssessment: switchboardAnalyses.find(a => a.cableAssessment)?.cableAssessment || null,
+          existingCableSizeAdequate: switchboardAnalyses.find(a => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
         } : undefined;
         
         // Check for uploaded solar proposal specs to override calculated system values
@@ -1476,6 +1518,30 @@ export const appRouter = router({
             
             // Fetch site photos
             const customerDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+            
+            // Auto-analyze switchboard photos that haven't been analyzed yet
+            const unanalyzedSwbPhotos = customerDocs.filter(
+              d => d.documentType === 'switchboard_photo' && !d.extractedData && d.fileUrl
+            );
+            if (unanalyzedSwbPhotos.length > 0) {
+              console.log(`[batchGenerate] Auto-analyzing ${unanalyzedSwbPhotos.length} switchboard photo(s) for proposal ${proposal.id}`);
+              const { analyzeSwitchboardPhoto: analyzeSwb, generateSwitchboardReport: genSwbReport } = await import('./switchboardAnalysis');
+              for (const doc of unanalyzedSwbPhotos) {
+                try {
+                  const analysis = await analyzeSwb(doc.fileUrl);
+                  const report = genSwbReport(analysis);
+                  await db.updateCustomerDocument(doc.id, {
+                    extractedData: JSON.stringify(analysis),
+                    description: report,
+                  });
+                  (doc as any).extractedData = analysis;
+                  console.log(`[batchGenerate] Switchboard analysis complete for doc ${doc.id}, confidence: ${analysis.confidence}%`);
+                } catch (err: any) {
+                  console.error(`[batchGenerate] Failed to auto-analyze switchboard photo ${doc.id}:`, err.message);
+                }
+              }
+            }
+            
             const sitePhotos = customerDocs
               .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
               .map(d => {
@@ -1512,6 +1578,23 @@ export const appRouter = router({
               upgradeReason: switchboardAnalyses.find((a: any) => a.upgradeReason)?.upgradeReason || null,
               warnings: switchboardAnalyses.flatMap((a: any) => a.warnings || []),
               confidence: Math.round(switchboardAnalyses.reduce((sum: number, a: any) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
+              // Enhanced installer-level fields
+              circuitBreakers: switchboardAnalyses.flatMap((a: any) => a.circuitBreakers || []),
+              phaseConfiguration: switchboardAnalyses.find((a: any) => a.phaseConfiguration && a.phaseConfiguration !== 'unknown')?.phaseConfiguration || 'unknown',
+              phaseConfirmationSource: switchboardAnalyses.find((a: any) => a.phaseConfirmationSource)?.phaseConfirmationSource || null,
+              meterType: switchboardAnalyses.find((a: any) => a.meterType)?.meterType || null,
+              meterIsBidirectional: switchboardAnalyses.find((a: any) => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
+              meterSwapRequired: switchboardAnalyses.some((a: any) => a.meterSwapRequired),
+              meterNotes: switchboardAnalyses.find((a: any) => a.meterNotes)?.meterNotes || null,
+              upgradeScope: switchboardAnalyses.flatMap((a: any) => a.upgradeScope || []),
+              proposedSolarBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
+              proposedSolarBreakerRating: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
+              proposedBatteryBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
+              proposedBatteryBreakerRating: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
+              proposedDcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
+              proposedAcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+              cableAssessment: switchboardAnalyses.find((a: any) => a.cableAssessment)?.cableAssessment || null,
+              existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
             } : undefined;
             
             // Check for uploaded solar proposal specs

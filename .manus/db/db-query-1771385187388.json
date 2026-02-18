@@ -1,0 +1,31 @@
+{
+  "query": "SELECT cd.id, cd.documentType, cd.fileName, cd.extractedData, cd.createdAt FROM customerDocuments cd JOIN customers c ON cd.customerId = c.id WHERE c.fullName LIKE '%Fayyaz%' ORDER BY cd.createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT cd.id, cd.documentType, cd.fileName, cd.extractedData, cd.createdAt FROM customerDocuments cd JOIN customers c ON cd.customerId = c.id WHERE c.fullName LIKE '%Fayyaz%' ORDER BY cd.createdAt DESC;",
+  "rows": [
+    {
+      "id": "930001",
+      "documentType": "solar_proposal_pdf",
+      "fileName": "Solar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf",
+      "extractedData": "\"{\\\"solarSystemSizeKw\\\":10.925,\\\"solarPanelCount\\\":23,\\\"solarPanelWattage\\\":475,\\\"solarPanelBrand\\\":\\\"LONGI Solar\\\",\\\"solarPanelModel\\\":\\\"Hi-MO X6 Max Scientist LR7-54HTH-475M\\\",\\\"estimatedAnnualProductionKwh\\\":13765,\\\"systemEfficiencyPercent\\\":88,\\\"inverterBrand\\\":\\\"Sigenergy\\\",\\\"inverterModel\\\":\\\"SigenStor EC 10.0 SP\\\",\\\"inverterSizeW\\\":9999,\\\"inverterPhase\\\":\\\"single\\\",\\\"inverterEfficiencyPercent\\\":97.6,\\\"inverterCount\\\":1,\\\"batteryBrand\\\":\\\"Sigenergy\\\",\\\"batteryModel\\\":\\\"SigenStor BAT 8.0\\\",\\\"batterySizeKwh\\\":8.06,\\\"batteryUsableKwh\\\":7.8,\\\"batteryCount\\\":2,\\\"batteryChemistry\\\":\\\"LiFePO4\\\",\\\"proposalSource\\\":\\\"Pylon\\\",\\\"extractionConfidence\\\":100,\\\"notes\\\":[]}\"",
+      "createdAt": "2026-02-18 02:30:22"
+    },
+    {
+      "id": "810002",
+      "documentType": "switchboard_photo",
+      "fileName": "162M_Switchboard.jpg",
+      "extractedData": "NULL",
+      "createdAt": "2026-02-17 23:43:10"
+    },
+    {
+      "id": "810001",
+      "documentType": "switchboard_photo",
+      "fileName": "162M_Smart_Meter.jpg",
+      "extractedData": "NULL",
+      "createdAt": "2026-02-17 23:43:05"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdocumentType\tfileName\textractedData\tcreatedAt\n930001\tsolar_proposal_pdf\tSolar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf\t\"{\\\"solarSystemSizeKw\\\":10.925,\\\"solarPanelCount\\\":23,\\\"solarPanelWattage\\\":475,\\\"solarPanelBrand\\\":\\\"LONGI Solar\\\",\\\"solarPanelModel\\\":\\\"Hi-MO X6 Max Scientist LR7-54HTH-475M\\\",\\\"estimatedAnnualProductionKwh\\\":13765,\\\"systemEfficiencyPercent\\\":88,\\\"inverterBrand\\\":\\\"Sigenergy\\\",\\\"inverterModel\\\":\\\"SigenStor EC 10.0 SP\\\",\\\"inverterSizeW\\\":9999,\\\"inverterPhase\\\":\\\"single\\\",\\\"inverterEfficiencyPercent\\\":97.6,\\\"inverterCount\\\":1,\\\"batteryBrand\\\":\\\"Sigenergy\\\",\\\"batteryModel\\\":\\\"SigenStor BAT 8.0\\\",\\\"batterySizeKwh\\\":8.06,\\\"batteryUsableKwh\\\":7.8,\\\"batteryCount\\\":2,\\\"batteryChemistry\\\":\\\"LiFePO4\\\",\\\"proposalSource\\\":\\\"Pylon\\\",\\\"extractionConfidence\\\":100,\\\"notes\\\":[]}\"\t2026-02-18 02:30:22\n810002\tswitchboard_photo\t162M_Switchboard.jpg\tNULL\t2026-02-17 23:43:10\n810001\tswitchboard_photo\t162M_Smart_Meter.jpg\tNULL\t2026-02-17 23:43:05\n",
+  "stderr": "",
+  "execution_time_ms": 1567
+}

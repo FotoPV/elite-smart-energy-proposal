@@ -1073,3 +1073,30 @@
 - [x] Executive Summary: AGL VPP $404/year, 10.925kW solar + 16.12kWh battery
 - [x] Seven Key Benefits: "16.12kWh battery", "$404.25+/year through AGL VPP"
 - [x] 0 TypeScript errors, all 104 tests passing
+
+## Enhanced Installer-Level Switchboard Analysis (Feb 18)
+- [x] Enhance LLM switchboard analysis prompt to extract installer-level data:
+  - [x] Phase configuration (single/three-phase, confirmation from board)
+  - [x] Specific upgrade scope items (new breakers, isolators, RCD additions)
+  - [x] Cable assessment notes (existing cable sizes, potential run distances)
+  - [x] Metering assessment (bi-directional capable, meter swap needed)
+  - [x] Proposed breaker positions for solar inverter and battery
+- [x] Update SwitchboardAnalysis type interface with new fields
+- [x] Update ProposalData interface to carry enhanced switchboard data
+- [x] Update buildProposalData to pass new fields through
+- [x] Create Pre vs Post wiring diagram (SVG/HTML visual showing current board layout vs proposed)
+- [x] Create "Scope of Electrical Works" section on the slide with:
+  - [x] Pre-installation board layout (current circuits, main switch, RCDs)
+  - [x] Post-installation board layout (+ solar isolator, battery isolator, new MCBs)
+  - [x] Specific upgrade items list with actionable detail
+  - [x] Phase configuration confirmation
+  - [x] Metering requirements
+  - [x] Cable run notes
+- [x] Split into 2 slides if needed (Site Photos + Assessment | Scope of Electrical Works)
+- [x] Run TypeScript checks and tests
+- [x] Test end-to-end with Fayyaz Khan regeneration
+- [x] Add auto-analysis of unanalyzed switchboard photos during slide generation
+- [x] Switchboard photo auto-analyzed at 95% confidence, meter photo at 20%
+- [x] Scope of Electrical Works slide now shows: Pre/Post board layout, phase config (SINGLE PHASE), metering (Bi-Di YES, Swap REQUIRED), cable sizing, 6 scope items (RCD upgrade, main switch upgrade, dedicated MCBs, meter upgrade, full assessment)
+- [x] Electrical Assessment slide now shows real data: Board Condition GOOD, Main Switch 63A MCB, 10/12 circuits used, 1 RCD present, space available
+- [x] 19 slides generated successfully (was 18 before)

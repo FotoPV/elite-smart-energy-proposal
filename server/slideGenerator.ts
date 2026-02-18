@@ -181,6 +181,23 @@ export interface ProposalData {
     upgradeReason: string | null;
     warnings: string[];
     confidence: number;
+    // Enhanced installer-level fields
+    circuitBreakers?: Array<{ position: number; rating: number; type: string; label: string | null; isUsed: boolean }>;
+    phaseConfiguration?: 'single' | 'three' | 'unknown';
+    phaseConfirmationSource?: string | null;
+    meterType?: string | null;
+    meterIsBidirectional?: boolean | null;
+    meterSwapRequired?: boolean;
+    meterNotes?: string | null;
+    upgradeScope?: Array<{ item: string; detail: string; priority: 'required' | 'recommended' | 'optional'; estimatedCost: string | null }>;
+    proposedSolarBreakerPosition?: number | null;
+    proposedSolarBreakerRating?: string | null;
+    proposedBatteryBreakerPosition?: number | null;
+    proposedBatteryBreakerRating?: string | null;
+    proposedDcIsolatorLocation?: string | null;
+    proposedAcIsolatorLocation?: string | null;
+    cableAssessment?: string | null;
+    existingCableSizeAdequate?: boolean | null;
   };
   
   // Environmental
@@ -575,7 +592,26 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     });
   }
   
-  // Slide 15: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
+  // Slide 15: SCOPE OF ELECTRICAL WORKS (conditional — only if switchboard analysis exists)
+  if (data.switchboardAnalysis) {
+    slides.push({
+      id: slideId++,
+      type: 'scope_of_works',
+      title: 'SCOPE OF ELECTRICAL WORKS',
+      subtitle: 'PRE & POST INSTALLATION',
+      content: {
+        switchboardAnalysis: data.switchboardAnalysis,
+        solarSizeKw: data.solarSizeKw,
+        batterySizeKwh: data.batterySizeKwh,
+        inverterBrand: data.inverterBrand,
+        inverterSizeKw: data.inverterSizeKw,
+        batteryBrand: data.batteryBrand,
+        headerRight: 'Installer Assessment',
+      }
+    });
+  }
+
+  // Slide 16: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
   slides.push({
     id: slideId++,
     type: 'strategic_pathway',
@@ -939,6 +975,7 @@ export function generateSlideHTML(slide: SlideContent): string {
       case 'financial_impact': content = genFinancialImpact(slide); break;
       case 'environmental_impact': content = genEnvironmentalImpact(slide); break;
       case 'site_assessment': content = genSiteAssessment(slide); break;
+      case 'scope_of_works': content = genScopeOfWorks(slide); break;
       case 'strategic_pathway': content = genStrategicPathway(slide); break;
       case 'contact': content = genContact(slide); break;
       case 'vpp_recommendation': content = genVPPRecommendation(slide); break;
@@ -1999,7 +2036,184 @@ function genSiteAssessment(slide: SlideContent): string {
 }
 
 // ============================================================
-// SLIDE 14: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
+// SLIDE 15: SCOPE OF ELECTRICAL WORKS (Pre/Post Installation)
+// ============================================================
+function genScopeOfWorks(slide: SlideContent): string {
+  const c = slide.content as Record<string, unknown>;
+  const swb = c.switchboardAnalysis as ProposalData['switchboardAnalysis'] | undefined;
+  const solarKw = c.solarSizeKw as number || 0;
+  const batteryKwh = c.batterySizeKwh as number || 0;
+  const inverterBrand = c.inverterBrand as string || 'Hybrid Inverter';
+  const inverterSizeKw = c.inverterSizeKw as number || 0;
+  const batteryBrand = c.batteryBrand as string || 'Battery';
+
+  if (!swb) return genGeneric(slide);
+
+  // Phase configuration
+  const phaseLabel = swb.phaseConfiguration === 'single' ? 'SINGLE PHASE' : swb.phaseConfiguration === 'three' ? 'THREE PHASE' : 'UNKNOWN';
+  const phaseColor = swb.phaseConfiguration !== 'unknown' ? '#00EAD3' : '#F5A623';
+  const phaseSource = swb.phaseConfirmationSource || 'Visual inspection';
+
+  // Metering
+  const meterLabel = swb.meterType || 'Unknown';
+  const meterBiDi = swb.meterIsBidirectional === true ? 'YES' : swb.meterIsBidirectional === false ? 'NO' : 'UNKNOWN';
+  const meterBiDiColor = swb.meterIsBidirectional === true ? '#00EAD3' : swb.meterIsBidirectional === false ? '#F5A623' : '#808285';
+  const meterSwapLabel = swb.meterSwapRequired ? 'REQUIRED' : 'NOT REQUIRED';
+  const meterSwapColor = swb.meterSwapRequired ? '#F5A623' : '#00EAD3';
+
+  // Cable assessment
+  const cableAdequate = swb.existingCableSizeAdequate === true ? 'ADEQUATE' : swb.existingCableSizeAdequate === false ? 'UPGRADE NEEDED' : 'TO BE ASSESSED';
+  const cableColor = swb.existingCableSizeAdequate === true ? '#00EAD3' : swb.existingCableSizeAdequate === false ? '#F5A623' : '#808285';
+
+  // Build PRE board layout (current state)
+  const currentBreakers = (swb.circuitBreakers || []).slice(0, 12);
+  const preBoard = currentBreakers.length > 0 ? currentBreakers.map(cb => `
+    <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+      <div style="width: 20px; height: 20px; background: ${cb.isUsed ? '#333' : '#1a1a1a'}; border: 1px solid ${cb.isUsed ? '#555' : '#333'}; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 10px; color: ${cb.isUsed ? '#ccc' : '#555'};">${cb.position}</span>
+      </div>
+      <span style="font-size: 12px; color: ${cb.isUsed ? '#ccc' : '#555'}; font-family: 'Urbanist', sans-serif;">${cb.rating}A ${cb.type}</span>
+      <span style="font-size: 11px; color: #808285; margin-left: auto; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${cb.label || (cb.isUsed ? 'In Use' : 'Empty')}</span>
+    </div>
+  `).join('') : `
+    <div style="padding: 8px 0;">
+      <p style="color: #808285; font-size: 13px;">Main Switch: ${swb.mainSwitchRating || '?'}A ${swb.mainSwitchType || ''}</p>
+      <p style="color: #808285; font-size: 13px; margin-top: 4px;">${swb.usedCircuits || '?'}/${swb.totalCircuits || '?'} circuits used</p>
+      <p style="color: #808285; font-size: 13px; margin-top: 4px;">${swb.availableCircuits || '?'} positions available</p>
+    </div>
+  `;
+
+  // Build POST board layout (proposed additions)
+  const solarPos = swb.proposedSolarBreakerPosition;
+  const batteryPos = swb.proposedBatteryBreakerPosition;
+  const solarBreaker = swb.proposedSolarBreakerRating || `32A MCB`;
+  const batteryBreaker = swb.proposedBatteryBreakerRating || `32A MCB`;
+
+  const postAdditions = `
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">${solarBreaker}</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">Solar PV${solarPos ? ` (Pos ${solarPos})` : ''}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">${batteryBreaker}</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">Battery${batteryPos ? ` (Pos ${batteryPos})` : ''}</span>
+      </div>
+      ${swb.proposedAcIsolatorLocation ? `
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(0,234,211,0.15); border: 2px solid #00EAD3; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #00EAD3; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #00EAD3; font-family: 'Urbanist', sans-serif; font-weight: 600;">AC Isolator</span>
+        <span style="font-size: 11px; color: #00EAD3; margin-left: auto;">${swb.proposedAcIsolatorLocation}</span>
+      </div>` : ''}
+      ${swb.proposedDcIsolatorLocation ? `
+      <div style="display: flex; align-items: center; gap: 6px; padding: 3px 0;">
+        <div style="width: 20px; height: 20px; background: rgba(245,166,35,0.15); border: 2px solid #F5A623; border-radius: 2px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px; color: #F5A623; font-weight: 700;">+</span>
+        </div>
+        <span style="font-size: 12px; color: #F5A623; font-family: 'Urbanist', sans-serif; font-weight: 600;">DC Isolator</span>
+        <span style="font-size: 11px; color: #F5A623; margin-left: auto;">${swb.proposedDcIsolatorLocation}</span>
+      </div>` : ''}
+    </div>
+  `;
+
+  // Scope of works items
+  const scopeItems = (swb.upgradeScope || []).slice(0, 6);
+  const scopeHtml = scopeItems.length > 0 ? scopeItems.map(item => {
+    const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#00EAD3';
+    const priorityLabel = item.priority.toUpperCase();
+    return `
+      <div style="display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #222;">
+        <span style="font-size: 11px; color: ${priorityColor}; font-weight: 700; min-width: 90px; font-family: 'Urbanist', sans-serif; letter-spacing: 0.05em;">${priorityLabel}</span>
+        <div style="flex: 1;">
+          <p style="font-size: 14px; color: #fff; font-weight: 600; font-family: 'Urbanist', sans-serif;">${item.item}</p>
+          <p style="font-size: 12px; color: #808285; margin-top: 2px;">${item.detail}${item.estimatedCost ? ` — Est. ${item.estimatedCost}` : ''}</p>
+        </div>
+      </div>
+    `;
+  }).join('') : `
+    <div style="padding: 8px 0;">
+      <p style="color: #00EAD3; font-size: 14px; font-weight: 600;">No additional upgrades identified</p>
+      <p style="color: #808285; font-size: 12px; margin-top: 4px;">Board is ready for solar + battery installation</p>
+    </div>
+  `;
+
+  return `
+    <div class="slide">
+      ${slideNum(slide.id)}
+      ${logoBR()}
+      ${altHeader(slide.title, c.headerRight as string || 'Installer Assessment', phaseLabel)}
+      <div style="display: flex; gap: 40px;">
+        <!-- Left Column: Pre/Post Board Layout -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+          <!-- PRE-INSTALLATION -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #F5A623; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">CURRENT BOARD LAYOUT</p>
+              <span style="font-size: 12px; color: #808285;">${swb.mainSwitchRating || '?'}A ${swb.mainSwitchType || 'Main'}</span>
+            </div>
+            ${preBoard}
+          </div>
+          <!-- POST-INSTALLATION -->
+          <div class="card" style="padding: 16px; border-color: #00EAD3;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">PROPOSED ADDITIONS</p>
+              <span style="font-size: 12px; color: #00EAD3;">${solarKw}kW + ${batteryKwh}kWh</span>
+            </div>
+            ${postAdditions}
+          </div>
+        </div>
+
+        <!-- Right Column: Assessment Details + Scope -->
+        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Phase + Metering + Cable Row -->
+          <div style="display: flex; gap: 12px;">
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">PHASE CONFIG</p>
+              <p style="color: ${phaseColor}; font-size: 18px; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${phaseLabel}</p>
+              <p style="color: #808285; font-size: 11px; margin-top: 4px;">${phaseSource}</p>
+            </div>
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">METERING</p>
+              <p style="color: ${meterBiDiColor}; font-size: 14px; font-weight: 600;">Bi-Di: ${meterBiDi}</p>
+              <p style="color: ${meterSwapColor}; font-size: 12px; margin-top: 4px;">Swap: ${meterSwapLabel}</p>
+              ${swb.meterNotes ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.meterNotes}</p>` : ''}
+            </div>
+            <div class="card" style="flex: 1; padding: 14px;">
+              <p class="lbl" style="font-size: 11px;">CABLE SIZING</p>
+              <p style="color: ${cableColor}; font-size: 14px; font-weight: 600;">${cableAdequate}</p>
+              ${swb.cableAssessment ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.cableAssessment.substring(0, 80)}${swb.cableAssessment.length > 80 ? '...' : ''}</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Scope of Electrical Works -->
+          <div class="card" style="flex: 1; padding: 16px;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 12px;">SCOPE OF ELECTRICAL WORKS</p>
+            <div style="display: flex; flex-direction: column;">
+              ${scopeHtml}
+            </div>
+          </div>
+
+          <!-- System being installed summary -->
+          <div class="card aqua-b" style="padding: 14px; text-align: center;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 12px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em;">SYSTEM TO BE INSTALLED</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">${solarKw}kW ${inverterBrand} + ${batteryKwh}kWh ${batteryBrand}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// SLIDE 16: STRATEGIC PATHWAY TO ENERGY INDEPENDENCE (Roadmap)
 // ============================================================
 function genStrategicPathway(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;

@@ -1,0 +1,8 @@
+{
+  "query": "SELECT cd.id, cd.customer_id, cd.document_type, cd.file_name, cd.analysis, cd.created_at \nFROM customer_documents cd \nJOIN customers c ON cd.customer_id = c.id \nWHERE c.name LIKE '%Fayyaz%' AND cd.document_type = 'switchboard_photo' \nORDER BY cd.created_at DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT cd.id, cd.customer_id, cd.document_type, cd.file_name, cd.analysis, cd.created_at \nFROM customer_documents cd \nJOIN customers c ON cd.customer_id = c.id \nWHERE c.name LIKE '%Fayyaz%' AND cd.document_type = 'switchboard_photo' \nORDER BY cd.created_at DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'p6ctqt8enbmi3weqmjdcem.customer_documents' doesn't exist"
+  ]
+}
