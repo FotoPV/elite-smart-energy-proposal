@@ -1124,3 +1124,24 @@
 - [x] Added updateDocumentType tRPC mutation for re-tagging documents
 - [x] Added filename heuristics for auto-detecting meter/roof/property photos during upload
 - [x] Color-coded category labels: SWITCHBOARD=aqua, METER=orange, others=grey
+
+## Feature - Cable Run Photo + Dynamic Cable Sizing (Feb 18) ✅ COMPLETE
+### Phase 1: Cable Run Photo Category
+- [x] Add 'cable_run_photo' to documentType enum in drizzle schema
+- [x] Push database migration
+- [x] Add 'cable_run_photo' to all document type arrays in routers.ts (upload, list, filter)
+- [x] Add CABLE RUN option to category dropdown in ProposalDetail.tsx
+- [x] Add cable_run filename heuristic in NewProposal.tsx auto-detection
+- [x] Build LLM vision prompt to extract cable run distance from annotated photos
+- [x] Auto-analyze cable_run_photo during slide generation (extract distance measurement)
+- [x] Display cable run photo on Electrical Assessment slide + Scope of Electrical Works slide
+
+### Phase 2: Dynamic Cable Sizing Reference Table
+- [x] Build AS/NZS 3008 cable sizing lookup module (cableRunAnalysis.ts)
+- [x] Support single-phase and three-phase configurations
+- [x] Calculate voltage drop based on run distance, inverter size, cable size
+- [x] Generate cable sizing recommendation table (AC Solar, DC Solar, Battery, Earth segments)
+- [x] Add cableRunAnalysis + cableSizing fields to ProposalData interface
+- [x] Render cable sizing reference table on Scope of Electrical Works slide (color-coded, compliance status)
+- [x] Include AS/NZS 3008 I.1 reference on the slide
+- [x] Tested with Fayyaz Khan's 21.3472m run, 10kW single-phase — 95% confidence, cable sizing table generated correctly

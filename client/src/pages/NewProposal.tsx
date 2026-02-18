@@ -238,11 +238,13 @@ export default function NewProposal() {
       const file = fileArray[i];
       const entryId = newEntries[i].id;
       // Auto-detect photo category from filename heuristics
-      let docType: 'switchboard_photo' | 'meter_photo' | 'roof_photo' | 'property_photo' | 'solar_proposal_pdf' | 'other' = 'solar_proposal_pdf';
+      let docType: 'switchboard_photo' | 'meter_photo' | 'roof_photo' | 'property_photo' | 'cable_run_photo' | 'solar_proposal_pdf' | 'other' = 'solar_proposal_pdf';
       if (file.type.startsWith('image/')) {
         const nameLower = file.name.toLowerCase();
         if (nameLower.includes('meter') || nameLower.includes('smart_meter') || nameLower.includes('smartmeter')) {
           docType = 'meter_photo';
+        } else if (nameLower.includes('cable') || nameLower.includes('cable_run') || nameLower.includes('cablerun') || nameLower.includes('run_photo')) {
+          docType = 'cable_run_photo';
         } else if (nameLower.includes('roof') || nameLower.includes('aerial') || nameLower.includes('satellite')) {
           docType = 'roof_photo';
         } else if (nameLower.includes('property') || nameLower.includes('house') || nameLower.includes('front')) {

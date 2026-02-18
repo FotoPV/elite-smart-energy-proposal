@@ -218,6 +218,7 @@ export const customerDocuments = mysqlTable("customerDocuments", {
     "meter_photo", 
     "roof_photo",
     "property_photo",
+    "cable_run_photo",
     "solar_proposal_pdf",
     "other"
   ]).notNull(),

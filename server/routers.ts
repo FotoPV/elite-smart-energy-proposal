@@ -501,7 +501,7 @@ export const appRouter = router({
         }
         
         const sitePhotos = customerDocs
-          .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
+          .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType))
           .map((d, idx) => {
             // Use simple labels for captions — NOT the full analysis text
             const typeLabels: Record<string, string> = {
@@ -509,6 +509,7 @@ export const appRouter = router({
               meter_photo: 'Meter Photo',
               roof_photo: 'Roof Photo',
               property_photo: 'Property Photo',
+              cable_run_photo: 'Cable Run Photo',
             };
             const baseLabel = typeLabels[d.documentType] || 'Site Photo';
             return {
@@ -558,6 +559,40 @@ export const appRouter = router({
           existingCableSizeAdequate: switchboardAnalyses.find(a => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
         } : undefined;
         
+        // === Cable Run Photo Auto-Analysis ===
+        const cableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
+        let cableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
+        for (const crd of cableRunDocs) {
+          if (!crd.extractedData && crd.fileUrl) {
+            try {
+              console.log(`[Cable Run] Auto-analyzing cable run photo (doc ${crd.id})...`);
+              const { analyzeCableRunPhoto } = await import('./cableRunAnalysis');
+              const crAnalysis = await analyzeCableRunPhoto(crd.fileUrl);
+              console.log(`[Cable Run] Analysis complete — distance: ${crAnalysis.cableRunDistanceMetres}m, confidence: ${crAnalysis.confidence}%`);
+              await db.updateCustomerDocument(crd.id, { extractedData: JSON.stringify(crAnalysis) });
+              if (crAnalysis.confidence >= 40 && crAnalysis.cableRunDistanceMetres) {
+                cableRunAnalysis = { ...crAnalysis, photoUrl: crd.fileUrl };
+              }
+            } catch (e) { console.error('[Cable Run] Analysis failed:', e); }
+          } else if (crd.extractedData) {
+            const parsed = typeof crd.extractedData === 'string' ? JSON.parse(crd.extractedData) : crd.extractedData;
+            if (parsed.confidence >= 40 && parsed.cableRunDistanceMetres) {
+              cableRunAnalysis = { ...parsed, photoUrl: crd.fileUrl };
+            }
+          }
+        }
+
+        // === Cable Sizing Calculation (AS/NZS 3008.1.1) ===
+        let cableSizing: ProposalData['cableSizing'] = undefined;
+        const phaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';
+        if (cableRunAnalysis?.cableRunDistanceMetres) {
+          const { calculateCableSizing } = await import('./cableRunAnalysis');
+          const sp = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+          const spData = sp?.extractedData ? (typeof sp.extractedData === 'string' ? JSON.parse(sp.extractedData) : sp.extractedData) : null;
+          const invKw = spData?.inverterSizeW ? spData.inverterSizeW / 1000 : (calc.recommendedSolarKw || 10);
+          cableSizing = calculateCableSizing(invKw, phaseConfig, cableRunAnalysis.cableRunDistanceMetres, calc.recommendedBatteryKwh);
+        }
+
         // Check for uploaded solar proposal specs to override calculated system values
         const solarProposalDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
         const solarProposalSpecs = solarProposalDoc?.extractedData 
@@ -569,6 +604,8 @@ export const appRouter = router({
           regeneratePrompt: (proposal as any).lastRegeneratePrompt || undefined,
           sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
           switchboardAnalysis,
+          cableRunAnalysis,
+          cableSizing,
           solarProposalSpecs,
         });
         const allSlides = generateSlides(proposalData); // Only active/included slides
@@ -1141,6 +1178,7 @@ export const appRouter = router({
           'meter_photo',
           'roof_photo',
           'property_photo',
+          'cable_run_photo',
           'solar_proposal_pdf',
           'other'
         ]),
@@ -1163,6 +1201,7 @@ export const appRouter = router({
           'meter_photo',
           'roof_photo',
           'property_photo',
+          'cable_run_photo',
           'solar_proposal_pdf',
           'other'
         ]),
@@ -1178,7 +1217,7 @@ export const appRouter = router({
         let fileName = input.fileName;
         
         // Compress photos to max 1200px wide, JPEG quality 80 for faster slide rendering
-        const isPhoto = ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(input.documentType);
+        const isPhoto = ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(input.documentType);
         if (isPhoto && (input.mimeType.startsWith('image/jpeg') || input.mimeType.startsWith('image/png') || input.mimeType.startsWith('image/webp'))) {
           try {
             buffer = await sharp(buffer)
@@ -1246,6 +1285,7 @@ export const appRouter = router({
           'meter_photo',
           'roof_photo',
           'property_photo',
+          'cable_run_photo',
           'solar_proposal_pdf',
           'other'
         ]),
@@ -1432,7 +1472,7 @@ export const appRouter = router({
       
       const allDocs = await dbConn.select().from(docsTable);
       const photoDocs = allDocs.filter(d => 
-        ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
+        ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType)
       );
       
       let processed = 0;
@@ -1579,13 +1619,14 @@ export const appRouter = router({
             }
             
             const sitePhotos = customerDocs
-              .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType))
+              .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType))
               .map(d => {
                 const typeLabels: Record<string, string> = {
                   switchboard_photo: 'Switchboard Photo',
                   meter_photo: 'Meter Photo',
                   roof_photo: 'Roof Photo',
                   property_photo: 'Property Photo',
+                  cable_run_photo: 'Cable Run Photo',
                 };
                 return {
                   url: d.fileUrl,
@@ -1634,6 +1675,37 @@ export const appRouter = router({
               existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
             } : undefined;
             
+            // === Cable Run Photo Analysis ===
+            const batchCableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
+            let batchCableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
+            for (const crd of batchCableRunDocs) {
+              if (!crd.extractedData && crd.fileUrl) {
+                try {
+                  const { analyzeCableRunPhoto } = await import('./cableRunAnalysis');
+                  const crAnalysis = await analyzeCableRunPhoto(crd.fileUrl);
+                  await db.updateCustomerDocument(crd.id, { extractedData: JSON.stringify(crAnalysis) });
+                  if (crAnalysis.confidence >= 40 && crAnalysis.cableRunDistanceMetres) {
+                    batchCableRunAnalysis = { ...crAnalysis, photoUrl: crd.fileUrl };
+                  }
+                } catch (e) { console.error('[Cable Run] Batch analysis failed:', e); }
+              } else if (crd.extractedData) {
+                const parsed = typeof crd.extractedData === 'string' ? JSON.parse(crd.extractedData) : crd.extractedData;
+                if (parsed.confidence >= 40 && parsed.cableRunDistanceMetres) {
+                  batchCableRunAnalysis = { ...parsed, photoUrl: crd.fileUrl };
+                }
+              }
+            }
+
+            // === Cable Sizing Calculation ===
+            let batchCableSizing: ProposalData['cableSizing'] = undefined;
+            const batchPhaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';
+            if (batchCableRunAnalysis?.cableRunDistanceMetres) {
+              const { calculateCableSizing } = await import('./cableRunAnalysis');
+              const calc2 = calculations as ProposalCalculations;
+              const invKw2 = calc2.recommendedSolarKw || 10;
+              batchCableSizing = calculateCableSizing(invKw2, batchPhaseConfig, batchCableRunAnalysis.cableRunDistanceMetres, calc2.recommendedBatteryKwh);
+            }
+
             // Check for uploaded solar proposal specs
             const solarProposalDoc2 = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
             const solarProposalSpecs2 = solarProposalDoc2?.extractedData 
@@ -1645,6 +1717,8 @@ export const appRouter = router({
               proposalNotes: (proposal as any).proposalNotes || undefined,
               sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
               switchboardAnalysis,
+              cableRunAnalysis: batchCableRunAnalysis,
+              cableSizing: batchCableSizing,
               solarProposalSpecs: solarProposalSpecs2,
             });
             const allSlides = generateSlides(proposalData);
@@ -1860,6 +1934,8 @@ function buildProposalData(
     regeneratePrompt?: string;
     sitePhotos?: Array<{ url: string; caption: string }>;
     switchboardAnalysis?: ProposalData['switchboardAnalysis'];
+    cableRunAnalysis?: ProposalData['cableRunAnalysis'];
+    cableSizing?: ProposalData['cableSizing'];
     solarProposalSpecs?: any; // Extracted specs from uploaded solar proposal
   }
 ): ProposalData {
@@ -2009,6 +2085,8 @@ function buildProposalData(
     regeneratePrompt: options?.regeneratePrompt,
     sitePhotos: options?.sitePhotos,
     switchboardAnalysis: options?.switchboardAnalysis,
+    cableRunAnalysis: options?.cableRunAnalysis,
+    cableSizing: options?.cableSizing,
   };
 }
 

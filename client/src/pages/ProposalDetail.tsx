@@ -821,8 +821,8 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
     { enabled: !!customerId && showModal }
   );
   const sitePhotos = (customerDocs || []).filter(d =>
-    ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
-  );
+['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType)
+   );
   
   const handleRegenerate = async () => {
     setIsRegenerating(true);
@@ -1164,17 +1164,18 @@ export default function ProposalDetailPage() {
     { enabled: !!customerId }
   );
   const sitePhotos = (customerDocs || []).filter((d: any) =>
-    ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo'].includes(d.documentType)
-  );
+   ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType)
+   );
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxLabel, setLightboxLabel] = useState<string>('');
+  const utils = trpc.useUtils();
   
   const updateDocTypeMutation = trpc.documents.updateDocumentType.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(`Photo re-tagged as ${data.newType.replace(/_/g, ' ').replace(/photo/i, '').trim()}`);
-      trpc.useUtils().documents.list.invalidate();
+      utils.documents.list.invalidate();
     },
-    onError: (err) => toast.error(`Failed to re-tag: ${err.message}`),
+    onError: (err: any) => toast.error(`Failed to re-tag: ${err.message}`),
   });
   
 
@@ -1442,6 +1443,7 @@ export default function ProposalDetailPage() {
                         <option value="meter_photo" style={{ background: '#111', color: '#f36710' }}>METER</option>
                         <option value="roof_photo" style={{ background: '#111', color: '#808285' }}>ROOF</option>
                         <option value="property_photo" style={{ background: '#111', color: '#808285' }}>PROPERTY</option>
+                        <option value="cable_run_photo" style={{ background: '#111', color: '#FFD700' }}>CABLE RUN</option>
                       </select>
                     </div>
                   </div>

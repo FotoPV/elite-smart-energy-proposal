@@ -199,6 +199,43 @@ export interface ProposalData {
     cableAssessment?: string | null;
     existingCableSizeAdequate?: boolean | null;
   };
+
+  // Cable Run Analysis
+  cableRunAnalysis?: {
+    cableRunDistanceMetres: number | null;
+    cableRoutePath: string | null;
+    installationMethod: string | null;
+    obstructions: string[];
+    notes: string[];
+    confidence: number;
+    photoUrl?: string;  // URL of the annotated cable run photo
+  };
+
+  // Cable Sizing (AS/NZS 3008.1.1)
+  cableSizing?: {
+    inverterSizeKw: number;
+    phaseConfig: 'single' | 'three' | 'unknown';
+    runDistanceMetres: number;
+    acCableSize: string;
+    acCableType: string;
+    acVoltageDrop: number;
+    acVoltageDropCompliant: boolean;
+    acCurrentRating: number;
+    dcCableSize: string;
+    dcCableType: string;
+    earthCableSize: string;
+    batteryCableSize: string | null;
+    batteryCableType: string | null;
+    referenceTable: Array<{
+      distanceRange: string;
+      recommendedCable: string;
+      voltageDropPercent: number;
+      compliant: boolean;
+      note: string;
+    }>;
+    standard: string;
+    disclaimer: string;
+  };
   
   // Environmental
   co2ReductionTonnes: number;
@@ -601,6 +638,8 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       subtitle: 'PRE & POST INSTALLATION',
       content: {
         switchboardAnalysis: data.switchboardAnalysis,
+        cableRunAnalysis: data.cableRunAnalysis,
+        cableSizing: data.cableSizing,
         solarSizeKw: data.solarSizeKw,
         batterySizeKwh: data.batterySizeKwh,
         inverterBrand: data.inverterBrand,
@@ -2050,6 +2089,8 @@ function genSiteAssessment(slide: SlideContent): string {
 function genScopeOfWorks(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const swb = c.switchboardAnalysis as ProposalData['switchboardAnalysis'] | undefined;
+  const cableRun = c.cableRunAnalysis as ProposalData['cableRunAnalysis'] | undefined;
+  const cableSizing = c.cableSizing as ProposalData['cableSizing'] | undefined;
   const solarKw = c.solarSizeKw as number || 0;
   const batteryKwh = c.batterySizeKwh as number || 0;
   const inverterBrand = c.inverterBrand as string || 'Hybrid Inverter';
@@ -2170,6 +2211,12 @@ function genScopeOfWorks(slide: SlideContent): string {
             </div>
             ${preBoard}
           </div>
+          <!-- Cable Run Photo -->
+          ${cableRun?.photoUrl ? `
+          <div class="card" style="padding: 10px;">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 11px; color: #F5A623; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 6px;">CABLE RUN — ${cableRun.cableRunDistanceMetres ? cableRun.cableRunDistanceMetres.toFixed(1) + 'm' : 'MEASURED'}</p>
+            <img src="${cableRun.photoUrl}" style="width: 100%; max-height: 120px; object-fit: contain; border-radius: 4px;" />
+          </div>` : ''}
           <!-- POST-INSTALLATION -->
           <div class="card" style="padding: 16px; border-color: #00EAD3;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -2196,11 +2243,64 @@ function genScopeOfWorks(slide: SlideContent): string {
               ${swb.meterNotes ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.meterNotes}</p>` : ''}
             </div>
             <div class="card" style="flex: 1; padding: 14px;">
-              <p class="lbl" style="font-size: 11px;">CABLE SIZING</p>
-              <p style="color: ${cableColor}; font-size: 14px; font-weight: 600;">${cableAdequate}</p>
-              ${swb.cableAssessment ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.cableAssessment.substring(0, 80)}${swb.cableAssessment.length > 80 ? '...' : ''}</p>` : ''}
+              <p class="lbl" style="font-size: 11px;">CABLE RUN</p>
+              ${cableRun?.cableRunDistanceMetres ? `
+                <p style="color: #00EAD3; font-size: 18px; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableRun.cableRunDistanceMetres.toFixed(1)}m</p>
+                <p style="color: #808285; font-size: 11px; margin-top: 4px;">${cableRun.installationMethod || 'Measured'}</p>
+              ` : `
+                <p style="color: ${cableColor}; font-size: 14px; font-weight: 600;">${cableAdequate}</p>
+                ${swb.cableAssessment ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.cableAssessment.substring(0, 80)}${swb.cableAssessment.length > 80 ? '...' : ''}</p>` : ''}
+              `}
             </div>
           </div>
+
+          <!-- Cable Sizing Reference Table (AS/NZS 3008.1.1) -->
+          ${cableSizing ? `
+          <div class="card" style="padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <p style="font-family: 'Urbanist', sans-serif; font-size: 13px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">CABLE SIZING — AS/NZS 3008.1.1</p>
+              <span style="font-size: 11px; color: #808285;">${cableSizing.phaseConfig === 'single' ? '1Ø' : '3Ø'} ${cableSizing.inverterSizeKw}kW</span>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+              <div style="flex: 1; background: rgba(0,234,211,0.08); border-radius: 4px; padding: 8px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">AC CABLE</p>
+                <p style="font-size: 16px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.acCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.acCableType}</p>
+              </div>
+              <div style="flex: 1; background: rgba(0,234,211,0.08); border-radius: 4px; padding: 8px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">DC CABLE</p>
+                <p style="font-size: 16px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.dcCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.dcCableType}</p>
+              </div>
+              <div style="flex: 1; background: rgba(0,234,211,0.08); border-radius: 4px; padding: 8px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">EARTH</p>
+                <p style="font-size: 16px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.earthCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">Cu Earth</p>
+              </div>
+              ${cableSizing.batteryCableSize ? `
+              <div style="flex: 1; background: rgba(245,166,35,0.08); border-radius: 4px; padding: 8px;">
+                <p style="font-size: 10px; color: #808285; text-transform: uppercase; letter-spacing: 0.05em;">BATTERY</p>
+                <p style="font-size: 16px; color: #F5A623; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${cableSizing.batteryCableSize}</p>
+                <p style="font-size: 10px; color: #808285;">${cableSizing.batteryCableType || 'Battery Cable'}</p>
+              </div>` : ''}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <p style="font-size: 11px; color: ${cableSizing.acVoltageDropCompliant ? '#00EAD3' : '#FF4444'}; font-weight: 600;">V-Drop: ${cableSizing.acVoltageDrop.toFixed(1)}% ${cableSizing.acVoltageDropCompliant ? '✓ COMPLIANT' : '✗ EXCEEDS LIMIT'}</p>
+              <p style="font-size: 10px; color: #808285;">Run: ${cableSizing.runDistanceMetres}m</p>
+            </div>
+            ${cableSizing.referenceTable && cableSizing.referenceTable.length > 0 ? `
+            <div style="margin-top: 8px; border-top: 1px solid #222; padding-top: 6px;">
+              <p style="font-size: 10px; color: #808285; margin-bottom: 4px;">DISTANCE REFERENCE:</p>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                ${cableSizing.referenceTable.map(r => `
+                  <div style="background: ${r.compliant ? 'rgba(0,234,211,0.06)' : 'rgba(255,68,68,0.06)'}; border: 1px solid ${r.compliant ? '#333' : '#442222'}; border-radius: 3px; padding: 3px 8px;">
+                    <span style="font-size: 10px; color: ${r.compliant ? '#ccc' : '#FF4444'};">${r.distanceRange}: ${r.recommendedCable} (${r.voltageDropPercent.toFixed(1)}%)</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>` : ''}
+            <p style="font-size: 9px; color: #555; margin-top: 6px; font-style: italic;">${cableSizing.disclaimer}</p>
+          </div>` : ''}
 
           <!-- Scope of Electrical Works -->
           <div class="card" style="flex: 1; padding: 16px;">

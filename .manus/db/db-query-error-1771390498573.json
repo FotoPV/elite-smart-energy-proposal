@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO customer_documents (customer_id, document_type, file_url, file_name, file_size, mime_type) VALUES (60002, 'cable_run_photo', 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg', 'Fayyaz_Cable_Run_21m.jpg', 85318, 'image/jpeg');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute INSERT INTO customer_documents (customer_id, document_type, file_url, file_name, file_size, mime_type) VALUES (60002, 'cable_run_photo', 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg', 'Fayyaz_Cable_Run_21m.jpg', 85318, 'image/jpeg');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'p6ctqt8enbmi3weqmjdcem.customer_documents' doesn't exist"
+  ]
+}

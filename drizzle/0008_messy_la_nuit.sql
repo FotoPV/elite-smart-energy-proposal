@@ -1,0 +1,1 @@
+ALTER TABLE `customerDocuments` MODIFY COLUMN `documentType` enum('switchboard_photo','meter_photo','roof_photo','property_photo','cable_run_photo','solar_proposal_pdf','other') NOT NULL;

@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, customerId, documentType, fileUrl, fileName, extractedData FROM customerDocuments WHERE customerId = 60002;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, customerId, documentType, fileUrl, fileName, extractedData FROM customerDocuments WHERE customerId = 60002;",
+  "rows": [
+    {
+      "id": "930002",
+      "customerId": "60002",
+      "documentType": "cable_run_photo",
+      "fileUrl": "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg",
+      "fileName": "Fayyaz_Cable_Run_21m.jpg",
+      "extractedData": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\tdocumentType\tfileUrl\tfileName\textractedData\n930002\t60002\tcable_run_photo\thttps://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gVRYSwdjfxGeoKJx.jpg\tFayyaz_Cable_Run_21m.jpg\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1553
+}
