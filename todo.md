@@ -1145,3 +1145,12 @@
 - [x] Render cable sizing reference table on Scope of Electrical Works slide (color-coded, compliance status)
 - [x] Include AS/NZS 3008 I.1 reference on the slide
 - [x] Tested with Fayyaz Khan's 21.3472m run, 10kW single-phase — 95% confidence, cable sizing table generated correctly
+
+## Bug Fix - Electrical Photos Missing in PDF Export (Feb 18)
+- [x] Investigated PDF export code — root cause: all 3 export paths (exportPdf, exportPptx, exportNativePdf) called buildProposalData without sitePhotos/switchboardAnalysis/cableRunAnalysis/cableSizing
+- [x] Created reusable aggregateSiteData() helper function to avoid code duplication across 5 call sites
+- [x] Updated exportPdf to use aggregateSiteData — now includes all site photos and electrical data
+- [x] Updated exportPptx to use aggregateSiteData — now includes all site photos and electrical data
+- [x] Updated exportNativePdf to use aggregateSiteData — now includes all site photos and electrical data
+- [x] Note: Native PDF (pdfGenerator.ts) only renders subset of slides — Electrical Assessment and Scope of Works only appear in Puppeteer PDF and PPTX exports
+- [ ] Test PDF export with Fayyaz Khan's proposal to verify photos appear

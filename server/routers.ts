@@ -931,13 +931,15 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        // Check for solar proposal specs for export
-        const exportDocs = await db.getDocumentsByCustomerId(proposal.customerId);
-        const exportSolarDoc = exportDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
-        const exportSolarSpecs = exportSolarDoc?.extractedData 
-          ? (typeof exportSolarDoc.extractedData === 'string' ? JSON.parse(exportSolarDoc.extractedData) : exportSolarDoc.extractedData)
-          : undefined;
-        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: exportSolarSpecs });
+        // Aggregate all site data (photos, switchboard, cable run, solar specs)
+        const siteData = await aggregateSiteData(proposal.customerId, calc);
+        const proposalData = buildProposalData(customer, calc, false, {
+          sitePhotos: siteData.sitePhotos,
+          switchboardAnalysis: siteData.switchboardAnalysis,
+          cableRunAnalysis: siteData.cableRunAnalysis,
+          cableSizing: siteData.cableSizing,
+          solarProposalSpecs: siteData.solarProposalSpecs,
+        });
         
         const slides = generateSlides(proposalData);
         
@@ -1001,12 +1003,15 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const pptxDocs = await db.getDocumentsByCustomerId(proposal.customerId);
-        const pptxSolarDoc = pptxDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
-        const pptxSolarSpecs = pptxSolarDoc?.extractedData 
-          ? (typeof pptxSolarDoc.extractedData === 'string' ? JSON.parse(pptxSolarDoc.extractedData) : pptxSolarDoc.extractedData)
-          : undefined;
-        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: pptxSolarSpecs });
+        // Aggregate all site data (photos, switchboard, cable run, solar specs)
+        const pptxSiteData = await aggregateSiteData(proposal.customerId, calc);
+        const proposalData = buildProposalData(customer, calc, false, {
+          sitePhotos: pptxSiteData.sitePhotos,
+          switchboardAnalysis: pptxSiteData.switchboardAnalysis,
+          cableRunAnalysis: pptxSiteData.cableRunAnalysis,
+          cableSizing: pptxSiteData.cableSizing,
+          solarProposalSpecs: pptxSiteData.solarProposalSpecs,
+        });
         
         // Generate PPTX with embedded brand fonts
         const pptxBuffer = await generatePptx(proposalData);
@@ -1057,12 +1062,15 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const nativePdfDocs = await db.getDocumentsByCustomerId(proposal.customerId);
-        const nativePdfSolarDoc = nativePdfDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
-        const nativePdfSolarSpecs = nativePdfSolarDoc?.extractedData 
-          ? (typeof nativePdfSolarDoc.extractedData === 'string' ? JSON.parse(nativePdfSolarDoc.extractedData) : nativePdfSolarDoc.extractedData)
-          : undefined;
-        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: nativePdfSolarSpecs });
+        // Aggregate all site data (photos, switchboard, cable run, solar specs)
+        const nativePdfSiteData = await aggregateSiteData(proposal.customerId, calc);
+        const proposalData = buildProposalData(customer, calc, false, {
+          sitePhotos: nativePdfSiteData.sitePhotos,
+          switchboardAnalysis: nativePdfSiteData.switchboardAnalysis,
+          cableRunAnalysis: nativePdfSiteData.cableRunAnalysis,
+          cableSizing: nativePdfSiteData.cableSizing,
+          solarProposalSpecs: nativePdfSiteData.solarProposalSpecs,
+        });
         
         // Generate native PDF with embedded brand fonts
         const pdfBuffer = await generateNativePdf(proposalData);
@@ -1923,6 +1931,108 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
   }
   
   return enriched;
+}
+
+/**
+ * Reusable helper to aggregate site photos, switchboard analysis, cable run analysis,
+ * and cable sizing from customer documents. Used by generateProgressive, batchGenerate,
+ * and all export paths (PDF, PPTX, native PDF).
+ */
+async function aggregateSiteData(customerId: number, calc: ProposalCalculations) {
+  const customerDocs = await db.getDocumentsByCustomerId(customerId);
+  
+  // Build site photos array
+  const sitePhotos = customerDocs
+    .filter(d => ['switchboard_photo', 'meter_photo', 'roof_photo', 'property_photo', 'cable_run_photo'].includes(d.documentType))
+    .map(d => {
+      const typeLabels: Record<string, string> = {
+        switchboard_photo: 'Switchboard Photo',
+        meter_photo: 'Meter Photo',
+        roof_photo: 'Roof Photo',
+        property_photo: 'Property Photo',
+        cable_run_photo: 'Cable Run Photo',
+      };
+      return {
+        url: d.fileUrl,
+        caption: typeLabels[d.documentType] || 'Site Photo',
+        analysis: d.extractedData ? (typeof d.extractedData === 'string' ? JSON.parse(d.extractedData) : d.extractedData) : null,
+        documentType: d.documentType,
+      };
+    });
+  
+  // Aggregate switchboard analysis (confidence >= 50%)
+  const switchboardAnalyses = sitePhotos
+    .filter(p => p.documentType === 'switchboard_photo' && p.analysis && ((p.analysis as any).confidence || 0) >= 50)
+    .map(p => p.analysis);
+  const switchboardAnalysis: ProposalData['switchboardAnalysis'] = switchboardAnalyses.length > 0 ? {
+    boardCondition: switchboardAnalyses[0].boardCondition || 'unknown',
+    mainSwitchRating: switchboardAnalyses.find((a: any) => a.mainSwitchRating)?.mainSwitchRating || null,
+    mainSwitchType: switchboardAnalyses.find((a: any) => a.mainSwitchType)?.mainSwitchType || null,
+    totalCircuits: switchboardAnalyses.find((a: any) => a.totalCircuits)?.totalCircuits || null,
+    usedCircuits: switchboardAnalyses.find((a: any) => a.usedCircuits)?.usedCircuits || null,
+    availableCircuits: switchboardAnalyses.find((a: any) => a.availableCircuits)?.availableCircuits || null,
+    hasRcd: switchboardAnalyses.some((a: any) => a.hasRcd),
+    rcdCount: switchboardAnalyses.find((a: any) => a.rcdCount)?.rcdCount || null,
+    hasSpaceForSolar: switchboardAnalyses.some((a: any) => a.hasSpaceForSolar),
+    hasSpaceForBattery: switchboardAnalyses.some((a: any) => a.hasSpaceForBattery),
+    upgradeRequired: switchboardAnalyses.some((a: any) => a.upgradeRequired),
+    upgradeReason: switchboardAnalyses.find((a: any) => a.upgradeReason)?.upgradeReason || null,
+    warnings: switchboardAnalyses.flatMap((a: any) => a.warnings || []),
+    confidence: Math.round(switchboardAnalyses.reduce((sum: number, a: any) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
+    circuitBreakers: switchboardAnalyses.flatMap((a: any) => a.circuitBreakers || []),
+    phaseConfiguration: switchboardAnalyses.find((a: any) => a.phaseConfiguration && a.phaseConfiguration !== 'unknown')?.phaseConfiguration || 'unknown',
+    phaseConfirmationSource: switchboardAnalyses.find((a: any) => a.phaseConfirmationSource)?.phaseConfirmationSource || null,
+    meterType: switchboardAnalyses.find((a: any) => a.meterType)?.meterType || null,
+    meterIsBidirectional: switchboardAnalyses.find((a: any) => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
+    meterSwapRequired: switchboardAnalyses.some((a: any) => a.meterSwapRequired),
+    meterNotes: switchboardAnalyses.find((a: any) => a.meterNotes)?.meterNotes || null,
+    upgradeScope: switchboardAnalyses.flatMap((a: any) => a.upgradeScope || []),
+    proposedSolarBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
+    proposedSolarBreakerRating: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
+    proposedBatteryBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
+    proposedBatteryBreakerRating: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
+    proposedDcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
+    proposedAcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+    cableAssessment: switchboardAnalyses.find((a: any) => a.cableAssessment)?.cableAssessment || null,
+    existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
+  } : undefined;
+  
+  // Cable run analysis (use existing extracted data)
+  let cableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
+  const cableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
+  for (const crd of cableRunDocs) {
+    if (crd.extractedData) {
+      const parsed = typeof crd.extractedData === 'string' ? JSON.parse(crd.extractedData) : crd.extractedData;
+      if (parsed.confidence >= 40 && parsed.cableRunDistanceMetres) {
+        cableRunAnalysis = { ...parsed, photoUrl: crd.fileUrl };
+      }
+    }
+  }
+  
+  // Cable sizing calculation
+  let cableSizing: ProposalData['cableSizing'] = undefined;
+  const phaseConfig = switchboardAnalysis?.phaseConfiguration || 'single';
+  if (cableRunAnalysis?.cableRunDistanceMetres) {
+    const { calculateCableSizing } = await import('./cableRunAnalysis');
+    const spDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+    const spData = spDoc?.extractedData ? (typeof spDoc.extractedData === 'string' ? JSON.parse(spDoc.extractedData) : spDoc.extractedData) : null;
+    const invKw = spData?.inverterSizeW ? spData.inverterSizeW / 1000 : (calc.recommendedSolarKw || 10);
+    cableSizing = calculateCableSizing(invKw, phaseConfig, cableRunAnalysis.cableRunDistanceMetres, calc.recommendedBatteryKwh);
+  }
+  
+  // Solar proposal specs
+  const solarProposalDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+  const solarProposalSpecs = solarProposalDoc?.extractedData 
+    ? (typeof solarProposalDoc.extractedData === 'string' ? JSON.parse(solarProposalDoc.extractedData) : solarProposalDoc.extractedData)
+    : undefined;
+  
+  return {
+    sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
+    switchboardAnalysis,
+    cableRunAnalysis,
+    cableSizing,
+    solarProposalSpecs,
+  };
 }
 
 function buildProposalData(
