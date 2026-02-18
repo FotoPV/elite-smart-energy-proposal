@@ -273,6 +273,34 @@ export interface ProposalData {
   co2ProjectedTonnes?: number;
   co2ReductionPercent?: number;
   
+  // Roof Analysis (from roof photo LLM vision)
+  roofAnalysis?: {
+    primaryOrientation: 'north' | 'north-east' | 'north-west' | 'east' | 'west' | 'south' | 'south-east' | 'south-west' | 'flat' | 'unknown';
+    orientationConfidence: 'high' | 'medium' | 'low';
+    orientationEvidence: string | null;
+    tiltAngleDegrees: number | null;
+    tiltCategory: 'flat' | 'low_pitch' | 'standard' | 'steep' | 'unknown';
+    tiltEvidence: string | null;
+    shadingLevel: 'none' | 'minimal' | 'moderate' | 'heavy' | 'unknown';
+    shadingSources: string[];
+    shadingImpactPercent: number | null;
+    morningShading: boolean | null;
+    afternoonShading: boolean | null;
+    roofMaterial: 'colorbond' | 'tile_concrete' | 'tile_terracotta' | 'slate' | 'flat_membrane' | 'polycarbonate' | 'unknown';
+    roofCondition: 'excellent' | 'good' | 'fair' | 'poor' | 'unknown';
+    roofColor: string | null;
+    usableAreaEstimateSqm: number | null;
+    panelCapacityEstimate: number | null;
+    obstructions: string[];
+    mountingType: 'flush' | 'tilt_frame' | 'ballast' | 'unknown';
+    mountingNotes: string | null;
+    solarEfficiencyMultiplier: number;
+    annualProductionAdjustment: string | null;
+    notes: string[];
+    warnings: string[];
+    confidence: number;
+  };
+
   // Custom Notes & Instructions (for LLM narrative enrichment)
   proposalNotes?: string;
   regeneratePrompt?: string;
@@ -603,6 +631,23 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       inverterSize: data.inverterSizeKw,
       inverterBrand: data.inverterBrand,
       headerRight: 'System Configuration',
+      // Roof analysis data (from photo)
+      roofOrientation: data.roofAnalysis?.primaryOrientation || null,
+      roofOrientationConfidence: data.roofAnalysis?.orientationConfidence || null,
+      roofTiltDegrees: data.roofAnalysis?.tiltAngleDegrees ?? null,
+      roofTiltCategory: data.roofAnalysis?.tiltCategory || null,
+      roofShadingLevel: data.roofAnalysis?.shadingLevel || null,
+      roofShadingImpactPercent: data.roofAnalysis?.shadingImpactPercent ?? null,
+      roofMaterial: data.roofAnalysis?.roofMaterial || null,
+      roofCondition: data.roofAnalysis?.roofCondition || null,
+      roofUsableAreaSqm: data.roofAnalysis?.usableAreaEstimateSqm ?? null,
+      roofPanelCapacity: data.roofAnalysis?.panelCapacityEstimate ?? null,
+      roofMountingType: data.roofAnalysis?.mountingType || null,
+      roofEfficiencyMultiplier: data.roofAnalysis?.solarEfficiencyMultiplier ?? null,
+      roofAnnualAdjustment: data.roofAnalysis?.annualProductionAdjustment || null,
+      roofObstructions: data.roofAnalysis?.obstructions || [],
+      roofShadingSources: data.roofAnalysis?.shadingSources || [],
+      roofWarnings: data.roofAnalysis?.warnings || [],
     }
   });
   
@@ -1815,6 +1860,78 @@ function genSolarPV(slide: SlideContent): string {
   const offset = c.solarOffset as number || 0;
   const annualUsage = c.annualUsageKwh as number || 0;
   
+  // Roof analysis data
+  const roofOrientation = c.roofOrientation as string | null;
+  const roofTiltDegrees = c.roofTiltDegrees as number | null;
+  const roofTiltCategory = c.roofTiltCategory as string | null;
+  const roofShadingLevel = c.roofShadingLevel as string | null;
+  const roofShadingImpactPercent = c.roofShadingImpactPercent as number | null;
+  const roofMaterial = c.roofMaterial as string | null;
+  const roofCondition = c.roofCondition as string | null;
+  const roofUsableAreaSqm = c.roofUsableAreaSqm as number | null;
+  const roofPanelCapacity = c.roofPanelCapacity as number | null;
+  const roofMountingType = c.roofMountingType as string | null;
+  const roofEfficiencyMultiplier = c.roofEfficiencyMultiplier as number | null;
+  const roofAnnualAdjustment = c.roofAnnualAdjustment as string | null;
+  const roofObstructions = c.roofObstructions as string[] || [];
+  const roofShadingSources = c.roofShadingSources as string[] || [];
+  const roofWarnings = c.roofWarnings as string[] || [];
+  const hasRoofData = roofOrientation && roofOrientation !== 'unknown';
+  
+  // Format helpers
+  const fmtOrientation = (o: string) => o.replace(/-/g, '-').replace(/^\w/, ch => ch.toUpperCase());
+  const fmtMaterial = (m: string) => m.replace(/_/g, ' ').replace(/^\w/, ch => ch.toUpperCase());
+  const fmtShading = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const fmtMounting = (m: string) => m === 'flush' ? 'Flush Mount' : m === 'tilt_frame' ? 'Tilt Frame' : m === 'ballast' ? 'Ballast' : 'TBD';
+  
+  // Build roof profile section (replaces "Why This Size" when roof data available)
+  const roofProfileSection = hasRoofData ? `
+          <!-- Roof Profile (from photo analysis) -->
+          <div class="card">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 17px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">ROOF PROFILE</p>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Orientation</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${fmtOrientation(roofOrientation!)}-Facing</p>
+              </div>
+              ${roofTiltDegrees !== null ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Pitch</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${roofTiltDegrees}° (${roofTiltCategory ? roofTiltCategory.replace(/_/g, ' ') : ''})</p>
+              </div>` : ''}
+              ${roofMaterial && roofMaterial !== 'unknown' ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Material</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${fmtMaterial(roofMaterial)}</p>
+              </div>` : ''}
+              ${roofCondition && roofCondition !== 'unknown' ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Condition</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${roofCondition.charAt(0).toUpperCase() + roofCondition.slice(1)}</p>
+              </div>` : ''}
+              ${roofShadingLevel && roofShadingLevel !== 'unknown' ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Shading</p>
+                <p style="color: ${roofShadingLevel === 'none' || roofShadingLevel === 'minimal' ? '#00EAD3' : '#FF6B35'}; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${fmtShading(roofShadingLevel)}${roofShadingImpactPercent !== null ? ` (−${roofShadingImpactPercent}%)` : ''}</p>
+              </div>` : ''}
+              ${roofMountingType && roofMountingType !== 'unknown' ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Mounting</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${fmtMounting(roofMountingType)}</p>
+              </div>` : ''}
+              ${roofUsableAreaSqm ? `<div style="display: flex; justify-content: space-between;">
+                <p style="color: #808285; font-size: 15px;">Usable Area</p>
+                <p style="color: #FFFFFF; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">~${roofUsableAreaSqm}m² (${roofPanelCapacity || '?'} panels)</p>
+              </div>` : ''}
+              ${roofEfficiencyMultiplier !== null ? `<div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08);">
+                <p style="color: #808285; font-size: 15px;">Efficiency Rating</p>
+                <p style="color: ${roofEfficiencyMultiplier >= 0.9 ? '#00EAD3' : roofEfficiencyMultiplier >= 0.8 ? '#FFFFFF' : '#FF6B35'}; font-size: 15px; font-family: 'GeneralSans', sans-serif; font-weight: 600;">${Math.round(roofEfficiencyMultiplier * 100)}%</p>
+              </div>` : ''}
+            </div>
+            ${roofAnnualAdjustment ? `<p style="color: #808285; font-size: 13px; margin-top: 8px; font-style: italic;">${roofAnnualAdjustment}</p>` : ''}
+            ${roofWarnings.length > 0 ? `<p style="color: #FF6B35; font-size: 13px; margin-top: 6px;">⚠ ${roofWarnings[0]}</p>` : ''}
+          </div>` : `
+          <!-- Why This Size (fallback when no roof data) -->
+          <div class="card">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 17px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS SIZE?</p>
+            <p style="color: #808285; font-size: 17px; line-height: 1.6;">The ${sizeKw}kW system is strategically sized to exceed your annual consumption, ensuring surplus generation for battery charging, VPP participation, and feed-in credits. This oversizing strategy maximises your return on investment while future-proofing for increased consumption (EV charging, heat pump hot water).</p>
+          </div>`;
+  
   return `
     <div class="slide">
       ${slideNum(slide.id)}
@@ -1849,11 +1966,7 @@ function genSolarPV(slide: SlideContent): string {
             <p class="lbl" style="margin-top: 8px;">ESTIMATED YEARLY GENERATION</p>
             <p style="color: #808285; font-size: 17px; margin-top: 12px;">This system is perfectly sized to cover your annual usage of ~${Math.round(annualUsage).toLocaleString()} kWh, delivering a <span style="color: #00EAD3; font-weight: 600;">${offset}% offset</span> of your consumption.</p>
           </div>
-          <!-- Why This Size -->
-          <div class="card">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 17px; color: #00EAD3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">WHY THIS SIZE?</p>
-            <p style="color: #808285; font-size: 17px; line-height: 1.6;">The ${sizeKw}kW system is strategically sized to exceed your annual consumption, ensuring surplus generation for battery charging, VPP participation, and feed-in credits. This oversizing strategy maximises your return on investment while future-proofing for increased consumption (EV charging, heat pump hot water).</p>
-          </div>
+          ${roofProfileSection}
         </div>
       </div>
     </div>

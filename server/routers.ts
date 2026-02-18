@@ -620,6 +620,32 @@ export const appRouter = router({
           cableSizing = calculateCableSizing(invKw, phaseConfig, cableRunAnalysis.cableRunDistanceMetres, calc.recommendedBatteryKwh);
         }
 
+        // === Roof Photo Auto-Analysis ===
+        let roofAnalysis: ProposalData['roofAnalysis'] = undefined;
+        const roofPhotoDocs = customerDocs.filter(d => d.documentType === 'roof_photo');
+        for (const rd of roofPhotoDocs) {
+          if (!rd.extractedData && rd.fileUrl) {
+            try {
+              console.log(`[RoofAnalysis] Auto-analyzing roof photo (doc ${rd.id})...`);
+              const { analyzeRoofPhoto } = await import('./roofAnalysis');
+              const roofResult = await analyzeRoofPhoto(rd.fileUrl, customer.state);
+              console.log(`[RoofAnalysis] Analysis complete — confidence: ${roofResult.confidence}%, orientation: ${roofResult.primaryOrientation}`);
+              await db.updateCustomerDocument(rd.id, { extractedData: roofResult });
+              rd.extractedData = roofResult as any;
+            } catch (err) {
+              console.error(`[RoofAnalysis] Failed to analyze roof photo (doc ${rd.id}):`, err);
+            }
+          }
+        }
+        for (const rd of roofPhotoDocs) {
+          if (rd.extractedData) {
+            const parsed = typeof rd.extractedData === 'string' ? JSON.parse(rd.extractedData) : rd.extractedData;
+            if (parsed.confidence >= 30 && parsed.primaryOrientation && (!roofAnalysis || parsed.confidence > (roofAnalysis as any).confidence)) {
+              roofAnalysis = parsed;
+            }
+          }
+        }
+
         // Check for uploaded solar proposal specs to override calculated system values
         const solarProposalDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
         const solarProposalSpecs = solarProposalDoc?.extractedData 
@@ -635,6 +661,8 @@ export const appRouter = router({
           cableRunAnalysis,
           cableSizing,
           solarProposalSpecs,
+          costOverrides: (proposal as any).costOverrides || undefined,
+          roofAnalysis,
         });
 
         // --- Generate slides progressively
@@ -744,11 +772,47 @@ export const appRouter = router({
         status: z.enum(['draft', 'calculating', 'generated', 'exported', 'archived']).optional(),
         electricityBillId: z.number().optional(),
         proposalNotes: z.string().optional(),
+        costOverrides: z.record(z.string(), z.string()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         await db.updateProposal(id, data);
         return { success: true };
+      }),
+    
+    saveCostOverrides: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        costOverrides: z.record(z.string(), z.string()),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateProposal(input.id, { costOverrides: input.costOverrides } as any);
+        return { success: true };
+      }),
+    
+    getCostOverrides: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const proposal = await db.getProposalById(input.id);
+        if (!proposal) throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        return { costOverrides: (proposal as any).costOverrides || {} };
+      }),
+    
+    getScopeItems: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const proposal = await db.getProposalById(input.id);
+        if (!proposal) throw new TRPCError({ code: 'NOT_FOUND', message: 'Proposal not found' });
+        const calc = proposal.calculations as ProposalCalculations;
+        if (!calc || !proposal.customerId) return { scopeItems: [] };
+        try {
+          const scopeCustomer = await db.getCustomerById(proposal.customerId);
+          const siteData = await aggregateSiteData(proposal.customerId, calc, scopeCustomer?.state);
+          const upgradeScope = siteData.switchboardAnalysis?.upgradeScope || [];
+          return { scopeItems: upgradeScope.map((item: any) => ({ item: item.item, detail: item.detail, priority: item.priority, estimatedCost: item.estimatedCost || null })) };
+        } catch (e) {
+          return { scopeItems: [] };
+        }
       }),
     
     delete: protectedProcedure
@@ -962,7 +1026,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const siteData = await aggregateSiteData(proposal.customerId, calc);
+        const siteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: siteData.sitePhotos,
           switchboardAnalysis: siteData.switchboardAnalysis,
@@ -970,6 +1034,8 @@ export const appRouter = router({
           cableRunAnalysis: siteData.cableRunAnalysis,
           cableSizing: siteData.cableSizing,
           solarProposalSpecs: siteData.solarProposalSpecs,
+          costOverrides: (proposal as any).costOverrides || undefined,
+          roofAnalysis: siteData.roofAnalysis,
         });
         
         const slides = generateSlides(proposalData);
@@ -1035,7 +1101,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const pptxSiteData = await aggregateSiteData(proposal.customerId, calc);
+        const pptxSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: pptxSiteData.sitePhotos,
           switchboardAnalysis: pptxSiteData.switchboardAnalysis,
@@ -1043,6 +1109,8 @@ export const appRouter = router({
           cableRunAnalysis: pptxSiteData.cableRunAnalysis,
           cableSizing: pptxSiteData.cableSizing,
           solarProposalSpecs: pptxSiteData.solarProposalSpecs,
+          costOverrides: (proposal as any).costOverrides || undefined,
+          roofAnalysis: pptxSiteData.roofAnalysis,
         });
         
         // Generate PPTX with embedded brand fonts
@@ -1095,7 +1163,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const nativePdfSiteData = await aggregateSiteData(proposal.customerId, calc);
+        const nativePdfSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: nativePdfSiteData.sitePhotos,
           switchboardAnalysis: nativePdfSiteData.switchboardAnalysis,
@@ -1103,6 +1171,8 @@ export const appRouter = router({
           cableRunAnalysis: nativePdfSiteData.cableRunAnalysis,
           cableSizing: nativePdfSiteData.cableSizing,
           solarProposalSpecs: nativePdfSiteData.solarProposalSpecs,
+          costOverrides: (proposal as any).costOverrides || undefined,
+          roofAnalysis: nativePdfSiteData.roofAnalysis,
         });
         
         // Generate native PDF with embedded brand fonts
@@ -1773,6 +1843,32 @@ export const appRouter = router({
               batchCableSizing = calculateCableSizing(invKw2, batchPhaseConfig, batchCableRunAnalysis.cableRunDistanceMetres, calc2.recommendedBatteryKwh);
             }
 
+            // === Roof Photo Auto-Analysis ===
+            let batchRoofAnalysis: ProposalData['roofAnalysis'] = undefined;
+            const batchRoofDocs = customerDocs.filter(d => d.documentType === 'roof_photo');
+            for (const rd of batchRoofDocs) {
+              if (!rd.extractedData && rd.fileUrl) {
+                try {
+                  console.log(`[RoofAnalysis] Batch auto-analyzing roof photo (doc ${rd.id})...`);
+                  const { analyzeRoofPhoto } = await import('./roofAnalysis');
+                  const roofResult = await analyzeRoofPhoto(rd.fileUrl, customer.state);
+                  console.log(`[RoofAnalysis] Batch analysis complete — confidence: ${roofResult.confidence}%`);
+                  await db.updateCustomerDocument(rd.id, { extractedData: roofResult });
+                  rd.extractedData = roofResult as any;
+                } catch (err) {
+                  console.error(`[RoofAnalysis] Batch analysis failed (doc ${rd.id}):`, err);
+                }
+              }
+            }
+            for (const rd of batchRoofDocs) {
+              if (rd.extractedData) {
+                const parsed = typeof rd.extractedData === 'string' ? JSON.parse(rd.extractedData) : rd.extractedData;
+                if (parsed.confidence >= 30 && parsed.primaryOrientation && (!batchRoofAnalysis || parsed.confidence > (batchRoofAnalysis as any).confidence)) {
+                  batchRoofAnalysis = parsed;
+                }
+              }
+            }
+
             // Check for uploaded solar proposal specs
             const solarProposalDoc2 = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
             const solarProposalSpecs2 = solarProposalDoc2?.extractedData 
@@ -1788,6 +1884,8 @@ export const appRouter = router({
               cableRunAnalysis: batchCableRunAnalysis,
               cableSizing: batchCableSizing,
               solarProposalSpecs: solarProposalSpecs2,
+              costOverrides: (proposal as any).costOverrides || undefined,
+              roofAnalysis: batchRoofAnalysis,
             });
             const allSlides = generateSlides(proposalData);
             
@@ -1998,7 +2096,7 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
  * and cable sizing from customer documents. Used by generateProgressive, batchGenerate,
  * and all export paths (PDF, PPTX, native PDF).
  */
-async function aggregateSiteData(customerId: number, calc: ProposalCalculations) {
+async function aggregateSiteData(customerId: number, calc: ProposalCalculations, customerState?: string) {
   const customerDocs = await db.getDocumentsByCustomerId(customerId);
   
   // Build site photos array
@@ -2107,6 +2205,33 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations)
     cableSizing = calculateCableSizing(invKw, phaseConfig, cableRunAnalysis.cableRunDistanceMetres, calc.recommendedBatteryKwh);
   }
   
+  // Roof photo analysis — auto-analyze unanalyzed roof photos
+  let roofAnalysis: ProposalData['roofAnalysis'] = undefined;
+  const roofDocs = customerDocs.filter(d => d.documentType === 'roof_photo');
+  for (const rd of roofDocs) {
+    if (!rd.extractedData && rd.fileUrl) {
+      try {
+        console.log(`[RoofAnalysis] Auto-analyzing roof photo (doc ${rd.id})...`);
+        const { analyzeRoofPhoto } = await import('./roofAnalysis');
+        const roofResult = await analyzeRoofPhoto(rd.fileUrl, customerState);
+        console.log(`[RoofAnalysis] Analysis complete — confidence: ${roofResult.confidence}%, orientation: ${roofResult.primaryOrientation}, shading: ${roofResult.shadingLevel}`);
+        await db.updateCustomerDocument(rd.id, { extractedData: roofResult });
+        rd.extractedData = roofResult as any;
+      } catch (err) {
+        console.error(`[RoofAnalysis] Failed to analyze roof photo (doc ${rd.id}):`, err);
+      }
+    }
+  }
+  // Pick the highest-confidence roof analysis
+  for (const rd of roofDocs) {
+    if (rd.extractedData) {
+      const parsed = typeof rd.extractedData === 'string' ? JSON.parse(rd.extractedData) : rd.extractedData;
+      if (parsed.confidence >= 30 && parsed.primaryOrientation && (!roofAnalysis || parsed.confidence > (roofAnalysis as any).confidence)) {
+        roofAnalysis = parsed;
+      }
+    }
+  }
+
   // Solar proposal specs
   const solarProposalDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
   const solarProposalSpecs = solarProposalDoc?.extractedData 
@@ -2120,6 +2245,7 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations)
     cableRunAnalysis,
     cableSizing,
     solarProposalSpecs,
+    roofAnalysis,
   };
 }
 
@@ -2136,6 +2262,8 @@ function buildProposalData(
     cableSizing?: ProposalData['cableSizing'];
     meterAnalysis?: ProposalData['meterAnalysis'];
     solarProposalSpecs?: any; // Extracted specs from uploaded solar proposal
+    costOverrides?: Record<string, string>; // Installer cost overrides keyed by scope item name
+    roofAnalysis?: ProposalData['roofAnalysis']; // Roof photo analysis data
   }
 ): ProposalData {
   const hasGas = false; // Gas features removed
@@ -2283,10 +2411,20 @@ function buildProposalData(
     proposalNotes: options?.proposalNotes,
     regeneratePrompt: options?.regeneratePrompt,
     sitePhotos: options?.sitePhotos,
-    switchboardAnalysis: options?.switchboardAnalysis,
+    switchboardAnalysis: options?.switchboardAnalysis && options.costOverrides
+      ? {
+          ...options.switchboardAnalysis,
+          upgradeScope: (options.switchboardAnalysis.upgradeScope || []).map(item => {
+            const key = item.item.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+            const override = options!.costOverrides![key];
+            return override ? { ...item, estimatedCost: override } : item;
+          }),
+        }
+      : options?.switchboardAnalysis,
     cableRunAnalysis: options?.cableRunAnalysis,
     cableSizing: options?.cableSizing,
     meterAnalysis: options?.meterAnalysis,
+    roofAnalysis: options?.roofAnalysis,
   };
 }
 

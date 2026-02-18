@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -23,6 +23,10 @@ import {
   CheckCircle,
   ImageIcon,
   Camera,
+  DollarSign,
+  Pencil,
+  X,
+  Check,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -1117,6 +1121,180 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
   );
 }
 
+/**
+ * Inline cost override editor for scope of electrical works items.
+ * Fetches the proposal's switchboard analysis upgradeScope and costOverrides,
+ * allows installers to click-to-edit each cost, and saves overrides to DB.
+ */
+function CostOverrideEditor({ proposalId }: { proposalId: number }) {
+  const { data: overridesData } = trpc.proposals.getCostOverrides.useQuery({ id: proposalId });
+  const [localOverrides, setLocalOverrides] = useState<Record<string, string>>({});
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [overridesLoaded, setOverridesLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const utils = trpc.useUtils();
+
+  const saveMutation = trpc.proposals.saveCostOverrides.useMutation({
+    onSuccess: () => {
+      setSaving(false);
+      toast.success('Cost overrides saved');
+      utils.proposals.getCostOverrides.invalidate({ id: proposalId });
+    },
+    onError: () => { setSaving(false); toast.error('Failed to save'); },
+  });
+
+  useEffect(() => {
+    if (overridesData && !overridesLoaded) {
+      setLocalOverrides(overridesData.costOverrides || {});
+      setOverridesLoaded(true);
+    }
+  }, [overridesData, overridesLoaded]);
+
+  // Fetch scope items from dedicated endpoint (re-aggregates switchboard analysis)
+  const { data: scopeData } = trpc.proposals.getScopeItems.useQuery({ id: proposalId });
+  const scopeItems = scopeData?.scopeItems || [];
+
+  const getKey = useCallback((item: string) => item.toLowerCase().replace(/[^a-z0-9]+/g, '_'), []);
+
+  const handleEdit = useCallback((key: string, currentCost: string) => {
+    setEditingKey(key);
+    setEditValue(localOverrides[key] || currentCost || '');
+  }, [localOverrides]);
+
+  const handleSave = useCallback((key: string) => {
+    const newOverrides = { ...localOverrides, [key]: editValue };
+    setLocalOverrides(newOverrides);
+    setEditingKey(null);
+    setSaving(true);
+    saveMutation.mutate({ id: proposalId, costOverrides: newOverrides });
+  }, [localOverrides, editValue, proposalId, saveMutation]);
+
+  const handleReset = useCallback((key: string) => {
+    const newOverrides = { ...localOverrides };
+    delete newOverrides[key];
+    setLocalOverrides(newOverrides);
+    setEditingKey(null);
+    setSaving(true);
+    saveMutation.mutate({ id: proposalId, costOverrides: newOverrides });
+  }, [localOverrides, proposalId, saveMutation]);
+
+  // Calculate total range
+  const totalRange = useMemo(() => {
+    let min = 0, max = 0, hasAny = false;
+    for (const item of scopeItems) {
+      const key = getKey(item.item);
+      const cost = localOverrides[key] || item.estimatedCost || '';
+      const matches = cost.match(/\$(\d[\d,]*)/g);
+      if (matches && matches.length >= 1) {
+        hasAny = true;
+        const vals = matches.map((m: string) => parseInt(m.replace(/[$,]/g, ''), 10)).filter((v: number) => !isNaN(v));
+        if (vals.length >= 2) { min += Math.min(...vals); max += Math.max(...vals); }
+        else if (vals.length === 1) { min += vals[0]; max += vals[0]; }
+      }
+    }
+    if (!hasAny) return null;
+    const fmt = (n: number) => '$' + n.toLocaleString('en-AU');
+    return min === max ? fmt(min) : `${fmt(min)}-${fmt(max)}`;
+  }, [scopeItems, localOverrides, getKey]);
+
+  if (scopeItems.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-[#f36710]" />
+          <h3
+            className="text-sm uppercase tracking-wider text-[#f36710]"
+            style={{ fontFamily: "'Urbanist', sans-serif" }}
+          >
+            Electrical Works Cost Estimates
+          </h3>
+        </div>
+        {saving && (
+          <span className="text-[10px] flex items-center gap-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            <Loader2 className="h-3 w-3 animate-spin text-[#808285]" />
+            <span className="text-[#808285]">Saving...</span>
+          </span>
+        )}
+      </div>
+      <div className="space-y-1">
+        {scopeItems.map((item) => {
+          const key = getKey(item.item);
+          const isOverridden = !!localOverrides[key];
+          const displayCost = localOverrides[key] || item.estimatedCost || '$TBC';
+          const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#00EAD3';
+          return (
+            <div key={key} className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-[#111] group transition-colors">
+              <span
+                className="text-[10px] font-bold uppercase tracking-wider min-w-[80px]"
+                style={{ color: priorityColor, fontFamily: "'Urbanist', sans-serif" }}
+              >
+                {item.priority}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white truncate" style={{ fontFamily: "'Urbanist', sans-serif" }}>{item.item}</p>
+              </div>
+              {editingKey === key ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSave(key); if (e.key === 'Escape') setEditingKey(null); }}
+                    className="w-28 px-2 py-1 text-sm bg-[#1a1a1a] border border-[#f36710]/50 rounded text-[#f36710] focus:outline-none focus:border-[#f36710]"
+                    style={{ fontFamily: "'General Sans', sans-serif" }}
+                    autoFocus
+                  />
+                  <button onClick={() => handleSave(key)} className="p-1 text-[#00EAD3] hover:bg-[#00EAD3]/10 rounded"><Check className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => setEditingKey(null)} className="p-1 text-[#808285] hover:bg-[#808285]/10 rounded"><X className="h-3.5 w-3.5" /></button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleEdit(key, displayCost)}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[#1a1a1a] transition-colors"
+                  >
+                    <span
+                      className={`text-sm font-semibold ${isOverridden ? 'text-[#f36710]' : 'text-[#F5A623]'}`}
+                      style={{ fontFamily: "'General Sans', sans-serif" }}
+                    >
+                      {displayCost}
+                    </span>
+                    {isOverridden && (
+                      <span className="text-[8px] uppercase tracking-wider text-[#f36710] bg-[#f36710]/10 px-1.5 py-0.5 rounded" style={{ fontFamily: "'Urbanist', sans-serif" }}>Custom</span>
+                    )}
+                    <Pencil className="h-3 w-3 text-[#808285] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                  {isOverridden && (
+                    <button
+                      onClick={() => handleReset(key)}
+                      className="p-1 text-[#808285] hover:text-[#FF4444] hover:bg-[#FF4444]/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Reset to default estimate"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {totalRange && (
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#00EAD3]/30">
+          <span className="text-xs uppercase tracking-wider text-[#00EAD3] font-bold" style={{ fontFamily: "'Urbanist', sans-serif" }}>Estimated Total</span>
+          <span className="text-lg font-bold text-[#00EAD3]" style={{ fontFamily: "'General Sans', sans-serif" }}>{totalRange}</span>
+        </div>
+      )}
+      <p className="text-[10px] text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
+        Click any cost to override with your own estimate. Overrides apply when slides are regenerated. Reset individual items with the × button.
+      </p>
+    </div>
+  );
+}
+
 export default function ProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
@@ -1380,6 +1558,9 @@ export default function ProposalDetailPage() {
             These notes are automatically included when regenerating the proposal. The AI will reference them in the narrative analysis.
           </p>
         </div>
+
+        {/* COST OVERRIDES — Editable installer cost estimates for scope items */}
+        <CostOverrideEditor proposalId={proposalId} />
 
         {/* SITE PHOTOS — Show uploaded customer photos (switchboard, meter, etc.) */}
         {sitePhotos.length > 0 && (

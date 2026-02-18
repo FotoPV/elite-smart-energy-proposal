@@ -1172,3 +1172,21 @@
 - [x] Add total estimated electrical works cost summary
 - [x] Include disclaimer about estimates being indicative only
 - [x] Test with Fayyaz Khan's proposal scope items
+
+## Feature - Editable Cost Override for Scope Items (Feb 18)
+- [x] Add cost_overrides JSON column to proposals table for storing installer-adjusted costs
+- [x] Create tRPC endpoint to save/load cost overrides per proposal
+- [x] Build inline-editable cost UI on the proposal detail page (click to edit each line item)
+- [x] Apply cost overrides when regenerating slides (override fallback estimates)
+- [x] Show "Custom" badge when a cost has been manually overridden
+- [x] Recalculate total when individual items are edited
+- [x] Test with Fayyaz Khan's proposal
+
+## Feature - Roof Photo Analysis LLM Prompt (Feb 18)
+- [x] Create roofAnalysis.ts module with LLM vision prompt for roof/property photos
+- [x] Extract: roof orientation, estimated tilt angle, shading assessment, roof material, usable area estimate
+- [x] Add RoofAnalysis interface to ProposalData
+- [x] Auto-analyse ROOF-tagged photos during slide generation
+- [x] Feed roof data into Solar Generation Profile slide (orientation, tilt, shading notes)
+- [x] Update aggregateSiteData helper to include roof analysis
+- [x] Test with a proposal that has roof photos

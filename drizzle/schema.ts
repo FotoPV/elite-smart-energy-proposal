@@ -131,6 +131,9 @@ export const proposals = mysqlTable("proposals", {
   proposalNotes: text("proposalNotes"), // Persistent notes about the install (switchboard, additional works, etc.)
   lastRegeneratePrompt: text("lastRegeneratePrompt"), // Last one-off prompt used during regeneration
   
+  // Installer Cost Overrides (JSON map: scopeItemKey → custom cost string)
+  costOverrides: json("costOverrides").$type<Record<string, string>>(),
+  
   // Soft Delete
   deletedAt: timestamp("deletedAt"),
   
