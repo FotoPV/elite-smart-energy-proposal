@@ -1169,6 +1169,58 @@ export default function ProposalDetailPage() {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxLabel, setLightboxLabel] = useState<string>('');
   
+  // Solar Proposal upload state
+  const [isUploadingSolarProposal, setIsUploadingSolarProposal] = useState(false);
+  const [isAnalysingSolarProposal, setIsAnalysingSolarProposal] = useState(false);
+  const [solarProposalSpecs, setSolarProposalSpecs] = useState<any>(null);
+  const uploadDocumentMutation = trpc.documents.upload.useMutation();
+  const analyzeSolarProposalMutation = trpc.documents.analyzeSolarProposal.useMutation();
+  
+  // Check for existing solar proposal specs
+  const solarProposalDoc = (customerDocs || []).find((d: any) => d.documentType === 'solar_proposal_pdf');
+  const existingSolarSpecs = solarProposalDoc?.extractedData 
+    ? (typeof solarProposalDoc.extractedData === 'string' ? JSON.parse(solarProposalDoc.extractedData) : solarProposalDoc.extractedData)
+    : null;
+  
+  const handleSolarProposalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !customerId) return;
+    setIsUploadingSolarProposal(true);
+    try {
+      // Convert to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      
+      // Upload document
+      const result = await uploadDocumentMutation.mutateAsync({
+        customerId,
+        documentType: 'solar_proposal_pdf',
+        fileData: base64,
+        fileName: file.name,
+        mimeType: file.type || 'application/pdf',
+      });
+      toast.success('Solar proposal uploaded, analysing system specs...');
+      
+      // Trigger AI extraction
+      setIsAnalysingSolarProposal(true);
+      const specs = await analyzeSolarProposalMutation.mutateAsync({
+        documentId: result.documentId,
+      });
+      setSolarProposalSpecs(specs);
+      toast.success('System specs extracted successfully!');
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setIsUploadingSolarProposal(false);
+      setIsAnalysingSolarProposal(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+  
   // Auto-trigger LLM progressive generation when proposal has calculations but no slides
   useEffect(() => {
     if (!proposal || autoTriggered || showLiveGeneration) return;
@@ -1417,6 +1469,80 @@ export default function ProposalDetailPage() {
             </div>
           </div>
         )}
+
+        {/* SOLAR PROPOSAL — Upload and extract system specs from solar proposal PDF/image */}
+        <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#f36710]" />
+              <h3
+                className="text-sm uppercase tracking-wider text-[#f36710]"
+                style={{ fontFamily: "'Urbanist', sans-serif" }}
+              >
+                Solar Proposal
+              </h3>
+            </div>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={handleSolarProposalUpload}
+                disabled={isUploadingSolarProposal || isAnalysingSolarProposal}
+              />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#f36710]/30 text-[#f36710] hover:bg-[#f36710]/10 transition-colors text-xs font-semibold uppercase tracking-wide" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                {isUploadingSolarProposal || isAnalysingSolarProposal ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> {isAnalysingSolarProposal ? 'Analysing...' : 'Uploading...'}</>
+                ) : (
+                  <><Upload className="h-3 w-3" /> {(existingSolarSpecs || solarProposalSpecs) ? 'Replace' : 'Upload'}</>
+                )}
+              </div>
+            </label>
+          </div>
+          
+          {/* Show extracted specs */}
+          {(solarProposalSpecs || existingSolarSpecs) ? (() => {
+            const specs = solarProposalSpecs || existingSolarSpecs;
+            return (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-[#2a2a2a] p-3">
+                    <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Solar System</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.solarSystemSizeKw || specs.solarSizeKw}kW</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.panelCount} × {specs.panelWattage}W {specs.panelBrand} {specs.panelModel || ''}</div>
+                  </div>
+                  <div className="rounded-lg border border-[#2a2a2a] p-3">
+                    <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Battery Storage</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.batteryTotalKwh || specs.batterySizeKwh}kWh</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.batteryCount} × {specs.batteryBrand} {specs.batteryModel || ''}</div>
+                  </div>
+                  <div className="rounded-lg border border-[#2a2a2a] p-3">
+                    <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Inverter</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.inverterBrand} {specs.inverterSizeKw}kW</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.inverterModel || ''} {specs.inverterPhase || ''}</div>
+                  </div>
+                  <div className="rounded-lg border border-[#2a2a2a] p-3">
+                    <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Est. Production</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.estimatedAnnualProductionKwh?.toLocaleString() || 'N/A'} kWh/yr</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">Efficiency: {specs.systemEfficiency || 'N/A'}%</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-[#00EAD3]" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                  <CheckCircle className="h-3 w-3" />
+                  <span>System specs extracted — regenerate to apply to slides</span>
+                </div>
+              </div>
+            );
+          })() : (
+            <div className="text-center py-6 text-[#808285]">
+              <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              <p className="text-xs" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                Upload the System Details page from the solar proposal to extract exact panel, inverter, and battery specs.
+                These will override calculated recommendations in the slides.
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Lightbox for full-size photo viewing */}
         {lightboxUrl && (

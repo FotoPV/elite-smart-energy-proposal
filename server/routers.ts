@@ -515,11 +515,18 @@ export const appRouter = router({
           confidence: Math.round(switchboardAnalyses.reduce((sum, a) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
         } : undefined;
         
+        // Check for uploaded solar proposal specs to override calculated system values
+        const solarProposalDoc = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+        const solarProposalSpecs = solarProposalDoc?.extractedData 
+          ? (typeof solarProposalDoc.extractedData === 'string' ? JSON.parse(solarProposalDoc.extractedData) : solarProposalDoc.extractedData)
+          : undefined;
+        
         const proposalData = buildProposalData(customer, calc, false, {
           proposalNotes: (proposal as any).proposalNotes || undefined,
           regeneratePrompt: (proposal as any).lastRegeneratePrompt || undefined,
           sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
           switchboardAnalysis,
+          solarProposalSpecs,
         });
         const allSlides = generateSlides(proposalData); // Only active/included slides
         
@@ -844,7 +851,13 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, false);
+        // Check for solar proposal specs for export
+        const exportDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+        const exportSolarDoc = exportDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+        const exportSolarSpecs = exportSolarDoc?.extractedData 
+          ? (typeof exportSolarDoc.extractedData === 'string' ? JSON.parse(exportSolarDoc.extractedData) : exportSolarDoc.extractedData)
+          : undefined;
+        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: exportSolarSpecs });
         
         const slides = generateSlides(proposalData);
         
@@ -908,7 +921,12 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, false);
+        const pptxDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+        const pptxSolarDoc = pptxDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+        const pptxSolarSpecs = pptxSolarDoc?.extractedData 
+          ? (typeof pptxSolarDoc.extractedData === 'string' ? JSON.parse(pptxSolarDoc.extractedData) : pptxSolarDoc.extractedData)
+          : undefined;
+        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: pptxSolarSpecs });
         
         // Generate PPTX with embedded brand fonts
         const pptxBuffer = await generatePptx(proposalData);
@@ -959,7 +977,12 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
-        const proposalData = buildProposalData(customer, calc, false);
+        const nativePdfDocs = await db.getDocumentsByCustomerId(proposal.customerId);
+        const nativePdfSolarDoc = nativePdfDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+        const nativePdfSolarSpecs = nativePdfSolarDoc?.extractedData 
+          ? (typeof nativePdfSolarDoc.extractedData === 'string' ? JSON.parse(nativePdfSolarDoc.extractedData) : nativePdfSolarDoc.extractedData)
+          : undefined;
+        const proposalData = buildProposalData(customer, calc, false, { solarProposalSpecs: nativePdfSolarSpecs });
         
         // Generate native PDF with embedded brand fonts
         const pdfBuffer = await generateNativePdf(proposalData);
@@ -1201,6 +1224,57 @@ export const appRouter = router({
           report,
         };
       }),
+
+    analyzeSolarProposal: protectedProcedure
+      .input(z.object({ documentId: z.number() }))
+      .mutation(async ({ input }) => {
+        const doc = await db.getDocumentById(input.documentId);
+        if (!doc) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
+        }
+        
+        if (doc.documentType !== 'solar_proposal_pdf') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Document is not a solar proposal' });
+        }
+        
+        // Extract system specs from the solar proposal using LLM vision
+        const { extractSolarProposalSpecs, generateSpecsSummary } = await import('./solarProposalExtraction');
+        const specs = await extractSolarProposalSpecs(doc.fileUrl);
+        const summary = generateSpecsSummary(specs);
+        
+        // Store the extracted specs in the document
+        await db.updateCustomerDocument(input.documentId, {
+          extractedData: JSON.stringify(specs),
+          description: summary,
+        });
+        
+        return {
+          success: true,
+          specs,
+          summary,
+        };
+      }),
+
+    getSolarProposalSpecs: protectedProcedure
+      .input(z.object({ customerId: z.number() }))
+      .query(async ({ input }) => {
+        const docs = await db.getDocumentsByCustomerId(input.customerId);
+        const proposalDoc = docs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+        
+        if (!proposalDoc || !proposalDoc.extractedData) {
+          return { hasSpecs: false, specs: null, documentId: null };
+        }
+        
+        const specs = typeof proposalDoc.extractedData === 'string' 
+          ? JSON.parse(proposalDoc.extractedData) 
+          : proposalDoc.extractedData;
+        
+        return {
+          hasSpecs: true,
+          specs,
+          documentId: proposalDoc.id,
+        };
+      }),
   }),
 
 
@@ -1440,11 +1514,18 @@ export const appRouter = router({
               confidence: Math.round(switchboardAnalyses.reduce((sum: number, a: any) => sum + (a.confidence || 0), 0) / switchboardAnalyses.length),
             } : undefined;
             
+            // Check for uploaded solar proposal specs
+            const solarProposalDoc2 = customerDocs.find(d => d.documentType === 'solar_proposal_pdf' && d.extractedData);
+            const solarProposalSpecs2 = solarProposalDoc2?.extractedData 
+              ? (typeof solarProposalDoc2.extractedData === 'string' ? JSON.parse(solarProposalDoc2.extractedData) : solarProposalDoc2.extractedData)
+              : undefined;
+            
             const calc = calculations as ProposalCalculations;
             const proposalData = buildProposalData(customer, calc, false, {
               proposalNotes: (proposal as any).proposalNotes || undefined,
               sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
               switchboardAnalysis,
+              solarProposalSpecs: solarProposalSpecs2,
             });
             const allSlides = generateSlides(proposalData);
             
@@ -1659,6 +1740,7 @@ function buildProposalData(
     regeneratePrompt?: string;
     sitePhotos?: Array<{ url: string; caption: string }>;
     switchboardAnalysis?: ProposalData['switchboardAnalysis'];
+    solarProposalSpecs?: any; // Extracted specs from uploaded solar proposal
   }
 ): ProposalData {
   const hasGas = false; // Gas features removed
@@ -1666,6 +1748,27 @@ function buildProposalData(
   const topVpp = calc.vppProviderComparison?.[0];
   const vppName = topVpp?.provider || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name : calc.selectedVppProvider) || 'Origin';
   const vppProgram = topVpp?.programName || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName : '') || 'Loop VPP';
+  
+  // Solar Proposal Override: If a solar proposal has been uploaded and analysed,
+  // use the exact specs from the proposal instead of calculated recommendations
+  const sp = options?.solarProposalSpecs;
+  const solarKw = sp?.solarSystemSizeKw || calc.recommendedSolarKw || 10;
+  const panelCount = sp?.solarPanelCount || calc.solarPanelCount || 20;
+  const panelWattage = sp?.solarPanelWattage || calc.solarPanelWattage || 440;
+  const panelBrand = sp?.solarPanelBrand 
+    ? `${sp.solarPanelBrand}${sp.solarPanelModel ? ` ${sp.solarPanelModel}` : ''}`
+    : (calc.solarPanelBrand || 'Trina Solar Vertex S+');
+  const batteryKwh = sp?.batterySizeKwh || calc.recommendedBatteryKwh || 15;
+  const batteryBrand = sp?.batteryBrand 
+    ? `${sp.batteryBrand}${sp.batteryModel ? ` ${sp.batteryModel}` : ''}`
+    : 'Sigenergy SigenStor';
+  const inverterKw = sp?.inverterSizeW 
+    ? sp.inverterSizeW / 1000 
+    : calculateInverterSize(solarKw).inverterKw;
+  const inverterBrand = sp?.inverterBrand 
+    ? `${sp.inverterBrand}${sp.inverterModel ? ` ${sp.inverterModel}` : ''}`
+    : 'Sigenergy';
+  
   return {
     customerName: customer.fullName,
     address: customer.address || '',
@@ -1712,14 +1815,14 @@ function buildProposalData(
     gasAnnualSupplyCharge: calc.gasAnnualSupplyCharge,
     gasKwhEquivalent: calc.gasKwhEquivalent,
     gasAppliances: customer.gasAppliances as any,
-    solarSizeKw: calc.recommendedSolarKw || 10,
-    panelCount: calc.solarPanelCount || 20,
-    panelWattage: calc.solarPanelWattage || 440,
-    panelBrand: calc.solarPanelBrand || 'Trina Solar Vertex S+',
-    batterySizeKwh: calc.recommendedBatteryKwh || 15,
-    batteryBrand: 'Sigenergy SigenStor',
-    inverterSizeKw: calculateInverterSize(calc.recommendedSolarKw || 10).inverterKw,
-    inverterBrand: 'Sigenergy',
+    solarSizeKw: solarKw,
+    panelCount,
+    panelWattage,
+    panelBrand,
+    batterySizeKwh: batteryKwh,
+    batteryBrand,
+    inverterSizeKw: inverterKw,
+    inverterBrand,
     systemCost: calc.totalInvestment || 25000,
     rebateAmount: calc.totalRebates || 3000,
     netInvestment: calc.netInvestment || 22000,

@@ -1010,3 +1010,16 @@
 - [x] Fix: Updated fallback from ENGIE to use top-ranked provider from comparison
 - [x] Removed hardcoded getVPPProviders() function entirely
 - [x] 0 TypeScript errors, all 104 tests passing
+
+## Solar Proposal PDF Upload & System Spec Override (Feb 18)
+- [x] Add solar_proposal document type to schema enum
+- [x] Build LLM extraction prompt for solar proposal system details (panel brand/model/count/wattage, inverter, battery, system size, annual production)
+- [x] Add server-side upload and extraction endpoint for solar proposals (uploadSolarProposal, analyzeSolarProposal)
+- [x] Add confirmation step showing extracted specs before saving (4-card UI: Solar System, Panels, Inverter, Battery)
+- [x] Wire extracted specs into buildProposalData to override calculated values (6 call sites)
+- [x] Add Solar Proposal upload section to ProposalDetail page (separate from switchboard photos)
+- [x] Individual Regenerate button already exists per proposal
+- [x] 0 TypeScript errors, all 104 tests passing
+- [x] Verified: Solar Proposal section renders correctly on Stuart Naylor's page
+- [ ] Test end-to-end with a real solar proposal upload
+- [ ] Verify extracted specs appear in regenerated slides
