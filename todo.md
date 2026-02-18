@@ -1212,8 +1212,9 @@
 - [x] Verify dropdown only shows real customers (19 remaining)
 
 ## Beta Test - Peter Chu Cable Run Pricing Verification (Feb 19)
-- [ ] Check Peter Chu's cable run distance and phase configuration
-- [ ] Verify cable run cost item appears in scope items endpoint
-- [ ] Check if cable run photo exists for Peter Chu
-- [ ] Regenerate slides and verify cable run pricing on Scope of Electrical Works slide
-- [ ] Verify ESTIMATED TOTAL includes cable run cost
+- [x] Check Peter Chu's cable run distance (26.0m) and phase configuration (single phase)
+- [x] Verify cable run cost item appears in scope items endpoint ($529 = 16.0m x $33/m)
+- [x] Check if cable run photo exists for Peter Chu (2 cable run photos: doc 930004, 930006)
+- [x] Regenerate slides and verify cable run pricing on Scope of Electrical Works slide (slide 14)
+- [x] Verify ESTIMATED TOTAL includes cable run cost ($3,009-$5,879)
+- [x] Fixed switchboard expansion keyword match (added 'switchboard expansion' to STANDARD_COST_RATES)
