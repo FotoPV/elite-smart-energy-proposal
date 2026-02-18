@@ -520,8 +520,9 @@ export const appRouter = router({
           });
         
         // Aggregate switchboard analysis from all analysed switchboard photos
+        // Filter out low-confidence analyses (e.g. meter photos tagged as switchboard) — require >= 50% confidence
         const switchboardAnalyses = sitePhotos
-          .filter(p => p.documentType === 'switchboard_photo' && p.analysis)
+          .filter(p => p.documentType === 'switchboard_photo' && p.analysis && (p.analysis.confidence || 0) >= 50)
           .map(p => p.analysis);
         const switchboardAnalysis: ProposalData['switchboardAnalysis'] = switchboardAnalyses.length > 0 ? {
           boardCondition: switchboardAnalyses[0].boardCondition || 'unknown',
@@ -1560,8 +1561,9 @@ export const appRouter = router({
               });
             
             // Aggregate switchboard analysis
+            // Filter out low-confidence analyses (e.g. meter photos tagged as switchboard) — require >= 50% confidence
             const switchboardAnalyses = sitePhotos
-              .filter(p => p.documentType === 'switchboard_photo' && p.analysis)
+              .filter(p => p.documentType === 'switchboard_photo' && p.analysis && ((p.analysis as any).confidence || 0) >= 50)
               .map(p => p.analysis);
             const switchboardAnalysis: ProposalData['switchboardAnalysis'] = switchboardAnalyses.length > 0 ? {
               boardCondition: switchboardAnalyses[0].boardCondition || 'unknown',

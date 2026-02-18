@@ -1966,13 +1966,21 @@ function genSiteAssessment(slide: SlideContent): string {
   const siteStatus = upgradeNeeded ? 'UPGRADE REQUIRED' : 'READY FOR INSTALLATION';
   const siteStatusColor = upgradeNeeded ? '#F5A623' : '#00EAD3';
   
-  // Warnings section
-  const warningsHtml = (swb?.warnings && swb.warnings.length > 0) ? `
+  // Warnings section — filter out "cannot assess" / "cannot see" notes when we have real analysis data,
+  // and limit to 2 notes max to prevent overflow that hides the UPGRADE REQUIRED section
+  const filteredWarnings = (swb?.warnings || []).filter(w => {
+    // Remove generic "cannot assess" notes that come from low-quality meter photo analyses
+    const lower = w.toLowerCase();
+    if (lower.includes('cannot assess') && lower.includes('without a view')) return false;
+    if (lower.includes('cannot see') && lower.includes('switchboard')) return false;
+    return true;
+  });
+  const warningsHtml = filteredWarnings.length > 0 ? `
     <div class="card" style="border-color: #F5A623;">
       <p class="lbl" style="color: #F5A623;">INSPECTOR NOTES</p>
       <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
-        ${swb.warnings.slice(0, 3).map(w => `
-          <p style="color: #ccc; font-size: 15px; line-height: 1.4;">• ${w}</p>
+        ${filteredWarnings.slice(0, 2).map(w => `
+          <p style="color: #ccc; font-size: 14px; line-height: 1.35;">• ${w}</p>
         `).join('')}
       </div>
     </div>
@@ -2025,9 +2033,10 @@ function genSiteAssessment(slide: SlideContent): string {
             </div>
           </div>
           ${warningsHtml}
-          <div class="card aqua-b" style="text-align: center; padding: 20px; border-color: ${siteStatusColor};">
-            <p style="font-family: 'Urbanist', sans-serif; font-size: 15px; color: ${siteStatusColor}; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px;">SITE STATUS</p>
-            <p style="font-family: 'GeneralSans', sans-serif; font-size: 24px; color: #fff; font-weight: 700;">${siteStatus}</p>
+          <div class="card aqua-b" style="text-align: center; padding: 16px; border-color: ${siteStatusColor};">
+            <p style="font-family: 'Urbanist', sans-serif; font-size: 14px; color: ${siteStatusColor}; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">SITE STATUS</p>
+            <p style="font-family: 'GeneralSans', sans-serif; font-size: 22px; color: #fff; font-weight: 700;">${siteStatus}</p>
+            ${upgradeNeeded && swb?.upgradeReason ? `<p style="font-family: 'GeneralSans', sans-serif; font-size: 13px; color: #ccc; margin-top: 6px; line-height: 1.3;">${swb.upgradeReason}</p>` : ''}
           </div>
         </div>
       </div>

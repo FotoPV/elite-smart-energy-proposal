@@ -1100,3 +1100,15 @@
 - [x] Scope of Electrical Works slide now shows: Pre/Post board layout, phase config (SINGLE PHASE), metering (Bi-Di YES, Swap REQUIRED), cable sizing, 6 scope items (RCD upgrade, main switch upgrade, dedicated MCBs, meter upgrade, full assessment)
 - [x] Electrical Assessment slide now shows real data: Board Condition GOOD, Main Switch 63A MCB, 10/12 circuits used, 1 RCD present, space available
 - [x] 19 slides generated successfully (was 18 before)
+
+## Bug Fix - Electrical Assessment Slide Issues (Feb 18)
+- [x] Filter out low-confidence switchboard analyses (meter photo at 20% confidence contaminating notes with "cannot see switchboard")
+- [x] Ensure UPGRADE REQUIRED section and its detail text are fully visible (currently cut off at bottom of slide)
+- [x] Remove "Cannot assess AS/NZS 3000 compliance, safety concerns, or cable sizing without a view of the switchboard" note when actual switchboard photo was analyzed
+- [x] Added confidence >= 50% threshold filter in both generateProgressive and batchGenerate aggregation
+- [x] Added "cannot assess" / "cannot see" keyword filter in warnings rendering
+- [x] Reduced inspector notes to max 2 to prevent overflow
+- [x] Added upgrade reason text below UPGRADE REQUIRED badge
+- [x] Verified: Inspector Notes now shows only 2 relevant notes (RCD compliance + main switch type)
+- [x] Verified: UPGRADE REQUIRED section fully visible with reason text
+- [x] Verified: Scope of Electrical Works slide (slide 15) renders correctly with all details
