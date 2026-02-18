@@ -1206,10 +1206,10 @@ export default function ProposalDetailPage() {
       
       // Trigger AI extraction
       setIsAnalysingSolarProposal(true);
-      const specs = await analyzeSolarProposalMutation.mutateAsync({
+      const result2 = await analyzeSolarProposalMutation.mutateAsync({
         documentId: result.documentId,
       });
-      setSolarProposalSpecs(specs);
+      setSolarProposalSpecs(result2.specs);
       toast.success('System specs extracted successfully!');
     } catch (error: any) {
       toast.error(`Upload failed: ${error.message}`);
@@ -1508,23 +1508,23 @@ export default function ProposalDetailPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border border-[#2a2a2a] p-3">
                     <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Solar System</div>
-                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.solarSystemSizeKw || specs.solarSizeKw}kW</div>
-                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.panelCount} × {specs.panelWattage}W {specs.panelBrand} {specs.panelModel || ''}</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.solarSystemSizeKw}kW</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.solarPanelCount} × {specs.solarPanelWattage}W {specs.solarPanelBrand} {specs.solarPanelModel || ''}</div>
                   </div>
                   <div className="rounded-lg border border-[#2a2a2a] p-3">
                     <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Battery Storage</div>
-                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.batteryTotalKwh || specs.batterySizeKwh}kWh</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.batterySizeKwh}kWh</div>
                     <div className="text-[11px] text-[#808285] mt-0.5">{specs.batteryCount} × {specs.batteryBrand} {specs.batteryModel || ''}</div>
                   </div>
                   <div className="rounded-lg border border-[#2a2a2a] p-3">
                     <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Inverter</div>
-                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.inverterBrand} {specs.inverterSizeKw}kW</div>
-                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.inverterModel || ''} {specs.inverterPhase || ''}</div>
+                    <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.inverterBrand} {specs.inverterSizeW ? (specs.inverterSizeW / 1000).toFixed(1) : ''}kW</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">{specs.inverterModel || ''} {specs.inverterPhase ? `(${specs.inverterPhase}-phase)` : ''}</div>
                   </div>
                   <div className="rounded-lg border border-[#2a2a2a] p-3">
                     <div className="text-[10px] text-[#808285] uppercase tracking-wide mb-1" style={{ fontFamily: "'Urbanist', sans-serif" }}>Est. Production</div>
                     <div className="text-white font-semibold" style={{ fontFamily: "'Urbanist', sans-serif" }}>{specs.estimatedAnnualProductionKwh?.toLocaleString() || 'N/A'} kWh/yr</div>
-                    <div className="text-[11px] text-[#808285] mt-0.5">Efficiency: {specs.systemEfficiency || 'N/A'}%</div>
+                    <div className="text-[11px] text-[#808285] mt-0.5">Efficiency: {specs.systemEfficiencyPercent || 'N/A'}%</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-[#00EAD3]" style={{ fontFamily: "'Urbanist', sans-serif" }}>

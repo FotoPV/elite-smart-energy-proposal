@@ -1239,7 +1239,7 @@ export const appRouter = router({
         
         // Extract system specs from the solar proposal using LLM vision
         const { extractSolarProposalSpecs, generateSpecsSummary } = await import('./solarProposalExtraction');
-        const specs = await extractSolarProposalSpecs(doc.fileUrl);
+        const specs = await extractSolarProposalSpecs(doc.fileUrl, doc.mimeType || undefined);
         const summary = generateSpecsSummary(specs);
         
         // Store the extracted specs in the document

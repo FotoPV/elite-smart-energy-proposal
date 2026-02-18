@@ -83,7 +83,27 @@ Return your response as valid JSON matching this exact schema:
   "notes": ["string"]
 }`;
 
-export async function extractSolarProposalSpecs(fileUrl: string): Promise<ExtractedSystemSpecs> {
+export async function extractSolarProposalSpecs(fileUrl: string, mimeType?: string): Promise<ExtractedSystemSpecs> {
+  // Determine if this is a PDF or image based on URL extension or mime type
+  const isPdf = mimeType?.includes('pdf') || fileUrl.toLowerCase().endsWith('.pdf');
+  
+  // Build the file content block — use file_url for PDFs, image_url for images
+  const fileContent = isPdf 
+    ? {
+        type: "file_url" as const,
+        file_url: {
+          url: fileUrl,
+          mime_type: "application/pdf" as const,
+        },
+      }
+    : {
+        type: "image_url" as const,
+        image_url: {
+          url: fileUrl,
+          detail: "high" as const,
+        },
+      };
+  
   const response = await invokeLLM({
     messages: [
       {
@@ -97,13 +117,7 @@ export async function extractSolarProposalSpecs(fileUrl: string): Promise<Extrac
             type: "text",
             text: "Extract the system specifications from this solar proposal document. Return valid JSON only.",
           },
-          {
-            type: "image_url",
-            image_url: {
-              url: fileUrl,
-              detail: "high",
-            },
-          },
+          fileContent,
         ],
       },
     ],

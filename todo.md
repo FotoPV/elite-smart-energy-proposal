@@ -1021,5 +1021,9 @@
 - [x] Individual Regenerate button already exists per proposal
 - [x] 0 TypeScript errors, all 104 tests passing
 - [x] Verified: Solar Proposal section renders correctly on Stuart Naylor's page
-- [ ] Test end-to-end with a real solar proposal upload
-- [ ] Verify extracted specs appear in regenerated slides
+- [x] Test end-to-end with a real solar proposal upload (test image with LONGi 10.925kW + Sigenergy 16kWh)
+- [x] Verify extracted specs appear in regenerated slides (all 18 slides regenerated with correct specs)
+- [x] Fixed field name mismatches in UI (solarPanelCount vs panelCount, etc.)
+- [x] Fixed mutation handler to store inner specs object correctly
+- [x] Added PDF support to extraction (file_url type for PDFs, image_url for images)
+- [x] Verified: Battery slide shows 16kWh Sigenergy, Solar slide shows 10.925kW LONGi 475W panels
