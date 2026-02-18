@@ -1062,3 +1062,14 @@
 - [x] Remove the Solar Proposal upload section from ProposalDetail.tsx (now in New Proposal wizard)
 - [x] Remove related state/handlers for solar proposal upload from ProposalDetail (handleSolarProposalUpload, isUploadingSolarProposal, isAnalysingSolarProposal, solarProposalSpecs, uploadDocumentMutation, analyzeSolarProposalMutation)
 - [x] 0 TypeScript errors, all 104 tests passing
+
+## Bug Fixes — Fayyaz Khan Audit (Feb 18)
+- [x] BUG 1: Battery size not multiplied by batteryCount → Now shows 16.12kWh (2 × 8.06kWh) on Battery Storage slide ✅
+- [x] BUG 2: Annual generation uses calc engine (80% ratio) instead of extracted value → Now shows 13,765 kWh/yr from extracted specs on Solar PV slide ✅
+- [x] BUG 3: VPP income shows $0/year on Executive Summary slide → Now shows $404/year (vppAnnualValue passed to slide content) ✅
+- [x] All 3 bugs verified fixed after Fayyaz Khan proposal regeneration
+- [x] Battery Storage slide: 16.12 KWH CAPACITY, 2 × Sigenergy Modules (8.06 kWh Usable)
+- [x] Solar PV slide: 10.925 KW SYSTEM, 23 × 475W LONGI Solar, 13,765 KWH annual production
+- [x] Executive Summary: AGL VPP $404/year, 10.925kW solar + 16.12kWh battery
+- [x] Seven Key Benefits: "16.12kWh battery", "$404.25+/year through AGL VPP"
+- [x] 0 TypeScript errors, all 104 tests passing

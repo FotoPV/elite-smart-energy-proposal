@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, fullName, address, state FROM customers WHERE fullName LIKE '%Fayyaz%' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, address, state FROM customers WHERE fullName LIKE '%Fayyaz%' LIMIT 1;",
+  "rows": [
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "address": "162 Maribyrnong Road, Moonee Ponds Vic 3039",
+      "state": "VIC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\taddress\tstate\n1020001\tFayyaz Khan\t162 Maribyrnong Road, Moonee Ponds Vic 3039\tVIC\n",
+  "stderr": "",
+  "execution_time_ms": 1533
+}

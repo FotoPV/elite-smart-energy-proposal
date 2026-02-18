@@ -77,6 +77,7 @@ export interface ProposalData {
   batteryBrand: string;
   inverterSizeKw: number;
   inverterBrand: string;
+  estimatedAnnualProductionKwh?: number;  // From solar proposal extraction (overrides calculated value)
   
   // Financial
   systemCost: number;
@@ -220,7 +221,8 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   const psh = statePSH[data.state] || 4.0;
   const performanceRatio = 0.80;
   const avgDailySolar = data.solarSizeKw * psh * performanceRatio;
-  const annualSolarProduction = Math.round(data.solarSizeKw * psh * performanceRatio * 365);
+  const calculatedAnnualProduction = Math.round(data.solarSizeKw * psh * performanceRatio * 365);
+  const annualSolarProduction = data.estimatedAnnualProductionKwh || calculatedAnnualProduction;
   const solarOffset = data.annualUsageKwh > 0 ? Math.round((annualSolarProduction / data.annualUsageKwh) * 100) : 100;
   
   // Monthly solar production factors (higher in summer, lower in winter)
@@ -330,6 +332,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       annualUsageKwh: data.annualUsageKwh,
       totalAnnualSavings: data.annualSavings,
       vppProvider: data.vppProvider,
+      vppAnnualValue: data.vppAnnualValue,
       billReductionPct,
       solarOffset,
     }
