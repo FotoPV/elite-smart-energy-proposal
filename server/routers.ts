@@ -609,6 +609,25 @@ export const appRouter = router({
           }
         }
 
+        // === Manual Cable Run Override (takes priority over AI extraction) ===
+        const manualCR = getManualCableRun(proposal);
+        if (manualCR?.metres && manualCR.metres > 0) {
+          const manualPhase = manualCR.phase || 'single';
+          const cableRunPhotoUrl = cableRunDocs.find(d => d.fileUrl)?.fileUrl;
+          cableRunAnalysis = {
+            cableRunDistanceMetres: manualCR.metres,
+            cableRoutePath: 'Manually measured cable run',
+            installationMethod: 'As per installer assessment',
+            obstructions: [],
+            notes: ['Distance entered manually by installer'],
+            confidence: 100,
+            photoUrl: cableRunPhotoUrl || cableRunAnalysis?.photoUrl,
+          };
+          if (switchboardAnalysis) {
+            switchboardAnalysis.phaseConfiguration = manualPhase;
+          }
+        }
+
         // === Inject Cable Run Cost into Upgrade Scope ===
         if (switchboardAnalysis && cableRunAnalysis?.cableRunDistanceMetres) {
           const cableRunCostItem = calculateCableRunCostItem(
@@ -784,10 +803,30 @@ export const appRouter = router({
         electricityBillId: z.number().optional(),
         proposalNotes: z.string().optional(),
         costOverrides: z.record(z.string(), z.string()).optional(),
+        manualCableRunMetres: z.number().nullable().optional(),
+        manualCableRunPhase: z.enum(['single', 'three']).nullable().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { id, ...data } = input;
+        const { id, manualCableRunMetres, ...rest } = input;
+        const data: any = { ...rest };
+        if (manualCableRunMetres !== undefined) {
+          data.manualCableRunMetres = manualCableRunMetres?.toString() ?? null;
+        }
         await db.updateProposal(id, data);
+        return { success: true };
+      }),
+    
+    saveCableRun: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        manualCableRunMetres: z.number().nullable(),
+        manualCableRunPhase: z.enum(['single', 'three']).nullable(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateProposal(input.id, {
+          manualCableRunMetres: input.manualCableRunMetres?.toString() ?? null,
+          manualCableRunPhase: input.manualCableRunPhase,
+        } as any);
         return { success: true };
       }),
     
@@ -818,7 +857,7 @@ export const appRouter = router({
         if (!calc || !proposal.customerId) return { scopeItems: [] };
         try {
           const scopeCustomer = await db.getCustomerById(proposal.customerId);
-          const siteData = await aggregateSiteData(proposal.customerId, calc, scopeCustomer?.state);
+          const siteData = await aggregateSiteData(proposal.customerId, calc, scopeCustomer?.state, getManualCableRun(proposal));
           const upgradeScope = siteData.switchboardAnalysis?.upgradeScope || [];
           return { scopeItems: upgradeScope.map((item: any) => ({ item: item.item, detail: item.detail, priority: item.priority, estimatedCost: item.estimatedCost || null })) };
         } catch (e) {
@@ -1094,7 +1133,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const siteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
+        const siteData = await aggregateSiteData(proposal.customerId, calc, customer.state, getManualCableRun(proposal));
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: siteData.sitePhotos,
           switchboardAnalysis: siteData.switchboardAnalysis,
@@ -1169,7 +1208,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const pptxSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
+        const pptxSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state, getManualCableRun(proposal));
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: pptxSiteData.sitePhotos,
           switchboardAnalysis: pptxSiteData.switchboardAnalysis,
@@ -1231,7 +1270,7 @@ export const appRouter = router({
         
         const calc = proposal.calculations as ProposalCalculations;
         // Aggregate all site data (photos, switchboard, cable run, solar specs)
-        const nativePdfSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state);
+        const nativePdfSiteData = await aggregateSiteData(proposal.customerId, calc, customer.state, getManualCableRun(proposal));
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: nativePdfSiteData.sitePhotos,
           switchboardAnalysis: nativePdfSiteData.switchboardAnalysis,
@@ -1901,6 +1940,25 @@ export const appRouter = router({
               }
             }
 
+            // === Manual Cable Run Override (takes priority over AI extraction) ===
+            const batchManualCR = getManualCableRun(proposal);
+            if (batchManualCR?.metres && batchManualCR.metres > 0) {
+              const batchManualPhase = batchManualCR.phase || 'single';
+              const batchCableRunPhotoUrl = batchCableRunDocs.find(d => d.fileUrl)?.fileUrl;
+              batchCableRunAnalysis = {
+                cableRunDistanceMetres: batchManualCR.metres,
+                cableRoutePath: 'Manually measured cable run',
+                installationMethod: 'As per installer assessment',
+                obstructions: [],
+                notes: ['Distance entered manually by installer'],
+                confidence: 100,
+                photoUrl: batchCableRunPhotoUrl || batchCableRunAnalysis?.photoUrl,
+              };
+              if (switchboardAnalysis) {
+                switchboardAnalysis.phaseConfiguration = batchManualPhase;
+              }
+            }
+
             // === Inject Cable Run Cost into Upgrade Scope ===
             if (switchboardAnalysis && batchCableRunAnalysis?.cableRunDistanceMetres) {
               const cableRunCostItem = calculateCableRunCostItem(
@@ -2166,12 +2224,21 @@ async function enrichSlideWithNarrative(slide: SlideContent, data: ProposalData)
   return enriched;
 }
 
+/** Extract manual cable run data from a proposal row */
+function getManualCableRun(proposal: any): { metres: number | null; phase: 'single' | 'three' | null } | undefined {
+  const m = proposal?.manualCableRunMetres;
+  if (!m) return undefined;
+  const metres = typeof m === 'string' ? parseFloat(m) : m;
+  if (isNaN(metres) || metres <= 0) return undefined;
+  return { metres, phase: proposal?.manualCableRunPhase || 'single' };
+}
+
 /**
  * Reusable helper to aggregate site photos, switchboard analysis, cable run analysis,
  * and cable sizing from customer documents. Used by generateProgressive, batchGenerate,
  * and all export paths (PDF, PPTX, native PDF).
  */
-async function aggregateSiteData(customerId: number, calc: ProposalCalculations, customerState?: string) {
+async function aggregateSiteData(customerId: number, calc: ProposalCalculations, customerState?: string, manualCableRun?: { metres: number | null; phase: 'single' | 'three' | null }) {
   const customerDocs = await db.getDocumentsByCustomerId(customerId);
   
   // Build site photos array
@@ -2260,12 +2327,32 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations,
   // Cable run analysis (use existing extracted data)
   let cableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
   const cableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
+  // Get cable run photo URL even if we use manual override (for display on slides)
+  const cableRunPhotoUrl = cableRunDocs.find(d => d.fileUrl)?.fileUrl;
   for (const crd of cableRunDocs) {
     if (crd.extractedData) {
       const parsed = typeof crd.extractedData === 'string' ? JSON.parse(crd.extractedData) : crd.extractedData;
       if (parsed.confidence >= 40 && parsed.cableRunDistanceMetres) {
         cableRunAnalysis = { ...parsed, photoUrl: crd.fileUrl };
       }
+    }
+  }
+  
+  // === Manual Cable Run Override (takes priority over AI extraction) ===
+  if (manualCableRun?.metres && manualCableRun.metres > 0) {
+    const manualPhase = manualCableRun.phase || 'single';
+    cableRunAnalysis = {
+      cableRunDistanceMetres: manualCableRun.metres,
+      cableRoutePath: 'Manually measured cable run',
+      installationMethod: 'As per installer assessment',
+      obstructions: [],
+      notes: ['Distance entered manually by installer'],
+      confidence: 100,
+      photoUrl: cableRunPhotoUrl || cableRunAnalysis?.photoUrl,
+    };
+    // Override phase config on switchboard analysis if manual phase provided
+    if (switchboardAnalysis) {
+      switchboardAnalysis.phaseConfiguration = manualPhase;
     }
   }
   

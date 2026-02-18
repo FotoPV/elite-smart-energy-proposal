@@ -1244,3 +1244,15 @@
 - [x] Monitor batch generation progress — 28 succeeded, 0 failed
 - [x] Spot-checked 3 proposals: Michael Palumbieri (FoxESS CQ6-L6), Peter Chu (GoodWe), Boris Sirota (Sigenergy default) — all correct
 - [x] All 28 proposals now show correct battery brand from solar proposal specs
+
+## Cable Run Input + Photo Category Feature (Feb 19)
+- [x] CABLE RUN photo category already existed (alongside SWITCHBOARD, METER, ROOF, PROPERTY)
+- [x] Add manual cable run distance input field (metres) to the proposal detail page
+- [x] Add phase type selector (Single Phase / 3-Phase) for cable run calculation
+- [x] Auto-calculate cable run cost: first 10m FREE single phase at $33/m, first 5m FREE 3-phase at $55/m
+- [x] Include cable run as a line item on Electrical Works Cost Estimates when distance is provided
+- [x] Wire manual cable run into all 5 code paths (generateProgressive, batchGenerate, aggregateSiteData x3)
+- [x] Include cable run in ESTIMATED TOTAL calculation ($1,584-$3,364 for Michael Palumbieri)
+- [x] Test end-to-end with Michael Palumbieri (18m single phase = $264 cable run cost)
+- [x] Verified: Battery Cable Run (16mm single phase) — $264 appears on Scope slide 15
+- [x] Verified: Cable sizing table shows 10mm² AC cable, V-Drop 1.5% COMPLIANT, Run 18m

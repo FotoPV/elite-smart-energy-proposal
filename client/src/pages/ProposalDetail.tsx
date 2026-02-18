@@ -27,6 +27,7 @@ import {
   Pencil,
   X,
   Check,
+  Ruler,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -1123,6 +1124,143 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
 }
 
 /**
+ * Manual Cable Run Distance Input.
+ * Allows installer to enter cable run distance and phase type when no photo analysis is available,
+ * or to override the AI-extracted distance. Auto-calculates cost using Lightning Energy T&Cs:
+ * - Single phase: first 10m free, then $33/m
+ * - Three phase: first 5m free, then $55/m
+ */
+function CableRunInput({ proposalId, proposal }: { proposalId: number; proposal: any }) {
+  const [metres, setMetres] = useState<string>(
+    (proposal as any)?.manualCableRunMetres ? String(parseFloat((proposal as any).manualCableRunMetres)) : ''
+  );
+  const [phase, setPhase] = useState<'single' | 'three'>(
+    (proposal as any)?.manualCableRunPhase || 'single'
+  );
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const utils = trpc.useUtils();
+
+  useEffect(() => {
+    if (proposal && !loaded) {
+      const m = (proposal as any)?.manualCableRunMetres;
+      if (m) setMetres(String(parseFloat(m)));
+      const p = (proposal as any)?.manualCableRunPhase;
+      if (p) setPhase(p);
+      setLoaded(true);
+    }
+  }, [proposal, loaded]);
+
+  const saveMutation = trpc.proposals.saveCableRun.useMutation({
+    onSuccess: () => {
+      setSaving(false);
+      toast.success('Cable run saved');
+      utils.proposals.get.invalidate({ id: proposalId });
+      utils.proposals.getScopeItems.invalidate({ id: proposalId });
+      utils.proposals.getCostOverrides.invalidate({ id: proposalId });
+    },
+    onError: () => { setSaving(false); toast.error('Failed to save cable run'); },
+  });
+
+  const handleSave = useCallback(() => {
+    const dist = parseFloat(metres);
+    setSaving(true);
+    if (!metres || isNaN(dist) || dist <= 0) {
+      saveMutation.mutate({ id: proposalId, manualCableRunMetres: null, manualCableRunPhase: null });
+    } else {
+      saveMutation.mutate({ id: proposalId, manualCableRunMetres: dist, manualCableRunPhase: phase });
+    }
+  }, [metres, phase, proposalId, saveMutation]);
+
+  // Auto-calculate cost preview
+  const costPreview = useMemo(() => {
+    const dist = parseFloat(metres);
+    if (!metres || isNaN(dist) || dist <= 0) return null;
+    const freeMetres = phase === 'single' ? 10 : 5;
+    const rate = phase === 'single' ? 33 : 55;
+    const chargeable = Math.max(0, dist - freeMetres);
+    if (chargeable <= 0) return { cost: '$0', note: `Within ${freeMetres}m free allowance` };
+    const cost = Math.round(chargeable * rate);
+    return {
+      cost: '$' + cost.toLocaleString('en-AU'),
+      note: `${chargeable.toFixed(1)}m chargeable at $${rate}/m (first ${freeMetres}m free)`,
+    };
+  }, [metres, phase]);
+
+  return (
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Ruler className="h-4 w-4 text-[#F5A623]" />
+          <h3
+            className="text-sm uppercase tracking-wider text-[#F5A623]"
+            style={{ fontFamily: "'Urbanist', sans-serif" }}
+          >
+            Cable Run Distance
+          </h3>
+        </div>
+        {saving && (
+          <span className="text-[10px] flex items-center gap-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            <Loader2 className="h-3 w-3 animate-spin text-[#808285]" />
+            <span className="text-[#808285]">Saving...</span>
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Urbanist', sans-serif" }}>Distance (metres)</label>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            value={metres}
+            onChange={(e) => setMetres(e.target.value)}
+            placeholder="e.g. 21.3"
+            className="w-full px-3 py-2 text-sm bg-[#111] border border-[#2a2a2a] rounded-lg text-white placeholder-[#808285]/40 focus:border-[#F5A623]/50 focus:outline-none"
+            style={{ fontFamily: "'General Sans', sans-serif" }}
+          />
+        </div>
+        <div className="w-40">
+          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Urbanist', sans-serif" }}>Phase Type</label>
+          <select
+            value={phase}
+            onChange={(e) => setPhase(e.target.value as 'single' | 'three')}
+            className="w-full px-3 py-2 text-sm bg-[#111] border border-[#2a2a2a] rounded-lg text-white focus:border-[#F5A623]/50 focus:outline-none"
+            style={{ fontFamily: "'General Sans', sans-serif" }}
+          >
+            <option value="single" style={{ background: '#111' }}>Single Phase</option>
+            <option value="three" style={{ background: '#111' }}>3-Phase</option>
+          </select>
+        </div>
+        <div className="pt-4">
+          <Button
+            onClick={handleSave}
+            variant="outline"
+            size="sm"
+            className="border-[#F5A623]/30 text-[#F5A623] hover:bg-[#F5A623]/10"
+            disabled={saving}
+          >
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            <span className="ml-1">Save</span>
+          </Button>
+        </div>
+      </div>
+      {costPreview && (
+        <div className="mt-3 pt-3 border-t border-[#F5A623]/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>{costPreview.note}</span>
+            <span className="text-sm font-bold text-[#F5A623]" style={{ fontFamily: "'General Sans', sans-serif" }}>{costPreview.cost}</span>
+          </div>
+        </div>
+      )}
+      <p className="text-[10px] text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
+        Enter the measured cable run distance. Cost is auto-calculated per Lightning Energy T&Cs. This overrides any AI-extracted distance from cable run photos. Clear the field and save to remove.
+      </p>
+    </div>
+  );
+}
+
+/**
  * Inline cost override editor for scope of electrical works items.
  * Fetches the proposal's switchboard analysis upgradeScope and costOverrides,
  * allows installers to click-to-edit each cost, and saves overrides to DB.
@@ -1559,6 +1697,9 @@ export default function ProposalDetailPage() {
             These notes are automatically included when regenerating the proposal. The AI will reference them in the narrative analysis.
           </p>
         </div>
+
+        {/* CABLE RUN — Manual distance input for cable run cost calculation */}
+        <CableRunInput proposalId={proposalId} proposal={proposal} />
 
         {/* COST OVERRIDES — Editable installer cost estimates for scope items */}
         <CostOverrideEditor proposalId={proposalId} />

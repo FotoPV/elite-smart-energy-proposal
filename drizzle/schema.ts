@@ -131,6 +131,10 @@ export const proposals = mysqlTable("proposals", {
   proposalNotes: text("proposalNotes"), // Persistent notes about the install (switchboard, additional works, etc.)
   lastRegeneratePrompt: text("lastRegeneratePrompt"), // Last one-off prompt used during regeneration
   
+  // Manual Cable Run Override (when no photo analysis or to override AI extraction)
+  manualCableRunMetres: decimal("manualCableRunMetres", { precision: 8, scale: 2 }),
+  manualCableRunPhase: mysqlEnum("manualCableRunPhase", ["single", "three"]),
+  
   // Installer Cost Overrides (JSON map: scopeItemKey → custom cost string)
   costOverrides: json("costOverrides").$type<Record<string, string>>(),
   
