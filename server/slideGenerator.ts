@@ -2,6 +2,7 @@
 // Matches exact design from Steve Zafiriou SA proposal example (17 slides)
 
 import { BRAND } from '../shared/brand';
+import { calculateTotalCostRange } from './switchboardAnalysis';
 import { FONT_NEXTSPHERE_B64, FONT_GENERALSANS_B64, FONT_URBANIST_B64, FONT_URBANIST_ITALIC_B64, LOGO_AQUA_B64, COVER_BG_B64 } from '../shared/fontAssets';
 
 export interface ProposalData {
@@ -209,6 +210,33 @@ export interface ProposalData {
     notes: string[];
     confidence: number;
     photoUrl?: string;  // URL of the annotated cable run photo
+  };
+
+  // Meter Analysis (dedicated meter photo analysis)
+  meterAnalysis?: {
+    meterNumber: string | null;
+    nmi: string | null;
+    meterBrand: string | null;
+    meterModel: string | null;
+    meterType: 'smart' | 'digital' | 'analog' | 'unknown';
+    meterGeneration: string | null;
+    isBidirectional: boolean | null;
+    bidirectionalEvidence: string | null;
+    supportsSolarExport: boolean | null;
+    meterSwapRequired: boolean;
+    meterSwapReason: string | null;
+    hasCTs: boolean | null;
+    ctRating: string | null;
+    displayReading: string | null;
+    displayRegisters: string[];
+    meterCondition: 'good' | 'fair' | 'poor' | 'unknown';
+    meterAge: string | null;
+    sealIntact: boolean | null;
+    connectionType: string | null;
+    phaseConfiguration: 'single' | 'three' | 'unknown';
+    notes: string[];
+    warnings: string[];
+    confidence: number;
   };
 
   // Cable Sizing (AS/NZS 3008.1.1)
@@ -638,6 +666,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       subtitle: 'PRE & POST INSTALLATION',
       content: {
         switchboardAnalysis: data.switchboardAnalysis,
+        meterAnalysis: data.meterAnalysis,
         cableRunAnalysis: data.cableRunAnalysis,
         cableSizing: data.cableSizing,
         solarSizeKw: data.solarSizeKw,
@@ -645,6 +674,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
         inverterBrand: data.inverterBrand,
         inverterSizeKw: data.inverterSizeKw,
         batteryBrand: data.batteryBrand,
+        state: data.state,
         headerRight: 'Installer Assessment',
       }
     });
@@ -2104,12 +2134,19 @@ function genScopeOfWorks(slide: SlideContent): string {
   const phaseColor = swb.phaseConfiguration !== 'unknown' ? '#00EAD3' : '#F5A623';
   const phaseSource = swb.phaseConfirmationSource || 'Visual inspection';
 
-  // Metering
-  const meterLabel = swb.meterType || 'Unknown';
-  const meterBiDi = swb.meterIsBidirectional === true ? 'YES' : swb.meterIsBidirectional === false ? 'NO' : 'UNKNOWN';
-  const meterBiDiColor = swb.meterIsBidirectional === true ? '#00EAD3' : swb.meterIsBidirectional === false ? '#F5A623' : '#808285';
-  const meterSwapLabel = swb.meterSwapRequired ? 'REQUIRED' : 'NOT REQUIRED';
-  const meterSwapColor = swb.meterSwapRequired ? '#F5A623' : '#00EAD3';
+  // Metering — prefer dedicated meter analysis over switchboard-derived data
+  const meter = c.meterAnalysis as ProposalData['meterAnalysis'] | undefined;
+  const meterLabel = meter?.meterType || swb.meterType || 'Unknown';
+  const meterBiDi = (meter?.isBidirectional ?? swb.meterIsBidirectional) === true ? 'YES' : (meter?.isBidirectional ?? swb.meterIsBidirectional) === false ? 'NO' : 'UNKNOWN';
+  const meterBiDiColor = (meter?.isBidirectional ?? swb.meterIsBidirectional) === true ? '#00EAD3' : (meter?.isBidirectional ?? swb.meterIsBidirectional) === false ? '#F5A623' : '#808285';
+  const meterSwapNeeded = meter?.meterSwapRequired ?? swb.meterSwapRequired;
+  const meterSwapLabel = meterSwapNeeded ? 'REQUIRED' : 'NOT REQUIRED';
+  const meterSwapColor = meterSwapNeeded ? '#F5A623' : '#00EAD3';
+  const meterNumber = meter?.meterNumber || null;
+  const meterNmi = meter?.nmi || null;
+  const meterBrand = meter?.meterBrand || null;
+  const meterModel = meter?.meterModel || null;
+  const meterSwapReason = meter?.meterSwapReason || swb.meterNotes || null;
 
   // Cable assessment
   const cableAdequate = swb.existingCableSizeAdequate === true ? 'ADEQUATE' : swb.existingCableSizeAdequate === false ? 'UPGRADE NEEDED' : 'TO BE ASSESSED';
@@ -2174,8 +2211,22 @@ function genScopeOfWorks(slide: SlideContent): string {
     </div>
   `;
 
-  // Scope of works items
+  // Scope of works items + total cost calculation
   const scopeItems = (swb.upgradeScope || []).slice(0, 6);
+  // Calculate total estimated cost range
+  let totalCostHtml = '';
+  try {
+    const totalCost = calculateTotalCostRange(scopeItems);
+    if (totalCost) {
+      totalCostHtml = `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 2px solid #00EAD3; margin-top: 8px;">
+          <span style="font-size: 14px; color: #00EAD3; font-weight: 700; font-family: 'Urbanist', sans-serif; letter-spacing: 0.05em;">ESTIMATED TOTAL</span>
+          <span style="font-size: 18px; color: #00EAD3; font-weight: 700; font-family: 'GeneralSans', sans-serif;">${totalCost.formatted}</span>
+        </div>
+        <p style="font-size: 10px; color: #555; font-style: italic; margin-top: 4px;">Estimates based on standard Australian electrical contractor rates. Final pricing subject to site inspection.</p>
+      `;
+    }
+  } catch (e) { /* fallback: no total */ }
   const scopeHtml = scopeItems.length > 0 ? scopeItems.map(item => {
     const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#00EAD3';
     const priorityLabel = item.priority.toUpperCase();
@@ -2184,8 +2235,9 @@ function genScopeOfWorks(slide: SlideContent): string {
         <span style="font-size: 11px; color: ${priorityColor}; font-weight: 700; min-width: 90px; font-family: 'Urbanist', sans-serif; letter-spacing: 0.05em;">${priorityLabel}</span>
         <div style="flex: 1;">
           <p style="font-size: 14px; color: #fff; font-weight: 600; font-family: 'Urbanist', sans-serif;">${item.item}</p>
-          <p style="font-size: 12px; color: #808285; margin-top: 2px;">${item.detail}${item.estimatedCost ? ` — Est. ${item.estimatedCost}` : ''}</p>
+          <p style="font-size: 12px; color: #808285; margin-top: 2px;">${item.detail}</p>
         </div>
+        ${item.estimatedCost ? `<span style="font-size: 13px; color: #F5A623; font-weight: 600; font-family: 'GeneralSans', sans-serif; white-space: nowrap; min-width: 80px; text-align: right;">${item.estimatedCost}</span>` : ''}
       </div>
     `;
   }).join('') : `
@@ -2240,7 +2292,10 @@ function genScopeOfWorks(slide: SlideContent): string {
               <p class="lbl" style="font-size: 11px;">METERING</p>
               <p style="color: ${meterBiDiColor}; font-size: 14px; font-weight: 600;">Bi-Di: ${meterBiDi}</p>
               <p style="color: ${meterSwapColor}; font-size: 12px; margin-top: 4px;">Swap: ${meterSwapLabel}</p>
-              ${swb.meterNotes ? `<p style="color: #808285; font-size: 11px; margin-top: 4px;">${swb.meterNotes}</p>` : ''}
+              ${meterNumber ? `<p style="color: #808285; font-size: 10px; margin-top: 4px;">Meter #${meterNumber}</p>` : ''}
+              ${meterNmi ? `<p style="color: #808285; font-size: 10px; margin-top: 2px;">NMI: ${meterNmi}</p>` : ''}
+              ${meterBrand || meterModel ? `<p style="color: #808285; font-size: 10px; margin-top: 2px;">${[meterBrand, meterModel].filter(Boolean).join(' ')}</p>` : ''}
+              ${meterSwapReason ? `<p style="color: #808285; font-size: 10px; margin-top: 2px; font-style: italic;">${meterSwapReason.substring(0, 60)}${meterSwapReason.length > 60 ? '...' : ''}</p>` : ''}
             </div>
             <div class="card" style="flex: 1; padding: 14px;">
               <p class="lbl" style="font-size: 11px;">CABLE RUN</p>
@@ -2308,6 +2363,7 @@ function genScopeOfWorks(slide: SlideContent): string {
             <div style="display: flex; flex-direction: column;">
               ${scopeHtml}
             </div>
+            ${totalCostHtml}
           </div>
 
           <!-- System being installed summary -->

@@ -1154,3 +1154,21 @@
 - [x] Updated exportNativePdf to use aggregateSiteData — now includes all site photos and electrical data
 - [x] Note: Native PDF (pdfGenerator.ts) only renders subset of slides — Electrical Assessment and Scope of Works only appear in Puppeteer PDF and PPTX exports
 - [ ] Test PDF export with Fayyaz Khan's proposal to verify photos appear
+
+## Feature - Dedicated Meter Analysis LLM Prompt (Feb 18)
+- [x] Create meterAnalysis.ts module with LLM vision prompt for meter photos
+- [x] Extract: meter number, meter type (smart/basic/solar), NMI, bi-directional capability, meter brand/model
+- [x] Add auto-analysis of meter_photo documents during slide generation
+- [x] Add MeterAnalysis interface to ProposalData
+- [x] Feed meter data into Scope of Electrical Works metering requirements section
+- [x] Update aggregateSiteData helper to include meter analysis
+- [x] Test with Fayyaz Khan's smart meter photo
+
+## Feature - Installer Cost Estimates on Scope Items (Feb 18)
+- [x] Add cost estimate ranges to each scope item in the Scope of Electrical Works slide
+- [x] Build cost lookup table for common electrical works (RCD upgrade, main switch upgrade, MCB addition, meter swap, etc.)
+- [x] Support state-based pricing variations (NSW/VIC/QLD/SA/WA)
+- [x] Display estimated cost range next to each scope item (e.g., "est. $350–$500")
+- [x] Add total estimated electrical works cost summary
+- [x] Include disclaimer about estimates being indicative only
+- [x] Test with Fayyaz Khan's proposal scope items

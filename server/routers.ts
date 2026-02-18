@@ -17,6 +17,7 @@ import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, cl
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { customerDocuments as docsTable } from "../drizzle/schema";
+import { applyFallbackCostEstimates } from './switchboardAnalysis';
 
 /**
  * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
@@ -548,7 +549,7 @@ export const appRouter = router({
           meterIsBidirectional: switchboardAnalyses.find(a => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
           meterSwapRequired: switchboardAnalyses.some(a => a.meterSwapRequired),
           meterNotes: switchboardAnalyses.find(a => a.meterNotes)?.meterNotes || null,
-          upgradeScope: switchboardAnalyses.flatMap(a => a.upgradeScope || []),
+          upgradeScope: applyFallbackCostEstimates(switchboardAnalyses.flatMap(a => a.upgradeScope || [])),
           proposedSolarBreakerPosition: switchboardAnalyses.find(a => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
           proposedSolarBreakerRating: switchboardAnalyses.find(a => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
           proposedBatteryBreakerPosition: switchboardAnalyses.find(a => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
@@ -559,6 +560,32 @@ export const appRouter = router({
           existingCableSizeAdequate: switchboardAnalyses.find(a => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
         } : undefined;
         
+        // === Meter Photo Auto-Analysis ===
+        let meterAnalysis: ProposalData['meterAnalysis'] = undefined;
+        const meterPhotoDocs = customerDocs.filter(d => d.documentType === 'meter_photo');
+        for (const md of meterPhotoDocs) {
+          if (!md.extractedData && md.fileUrl) {
+            try {
+              console.log(`[MeterAnalysis] Auto-analyzing meter photo (doc ${md.id})...`);
+              const { analyzeMeterPhoto } = await import('./meterAnalysis');
+              const meterResult = await analyzeMeterPhoto(md.fileUrl);
+              console.log(`[MeterAnalysis] Analysis complete — confidence: ${meterResult.confidence}%, type: ${meterResult.meterType}, swap required: ${meterResult.meterSwapRequired}`);
+              await db.updateCustomerDocument(md.id, { extractedData: meterResult });
+              md.extractedData = meterResult as any;
+            } catch (err) {
+              console.error(`[MeterAnalysis] Failed to analyze meter photo (doc ${md.id}):`, err);
+            }
+          }
+        }
+        for (const md of meterPhotoDocs) {
+          if (md.extractedData) {
+            const parsed = typeof md.extractedData === 'string' ? JSON.parse(md.extractedData) : md.extractedData;
+            if (parsed.confidence >= 30 && (!meterAnalysis || parsed.confidence > meterAnalysis.confidence)) {
+              meterAnalysis = parsed;
+            }
+          }
+        }
+
         // === Cable Run Photo Auto-Analysis ===
         const cableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
         let cableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
@@ -604,10 +631,13 @@ export const appRouter = router({
           regeneratePrompt: (proposal as any).lastRegeneratePrompt || undefined,
           sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
           switchboardAnalysis,
+          meterAnalysis,
           cableRunAnalysis,
           cableSizing,
           solarProposalSpecs,
         });
+
+        // --- Generate slides progressively
         const allSlides = generateSlides(proposalData); // Only active/included slides
         
         // Initialize progress tracking with ALL active slides
@@ -936,6 +966,7 @@ export const appRouter = router({
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: siteData.sitePhotos,
           switchboardAnalysis: siteData.switchboardAnalysis,
+          meterAnalysis: siteData.meterAnalysis,
           cableRunAnalysis: siteData.cableRunAnalysis,
           cableSizing: siteData.cableSizing,
           solarProposalSpecs: siteData.solarProposalSpecs,
@@ -1008,6 +1039,7 @@ export const appRouter = router({
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: pptxSiteData.sitePhotos,
           switchboardAnalysis: pptxSiteData.switchboardAnalysis,
+          meterAnalysis: pptxSiteData.meterAnalysis,
           cableRunAnalysis: pptxSiteData.cableRunAnalysis,
           cableSizing: pptxSiteData.cableSizing,
           solarProposalSpecs: pptxSiteData.solarProposalSpecs,
@@ -1067,6 +1099,7 @@ export const appRouter = router({
         const proposalData = buildProposalData(customer, calc, false, {
           sitePhotos: nativePdfSiteData.sitePhotos,
           switchboardAnalysis: nativePdfSiteData.switchboardAnalysis,
+          meterAnalysis: nativePdfSiteData.meterAnalysis,
           cableRunAnalysis: nativePdfSiteData.cableRunAnalysis,
           cableSizing: nativePdfSiteData.cableSizing,
           solarProposalSpecs: nativePdfSiteData.solarProposalSpecs,
@@ -1672,7 +1705,7 @@ export const appRouter = router({
               meterIsBidirectional: switchboardAnalyses.find((a: any) => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
               meterSwapRequired: switchboardAnalyses.some((a: any) => a.meterSwapRequired),
               meterNotes: switchboardAnalyses.find((a: any) => a.meterNotes)?.meterNotes || null,
-              upgradeScope: switchboardAnalyses.flatMap((a: any) => a.upgradeScope || []),
+              upgradeScope: applyFallbackCostEstimates(switchboardAnalyses.flatMap((a: any) => a.upgradeScope || [])),
               proposedSolarBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
               proposedSolarBreakerRating: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
               proposedBatteryBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
@@ -1683,6 +1716,32 @@ export const appRouter = router({
               existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
             } : undefined;
             
+            // === Meter Photo Analysis ===
+            let batchMeterAnalysis: ProposalData['meterAnalysis'] = undefined;
+            const batchMeterDocs = customerDocs.filter(d => d.documentType === 'meter_photo');
+            for (const md of batchMeterDocs) {
+              if (!md.extractedData && md.fileUrl) {
+                try {
+                  console.log(`[MeterAnalysis] Batch auto-analyzing meter photo (doc ${md.id})...`);
+                  const { analyzeMeterPhoto } = await import('./meterAnalysis');
+                  const meterResult = await analyzeMeterPhoto(md.fileUrl);
+                  console.log(`[MeterAnalysis] Batch analysis complete — confidence: ${meterResult.confidence}%`);
+                  await db.updateCustomerDocument(md.id, { extractedData: meterResult });
+                  md.extractedData = meterResult as any;
+                } catch (err) {
+                  console.error(`[MeterAnalysis] Batch analysis failed (doc ${md.id}):`, err);
+                }
+              }
+            }
+            for (const md of batchMeterDocs) {
+              if (md.extractedData) {
+                const parsed = typeof md.extractedData === 'string' ? JSON.parse(md.extractedData) : md.extractedData;
+                if (parsed.confidence >= 30 && (!batchMeterAnalysis || parsed.confidence > batchMeterAnalysis.confidence)) {
+                  batchMeterAnalysis = parsed;
+                }
+              }
+            }
+
             // === Cable Run Photo Analysis ===
             const batchCableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
             let batchCableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
@@ -1725,6 +1784,7 @@ export const appRouter = router({
               proposalNotes: (proposal as any).proposalNotes || undefined,
               sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
               switchboardAnalysis,
+              meterAnalysis: batchMeterAnalysis,
               cableRunAnalysis: batchCableRunAnalysis,
               cableSizing: batchCableSizing,
               solarProposalSpecs: solarProposalSpecs2,
@@ -1986,7 +2046,7 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations)
     meterIsBidirectional: switchboardAnalyses.find((a: any) => a.meterIsBidirectional !== null && a.meterIsBidirectional !== undefined)?.meterIsBidirectional ?? null,
     meterSwapRequired: switchboardAnalyses.some((a: any) => a.meterSwapRequired),
     meterNotes: switchboardAnalyses.find((a: any) => a.meterNotes)?.meterNotes || null,
-    upgradeScope: switchboardAnalyses.flatMap((a: any) => a.upgradeScope || []),
+    upgradeScope: applyFallbackCostEstimates(switchboardAnalyses.flatMap((a: any) => a.upgradeScope || [])),
     proposedSolarBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerPosition)?.proposedSolarBreakerPosition || null,
     proposedSolarBreakerRating: switchboardAnalyses.find((a: any) => a.proposedSolarBreakerRating)?.proposedSolarBreakerRating || null,
     proposedBatteryBreakerPosition: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerPosition)?.proposedBatteryBreakerPosition || null,
@@ -1997,6 +2057,33 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations)
     existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
   } : undefined;
   
+  // Meter analysis — auto-analyze unanalyzed meter photos, aggregate results
+  let meterAnalysis: ProposalData['meterAnalysis'] = undefined;
+  const meterDocs = customerDocs.filter(d => d.documentType === 'meter_photo');
+  for (const md of meterDocs) {
+    if (!md.extractedData && md.fileUrl) {
+      try {
+        console.log(`[MeterAnalysis] Auto-analyzing meter photo (doc ${md.id})...`);
+        const { analyzeMeterPhoto } = await import('./meterAnalysis');
+        const meterResult = await analyzeMeterPhoto(md.fileUrl);
+        console.log(`[MeterAnalysis] Analysis complete — confidence: ${meterResult.confidence}%, type: ${meterResult.meterType}, swap required: ${meterResult.meterSwapRequired}`);
+        await db.updateCustomerDocument(md.id, { extractedData: meterResult });
+        md.extractedData = meterResult as any;
+      } catch (err) {
+        console.error(`[MeterAnalysis] Failed to analyze meter photo (doc ${md.id}):`, err);
+      }
+    }
+  }
+  // Pick the highest-confidence meter analysis
+  for (const md of meterDocs) {
+    if (md.extractedData) {
+      const parsed = typeof md.extractedData === 'string' ? JSON.parse(md.extractedData) : md.extractedData;
+      if (parsed.confidence >= 30 && (!meterAnalysis || parsed.confidence > meterAnalysis.confidence)) {
+        meterAnalysis = parsed;
+      }
+    }
+  }
+
   // Cable run analysis (use existing extracted data)
   let cableRunAnalysis: ProposalData['cableRunAnalysis'] = undefined;
   const cableRunDocs = customerDocs.filter(d => d.documentType === 'cable_run_photo');
@@ -2029,6 +2116,7 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations)
   return {
     sitePhotos: sitePhotos.length > 0 ? sitePhotos : undefined,
     switchboardAnalysis,
+    meterAnalysis,
     cableRunAnalysis,
     cableSizing,
     solarProposalSpecs,
@@ -2046,6 +2134,7 @@ function buildProposalData(
     switchboardAnalysis?: ProposalData['switchboardAnalysis'];
     cableRunAnalysis?: ProposalData['cableRunAnalysis'];
     cableSizing?: ProposalData['cableSizing'];
+    meterAnalysis?: ProposalData['meterAnalysis'];
     solarProposalSpecs?: any; // Extracted specs from uploaded solar proposal
   }
 ): ProposalData {
@@ -2197,6 +2286,7 @@ function buildProposalData(
     switchboardAnalysis: options?.switchboardAnalysis,
     cableRunAnalysis: options?.cableRunAnalysis,
     cableSizing: options?.cableSizing,
+    meterAnalysis: options?.meterAnalysis,
   };
 }
 

@@ -122,9 +122,22 @@ UPGRADE SCOPE:
     - "Replace board — insufficient space and poor condition"
     - "Add AC isolator adjacent to main switch for inverter"
 
+COST ESTIMATION:
+16. For each upgrade scope item, provide an estimated cost range in AUD based on standard Australian electrical contractor rates:
+    - Main switch upgrade (e.g., 63A to 80A): $250-$450
+    - Additional MCB installation: $80-$150 per breaker
+    - RCD/RCBO installation: $150-$300 per device
+    - Full RCD compliance upgrade (multiple circuits): $400-$800
+    - AC isolator supply + install: $120-$200
+    - DC isolator supply + install: $150-$250
+    - Switchboard upgrade/replacement: $1,500-$3,500
+    - Meter upgrade (DNSP application + install): $0 (DNSP responsibility) or $200-$500 if private
+    - Cable upgrade per metre: $15-$40/m depending on size
+    Use these as guidelines — adjust based on the specific scope observed.
+
 CABLE ASSESSMENT:
-16. Note any visible cable sizing concerns (e.g., undersized mains, aging wiring)
-17. Comment on whether existing cable sizes appear adequate for the additional solar/battery load
+17. Note any visible cable sizing concerns (e.g., undersized mains, aging wiring)
+18. Comment on whether existing cable sizes appear adequate for the additional solar/battery load
 
 Be precise with numbers and ratings. If you cannot determine something clearly, indicate it as null.
 Provide warnings for any safety concerns or AS/NZS 3000 compliance issues you observe.`;
@@ -167,10 +180,10 @@ Return your analysis as a JSON object with the following structure:
   "meterNotes": <string or null>,
   "upgradeScope": [
     {
-      "item": <string>,
-      "detail": <string>,
+      "item": <string - specific upgrade action>,
+      "detail": <string - detailed description of what needs to happen>,
       "priority": <"required" | "recommended" | "optional">,
-      "estimatedCost": <string or null>
+      "estimatedCost": <string - MUST provide AUD cost range e.g. "$250-$450" based on standard Australian electrical rates>
     }
   ],
   "proposedSolarBreakerPosition": <number or null>,
@@ -346,6 +359,103 @@ Return your analysis as a JSON object with the following structure:
       existingCableSizeAdequate: null
     };
   }
+}
+
+/**
+ * Standard Australian electrical contractor rates for common solar/battery installation works.
+ * Used as fallback when LLM doesn't provide cost estimates.
+ */
+const STANDARD_COST_RATES: Record<string, string> = {
+  'main switch': '$250-$450',
+  'main switch upgrade': '$250-$450',
+  'replace main switch': '$250-$450',
+  'upgrade main switch': '$250-$450',
+  'mcb': '$80-$150',
+  'dedicated mcb': '$80-$150',
+  'add dedicated': '$80-$150',
+  'circuit breaker': '$80-$150',
+  'rcd': '$150-$300',
+  'rcbo': '$150-$300',
+  'safety switch': '$150-$300',
+  'rcd compliance': '$400-$800',
+  'rcd protected': '$400-$800',
+  'full rcd': '$400-$800',
+  'ac isolator': '$120-$200',
+  'dc isolator': '$150-$250',
+  'switchboard upgrade': '$1,500-$3,500',
+  'switchboard replacement': '$1,500-$3,500',
+  'replace board': '$1,500-$3,500',
+  'new switchboard': '$1,500-$3,500',
+  'meter upgrade': '$0 (DNSP)',
+  'meter swap': '$0 (DNSP)',
+  'meter replacement': '$0 (DNSP)',
+  'cable upgrade': '$300-$800',
+  'rewire': '$500-$1,200',
+  'earthing': '$200-$400',
+  'earth stake': '$150-$300',
+  'inspection': '$150-$250',
+  'manual inspection': '$150-$250',
+  'site inspection': '$150-$250',
+};
+
+/**
+ * Fill in missing cost estimates on upgrade scope items using standard rates.
+ * Matches item text against known cost patterns.
+ */
+export function applyFallbackCostEstimates(items: UpgradeScopeItem[]): UpgradeScopeItem[] {
+  return items.map(item => {
+    if (item.estimatedCost) return item; // Already has a cost
+    
+    const searchText = (item.item + ' ' + item.detail).toLowerCase();
+    let matchedCost: string | null = null;
+    let bestMatchLength = 0;
+    
+    for (const [keyword, cost] of Object.entries(STANDARD_COST_RATES)) {
+      if (searchText.includes(keyword) && keyword.length > bestMatchLength) {
+        matchedCost = cost;
+        bestMatchLength = keyword.length;
+      }
+    }
+    
+    return { ...item, estimatedCost: matchedCost || '$TBC' };
+  });
+}
+
+/**
+ * Calculate the total estimated cost range from upgrade scope items.
+ * Returns a formatted string like "$1,050-$2,100" or null if no costs available.
+ */
+export function calculateTotalCostRange(items: UpgradeScopeItem[]): { min: number; max: number; formatted: string } | null {
+  let totalMin = 0;
+  let totalMax = 0;
+  let hasAnyCost = false;
+  
+  for (const item of items) {
+    if (!item.estimatedCost || item.estimatedCost === '$TBC') continue;
+    
+    // Parse cost range like "$250-$450" or "$0 (DNSP)"
+    const matches = item.estimatedCost.match(/\$([\d,]+)/g);
+    if (matches && matches.length >= 1) {
+      hasAnyCost = true;
+      const values = matches.map(m => parseInt(m.replace(/[$,]/g, ''), 10)).filter(v => !isNaN(v));
+      if (values.length >= 2) {
+        totalMin += Math.min(...values);
+        totalMax += Math.max(...values);
+      } else if (values.length === 1) {
+        totalMin += values[0];
+        totalMax += values[0];
+      }
+    }
+  }
+  
+  if (!hasAnyCost) return null;
+  
+  const fmt = (n: number) => '$' + n.toLocaleString('en-AU');
+  return {
+    min: totalMin,
+    max: totalMax,
+    formatted: totalMin === totalMax ? fmt(totalMin) : `${fmt(totalMin)}-${fmt(totalMax)}`
+  };
 }
 
 /**
