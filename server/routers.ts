@@ -1238,6 +1238,41 @@ export const appRouter = router({
         return { success: true };
       }),
     
+    updateDocumentType: protectedProcedure
+      .input(z.object({
+        documentId: z.number(),
+        documentType: z.enum([
+          'switchboard_photo',
+          'meter_photo',
+          'roof_photo',
+          'property_photo',
+          'solar_proposal_pdf',
+          'other'
+        ]),
+      }))
+      .mutation(async ({ input }) => {
+        const doc = await db.getDocumentById(input.documentId);
+        if (!doc) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
+        }
+        
+        // If changing FROM switchboard_photo to something else, clear the switchboard analysis data
+        const shouldClearAnalysis = doc.documentType === 'switchboard_photo' && input.documentType !== 'switchboard_photo';
+        
+        await db.updateCustomerDocument(input.documentId, {
+          documentType: input.documentType,
+          ...(shouldClearAnalysis ? { extractedData: null, description: null } : {}),
+        });
+        
+        console.log(`[updateDocumentType] Document ${input.documentId} changed from ${doc.documentType} to ${input.documentType}${shouldClearAnalysis ? ' (analysis cleared)' : ''}`);
+        
+        return {
+          success: true,
+          previousType: doc.documentType,
+          newType: input.documentType,
+        };
+      }),
+
     analyzeSwitchboard: protectedProcedure
       .input(z.object({ documentId: z.number() }))
       .mutation(async ({ input }) => {

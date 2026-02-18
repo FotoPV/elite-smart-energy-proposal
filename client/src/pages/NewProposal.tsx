@@ -237,7 +237,20 @@ export default function NewProposal() {
     for (let i = 0; i < fileArray.length; i++) {
       const file = fileArray[i];
       const entryId = newEntries[i].id;
-      const docType = file.type.startsWith('image/') ? 'switchboard_photo' : 'solar_proposal_pdf';
+      // Auto-detect photo category from filename heuristics
+      let docType: 'switchboard_photo' | 'meter_photo' | 'roof_photo' | 'property_photo' | 'solar_proposal_pdf' | 'other' = 'solar_proposal_pdf';
+      if (file.type.startsWith('image/')) {
+        const nameLower = file.name.toLowerCase();
+        if (nameLower.includes('meter') || nameLower.includes('smart_meter') || nameLower.includes('smartmeter')) {
+          docType = 'meter_photo';
+        } else if (nameLower.includes('roof') || nameLower.includes('aerial') || nameLower.includes('satellite')) {
+          docType = 'roof_photo';
+        } else if (nameLower.includes('property') || nameLower.includes('house') || nameLower.includes('front')) {
+          docType = 'property_photo';
+        } else {
+          docType = 'switchboard_photo'; // Default for images
+        }
+      }
 
       try {
         const base64 = await fileToBase64(file);

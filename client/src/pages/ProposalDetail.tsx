@@ -1169,6 +1169,14 @@ export default function ProposalDetailPage() {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxLabel, setLightboxLabel] = useState<string>('');
   
+  const updateDocTypeMutation = trpc.documents.updateDocumentType.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Photo re-tagged as ${data.newType.replace(/_/g, ' ').replace(/photo/i, '').trim()}`);
+      trpc.useUtils().documents.list.invalidate();
+    },
+    onError: (err) => toast.error(`Failed to re-tag: ${err.message}`),
+  });
+  
 
   
   // Auto-trigger LLM progressive generation when proposal has calculations but no slides
@@ -1394,24 +1402,47 @@ export default function ProposalDetailPage() {
                 return (
                   <div
                     key={photo.id || i}
-                    className="relative group cursor-pointer rounded-lg overflow-hidden border border-[#2a2a2a] hover:border-[#00EAD3]/50 transition-colors"
-                    onClick={() => { setLightboxUrl(photo.fileUrl); setLightboxLabel(typeLabel); }}
+                    className="relative group rounded-lg overflow-hidden border border-[#2a2a2a] hover:border-[#00EAD3]/50 transition-colors"
                   >
-                    <img
-                      src={photo.fileUrl}
-                      alt={typeLabel}
-                      className="w-full h-28 object-cover"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
-                      <span
-                        className="text-[10px] text-[#00EAD3] uppercase tracking-wide"
-                        style={{ fontFamily: "'Urbanist', sans-serif" }}
-                      >
-                        {typeLabel}
-                      </span>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => { setLightboxUrl(photo.fileUrl); setLightboxLabel(typeLabel); }}
+                    >
+                      <img
+                        src={photo.fileUrl}
+                        alt={typeLabel}
+                        className="w-full h-28 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-[#00EAD3]/0 group-hover:bg-[#00EAD3]/10 transition-colors flex items-center justify-center pointer-events-none">
+                        <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-[#00EAD3]/0 group-hover:bg-[#00EAD3]/10 transition-colors flex items-center justify-center">
-                      <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="bg-[#111] px-2 py-1.5 flex items-center justify-between">
+                      <select
+                        value={photo.documentType}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          updateDocTypeMutation.mutate({
+                            documentId: photo.id,
+                            documentType: e.target.value as any,
+                          });
+                        }}
+                        className="bg-transparent text-[10px] uppercase tracking-wide border-none outline-none cursor-pointer appearance-none pr-3"
+                        style={{
+                          fontFamily: "'Urbanist', sans-serif",
+                          color: photo.documentType === 'switchboard_photo' ? '#00EAD3'
+                            : photo.documentType === 'meter_photo' ? '#f36710'
+                            : '#808285',
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23808285' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 0 center',
+                        }}
+                      >
+                        <option value="switchboard_photo" style={{ background: '#111', color: '#00EAD3' }}>SWITCHBOARD</option>
+                        <option value="meter_photo" style={{ background: '#111', color: '#f36710' }}>METER</option>
+                        <option value="roof_photo" style={{ background: '#111', color: '#808285' }}>ROOF</option>
+                        <option value="property_photo" style={{ background: '#111', color: '#808285' }}>PROPERTY</option>
+                      </select>
                     </div>
                   </div>
                 );

@@ -1112,3 +1112,15 @@
 - [x] Verified: Inspector Notes now shows only 2 relevant notes (RCD compliance + main switch type)
 - [x] Verified: UPGRADE REQUIRED section fully visible with reason text
 - [x] Verified: Scope of Electrical Works slide (slide 15) renders correctly with all details
+
+## Feature - Add METER Document Category (Feb 18)
+- [x] Add 'meter' to document category enum in drizzle schema (already existed as 'meter_photo')
+- [x] Push database migration for new category (not needed - already in schema)
+- [x] Update UI dropdowns/selectors to show METER as an option (added category dropdown on each site photo card)
+- [x] Update switchboard analysis aggregation to exclude METER-tagged documents (already filtered by documentType === 'switchboard_photo')
+- [x] Update site photo rendering to show "METER PHOTO" label for meter-tagged docs (dropdown shows METER in orange)
+- [x] Re-tag Fayyaz Khan's smart meter photo (doc 810001) from SWITCHBOARD to METER (done via SQL + analysis cleared)
+- [x] Test and verify changes (UI shows correct tags, dropdowns work)
+- [x] Added updateDocumentType tRPC mutation for re-tagging documents
+- [x] Added filename heuristics for auto-detecting meter/roof/property photos during upload
+- [x] Color-coded category labels: SWITCHBOARD=aqua, METER=orange, others=grey

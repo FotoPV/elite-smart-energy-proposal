@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, customerId, documentType, fileName, CASE WHEN extractedData IS NOT NULL THEN 'YES' ELSE 'NO' END as hasData FROM customerDocuments WHERE customerId = (SELECT id FROM customers WHERE fullName LIKE '%Fayyaz%' LIMIT 1) ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, customerId, documentType, fileName, CASE WHEN extractedData IS NOT NULL THEN 'YES' ELSE 'NO' END as hasData FROM customerDocuments WHERE customerId = (SELECT id FROM customers WHERE fullName LIKE '%Fayyaz%' LIMIT 1) ORDER BY id;",
+  "rows": [
+    {
+      "id": "810001",
+      "customerId": "1020001",
+      "documentType": "meter_photo",
+      "fileName": "162M_Smart_Meter.jpg",
+      "hasData": "NO"
+    },
+    {
+      "id": "810002",
+      "customerId": "1020001",
+      "documentType": "switchboard_photo",
+      "fileName": "162M_Switchboard.jpg",
+      "hasData": "YES"
+    },
+    {
+      "id": "930001",
+      "customerId": "1020001",
+      "documentType": "solar_proposal_pdf",
+      "fileName": "Solar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf",
+      "hasData": "YES"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\tdocumentType\tfileName\thasData\n810001\t1020001\tmeter_photo\t162M_Smart_Meter.jpg\tNO\n810002\t1020001\tswitchboard_photo\t162M_Switchboard.jpg\tYES\n930001\t1020001\tsolar_proposal_pdf\tSolar Proposal for Fayyaz Khan at 162 Maribyrnong Road 3039 VIC (1010-3128-2).pdf\tYES\n",
+  "stderr": "",
+  "execution_time_ms": 1548
+}
