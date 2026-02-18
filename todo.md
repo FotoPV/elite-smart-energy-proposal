@@ -1264,3 +1264,17 @@
 - [x] Verified: ESTIMATED TOTAL $1,584-$3,364 correct in PDF
 - [x] Verified: Cable Run Pricing Note shows on right column (18.0m measured, $33/m after 10m)
 - [x] Verified: System shows 7.35kW FoxESS KH10 + 35.94kWh FoxESS CQ6-L6 (correct brand)
+
+## MEMORY: Always Clean Up Test Customers (Feb 19)
+**RULE: Every time a test customer is created for verification, ALWAYS delete it from the database before delivering results. No test data left behind.**
+- [x] Cleaned up 8 test customers (IDs: 1230001-1230005, 1230007, 1260001-1260002)
+- [x] 20 real customers remaining in the dropdown
+
+## Move Cable Run Input to New Proposal Wizard (Feb 19)
+- [x] Added Cable Run Distance input to New Proposal wizard Step 2 (Upload)
+- [x] Positioned after Solar Proposal section, before Additional Documents/Site Photos
+- [x] Cable Run still editable on ProposalDetail page for updating existing proposals
+- [x] Wired cable run distance/phase through createProposal mutation to save on creation
+- [x] Updated backend proposals.create to accept manualCableRunMetres and manualCableRunPhase
+- [x] Deleted remaining 'Test Customer' (ID 1260003) from database
+- [x] All 136 tests passing

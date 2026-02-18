@@ -7,7 +7,7 @@ import { useLocation, useSearch } from "wouter";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { 
   ArrowLeft, ArrowRight, Users, Upload, Zap, CheckCircle, FileText,
-  Loader2, Camera, X, Eye, Trash2, Plus, ImageIcon, Sun
+  Loader2, Camera, X, Eye, Trash2, Plus, ImageIcon, Sun, Ruler
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
@@ -59,6 +59,10 @@ export default function NewProposal() {
   const [isAnalysingSolarProposal, setIsAnalysingSolarProposal] = useState(false);
   const [solarProposalSpecs, setSolarProposalSpecs] = useState<any>(null);
   const [solarProposalFileName, setSolarProposalFileName] = useState<string | null>(null);
+
+  // Cable run input states
+  const [cableRunMetres, setCableRunMetres] = useState<string>('');
+  const [cableRunPhase, setCableRunPhase] = useState<'single' | 'three'>('single');
 
   const { data: customers, refetch: refetchCustomers } = trpc.customers.list.useQuery({});
   const [showNewCustomerDialog, setShowNewCustomerDialog] = useState(false);
@@ -348,6 +352,8 @@ export default function NewProposal() {
       title: proposalTitle,
       electricityBillId,
       proposalNotes: proposalNotes.trim() || undefined,
+      manualCableRunMetres: cableRunMetres ? parseFloat(cableRunMetres) : undefined,
+      manualCableRunPhase: cableRunMetres ? cableRunPhase : undefined,
     });
   };
 
@@ -651,6 +657,58 @@ export default function NewProposal() {
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* Cable Run Distance Section */}
+              <div className="border-t border-border pt-6">
+                <Label className="flex items-center gap-2 mb-1">
+                  <Ruler className="h-4 w-4 text-amber-400" />
+                  <span className="text-amber-400 font-semibold text-sm">Cable Run Distance</span>
+                  <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-3">Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per Lightning Energy T&Cs.</p>
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-1 block">Distance (metres)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      placeholder="e.g. 21.3"
+                      value={cableRunMetres}
+                      onChange={(e) => setCableRunMetres(e.target.value)}
+                      className="bg-background border-border"
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Label className="text-xs text-muted-foreground mb-1 block">Phase Type</Label>
+                    <Select value={cableRunPhase} onValueChange={(v) => setCableRunPhase(v as 'single' | 'three')}>
+                      <SelectTrigger className="bg-background border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Single Phase</SelectItem>
+                        <SelectItem value="three">3-Phase</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {cableRunMetres && parseFloat(cableRunMetres) > 0 && (() => {
+                  const dist = parseFloat(cableRunMetres);
+                  const freeMetres = cableRunPhase === 'single' ? 10 : 5;
+                  const ratePerM = cableRunPhase === 'single' ? 33 : 55;
+                  const chargeable = Math.max(0, dist - freeMetres);
+                  const cost = Math.round(chargeable * ratePerM);
+                  return (
+                    <p className="text-xs mt-2 text-muted-foreground">
+                      {chargeable > 0 ? (
+                        <><span className="text-amber-400 font-medium">{chargeable.toFixed(1)}m chargeable at ${ratePerM}/m (first {freeMetres}m free)</span> = <span className="text-[#00EAD3] font-semibold">${cost}</span></>
+                      ) : (
+                        <span className="text-[#00EAD3]">Within free allowance ({freeMetres}m) — no cable run charge</span>
+                      )}
+                    </p>
+                  );
+                })()}
               </div>
 
               {/* Divider */}

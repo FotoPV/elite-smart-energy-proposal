@@ -1,0 +1,178 @@
+{
+  "query": "SELECT id, fullName, email, createdAt FROM customers ORDER BY createdAt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, email, createdAt FROM customers ORDER BY createdAt DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "1260002",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 22:02:19"
+    },
+    {
+      "id": "1260001",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 21:54:28"
+    },
+    {
+      "id": "1230007",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 19:51:51"
+    },
+    {
+      "id": "1230006",
+      "fullName": "Michael Palumbieri",
+      "email": "mpalumbieri@yahoo.com.au",
+      "createdAt": "2026-02-18 19:31:51"
+    },
+    {
+      "id": "1230005",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 19:24:45"
+    },
+    {
+      "id": "1230004",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 19:04:08"
+    },
+    {
+      "id": "1230003",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 19:03:43"
+    },
+    {
+      "id": "1230002",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 19:02:48"
+    },
+    {
+      "id": "1230001",
+      "fullName": "Test Customer",
+      "email": "NULL",
+      "createdAt": "2026-02-18 18:19:28"
+    },
+    {
+      "id": "1140003",
+      "fullName": "Peter Chu",
+      "email": "peterdochu@gmail.com",
+      "createdAt": "2026-02-18 05:26:13"
+    },
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "email": "effkayy@outlook.com",
+      "createdAt": "2026-02-17 23:42:27"
+    },
+    {
+      "id": "960001",
+      "fullName": "Peter Maumov",
+      "email": "petern_2004@yahoo.com.au",
+      "createdAt": "2026-02-16 21:23:33"
+    },
+    {
+      "id": "930001",
+      "fullName": "Michael Thyreum",
+      "email": "mthyreum@gmail.com",
+      "createdAt": "2026-02-16 05:25:49"
+    },
+    {
+      "id": "900001",
+      "fullName": "Abhishek Mish",
+      "email": "abhishek_01@hotmail.com",
+      "createdAt": "2026-02-15 08:50:52"
+    },
+    {
+      "id": "690001",
+      "fullName": "Fab Defazio",
+      "email": "ftonline@bigpond.com",
+      "createdAt": "2026-02-13 08:22:54"
+    },
+    {
+      "id": "660001",
+      "fullName": "Mark Anthony Duero",
+      "email": "andreibenj@gmail.com",
+      "createdAt": "2026-02-13 03:37:05"
+    },
+    {
+      "id": "630001",
+      "fullName": "Yianni Valiontis",
+      "email": "yvaliontis@gmail.com",
+      "createdAt": "2026-02-12 18:29:19"
+    },
+    {
+      "id": "600001",
+      "fullName": "Stuart Naylor",
+      "email": "s.nay@bigpond.com",
+      "createdAt": "2026-02-12 03:56:06"
+    },
+    {
+      "id": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "email": "joshua.richman@outlook.com",
+      "createdAt": "2026-02-12 01:53:01"
+    },
+    {
+      "id": "510001",
+      "fullName": "George Fotopoulos",
+      "email": "dms77@bigpond.com",
+      "createdAt": "2026-02-11 20:53:08"
+    },
+    {
+      "id": "480001",
+      "fullName": "Wayne Fallows",
+      "email": "wfallows@gmail.com",
+      "createdAt": "2026-02-11 03:34:52"
+    },
+    {
+      "id": "450001",
+      "fullName": "Michael Killicoat",
+      "email": "mkillicoat@gmail.com",
+      "createdAt": "2026-02-10 21:26:10"
+    },
+    {
+      "id": "420001",
+      "fullName": "Ajith Premathilaka",
+      "email": "ajith_p8@yahoo.com.au",
+      "createdAt": "2026-02-10 16:04:25"
+    },
+    {
+      "id": "390001",
+      "fullName": "Jared Blode",
+      "email": "blodeja@gmail.com",
+      "createdAt": "2026-02-10 14:50:50"
+    },
+    {
+      "id": "360001",
+      "fullName": "Jon Shoebridge",
+      "email": "jshueye@iinet.net.au",
+      "createdAt": "2026-02-10 06:17:27"
+    },
+    {
+      "id": "270001",
+      "fullName": "Seong Heng Chua",
+      "email": "jc.023@hotmail.com",
+      "createdAt": "2026-02-10 02:05:25"
+    },
+    {
+      "id": "240002",
+      "fullName": "Boris Sirota",
+      "email": "bsirota@hotmail.com",
+      "createdAt": "2026-02-10 00:14:19"
+    },
+    {
+      "id": "240001",
+      "fullName": "Frieda Lay",
+      "email": "frieda.lay@test.com",
+      "createdAt": "2026-02-09 23:39:47"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\temail\tcreatedAt\n1260002\tTest Customer\tNULL\t2026-02-18 22:02:19\n1260001\tTest Customer\tNULL\t2026-02-18 21:54:28\n1230007\tTest Customer\tNULL\t2026-02-18 19:51:51\n1230006\tMichael Palumbieri\tmpalumbieri@yahoo.com.au\t2026-02-18 19:31:51\n1230005\tTest Customer\tNULL\t2026-02-18 19:24:45\n1230004\tTest Customer\tNULL\t2026-02-18 19:04:08\n1230003\tTest Customer\tNULL\t2026-02-18 19:03:43\n1230002\tTest Customer\tNULL\t2026-02-18 19:02:48\n1230001\tTest Customer\tNULL\t2026-02-18 18:19:28\n1140003\tPeter Chu\tpeterdochu@gmail.com\t2026-02-18 05:26:13\n1020001\tFayyaz Khan\teffkayy@outlook.com\t2026-02-17 23:42:27\n960001\tPeter Maumov\tpetern_2004@yahoo.com.au\t2026-02-16 21:23:33\n930001\tMichael Thyreum\tmthyreum@gmail.com\t2026-02-16 05:25:49\n900001\tAbhishek Mish\tabhishek_01@hotmail.com\t2026-02-15 08:50:52\n690001\tFab Defazio\tftonline@bigpond.com\t2026-02-13 08:22:54\n660001\tMark Anthony Duero\tandreibenj@gmail.com\t2026-02-13 03:37:05\n630001\tYianni Valiontis\tyvaliontis@gmail.com\t2026-02-12 18:29:19\n600001\tStuart Naylor\ts.nay@bigpond.com\t2026-02-12 03:56:06\n540001\tJoshua Nicholas Richman\tjoshua.richman@outlook.com\t2026-02-12 01:53:01\n510001\tGeorge Fotopoulos\tdms77@bigpond.com\t2026-02-11 20:53:08\n480001\tWayne Fallows\twfallows@gmail.com\t2026-02-11 03:34:52\n450001\tMichael Killicoat\tmkillicoat@gmail.com\t2026-02-10 21:26:10\n420001\tAjith Premathilaka\tajith_p8@yahoo.com.au\t2026-02-10 16:04:25\n390001\tJared Blode\tblodeja@gmail.com\t2026-02-10 14:50:50\n360001\tJon Shoebridge\tjshueye@iinet.net.au\t2026-02-10 06:17:27\n270001\tSeong Heng Chua\tjc.023@hotmail.com\t2026-02-10 02:05:25\n240002\tBoris Sirota\tbsirota@hotmail.com\t2026-02-10 00:14:19\n240001\tFrieda Lay\tfrieda.lay@test.com\t2026-02-09 23:39:47\n",
+  "stderr": "",
+  "execution_time_ms": 1521
+}
