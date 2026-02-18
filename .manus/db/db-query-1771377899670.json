@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, fullName, state FROM customers ORDER BY fullName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, state FROM customers ORDER BY fullName;",
+  "rows": [
+    {
+      "id": "900001",
+      "fullName": "Abhishek Mish",
+      "state": "VIC"
+    },
+    {
+      "id": "420001",
+      "fullName": "Ajith Premathilaka",
+      "state": "VIC"
+    },
+    {
+      "id": "240002",
+      "fullName": "Boris Sirota",
+      "state": "VIC"
+    },
+    {
+      "id": "690001",
+      "fullName": "Fab Defazio",
+      "state": "VIC"
+    },
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "state": "VIC"
+    },
+    {
+      "id": "240001",
+      "fullName": "Frieda Lay",
+      "state": "SA"
+    },
+    {
+      "id": "510001",
+      "fullName": "George Fotopoulos",
+      "state": "VIC"
+    },
+    {
+      "id": "390001",
+      "fullName": "Jared Blode",
+      "state": "VIC"
+    },
+    {
+      "id": "360001",
+      "fullName": "Jon Shoebridge",
+      "state": "QLD"
+    },
+    {
+      "id": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "state": "SA"
+    },
+    {
+      "id": "660001",
+      "fullName": "Mark Anthony Duero",
+      "state": "VIC"
+    },
+    {
+      "id": "450001",
+      "fullName": "Michael Killicoat",
+      "state": "VIC"
+    },
+    {
+      "id": "930001",
+      "fullName": "Michael Thyreum",
+      "state": "VIC"
+    },
+    {
+      "id": "960001",
+      "fullName": "Peter Maumov",
+      "state": "VIC"
+    },
+    {
+      "id": "270001",
+      "fullName": "Seong Heng Chua",
+      "state": "VIC"
+    },
+    {
+      "id": "600001",
+      "fullName": "Stuart Naylor",
+      "state": "VIC"
+    },
+    {
+      "id": "480001",
+      "fullName": "Wayne Fallows",
+      "state": "VIC"
+    },
+    {
+      "id": "630001",
+      "fullName": "Yianni Valiontis",
+      "state": "VIC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\n900001\tAbhishek Mish\tVIC\n420001\tAjith Premathilaka\tVIC\n240002\tBoris Sirota\tVIC\n690001\tFab Defazio\tVIC\n1020001\tFayyaz Khan\tVIC\n240001\tFrieda Lay\tSA\n510001\tGeorge Fotopoulos\tVIC\n390001\tJared Blode\tVIC\n360001\tJon Shoebridge\tQLD\n540001\tJoshua Nicholas Richman\tSA\n660001\tMark Anthony Duero\tVIC\n450001\tMichael Killicoat\tVIC\n930001\tMichael Thyreum\tVIC\n960001\tPeter Maumov\tVIC\n270001\tSeong Heng Chua\tVIC\n600001\tStuart Naylor\tVIC\n480001\tWayne Fallows\tVIC\n630001\tYianni Valiontis\tVIC\n",
+  "stderr": "",
+  "execution_time_ms": 1538
+}

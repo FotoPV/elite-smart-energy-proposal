@@ -1039,3 +1039,21 @@
 - [x] Upload zone with Sun icon, drag-and-drop support, analysing spinner
 - [x] Green "Specs extracted" badge after successful extraction
 - [x] 0 TypeScript errors, all 104 tests passing
+
+## Cleanup: Remove Test Customers from Dropdown (Feb 18)
+- [x] Delete all 36 "Test Customer" records from customers database table
+- [x] Verify only 18 real customers remain in the dropdown
+
+## Full Beta Test — Fayyaz Khan (Feb 18)
+- [x] Remove all 36 Test Customer records from database (0 proposals/documents linked)
+- [x] Verify only 18 real customers remain in dropdown
+- [x] Select Fayyaz Khan in New Proposal wizard (customer ID loaded correctly)
+- [x] Verify his existing bill and solar proposal load automatically in Step 2 (GB_Jan_Energy_Bill.pdf + SYSTEM CONFIG.pdf)
+- [x] Verify 4-card spec display shows extracted system details (10.925kW, 8.06kWh, Sigenergy 10.0kW, 13,765 kWh/yr)
+- [x] Verify Step 3 summary shows Solar Proposal specs ("10.925kW • 8.06kWh • Sigenergy" in green)
+- [x] Create proposal and verify 18 slides generate progressively
+- [x] Verify Battery Storage slide: 8.06 KWH CAPACITY, 1× Sigenergy Modules ✅
+- [x] Verify Solar PV slide: 10.925 KW SYSTEM, 23 × 475W LONGI Solar panels ✅
+- [x] Verify Inverter: Sigenergy SigenStor EC 10.0 SP-9999W 9,999W Hybrid ✅
+- [x] All extracted specs correctly flowing into generated slides
+- [ ] Test PDF export

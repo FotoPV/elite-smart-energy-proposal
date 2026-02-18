@@ -1,0 +1,20 @@
+{
+  "query": "SELECT c.id, c.fullName, c.state, c.address, c.existingSolar, c.hasEv, c.hasGas, c.hasPool FROM customers c WHERE c.fullName LIKE '%Fayyaz%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id, c.fullName, c.state, c.address, c.existingSolar, c.hasEv, c.hasGas, c.hasPool FROM customers c WHERE c.fullName LIKE '%Fayyaz%';",
+  "rows": [
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "state": "VIC",
+      "address": "162 Maribyrnong Road, Moonee Ponds Vic 3039",
+      "existingSolar": "none",
+      "hasEv": "1",
+      "hasGas": "0",
+      "hasPool": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\taddress\texistingSolar\thasEv\thasGas\thasPool\n1020001\tFayyaz Khan\tVIC\t162 Maribyrnong Road, Moonee Ponds Vic 3039\tnone\t1\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1543
+}

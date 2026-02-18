@@ -1,0 +1,8 @@
+{
+  "query": "SELECT d.id, d.customerId, c.fullName FROM customer_documents d JOIN customers c ON d.customerId = c.id WHERE c.fullName LIKE '%Test Customer%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT d.id, d.customerId, c.fullName FROM customer_documents d JOIN customers c ON d.customerId = c.id WHERE c.fullName LIKE '%Test Customer%';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'p6ctqt8enbmi3weqmjdcem.customer_documents' doesn't exist"
+  ]
+}
