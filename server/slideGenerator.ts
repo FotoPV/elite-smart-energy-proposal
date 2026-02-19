@@ -199,6 +199,8 @@ export interface ProposalData {
     proposedBatteryBreakerRating?: string | null;
     proposedDcIsolatorLocation?: string | null;
     proposedAcIsolatorLocation?: string | null;
+    boardLocation?: 'internal' | 'external' | 'unknown';
+    boardLocationNotes?: string | null;
     cableAssessment?: string | null;
     existingCableSizeAdequate?: boolean | null;
   };

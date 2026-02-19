@@ -17,7 +17,7 @@ import { initProgress, updateSlideProgress, setGenerationStatus, getProgress, cl
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { customerDocuments as docsTable } from "../drizzle/schema";
-import { applyFallbackCostEstimates, calculateCableRunCostItem } from './switchboardAnalysis';
+import { applyFallbackCostEstimates, calculateCableRunCostItem, calculateInternalSwitchboardSurcharge } from './switchboardAnalysis';
 
 /**
  * Helper: Fetch all electricity bills for a customer and return an averaged Bill.
@@ -560,6 +560,8 @@ export const appRouter = router({
           proposedBatteryBreakerRating: switchboardAnalyses.find(a => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
           proposedDcIsolatorLocation: switchboardAnalyses.find(a => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
           proposedAcIsolatorLocation: switchboardAnalyses.find(a => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+          boardLocation: switchboardAnalyses.find(a => a.boardLocation && a.boardLocation !== 'unknown')?.boardLocation || 'unknown',
+          boardLocationNotes: switchboardAnalyses.find(a => a.boardLocationNotes)?.boardLocationNotes || null,
           cableAssessment: switchboardAnalyses.find(a => a.cableAssessment)?.cableAssessment || null,
           existingCableSizeAdequate: switchboardAnalyses.find(a => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
         } : undefined;
@@ -640,6 +642,17 @@ export const appRouter = router({
           );
           if (cableRunCostItem) {
             switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+          }
+        }
+
+        // === Inject Internal Switchboard Surcharge ===
+        if (switchboardAnalysis) {
+          const internalSurcharge = calculateInternalSwitchboardSurcharge(
+            switchboardAnalysis.boardLocation || 'unknown',
+            switchboardAnalysis.boardLocationNotes
+          );
+          if (internalSurcharge) {
+            switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), internalSurcharge];
           }
         }
 
@@ -1893,6 +1906,8 @@ export const appRouter = router({
               proposedBatteryBreakerRating: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
               proposedDcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
               proposedAcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+              boardLocation: switchboardAnalyses.find((a: any) => a.boardLocation && a.boardLocation !== 'unknown')?.boardLocation || 'unknown',
+              boardLocationNotes: switchboardAnalyses.find((a: any) => a.boardLocationNotes)?.boardLocationNotes || null,
               cableAssessment: switchboardAnalyses.find((a: any) => a.cableAssessment)?.cableAssessment || null,
               existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
             } : undefined;
@@ -1971,6 +1986,17 @@ export const appRouter = router({
               );
               if (cableRunCostItem) {
                 switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+              }
+            }
+
+            // === Inject Internal Switchboard Surcharge ===
+            if (switchboardAnalysis) {
+              const internalSurcharge = calculateInternalSwitchboardSurcharge(
+                switchboardAnalysis.boardLocation || 'unknown',
+                switchboardAnalysis.boardLocationNotes
+              );
+              if (internalSurcharge) {
+                switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), internalSurcharge];
               }
             }
 
@@ -2297,6 +2323,8 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations,
     proposedBatteryBreakerRating: switchboardAnalyses.find((a: any) => a.proposedBatteryBreakerRating)?.proposedBatteryBreakerRating || null,
     proposedDcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedDcIsolatorLocation)?.proposedDcIsolatorLocation || null,
     proposedAcIsolatorLocation: switchboardAnalyses.find((a: any) => a.proposedAcIsolatorLocation)?.proposedAcIsolatorLocation || null,
+    boardLocation: switchboardAnalyses.find((a: any) => a.boardLocation && a.boardLocation !== 'unknown')?.boardLocation || 'unknown',
+    boardLocationNotes: switchboardAnalyses.find((a: any) => a.boardLocationNotes)?.boardLocationNotes || null,
     cableAssessment: switchboardAnalyses.find((a: any) => a.cableAssessment)?.cableAssessment || null,
     existingCableSizeAdequate: switchboardAnalyses.find((a: any) => a.existingCableSizeAdequate !== null && a.existingCableSizeAdequate !== undefined)?.existingCableSizeAdequate ?? null,
   } : undefined;
@@ -2368,6 +2396,17 @@ async function aggregateSiteData(customerId: number, calc: ProposalCalculations,
     );
     if (cableRunCostItem) {
       switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), cableRunCostItem];
+    }
+  }
+
+  // === Inject Internal Switchboard Surcharge ===
+  if (switchboardAnalysis) {
+    const internalSurcharge = calculateInternalSwitchboardSurcharge(
+      switchboardAnalysis.boardLocation || 'unknown',
+      switchboardAnalysis.boardLocationNotes
+    );
+    if (internalSurcharge) {
+      switchboardAnalysis.upgradeScope = [...(switchboardAnalysis.upgradeScope || []), internalSurcharge];
     }
   }
 

@@ -1286,3 +1286,13 @@
 - [x] Check all other numeric values for similar floating point issues — all clean (Math.round, toFixed, fmtCurrency used throughout)
 - [x] Regenerate Alex Chow's proposal — verified 72.54 kWh displays correctly
 - [x] All 136 tests passing
+
+## Internal Switchboard Surcharge (Feb 20)
+- [x] Add boardLocation field to SwitchboardAnalysis interface (internal/external/unknown)
+- [x] Update LLM prompt to detect internal vs external switchboard location
+- [x] Add boardLocation to JSON schema and required fields in LLM call
+- [x] Add calculateInternalSwitchboardSurcharge() function ($300 flat fee)
+- [x] Wire surcharge into all 3 code paths (generateProgressive, batchGenerate, aggregateSiteData)
+- [x] Add boardLocation to all 3 switchboard analysis aggregation objects
+- [x] Surcharge appears naturally if room on slide (6 item limit preserved, not forced)
+- [x] All 136 tests passing

@@ -60,6 +60,10 @@ export interface SwitchboardAnalysis {
   proposedDcIsolatorLocation: string | null;  // e.g., "Adjacent to inverter on external wall"
   proposedAcIsolatorLocation: string | null;  // e.g., "Next to main switch inside board"
 
+  // Board location (internal = inside house/garage/cupboard, external = outside wall/meter box)
+  boardLocation: 'internal' | 'external' | 'unknown';
+  boardLocationNotes: string | null;  // e.g., "Board is inside garage cupboard", "External wall-mounted board"
+
   // Cable run assessment
   cableAssessment: string | null;  // General notes on cable sizing and runs
   existingCableSizeAdequate: boolean | null;  // null = cannot determine from photo
@@ -135,9 +139,14 @@ COST ESTIMATION:
     - Cable upgrade per metre: $15-$40/m depending on size
     Use these as guidelines — adjust based on the specific scope observed.
 
+BOARD LOCATION:
+17. Determine if the switchboard is INTERNAL (inside the house, garage, laundry, cupboard, hallway) or EXTERNAL (outside wall, carport, meter box area, weatherproof enclosure)
+18. Look for clues: indoor wall finishes, carpet/tiles visible = internal; weatherproof enclosure, outdoor wall, exposed brickwork = external
+19. This is critical for costing — internal switchboards incur an additional $300 surcharge for installation works
+
 CABLE ASSESSMENT:
-17. Note any visible cable sizing concerns (e.g., undersized mains, aging wiring)
-18. Comment on whether existing cable sizes appear adequate for the additional solar/battery load
+20. Note any visible cable sizing concerns (e.g., undersized mains, aging wiring)
+21. Comment on whether existing cable sizes appear adequate for the additional solar/battery load
 
 Be precise with numbers and ratings. If you cannot determine something clearly, indicate it as null.
 Provide warnings for any safety concerns or AS/NZS 3000 compliance issues you observe.`;
@@ -192,6 +201,8 @@ Return your analysis as a JSON object with the following structure:
   "proposedBatteryBreakerRating": <string or null>,
   "proposedDcIsolatorLocation": <string or null>,
   "proposedAcIsolatorLocation": <string or null>,
+  "boardLocation": <"internal" | "external" | "unknown">,
+  "boardLocationNotes": <string or null>,
   "cableAssessment": <string or null>,
   "existingCableSizeAdequate": <boolean or null>
 }`;
@@ -281,6 +292,8 @@ Return your analysis as a JSON object with the following structure:
               proposedBatteryBreakerRating: { type: ["string", "null"] },
               proposedDcIsolatorLocation: { type: ["string", "null"] },
               proposedAcIsolatorLocation: { type: ["string", "null"] },
+              boardLocation: { type: "string", enum: ["internal", "external", "unknown"], description: "Whether the switchboard is internal (inside house/garage/cupboard) or external (outside wall/meter box)" },
+              boardLocationNotes: { type: ["string", "null"], description: "Evidence for board location determination" },
               cableAssessment: { type: ["string", "null"] },
               existingCableSizeAdequate: { type: ["boolean", "null"] }
             },
@@ -296,6 +309,7 @@ Return your analysis as a JSON object with the following structure:
               "proposedSolarBreakerPosition", "proposedSolarBreakerRating",
               "proposedBatteryBreakerPosition", "proposedBatteryBreakerRating",
               "proposedDcIsolatorLocation", "proposedAcIsolatorLocation",
+              "boardLocation", "boardLocationNotes",
               "cableAssessment", "existingCableSizeAdequate"
             ],
             additionalProperties: false
@@ -355,6 +369,8 @@ Return your analysis as a JSON object with the following structure:
       proposedBatteryBreakerRating: null,
       proposedDcIsolatorLocation: null,
       proposedAcIsolatorLocation: null,
+      boardLocation: 'unknown',
+      boardLocationNotes: 'Unable to determine — manual inspection required',
       cableAssessment: null,
       existingCableSizeAdequate: null
     };
@@ -402,6 +418,27 @@ export function calculateCableRunCostItem(
     detail: `${distanceMetres.toFixed(1)}m measured — ${rate.freeMetres}m included, ${chargeableMetres.toFixed(1)}m chargeable at $${rate.ratePerMetre}/m (gateway both ways).`,
     priority: 'required',
     estimatedCost: `$${totalCost.toLocaleString('en-AU')}`,
+  };
+}
+
+/**
+ * Internal switchboard surcharge — $300 flat fee.
+ * Applied when the switchboard is located inside the house, garage, laundry, cupboard, or hallway.
+ * External boards (outside wall, meter box area) do not incur this charge.
+ */
+export const INTERNAL_SWITCHBOARD_SURCHARGE = 300;
+
+export function calculateInternalSwitchboardSurcharge(
+  boardLocation: 'internal' | 'external' | 'unknown',
+  boardLocationNotes?: string | null
+): UpgradeScopeItem | null {
+  if (boardLocation !== 'internal') return null;
+
+  return {
+    item: 'Internal Switchboard Surcharge',
+    detail: `Switchboard is located internally${boardLocationNotes ? ` — ${boardLocationNotes}` : ''}. Additional charge applies for internal board access and installation works.`,
+    priority: 'required',
+    estimatedCost: `$${INTERNAL_SWITCHBOARD_SURCHARGE}`,
   };
 }
 
