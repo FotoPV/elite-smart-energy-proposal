@@ -2459,13 +2459,13 @@ function buildProposalData(
     ? `${sp.solarPanelBrand}${sp.solarPanelModel ? ` ${sp.solarPanelModel}` : ''}`
     : (calc.solarPanelBrand || 'Trina Solar Vertex S+');
   const batteryKwh = sp?.batterySizeKwh 
-    ? (sp.batterySizeKwh * (sp.batteryCount || 1))  // Multiply per-unit kWh by count
+    ? Math.round(sp.batterySizeKwh * (sp.batteryCount || 1) * 100) / 100  // Multiply per-unit kWh by count, round to 2dp
     : (calc.recommendedBatteryKwh || 15);
   const batteryBrand = sp?.batteryBrand 
     ? `${sp.batteryBrand}${sp.batteryModel ? ` ${sp.batteryModel}` : ''}`
     : 'Sigenergy SigenStor';
   const inverterKw = sp?.inverterSizeW 
-    ? sp.inverterSizeW / 1000 
+    ? Math.round(sp.inverterSizeW / 1000 * 100) / 100 
     : calculateInverterSize(solarKw).inverterKw;
   const inverterBrand = sp?.inverterBrand 
     ? `${sp.inverterBrand}${sp.inverterModel ? ` ${sp.inverterModel}` : ''}`

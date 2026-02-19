@@ -1278,3 +1278,11 @@
 - [x] Updated backend proposals.create to accept manualCableRunMetres and manualCableRunPhase
 - [x] Deleted remaining 'Test Customer' (ID 1260003) from database
 - [x] All 136 tests passing
+
+## Bug Fix - Floating Point Precision on Battery Capacity (Feb 19)
+- [x] Fix 72.53999999999999 kWh showing instead of 72.54 kWh on Battery Storage slide
+- [x] Round all battery capacity calculations to 2 decimal places (routers.ts line 2462 + slideGenerator.ts line 400)
+- [x] Also round solarSizeKw and inverterSizeKw (slideGenerator.ts lines 401-402)
+- [x] Check all other numeric values for similar floating point issues — all clean (Math.round, toFixed, fmtCurrency used throughout)
+- [x] Regenerate Alex Chow's proposal — verified 72.54 kWh displays correctly
+- [x] All 136 tests passing

@@ -396,6 +396,11 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   const npv25yr = Math.round((data.twentyFiveYearSavings || data.annualSavings * 25) - data.netInvestment);
   const irr = data.netInvestment > 0 ? parseFloat((data.annualSavings / data.netInvestment * 100).toFixed(1)) : 0;
   
+  // Safety round all floating-point values to avoid display issues like 72.53999999999999
+  data.batterySizeKwh = Math.round(data.batterySizeKwh * 100) / 100;
+  data.solarSizeKw = Math.round(data.solarSizeKw * 100) / 100;
+  if (data.inverterSizeKw) data.inverterSizeKw = Math.round(data.inverterSizeKw * 100) / 100;
+  
   // Battery modules calculation — brand-aware
   // Known module sizes by brand (kWh per module)
   const BRAND_MODULE_SIZES: Record<string, number> = {
