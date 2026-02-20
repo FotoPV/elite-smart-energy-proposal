@@ -1296,3 +1296,9 @@
 - [x] Add boardLocation to all 3 switchboard analysis aggregation objects
 - [x] Surcharge appears naturally if room on slide (6 item limit preserved, not forced)
 - [x] All 136 tests passing
+
+## Remove Test/Duplicate Customers & Proposals (Feb 20)
+- [x] Deleted 5 "Test Customer" records (IDs: 1320001, 1320002, 1350001, 1350002, 1350003)
+- [x] Deleted 9 older duplicate proposals (Fayyaz Khan 4, Seong Heng Chua 1, George Fotopoulos 1, Abhishek Mish 1, Michael Palumbieri 1, Joshua Nicholas Richman 1)
+- [x] Permanently deleted 17 binned/soft-deleted proposals
+- [x] Verified clean state — 22 unique customers, 1 proposal each, no duplicates

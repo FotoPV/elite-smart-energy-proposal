@@ -1,0 +1,386 @@
+{
+  "query": "SELECT p.id as proposal_id, p.customerId, c.fullName, p.proposalDate, p.status, p.deletedAt FROM proposals p JOIN customers c ON p.customerId = c.id ORDER BY c.fullName, p.proposalDate DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT p.id as proposal_id, p.customerId, c.fullName, p.proposalDate, p.status, p.deletedAt FROM proposals p JOIN customers c ON p.customerId = c.id ORDER BY c.fullName, p.proposalDate DESC;",
+  "rows": [
+    {
+      "proposal_id": "840002",
+      "customerId": "900001",
+      "fullName": "Abhishek Mish",
+      "proposalDate": "2026-02-15 08:54:35",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "840001",
+      "customerId": "900001",
+      "fullName": "Abhishek Mish",
+      "proposalDate": "2026-02-15 08:51:28",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "390004",
+      "customerId": "420001",
+      "fullName": "Ajith Premathilaka",
+      "proposalDate": "2026-02-10 17:33:29",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "390002",
+      "customerId": "420001",
+      "fullName": "Ajith Premathilaka",
+      "proposalDate": "2026-02-10 16:19:48",
+      "status": "draft",
+      "deletedAt": "2026-02-10 16:22:56"
+    },
+    {
+      "proposal_id": "390001",
+      "customerId": "420001",
+      "fullName": "Ajith Premathilaka",
+      "proposalDate": "2026-02-10 16:04:58",
+      "status": "draft",
+      "deletedAt": "2026-02-10 16:18:28"
+    },
+    {
+      "proposal_id": "1170001",
+      "customerId": "1290001",
+      "fullName": "Alex Chow",
+      "proposalDate": "2026-02-19 21:48:29",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1140002",
+      "customerId": "1290001",
+      "fullName": "Alex Chow",
+      "proposalDate": "2026-02-19 20:47:43",
+      "status": "generated",
+      "deletedAt": "2026-02-19 21:00:18"
+    },
+    {
+      "proposal_id": "1140001",
+      "customerId": "1290001",
+      "fullName": "Alex Chow",
+      "proposalDate": "2026-02-19 20:44:45",
+      "status": "generated",
+      "deletedAt": "2026-02-19 20:46:29"
+    },
+    {
+      "proposal_id": "1110001",
+      "customerId": "1290001",
+      "fullName": "Alex Chow",
+      "proposalDate": "2026-02-19 06:17:37",
+      "status": "generated",
+      "deletedAt": "2026-02-19 20:46:35"
+    },
+    {
+      "proposal_id": "270004",
+      "customerId": "240002",
+      "fullName": "Boris Sirota",
+      "proposalDate": "2026-02-10 00:14:54",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "780001",
+      "customerId": "690001",
+      "fullName": "Fab Defazio",
+      "proposalDate": "2026-02-13 08:25:20",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1020001",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-18 02:31:11",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "990002",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-18 01:51:16",
+      "status": "generated",
+      "deletedAt": "2026-02-18 02:30:54"
+    },
+    {
+      "proposal_id": "990001",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-18 01:48:56",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "960002",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-18 01:28:42",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "960001",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-18 01:06:19",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "930001",
+      "customerId": "1020001",
+      "fullName": "Fayyaz Khan",
+      "proposalDate": "2026-02-17 23:43:28",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "270003",
+      "customerId": "240001",
+      "fullName": "Frieda Lay",
+      "proposalDate": "2026-02-10 00:00:17",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "810001",
+      "customerId": "510001",
+      "fullName": "George Fotopoulos",
+      "proposalDate": "2026-02-14 02:07:37",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "510001",
+      "customerId": "510001",
+      "fullName": "George Fotopoulos",
+      "proposalDate": "2026-02-11 21:13:14",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "360002",
+      "customerId": "390001",
+      "fullName": "Jared Blode",
+      "proposalDate": "2026-02-10 15:06:38",
+      "status": "draft",
+      "deletedAt": "2026-02-10 17:01:53"
+    },
+    {
+      "proposal_id": "360001",
+      "customerId": "390001",
+      "fullName": "Jared Blode",
+      "proposalDate": "2026-02-10 14:52:55",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "390006",
+      "customerId": "360001",
+      "fullName": "Jon Shoebridge",
+      "proposalDate": "2026-02-10 17:50:58",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "390003",
+      "customerId": "360001",
+      "fullName": "Jon Shoebridge",
+      "proposalDate": "2026-02-10 16:49:58",
+      "status": "draft",
+      "deletedAt": "2026-02-10 17:02:06"
+    },
+    {
+      "proposal_id": "330002",
+      "customerId": "360001",
+      "fullName": "Jon Shoebridge",
+      "proposalDate": "2026-02-10 06:36:54",
+      "status": "draft",
+      "deletedAt": "2026-02-10 16:44:46"
+    },
+    {
+      "proposal_id": "330001",
+      "customerId": "360001",
+      "fullName": "Jon Shoebridge",
+      "proposalDate": "2026-02-10 06:23:41",
+      "status": "draft",
+      "deletedAt": "2026-02-10 06:36:36"
+    },
+    {
+      "proposal_id": "600001",
+      "customerId": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "proposalDate": "2026-02-12 07:55:39",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "540001",
+      "customerId": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "proposalDate": "2026-02-12 02:35:43",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "750001",
+      "customerId": "660001",
+      "fullName": "Mark Anthony Duero",
+      "proposalDate": "2026-02-13 04:20:43",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "420001",
+      "customerId": "450001",
+      "fullName": "Michael Killicoat",
+      "proposalDate": "2026-02-10 21:28:27",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1080003",
+      "customerId": "1230006",
+      "fullName": "Michael Palumbieri",
+      "proposalDate": "2026-02-18 22:44:10",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1080002",
+      "customerId": "1230006",
+      "fullName": "Michael Palumbieri",
+      "proposalDate": "2026-02-18 22:32:17",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1080001",
+      "customerId": "1230006",
+      "fullName": "Michael Palumbieri",
+      "proposalDate": "2026-02-18 22:12:44",
+      "status": "generated",
+      "deletedAt": "2026-02-18 22:31:52"
+    },
+    {
+      "proposal_id": "1050001",
+      "customerId": "1230006",
+      "fullName": "Michael Palumbieri",
+      "proposalDate": "2026-02-18 19:38:17",
+      "status": "generated",
+      "deletedAt": "2026-02-18 22:09:23"
+    },
+    {
+      "proposal_id": "870001",
+      "customerId": "930001",
+      "fullName": "Michael Thyreum",
+      "proposalDate": "2026-02-16 05:27:28",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "1020002",
+      "customerId": "1140003",
+      "fullName": "Peter Chu",
+      "proposalDate": "2026-02-18 05:36:35",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "900001",
+      "customerId": "960001",
+      "fullName": "Peter Maumov",
+      "proposalDate": "2026-02-16 21:25:04",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "390005",
+      "customerId": "270001",
+      "fullName": "Seong Heng Chua",
+      "proposalDate": "2026-02-10 17:36:13",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "300002",
+      "customerId": "270001",
+      "fullName": "Seong Heng Chua",
+      "proposalDate": "2026-02-10 02:17:34",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "300001",
+      "customerId": "270001",
+      "fullName": "Seong Heng Chua",
+      "proposalDate": "2026-02-10 02:07:05",
+      "status": "draft",
+      "deletedAt": "2026-02-10 02:15:40"
+    },
+    {
+      "proposal_id": "570001",
+      "customerId": "600001",
+      "fullName": "Stuart Naylor",
+      "proposalDate": "2026-02-12 04:02:28",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "480001",
+      "customerId": "480001",
+      "fullName": "Wayne Fallows",
+      "proposalDate": "2026-02-11 05:31:58",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "450001",
+      "customerId": "480001",
+      "fullName": "Wayne Fallows",
+      "proposalDate": "2026-02-11 03:37:49",
+      "status": "draft",
+      "deletedAt": "2026-02-11 05:24:51"
+    },
+    {
+      "proposal_id": "720001",
+      "customerId": "630001",
+      "fullName": "Yianni Valiontis",
+      "proposalDate": "2026-02-12 21:36:09",
+      "status": "generated",
+      "deletedAt": "NULL"
+    },
+    {
+      "proposal_id": "690001",
+      "customerId": "630001",
+      "fullName": "Yianni Valiontis",
+      "proposalDate": "2026-02-12 20:11:08",
+      "status": "draft",
+      "deletedAt": "2026-02-12 21:35:49"
+    },
+    {
+      "proposal_id": "660001",
+      "customerId": "630001",
+      "fullName": "Yianni Valiontis",
+      "proposalDate": "2026-02-12 19:46:10",
+      "status": "draft",
+      "deletedAt": "2026-02-12 20:09:59"
+    },
+    {
+      "proposal_id": "630001",
+      "customerId": "630001",
+      "fullName": "Yianni Valiontis",
+      "proposalDate": "2026-02-12 18:30:55",
+      "status": "draft",
+      "deletedAt": "2026-02-12 20:10:08"
+    }
+  ],
+  "messages": [],
+  "stdout": "proposal_id\tcustomerId\tfullName\tproposalDate\tstatus\tdeletedAt\n840002\t900001\tAbhishek Mish\t2026-02-15 08:54:35\tgenerated\tNULL\n840001\t900001\tAbhishek Mish\t2026-02-15 08:51:28\tgenerated\tNULL\n390004\t420001\tAjith Premathilaka\t2026-02-10 17:33:29\tgenerated\tNULL\n390002\t420001\tAjith Premathilaka\t2026-02-10 16:19:48\tdraft\t2026-02-10 16:22:56\n390001\t420001\tAjith Premathilaka\t2026-02-10 16:04:58\tdraft\t2026-02-10 16:18:28\n1170001\t1290001\tAlex Chow\t2026-02-19 21:48:29\tgenerated\tNULL\n1140002\t1290001\tAlex Chow\t2026-02-19 20:47:43\tgenerated\t2026-02-19 21:00:18\n1140001\t1290001\tAlex Chow\t2026-02-19 20:44:45\tgenerated\t2026-02-19 20:46:29\n1110001\t1290001\tAlex Chow\t2026-02-19 06:17:37\tgenerated\t2026-02-19 20:46:35\n270004\t240002\tBoris Sirota\t2026-02-10 00:14:54\tgenerated\tNULL\n780001\t690001\tFab Defazio\t2026-02-13 08:25:20\tgenerated\tNULL\n1020001\t1020001\tFayyaz Khan\t2026-02-18 02:31:11\tgenerated\tNULL\n990002\t1020001\tFayyaz Khan\t2026-02-18 01:51:16\tgenerated\t2026-02-18 02:30:54\n990001\t1020001\tFayyaz Khan\t2026-02-18 01:48:56\tgenerated\tNULL\n960002\t1020001\tFayyaz Khan\t2026-02-18 01:28:42\tgenerated\tNULL\n960001\t1020001\tFayyaz Khan\t2026-02-18 01:06:19\tgenerated\tNULL\n930001\t1020001\tFayyaz Khan\t2026-02-17 23:43:28\tgenerated\tNULL\n270003\t240001\tFrieda Lay\t2026-02-10 00:00:17\tgenerated\tNULL\n810001\t510001\tGeorge Fotopoulos\t2026-02-14 02:07:37\tgenerated\tNULL\n510001\t510001\tGeorge Fotopoulos\t2026-02-11 21:13:14\tgenerated\tNULL\n360002\t390001\tJared Blode\t2026-02-10 15:06:38\tdraft\t2026-02-10 17:01:53\n360001\t390001\tJared Blode\t2026-02-10 14:52:55\tgenerated\tNULL\n390006\t360001\tJon Shoebridge\t2026-02-10 17:50:58\tgenerated\tNULL\n390003\t360001\tJon Shoebridge\t2026-02-10 16:49:58\tdraft\t2026-02-10 17:02:06\n330002\t360001\tJon Shoebridge\t2026-02-10 06:36:54\tdraft\t2026-02-10 16:44:46\n330001\t360001\tJon Shoebridge\t2026-02-10 06:23:41\tdraft\t2026-02-10 06:36:36\n600001\t540001\tJoshua Nicholas Richman\t2026-02-12 07:55:39\tgenerated\tNULL\n540001\t540001\tJoshua Nicholas Richman\t2026-02-12 02:35:43\tgenerated\tNULL\n750001\t660001\tMark Anthony Duero\t2026-02-13 04:20:43\tgenerated\tNULL\n420001\t450001\tMichael Killicoat\t2026-02-10 21:28:27\tgenerated\tNULL\n1080003\t1230006\tMichael Palumbieri\t2026-02-18 22:44:10\tgenerated\tNULL\n1080002\t1230006\tMichael Palumbieri\t2026-02-18 22:32:17\tgenerated\tNULL\n1080001\t1230006\tMichael Palumbieri\t2026-02-18 22:12:44\tgenerated\t2026-02-18 22:31:52\n1050001\t1230006\tMichael Palumbieri\t2026-02-18 19:38:17\tgenerated\t2026-02-18 22:09:23\n870001\t930001\tMichael Thyreum\t2026-02-16 05:27:28\tgenerated\tNULL\n1020002\t1140003\tPeter Chu\t2026-02-18 05:36:35\tgenerated\tNULL\n900001\t960001\tPeter Maumov\t2026-02-16 21:25:04\tgenerated\tNULL\n390005\t270001\tSeong Heng Chua\t2026-02-10 17:36:13\tgenerated\tNULL\n300002\t270001\tSeong Heng Chua\t2026-02-10 02:17:34\tgenerated\tNULL\n300001\t270001\tSeong Heng Chua\t2026-02-10 02:07:05\tdraft\t2026-02-10 02:15:40\n570001\t600001\tStuart Naylor\t2026-02-12 04:02:28\tgenerated\tNULL\n480001\t480001\tWayne Fallows\t2026-02-11 05:31:58\tgenerated\tNULL\n450001\t480001\tWayne Fallows\t2026-02-11 03:37:49\tdraft\t2026-02-11 05:24:51\n720001\t630001\tYianni Valiontis\t2026-02-12 21:36:09\tgenerated\tNULL\n690001\t630001\tYianni Valiontis\t2026-02-12 20:11:08\tdraft\t2026-02-12 21:35:49\n660001\t630001\tYianni Valiontis\t2026-02-12 19:46:10\tdraft\t2026-02-12 20:09:59\n630001\t630001\tYianni Valiontis\t2026-02-12 18:30:55\tdraft\t2026-02-12 20:10:08\n",
+  "stderr": "",
+  "execution_time_ms": 1512
+}

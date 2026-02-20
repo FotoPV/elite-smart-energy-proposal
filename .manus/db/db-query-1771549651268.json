@@ -1,0 +1,181 @@
+{
+  "query": "SELECT id, fullName, address, state, createdAt FROM customers ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, address, state, createdAt FROM customers ORDER BY id;",
+  "rows": [
+    {
+      "id": "240001",
+      "fullName": "Frieda Lay",
+      "address": "42 Solar Drive, Adelaide SA 5000",
+      "state": "SA",
+      "createdAt": "2026-02-09 23:39:47"
+    },
+    {
+      "id": "240002",
+      "fullName": "Boris Sirota",
+      "address": "21 Leinster Street Ormond Vic 3204",
+      "state": "VIC",
+      "createdAt": "2026-02-10 00:14:19"
+    },
+    {
+      "id": "270001",
+      "fullName": "Seong Heng Chua",
+      "address": "31 Kerferd Street, Malvern East Victoria 3145",
+      "state": "VIC",
+      "createdAt": "2026-02-10 02:05:25"
+    },
+    {
+      "id": "360001",
+      "fullName": "Jon Shoebridge",
+      "address": "3 Greenview Close MITCHELTON QLD 4053",
+      "state": "QLD",
+      "createdAt": "2026-02-10 06:17:27"
+    },
+    {
+      "id": "390001",
+      "fullName": "Jared Blode",
+      "address": "41 Gardenia Road Elsternwick Vic 3185",
+      "state": "VIC",
+      "createdAt": "2026-02-10 14:50:50"
+    },
+    {
+      "id": "420001",
+      "fullName": "Ajith Premathilaka",
+      "address": "10 Duke Street, Berwick Vic 3806",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:04:25"
+    },
+    {
+      "id": "480001",
+      "fullName": "Wayne Fallows",
+      "address": "4 Harvey Court, Cheltenham Vic 3192",
+      "state": "VIC",
+      "createdAt": "2026-02-11 03:34:52"
+    },
+    {
+      "id": "510001",
+      "fullName": "George Fotopoulos",
+      "address": "16A Begg Street Bentleigh East Vic 3165",
+      "state": "VIC",
+      "createdAt": "2026-02-11 20:53:08"
+    },
+    {
+      "id": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "address": "9 Truscott Road, Enfield Sa 5085",
+      "state": "SA",
+      "createdAt": "2026-02-12 01:53:01"
+    },
+    {
+      "id": "600001",
+      "fullName": "Stuart Naylor",
+      "address": "2 White Lodge Court, DonvaleVictoria 3111",
+      "state": "VIC",
+      "createdAt": "2026-02-12 03:56:06"
+    },
+    {
+      "id": "630001",
+      "fullName": "Yianni Valiontis",
+      "address": "126 Outlook Drive, Dandenong North Vic 3175",
+      "state": "VIC",
+      "createdAt": "2026-02-12 18:29:19"
+    },
+    {
+      "id": "660001",
+      "fullName": "Mark Anthony Duero",
+      "address": "183 Eucalyptus Parade, Donnybrook Victoria 3064",
+      "state": "VIC",
+      "createdAt": "2026-02-13 03:37:05"
+    },
+    {
+      "id": "690001",
+      "fullName": "Fab Defazio",
+      "address": "42 Teague Street, Niddrie Vic 3042",
+      "state": "VIC",
+      "createdAt": "2026-02-13 08:22:54"
+    },
+    {
+      "id": "900001",
+      "fullName": "Abhishek Mish",
+      "address": "775 High Street Road Glen Waverley Vic 3150",
+      "state": "VIC",
+      "createdAt": "2026-02-15 08:50:52"
+    },
+    {
+      "id": "930001",
+      "fullName": "Michael Thyreum",
+      "address": "185 Brandon Park Drive, Wheelers Hill Vic 3150",
+      "state": "VIC",
+      "createdAt": "2026-02-16 05:25:49"
+    },
+    {
+      "id": "960001",
+      "fullName": "Peter Maumov",
+      "address": "32 Keon Street Thornbury VIC 3071",
+      "state": "VIC",
+      "createdAt": "2026-02-16 21:23:33"
+    },
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "address": "162 Maribyrnong Road, Moonee Ponds Vic 3039",
+      "state": "VIC",
+      "createdAt": "2026-02-17 23:42:27"
+    },
+    {
+      "id": "1140003",
+      "fullName": "Peter Chu",
+      "address": "1 Buckmaster Drive, Mill Park Vic 3082",
+      "state": "VIC",
+      "createdAt": "2026-02-18 05:26:13"
+    },
+    {
+      "id": "1290001",
+      "fullName": "Alex Chow",
+      "address": "12 Berrima Avenue, Malvern East Vic 3145",
+      "state": "VIC",
+      "createdAt": "2026-02-19 05:37:26"
+    },
+    {
+      "id": "1320001",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-19 06:57:42"
+    },
+    {
+      "id": "1320002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-19 07:14:20"
+    },
+    {
+      "id": "1350001",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-19 21:05:47"
+    },
+    {
+      "id": "1350002",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-19 21:07:12"
+    },
+    {
+      "id": "1350003",
+      "fullName": "Test Customer",
+      "address": "123 Test St, Melbourne VIC 3000",
+      "state": "VIC",
+      "createdAt": "2026-02-19 21:07:33"
+    }
+  ],
+  "messages": [
+    "450001\tMichael Killicoat\t48 Mather Road\tMount Eliza Vic 3930\tVIC\t2026-02-10 21:26:10",
+    "1230006\tMichael Palumbieri\tUnit 5/41 Orchard Crescent\tMont Albert North Vic 3129\tVIC\t2026-02-18 19:31:51"
+  ],
+  "stdout": "id\tfullName\taddress\tstate\tcreatedAt\n240001\tFrieda Lay\t42 Solar Drive, Adelaide SA 5000\tSA\t2026-02-09 23:39:47\n240002\tBoris Sirota\t21 Leinster Street Ormond Vic 3204\tVIC\t2026-02-10 00:14:19\n270001\tSeong Heng Chua\t31 Kerferd Street, Malvern East Victoria 3145\tVIC\t2026-02-10 02:05:25\n360001\tJon Shoebridge\t3 Greenview Close MITCHELTON QLD 4053\tQLD\t2026-02-10 06:17:27\n390001\tJared Blode\t41 Gardenia Road Elsternwick Vic 3185\tVIC\t2026-02-10 14:50:50\n420001\tAjith Premathilaka\t10 Duke Street, Berwick Vic 3806\tVIC\t2026-02-10 16:04:25\n450001\tMichael Killicoat\t48 Mather Road\tMount Eliza Vic 3930\tVIC\t2026-02-10 21:26:10\n480001\tWayne Fallows\t4 Harvey Court, Cheltenham Vic 3192\tVIC\t2026-02-11 03:34:52\n510001\tGeorge Fotopoulos\t16A Begg Street Bentleigh East Vic 3165\tVIC\t2026-02-11 20:53:08\n540001\tJoshua Nicholas Richman\t9 Truscott Road, Enfield Sa 5085\tSA\t2026-02-12 01:53:01\n600001\tStuart Naylor\t2 White Lodge Court, DonvaleVictoria 3111\tVIC\t2026-02-12 03:56:06\n630001\tYianni Valiontis\t126 Outlook Drive, Dandenong North Vic 3175\tVIC\t2026-02-12 18:29:19\n660001\tMark Anthony Duero\t183 Eucalyptus Parade, Donnybrook Victoria 3064\tVIC\t2026-02-13 03:37:05\n690001\tFab Defazio\t42 Teague Street, Niddrie Vic 3042\tVIC\t2026-02-13 08:22:54\n900001\tAbhishek Mish\t775 High Street Road Glen Waverley Vic 3150\tVIC\t2026-02-15 08:50:52\n930001\tMichael Thyreum\t185 Brandon Park Drive, Wheelers Hill Vic 3150\tVIC\t2026-02-16 05:25:49\n960001\tPeter Maumov\t32 Keon Street Thornbury VIC 3071\tVIC\t2026-02-16 21:23:33\n1020001\tFayyaz Khan\t162 Maribyrnong Road, Moonee Ponds Vic 3039\tVIC\t2026-02-17 23:42:27\n1140003\tPeter Chu\t1 Buckmaster Drive, Mill Park Vic 3082\tVIC\t2026-02-18 05:26:13\n1230006\tMichael Palumbieri\tUnit 5/41 Orchard Crescent\tMont Albert North Vic 3129\tVIC\t2026-02-18 19:31:51\n1290001\tAlex Chow\t12 Berrima Avenue, Malvern East Vic 3145\tVIC\t2026-02-19 05:37:26\n1320001\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-19 06:57:42\n1320002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-19 07:14:20\n1350001\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-19 21:05:47\n1350002\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-19 21:07:12\n1350003\tTest Customer\t123 Test St, Melbourne VIC 3000\tVIC\t2026-02-19 21:07:33\n",
+  "stderr": "",
+  "execution_time_ms": 1617
+}
