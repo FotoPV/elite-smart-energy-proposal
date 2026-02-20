@@ -1302,3 +1302,15 @@
 - [x] Deleted 9 older duplicate proposals (Fayyaz Khan 4, Seong Heng Chua 1, George Fotopoulos 1, Abhishek Mish 1, Michael Palumbieri 1, Joshua Nicholas Richman 1)
 - [x] Permanently deleted 17 binned/soft-deleted proposals
 - [x] Verified clean state — 22 unique customers, 1 proposal each, no duplicates
+
+## CRITICAL DEBUG - Anastasios Adgemis Bill Analysis (Feb 20)
+- [x] Pull up full proposal data and generated slides
+- [x] Audit battery size calculation — ROOT CAUSE: LLM returned total capacity (49.92) but code multiplied by batteryCount (6) again = 299.52
+- [x] Audit electrical recommendations — ROOT CAUSE: 3 switchboard photos each generating full upgradeScope, flatMapped without dedup = 16+ duplicate items
+- [x] Fix 1: Smart battery detection — if batterySizeKwh/batteryCount matches known module size, treat as total
+- [x] Fix 2: Updated LLM extraction prompt to clarify per-unit vs total capacity
+- [x] Fix 3: Fuzzy keyword deduplication for upgradeScope items (MCB, RCD, isolator, meter, etc.)
+- [x] Fix 4: Solar proposal replacement now deletes old docs before creating new one
+- [x] Regenerated and verified — battery now 49.92 kWh (was 299.52), electrical items deduplicated to 9 (was 16+)
+- [x] Internal Switchboard Surcharge ($300) appearing correctly
+- [ ] NOTE: Anastasios still shows old address (6 Victor Avenue) — needs solar proposal re-upload to pick up new extraction

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT c.id as customer_id, c.fullName, c.state, c.hasGas, c.hasPool, c.hasEV, p.id as proposal_id, p.status FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Anastasios%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id as customer_id, c.fullName, c.state, c.hasGas, c.hasPool, c.hasEV, p.id as proposal_id, p.status FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Anastasios%';",
+  "rows": [
+    {
+      "customer_id": "1380001",
+      "fullName": "Anastasios Adgemis",
+      "state": "VIC",
+      "hasGas": "0",
+      "hasPool": "1",
+      "hasEV": "1",
+      "proposal_id": "1200001",
+      "status": "generated"
+    }
+  ],
+  "messages": [],
+  "stdout": "customer_id\tfullName\tstate\thasGas\thasPool\thasEV\tproposal_id\tstatus\n1380001\tAnastasios Adgemis\tVIC\t0\t1\t1\t1200001\tgenerated\n",
+  "stderr": "",
+  "execution_time_ms": 1561
+}

@@ -1473,6 +1473,16 @@ export const appRouter = router({
         
         const { url } = await storagePut(fileKey, buffer, mimeType);
         
+        // Solar proposal replacement: delete any existing solar_proposal_pdf documents for this customer
+        // This ensures only the latest solar proposal is used for extraction
+        if (input.documentType === 'solar_proposal_pdf') {
+          const existingDocs = await db.getDocumentsByType(input.customerId, 'solar_proposal_pdf');
+          for (const oldDoc of existingDocs) {
+            await db.deleteCustomerDocument(oldDoc.id);
+            console.log(`[document.upload] Replaced old solar proposal doc ${oldDoc.id}: ${oldDoc.fileName}`);
+          }
+        }
+        
         // Create document record
         const docId = await db.createCustomerDocument({
           customerId: input.customerId,
@@ -2497,9 +2507,39 @@ function buildProposalData(
   const panelBrand = sp?.solarPanelBrand 
     ? `${sp.solarPanelBrand}${sp.solarPanelModel ? ` ${sp.solarPanelModel}` : ''}`
     : (calc.solarPanelBrand || 'Trina Solar Vertex S+');
-  const batteryKwh = sp?.batterySizeKwh 
-    ? Math.round(sp.batterySizeKwh * (sp.batteryCount || 1) * 100) / 100  // Multiply per-unit kWh by count, round to 2dp
-    : (calc.recommendedBatteryKwh || 15);
+  // Battery size: The LLM may return batterySizeKwh as TOTAL capacity or PER-UNIT capacity.
+  // Detect which by comparing: if batterySizeKwh / batteryCount matches a known module size (~5-15 kWh), 
+  // then batterySizeKwh is already the total. If batterySizeKwh itself is in the module range, multiply by count.
+  let batteryKwh: number;
+  if (sp?.batterySizeKwh) {
+    const rawKwh = sp.batterySizeKwh;
+    const count = sp.batteryCount || 1;
+    if (count > 1) {
+      // Check if rawKwh is already the total (rawKwh / count gives a reasonable module size 3-20 kWh)
+      const perUnit = rawKwh / count;
+      if (perUnit >= 3 && perUnit <= 20) {
+        // batterySizeKwh is already the TOTAL — do NOT multiply
+        batteryKwh = Math.round(rawKwh * 100) / 100;
+      } else if (rawKwh >= 3 && rawKwh <= 20) {
+        // batterySizeKwh is per-unit — multiply by count
+        batteryKwh = Math.round(rawKwh * count * 100) / 100;
+      } else {
+        // Ambiguous — use batteryUsableKwh as cross-check if available
+        if (sp.batteryUsableKwh && sp.batteryUsableKwh < rawKwh && sp.batteryUsableKwh / count >= 3) {
+          // usableKwh is total too, so rawKwh is total
+          batteryKwh = Math.round(rawKwh * 100) / 100;
+        } else {
+          // Default: assume it's already total if > 30 kWh (no residential module is > 30 kWh)
+          batteryKwh = rawKwh > 30 ? Math.round(rawKwh * 100) / 100 : Math.round(rawKwh * count * 100) / 100;
+        }
+      }
+    } else {
+      // Single battery — no multiplication needed
+      batteryKwh = Math.round(rawKwh * 100) / 100;
+    }
+  } else {
+    batteryKwh = calc.recommendedBatteryKwh || 15;
+  }
   const batteryBrand = sp?.batteryBrand 
     ? `${sp.batteryBrand}${sp.batteryModel ? ` ${sp.batteryModel}` : ''}`
     : 'Sigenergy SigenStor';

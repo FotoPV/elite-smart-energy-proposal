@@ -486,8 +486,74 @@ const STANDARD_COST_RATES: Record<string, string> = {
  * Fill in missing cost estimates on upgrade scope items using standard rates.
  * Matches item text against known cost patterns.
  */
+/**
+ * Canonical categories for upgrade scope items.
+ * Each category has keywords — if an item matches ANY keyword set, it belongs to that category.
+ * Only the FIRST item per category is kept (from the highest-confidence analysis).
+ */
+const UPGRADE_CATEGORIES: { category: string; keywords: string[][] }[] = [
+  { category: 'rcd_compliance', keywords: [['rcd'], ['rcbo', 'compliance'], ['safety', 'switch']] },
+  { category: 'mcb_solar', keywords: [['mcb', 'solar'], ['circuit', 'breaker', 'solar'], ['dedicated', 'solar', 'breaker']] },
+  { category: 'mcb_battery', keywords: [['mcb', 'battery'], ['circuit', 'breaker', 'battery'], ['dedicated', 'battery', 'breaker']] },
+  { category: 'ac_isolator', keywords: [['ac', 'isolator'], ['ac', 'disconnect']] },
+  { category: 'dc_isolator', keywords: [['dc', 'isolator'], ['dc', 'disconnect']] },
+  { category: 'meter_swap', keywords: [['meter', 'swap'], ['meter', 'upgrade'], ['meter', 'replacement'], ['smart', 'meter']] },
+  { category: 'main_switch', keywords: [['main', 'switch'], ['main', 'breaker']] },
+  { category: 'switchboard_upgrade', keywords: [['switchboard', 'upgrade'], ['switchboard', 'modification'], ['consumer', 'switchboard'], ['board', 'upgrade']] },
+  { category: 'switchboard_assessment', keywords: [['switchboard', 'assessment'], ['switchboard', 'inspection'], ['internal', 'assessment']] },
+  { category: 'earthing', keywords: [['earth'], ['grounding'], ['ground', 'rod']] },
+  { category: 'cable_run', keywords: [['cable', 'run'], ['dc', 'cable'], ['conduit']] },
+  { category: 'internal_switchboard_surcharge', keywords: [['internal', 'switchboard', 'surcharge']] },
+];
+
+function categoriseItem(item: string): string | null {
+  const lower = item.toLowerCase();
+  for (const cat of UPGRADE_CATEGORIES) {
+    for (const kwSet of cat.keywords) {
+      if (kwSet.every(kw => lower.includes(kw))) {
+        return cat.category;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Deduplicate upgrade scope items from multiple switchboard analyses.
+ * Uses keyword-based category matching to catch items with different wording
+ * that refer to the same electrical work (e.g., "Full RCD compliance upgrade"
+ * and "RCD compliance check and upgrade" both map to 'rcd_compliance').
+ * Keeps only the first occurrence per category.
+ */
+export function deduplicateUpgradeScope(items: UpgradeScopeItem[]): UpgradeScopeItem[] {
+  const seenCategories = new Set<string>();
+  const seenExact = new Set<string>();
+  const result: UpgradeScopeItem[] = [];
+  
+  for (const item of items) {
+    const category = categoriseItem(item.item);
+    if (category) {
+      // Category-based dedup
+      if (!seenCategories.has(category)) {
+        seenCategories.add(category);
+        result.push(item);
+      }
+    } else {
+      // Fallback: exact normalised string dedup for uncategorised items
+      const key = item.item.toLowerCase().replace(/\s+/g, ' ').trim();
+      if (!seenExact.has(key)) {
+        seenExact.add(key);
+        result.push(item);
+      }
+    }
+  }
+  return result;
+}
+
 export function applyFallbackCostEstimates(items: UpgradeScopeItem[]): UpgradeScopeItem[] {
-  return items.map(item => {
+  // First deduplicate, then apply cost estimates
+  const dedupedItems = deduplicateUpgradeScope(items);
+  return dedupedItems.map(item => {
     if (item.estimatedCost) return item; // Already has a cost
     
     const searchText = (item.item + ' ' + item.detail).toLowerCase();

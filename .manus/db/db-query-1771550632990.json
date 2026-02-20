@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, customerId, documentType, fileName, LEFT(CAST(extractedData AS CHAR), 500) as extracted_preview FROM customerDocuments WHERE customerId = (SELECT id FROM customers WHERE fullName LIKE '%Anastasios%' LIMIT 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, customerId, documentType, fileName, LEFT(CAST(extractedData AS CHAR), 500) as extracted_preview FROM customerDocuments WHERE customerId = (SELECT id FROM customers WHERE fullName LIKE '%Anastasios%' LIMIT 1);",
+  "rows": [
+    {
+      "id": "1080001",
+      "customerId": "1380001",
+      "documentType": "solar_proposal_pdf",
+      "fileName": "Solar Proposal for Stasi Adgemis at 6 Victor Avenue 3101 VIC (1007-3263-1) (5).pdf",
+      "extracted_preview": "\"{\\\"solarSystemSizeKw\\\":9.31,\\\"solarPanelCount\\\":19,\\\"solarPanelWattage\\\":490,\\\"solarPanelBrand\\\":\\\"AIKO Solar\\\",\\\"solarPanelModel\\\":\\\"Neostar 3S54 AIKO-A490-MCE54Mb\\\",\\\"estimatedAnnualProductionKwh\\\":13054,\\\"systemEfficiencyPercent\\\":88,\\\"inverterBrand\\\":\\\"GoodWe\\\",\\\"inverterModel\\\":\\\"GW20K-ETA-G20\\\",\\\"inverterSizeW\\\":20000,\\\"inverterPhase\\\":\\\"three\\\",\\\"inverterEfficiencyPercent\\\":98.1,\\\"inverterCount\\\":1,\\\"batteryBrand\\\":\\\"GoodWe\\\",\\\"batteryModel\\\":\\\"GW8.3-BAT-D-G20\\\",\\\"batterySizeKwh\\\":49.92,"
+    },
+    {
+      "id": "1080002",
+      "customerId": "1380001",
+      "documentType": "switchboard_photo",
+      "fileName": "unnamed-3.jpg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":63,\\\"mainSwitchType\\\":\\\"MCB\\\",\\\"totalCircuits\\\":20,\\\"usedCircuits\\\":11,\\\"availableCircuits\\\":9,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":2,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":3,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":4,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":5,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\"
+    },
+    {
+      "id": "1080003",
+      "customerId": "1380001",
+      "documentType": "switchboard_photo",
+      "fileName": "unnamed-4.jpg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":0,\\\"meterType\\\":\\\"smart meter\\\",\\\"meterNumber\\\":null,\\\"boardCondition\\\":\\\"fair\\\",\\\"boardAge\\\":\\\"modern (post-2015)\\\",\\\"hasSpaceForSolar\\\":false,\\\"hasSpaceForBattery\\\":false,\\\"upgradeRequired\\\":true,\\\"upgradeReason\\\":\\\"No visible switchboard, likely located internally. No space for solar/battery breakers or AC isolators in"
+    },
+    {
+      "id": "1080004",
+      "customerId": "1380001",
+      "documentType": "switchboard_photo",
+      "fileName": "unnamed-5.jpg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":\\\"2-pole MCB\\\",\\\"totalCircuits\\\":24,\\\"usedCircuits\\\":10,\\\"availableCircuits\\\":14,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":2,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":3,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":4,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":5,\\\"rating\\\":16,\\\"typ"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcustomerId\tdocumentType\tfileName\textracted_preview\n1080001\t1380001\tsolar_proposal_pdf\tSolar Proposal for Stasi Adgemis at 6 Victor Avenue 3101 VIC (1007-3263-1) (5).pdf\t\"{\\\"solarSystemSizeKw\\\":9.31,\\\"solarPanelCount\\\":19,\\\"solarPanelWattage\\\":490,\\\"solarPanelBrand\\\":\\\"AIKO Solar\\\",\\\"solarPanelModel\\\":\\\"Neostar 3S54 AIKO-A490-MCE54Mb\\\",\\\"estimatedAnnualProductionKwh\\\":13054,\\\"systemEfficiencyPercent\\\":88,\\\"inverterBrand\\\":\\\"GoodWe\\\",\\\"inverterModel\\\":\\\"GW20K-ETA-G20\\\",\\\"inverterSizeW\\\":20000,\\\"inverterPhase\\\":\\\"three\\\",\\\"inverterEfficiencyPercent\\\":98.1,\\\"inverterCount\\\":1,\\\"batteryBrand\\\":\\\"GoodWe\\\",\\\"batteryModel\\\":\\\"GW8.3-BAT-D-G20\\\",\\\"batterySizeKwh\\\":49.92,\n1080002\t1380001\tswitchboard_photo\tunnamed-3.jpg\t\"{\\\"mainSwitchRating\\\":63,\\\"mainSwitchType\\\":\\\"MCB\\\",\\\"totalCircuits\\\":20,\\\"usedCircuits\\\":11,\\\"availableCircuits\\\":9,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":2,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":3,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":4,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":5,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\n1080003\t1380001\tswitchboard_photo\tunnamed-4.jpg\t\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":0,\\\"meterType\\\":\\\"smart meter\\\",\\\"meterNumber\\\":null,\\\"boardCondition\\\":\\\"fair\\\",\\\"boardAge\\\":\\\"modern (post-2015)\\\",\\\"hasSpaceForSolar\\\":false,\\\"hasSpaceForBattery\\\":false,\\\"upgradeRequired\\\":true,\\\"upgradeReason\\\":\\\"No visible switchboard, likely located internally. No space for solar/battery breakers or AC isolators in\n1080004\t1380001\tswitchboard_photo\tunnamed-5.jpg\t\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":\\\"2-pole MCB\\\",\\\"totalCircuits\\\":24,\\\"usedCircuits\\\":10,\\\"availableCircuits\\\":14,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":2,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":3,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":4,\\\"rating\\\":16,\\\"type\\\":\\\"MCB\\\",\\\"isUsed\\\":true,\\\"label\\\":null},{\\\"position\\\":5,\\\"rating\\\":16,\\\"typ\n",
+  "stderr": "",
+  "execution_time_ms": 1604
+}

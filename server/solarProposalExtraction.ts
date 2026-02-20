@@ -45,7 +45,9 @@ Key guidelines:
 - Extract the EXACT solar system size in kW (look for kW_DC, kW STC, or just kW)
 - Extract the EXACT panel brand, model, wattage, and count (e.g., "23 × 475W LONGi Solar Hi-MO X6")
 - Extract the EXACT inverter brand, model, size in watts, and phase type
-- Extract the EXACT battery brand, model, total kWh, usable kWh, count, and chemistry
+- Extract the EXACT battery brand, model, PER-UNIT kWh capacity, usable kWh PER UNIT, count, and chemistry
+- CRITICAL: batterySizeKwh must be the capacity of ONE battery module/unit, NOT the total. For example, if the proposal shows "3 × GoodWe GW8.3-BAT-D-G20", batterySizeKwh should be 8.3 (one module), batteryCount should be 3
+- Similarly, batteryUsableKwh should be the usable capacity of ONE unit
 - Extract estimated annual production in kWh if shown
 - Extract system efficiency percentage if shown
 - Identify the proposal platform/source if visible (OpenSolar, SolarQuotes, Sungrow iEnergyPro, etc.)
@@ -74,9 +76,9 @@ Return your response as valid JSON matching this exact schema:
   "inverterCount": number or null,
   "batteryBrand": "string or null",
   "batteryModel": "string or null",
-  "batterySizeKwh": number or null,
-  "batteryUsableKwh": number or null,
-  "batteryCount": number or null,
+  "batterySizeKwh": number or null (PER-UNIT capacity in kWh, NOT total),
+  "batteryUsableKwh": number or null (PER-UNIT usable capacity, NOT total),
+  "batteryCount": number or null (number of battery units/modules),
   "batteryChemistry": "string or null",
   "proposalSource": "string or null",
   "extractionConfidence": number,
@@ -144,9 +146,9 @@ export async function extractSolarProposalSpecs(fileUrl: string, mimeType?: stri
             inverterCount: { type: ["number", "null"], description: "Number of inverters" },
             batteryBrand: { type: ["string", "null"], description: "Battery manufacturer brand" },
             batteryModel: { type: ["string", "null"], description: "Battery model name" },
-            batterySizeKwh: { type: ["number", "null"], description: "Total battery capacity in kWh" },
-            batteryUsableKwh: { type: ["number", "null"], description: "Usable battery capacity in kWh" },
-            batteryCount: { type: ["number", "null"], description: "Number of battery units" },
+            batterySizeKwh: { type: ["number", "null"], description: "PER-UNIT battery capacity in kWh (one module, NOT total). E.g. for 3x GoodWe GW8.3, this should be 8.3" },
+            batteryUsableKwh: { type: ["number", "null"], description: "PER-UNIT usable battery capacity in kWh (one module, NOT total)" },
+            batteryCount: { type: ["number", "null"], description: "Number of battery units/modules" },
             batteryChemistry: { type: ["string", "null"], description: "Battery chemistry type" },
             proposalSource: { type: ["string", "null"], description: "Proposal platform/source" },
             extractionConfidence: { type: "number", description: "Confidence score 0-100" },
