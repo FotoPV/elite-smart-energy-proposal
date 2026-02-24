@@ -93,13 +93,12 @@ export interface ProposalData {
   
   // VPP
   vppProvider: string;
-  vppProgram: string;
+  vppProviderType: string; // 'wholesale' | 'fixed'
   vppAnnualValue: number;
-  hasGasBundle: boolean;
-  vppDailyCreditAnnual?: number;
-  vppEventPaymentsAnnual?: number;
-  vppBundleDiscount?: number;
-  vppProviderComparison?: Array<{ provider: string; programName: string; hasGasBundle: boolean; estimatedAnnualValue: number; strategicFit: string }>;
+  vppDailyExportKwh?: number;
+  vppBaseRateCents?: number;
+  vppMonthlyFee?: number;
+  vppProviderComparison?: Array<{ provider: string; providerType: string; estimatedAnnualValue: number; monthlyFee: number; baseRateCents: number }>;
   
   // EV (optional)
   hasEV: boolean;
@@ -424,11 +423,10 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   // VPP providers for comparison table — use real data from calculations
   const vppProviders = (data.vppProviderComparison || []).map((p, i) => ({
     provider: p.provider,
-    program: p.programName,
-    gasBundle: p.hasGasBundle,
-    batterySupport: true,
+    providerType: p.providerType === 'wholesale' ? 'Wholesale' : 'Fixed Rate',
+    monthlyFee: p.monthlyFee > 0 ? `$${p.monthlyFee}/mo` : 'None',
     annualValue: `~$${Math.round(p.estimatedAnnualValue).toLocaleString()}`,
-    verdict: i === 0 ? 'RECOMMENDED' : p.strategicFit === 'excellent' ? 'Excellent Fit' : p.strategicFit === 'good' ? 'Strong Alternative' : p.strategicFit === 'moderate' ? 'Moderate Fit' : 'Lower Returns',
+    verdict: i === 0 ? 'RECOMMENDED' : i <= 2 ? 'Strong Alternative' : 'Alternative',
   }));
   
   // Slide 1: COVER
@@ -792,19 +790,17 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   });
   
   // Slide 16: VPP RECOMMENDATION (alt header style)
+  const providerCount = (data.vppProviderComparison || []).length || 14;
   slides.push({
     id: slideId++,
     type: 'vpp_recommendation',
     title: 'RECOMMENDED VPP STRATEGY',
-    subtitle: data.vppProgram?.toUpperCase() || data.vppProvider.toUpperCase(),
+    subtitle: data.vppProvider.toUpperCase(),
     content: {
       provider: data.vppProvider,
-      program: data.vppProgram,
+      providerType: data.vppProviderType,
       annualValue: data.vppAnnualValue,
-      firstYearValue: data.vppAnnualValue + (data.vppBundleDiscount || 0) + 200,
-      ongoingValue: data.vppAnnualValue,
-      hasGas: data.hasGas,
-      hasGasBundle: data.hasGasBundle,
+      providerCount,
       batteryBrand: data.batteryBrand,
       solarSizeKw: data.solarSizeKw,
       batterySizeKwh: data.batterySizeKwh,
@@ -814,7 +810,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
   });
   
   // Slide 17: FINANCIAL IMPACT ANALYSIS — ROI & Payback (alt header style)
-  const electricitySavings = data.annualSavings - data.vppAnnualValue - (data.vppBundleDiscount || 0);
+  const electricitySavings = data.annualSavings - data.vppAnnualValue;
   slides.push({
     id: slideId++,
     type: 'financial_impact_analysis',
@@ -830,7 +826,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       annualBenefitBreakdown: [
         { category: 'Electricity Bill Savings', value: electricitySavings, percent: Math.round((electricitySavings / data.annualSavings) * 100) },
         { category: `${data.vppProvider} VPP Earnings`, value: data.vppAnnualValue, percent: Math.round((data.vppAnnualValue / data.annualSavings) * 100) },
-        ...(data.hasGasBundle ? [{ category: 'Gas + Elec Bundle Discount', value: data.vppBundleDiscount || 150, percent: Math.round(((data.vppBundleDiscount || 150) / data.annualSavings) * 100) }] : []),
+
       ],
       totalAnnualBenefit: data.annualSavings,
       headerRight: 'Investment Overview',
@@ -2973,42 +2969,37 @@ function genContact(slide: SlideContent): string {
 function genVPPRecommendation(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const provider = c.provider as string || '';
-  const program = c.program as string || '';
-  const firstYrValue = c.firstYearValue as number || 0;
-  const ongoingValue = c.ongoingValue as number || 0;
-  const providers = (c.providers as Array<{ provider: string; gasBundle: boolean; batterySupport: boolean; annualValue: string; verdict: string }>) || [];
+  const providerType = c.providerType as string || 'fixed';
+  const annualValue = c.annualValue as number || 0;
+  const providerCount = c.providerCount as number || 14;
+  const providers = (c.providers as Array<{ provider: string; providerType: string; monthlyFee: string; annualValue: string; verdict: string }>) || [];
   const solarKw = c.solarSizeKw as number || 0;
   const batteryKwh = c.batterySizeKwh as number || 0;
   const batteryBrand = c.batteryBrand as string || '';
+  const isWholesale = providerType === 'wholesale';
   
   return `
     <div class="slide">
       ${slideNum(slide.id)}
       ${logoBR()}
-      ${altHeader(slide.title, c.headerRight as string || 'Strategic Roadmap', program.toUpperCase() || provider.toUpperCase())}
+      ${altHeader(slide.title, c.headerRight as string || 'Strategic Roadmap', provider.toUpperCase())}
       <div style="display: flex; gap: 40px;">
         <!-- Left: Why + Value Cards -->
         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
           <div class="card">
-            <p style="color: #00EAD3; font-size: 18px; font-weight: 600; margin-bottom: 10px;">Why ${program || provider}?</p>
-            <p style="color: #808285; font-size: 17px; line-height: 1.6;">After analyzing 13 providers, ${provider} offers the best combination of VPP earnings, gas bundling, and compatibility with your ${batteryBrand} system.</p>
+            <p style="color: #00EAD3; font-size: 18px; font-weight: 600; margin-bottom: 10px;">Why ${provider}?</p>
+            <p style="color: #808285; font-size: 17px; line-height: 1.6;">After analysing ${providerCount} providers, ${provider} offers the best combination of VPP earnings and compatibility with your ${batteryBrand} system.</p>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
-              <p style="color: #808285; font-size: 17px;">✓ <span style="color: #fff; font-weight: 600;">Gas + Electricity Bundle</span><br/><span style="color: #666; font-size: 14px;">Maximize savings with dual fuel discounts</span></p>
+              <p style="color: #808285; font-size: 17px;">✓ <span style="color: #fff; font-weight: 600;">${isWholesale ? 'Wholesale Pricing' : 'Fixed Rate Returns'}</span><br/><span style="color: #666; font-size: 14px;">${isWholesale ? 'Higher returns when grid demand peaks' : 'Predictable, stable VPP income'}</span></p>
               <p style="color: #808285; font-size: 17px;">✓ <span style="color: #fff; font-weight: 600;">${batteryBrand.split(' ')[0]} Compatible</span><br/><span style="color: #666; font-size: 14px;">Fully supported by your new battery system</span></p>
               <p style="color: #808285; font-size: 17px;">✓ <span style="color: #fff; font-weight: 600;">No Lock-in Contract</span><br/><span style="color: #666; font-size: 14px;">Flexibility to switch if rates change</span></p>
               <p style="color: #808285; font-size: 17px;">✓ <span style="color: #fff; font-weight: 600;">20% Reserve Protection</span><br/><span style="color: #666; font-size: 14px;">Ensures backup power during blackouts</span></p>
             </div>
           </div>
-          <!-- Value Cards -->
-          <div style="background: rgba(0,234,211,0.05); border: 1px solid #00EAD3; padding: 24px; display: flex; gap: 30px;">
-            <div style="flex: 1; text-align: center;">
-              <p class="hero-num aqua" style="font-size: 36px;">~${fmtCurrency(firstYrValue)}</p>
-              <p class="lbl" style="margin-top: 6px;">FIRST YEAR VALUE</p>
-            </div>
-            <div style="flex: 1; text-align: center;">
-              <p class="hero-num aqua" style="font-size: 36px;">~${fmtCurrency(ongoingValue)}</p>
-              <p class="lbl" style="margin-top: 6px;">ONGOING / YEAR</p>
-            </div>
+          <!-- Value Card -->
+          <div style="background: rgba(0,234,211,0.05); border: 1px solid #00EAD3; padding: 24px; text-align: center;">
+            <p class="hero-num aqua" style="font-size: 42px;">~${fmtCurrency(annualValue)}</p>
+            <p class="lbl" style="margin-top: 6px;">ESTIMATED ANNUAL VPP INCOME</p>
           </div>
         </div>
         <!-- Right: Provider Table + Implementation -->
@@ -3018,9 +3009,9 @@ function genVPPRecommendation(slide: SlideContent): string {
             <thead>
               <tr>
                 <th style="color: #00EAD3;">Provider</th>
-                <th style="color: #00EAD3;">Gas Bundle</th>
-                <th style="color: #00EAD3;">${batteryBrand.split(' ')[0]} Support</th>
-                <th style="color: #00EAD3;">VPP Value (Year 1)</th>
+                <th style="color: #00EAD3;">Type</th>
+                <th style="color: #00EAD3;">Monthly Fee</th>
+                <th style="color: #00EAD3;">Est. Annual Value</th>
                 <th style="color: #00EAD3;">Verdict</th>
               </tr>
             </thead>
@@ -3028,8 +3019,8 @@ function genVPPRecommendation(slide: SlideContent): string {
               ${providers.map(p => `
                 <tr>
                   <td style="color: #fff; font-weight: 600;">${p.provider}</td>
-                  <td><span class="badge ${p.gasBundle ? 'yes' : 'no'}">${p.gasBundle ? 'YES' : 'NO'}</span></td>
-                  <td><span class="badge ${p.batterySupport ? 'yes' : 'no'}">${p.batterySupport ? 'YES' : 'NO'}</span></td>
+                  <td style="color: #ccc;">${p.providerType}</td>
+                  <td style="color: #ccc;">${p.monthlyFee}</td>
                   <td style="color: #ccc;">${p.annualValue}</td>
                   <td style="color: ${p.verdict === 'RECOMMENDED' ? '#00EAD3' : '#808285'}; font-weight: ${p.verdict === 'RECOMMENDED' ? '700' : '400'};">${p.verdict}</td>
                 </tr>
@@ -3040,9 +3031,9 @@ function genVPPRecommendation(slide: SlideContent): string {
             <p style="font-family: 'UrbanistItalic', sans-serif; font-size: 18px; color: #00EAD3; font-style: italic; margin-bottom: 12px;">Implementation Steps</p>
             <div style="display: flex; flex-direction: column; gap: 8px;">
               <p style="color: #808285; font-size: 17px;">Proceed with ${solarKw}kW Solar + ${batteryKwh}kWh Battery installation.</p>
-              <p style="color: #808285; font-size: 17px;">Register system with ${provider} "${program}" VPP.</p>
-              <p style="color: #808285; font-size: 17px;">Switch Gas account to ${provider} to activate bundle discounts.</p>
-              <p style="color: #808285; font-size: 17px;">Link Everyday Rewards account for additional points.</p>
+              <p style="color: #808285; font-size: 17px;">Register system with ${provider} VPP program.</p>
+              <p style="color: #808285; font-size: 17px;">Set battery reserve to 20% for blackout protection.</p>
+              <p style="color: #808285; font-size: 17px;">Monitor earnings via ${provider} app dashboard.</p>
             </div>
           </div>
         </div>

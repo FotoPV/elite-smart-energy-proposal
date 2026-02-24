@@ -1,0 +1,122 @@
+{
+  "query": "SELECT name, providerType, baseRateCents, monthlyFee, wholesaleMargin, JSON_LENGTH(availableStates) as stateCount FROM vppProviders WHERE isActive = 1 ORDER BY baseRateCents DESC LIMIT 14",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT name, providerType, baseRateCents, monthlyFee, wholesaleMargin, JSON_LENGTH(availableStates) as stateCount FROM vppProviders WHERE isActive = 1 ORDER BY baseRateCents DESC LIMIT 14",
+  "rows": [
+    {
+      "name": "Amber for Batteries",
+      "providerType": "wholesale",
+      "baseRateCents": "35.80",
+      "monthlyFee": "15.00",
+      "wholesaleMargin": "5.00",
+      "stateCount": "4"
+    },
+    {
+      "name": "Tesla VPP",
+      "providerType": "wholesale",
+      "baseRateCents": "32.00",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "3.00",
+      "stateCount": "3"
+    },
+    {
+      "name": "Reposit",
+      "providerType": "wholesale",
+      "baseRateCents": "30.00",
+      "monthlyFee": "12.00",
+      "wholesaleMargin": "8.00",
+      "stateCount": "5"
+    },
+    {
+      "name": "sonnen VPP",
+      "providerType": "wholesale",
+      "baseRateCents": "29.00",
+      "monthlyFee": "8.00",
+      "wholesaleMargin": "9.00",
+      "stateCount": "5"
+    },
+    {
+      "name": "ShineHub",
+      "providerType": "wholesale",
+      "baseRateCents": "28.00",
+      "monthlyFee": "10.00",
+      "wholesaleMargin": "10.00",
+      "stateCount": "4"
+    },
+    {
+      "name": "Zero Hero (GloBird)",
+      "providerType": "wholesale",
+      "baseRateCents": "15.00",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "7.00",
+      "stateCount": "4"
+    },
+    {
+      "name": "Nectr",
+      "providerType": "fixed",
+      "baseRateCents": "12.50",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "AGL VPP",
+      "providerType": "fixed",
+      "baseRateCents": "12.00",
+      "monthlyFee": "5.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "Powershop",
+      "providerType": "fixed",
+      "baseRateCents": "11.50",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "5"
+    },
+    {
+      "name": "ENGIE",
+      "providerType": "fixed",
+      "baseRateCents": "11.00",
+      "monthlyFee": "3.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "Discover Energy",
+      "providerType": "fixed",
+      "baseRateCents": "10.50",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "Globird",
+      "providerType": "fixed",
+      "baseRateCents": "10.20",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "Origin VPP",
+      "providerType": "fixed",
+      "baseRateCents": "10.00",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    },
+    {
+      "name": "Energy Australia",
+      "providerType": "fixed",
+      "baseRateCents": "9.50",
+      "monthlyFee": "0.00",
+      "wholesaleMargin": "NULL",
+      "stateCount": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tproviderType\tbaseRateCents\tmonthlyFee\twholesaleMargin\tstateCount\nAmber for Batteries\twholesale\t35.80\t15.00\t5.00\t4\nTesla VPP\twholesale\t32.00\t0.00\t3.00\t3\nReposit\twholesale\t30.00\t12.00\t8.00\t5\nsonnen VPP\twholesale\t29.00\t8.00\t9.00\t5\nShineHub\twholesale\t28.00\t10.00\t10.00\t4\nZero Hero (GloBird)\twholesale\t15.00\t0.00\t7.00\t4\nNectr\tfixed\t12.50\t0.00\tNULL\t4\nAGL VPP\tfixed\t12.00\t5.00\tNULL\t4\nPowershop\tfixed\t11.50\t0.00\tNULL\t5\nENGIE\tfixed\t11.00\t3.00\tNULL\t4\nDiscover Energy\tfixed\t10.50\t0.00\tNULL\t4\nGlobird\tfixed\t10.20\t0.00\tNULL\t4\nOrigin VPP\tfixed\t10.00\t0.00\tNULL\t4\nEnergy Australia\tfixed\t9.50\t0.00\tNULL\t4\n",
+  "stderr": "",
+  "execution_time_ms": 1519
+}

@@ -151,17 +151,27 @@ export type InsertProposal = typeof proposals.$inferInsert;
 
 // ============================================
 // VPP PROVIDERS REFERENCE TABLE
+// Matches Lightning Energy VPP Calculator model
 // ============================================
 export const vppProviders = mysqlTable("vppProviders", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
-  programName: varchar("programName", { length: 100 }),
+  slug: varchar("slug", { length: 50 }), // e.g. "amber", "tesla", "agl"
+  
+  // Provider Type: wholesale (dynamic pricing) or fixed (static rate)
+  providerType: varchar("providerType", { length: 20 }).default("fixed"), // "wholesale" | "fixed"
   
   // Availability
-  availableStates: json("availableStates").$type<string[]>(), // ["VIC", "NSW", "SA", "QLD"]
-  hasGasBundle: boolean("hasGasBundle").default(false),
+  availableStates: json("availableStates").$type<string[]>(), // ["VIC", "NSW", "SA", "QLD", "TAS"]
   
-  // VPP Details
+  // VPP Rate Details (matching VPP Calculator)
+  baseRateCents: decimal("baseRateCents", { precision: 8, scale: 2 }), // c/kWh — static rate for fixed, base for wholesale
+  monthlyFee: decimal("monthlyFee", { precision: 8, scale: 2 }), // $ per month
+  wholesaleMargin: decimal("wholesaleMargin", { precision: 8, scale: 2 }), // c/kWh margin for wholesale providers only
+  
+  // Legacy fields (kept for migration compatibility, no longer used in calculations)
+  programName: varchar("programName", { length: 100 }),
+  hasGasBundle: boolean("hasGasBundle").default(false),
   dailyCredit: decimal("dailyCredit", { precision: 8, scale: 2 }),
   eventPayment: decimal("eventPayment", { precision: 8, scale: 2 }),
   estimatedEventsPerYear: int("estimatedEventsPerYear"),
@@ -339,10 +349,11 @@ export interface ProposalCalculations {
   
   // ========== VPP ==========
   selectedVppProvider?: string;
+  selectedVppProviderType?: "wholesale" | "fixed";
   vppAnnualValue?: number;
-  vppDailyCreditAnnual?: number;
-  vppEventPaymentsAnnual?: number;
-  vppBundleDiscount?: number;
+  vppDailyExportKwh?: number; // daily export used in calculation
+  vppBaseRateCents?: number; // rate used for selected provider
+  vppMonthlyFee?: number; // monthly fee for selected provider
   vppProviderComparison?: VppComparisonItem[];
   
   // ========== EV ==========
@@ -387,10 +398,11 @@ export interface ProposalCalculations {
 
 export interface VppComparisonItem {
   provider: string;
-  programName: string;
-  hasGasBundle: boolean;
+  providerType: "wholesale" | "fixed";
+  baseRateCents: number;
+  monthlyFee: number;
   estimatedAnnualValue: number;
-  strategicFit: "excellent" | "good" | "moderate" | "poor";
+  ranking: number; // 1-based rank
 }
 
 export interface SlideData {

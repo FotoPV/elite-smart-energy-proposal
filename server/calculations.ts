@@ -411,76 +411,81 @@ export function calculatePoolHeatPump(
 
 // ============================================
 // VPP INCOME ESTIMATION
+// Matches Lightning Energy VPP Calculator model
+// Formula: annualRevenue = (dailyExport × baseRate/100 × 365) - (monthlyFee × 12)
 // ============================================
 
 export interface VppIncome {
-  dailyCreditAnnual: number;
-  eventPaymentsAnnual: number;
-  bundleDiscount: number;
+  dailyExportKwh: number;
+  baseRateCents: number;
+  monthlyFee: number;
+  providerType: "wholesale" | "fixed";
   totalAnnualValue: number;
 }
 
-export function calculateVppIncome(provider: VppProvider): VppIncome {
-  const dailyCredit = Number(provider.dailyCredit) || 0;
-  const eventPayment = Number(provider.eventPayment) || 0;
-  const eventsPerYear = provider.estimatedEventsPerYear || 10;
-  const bundleDiscount = Number(provider.bundleDiscount) || 0;
+/**
+ * Calculate VPP annual revenue for a provider.
+ * Matches the VPP Calculator formula exactly:
+ *   annualRevenue = (dailyExport × rate/100 × 365) - (monthlyFee × 12)
+ * 
+ * For wholesale providers without live AEMO data, uses the static baseRate as fallback.
+ * dailyExportKwh is estimated from battery capacity (typically 80% of usable capacity).
+ */
+export function calculateVppIncome(
+  provider: VppProvider,
+  dailyExportKwh: number
+): VppIncome {
+  const baseRateCents = Number(provider.baseRateCents) || 0;
+  const monthlyFee = Number(provider.monthlyFee) || 0;
+  const providerType = (provider.providerType as "wholesale" | "fixed") || "fixed";
   
-  const dailyCreditAnnual = dailyCredit * 365;
-  const eventPaymentsAnnual = eventPayment * eventsPerYear;
-  const totalAnnualValue = dailyCreditAnnual + eventPaymentsAnnual + bundleDiscount;
+  // Revenue = dailyExport × rate($/kWh) × 365 - monthlyFee × 12
+  const ratePerKwh = baseRateCents / 100; // Convert cents to dollars
+  const dailyRevenue = dailyExportKwh * ratePerKwh;
+  const annualRevenue = (dailyRevenue * 365) - (monthlyFee * 12);
   
   return {
-    dailyCreditAnnual: round(dailyCreditAnnual, 2),
-    eventPaymentsAnnual: round(eventPaymentsAnnual, 2),
-    bundleDiscount: round(bundleDiscount, 2),
-    totalAnnualValue: round(totalAnnualValue, 2),
+    dailyExportKwh: round(dailyExportKwh, 1),
+    baseRateCents: round(baseRateCents, 2),
+    monthlyFee: round(monthlyFee, 2),
+    providerType,
+    totalAnnualValue: round(Math.max(annualRevenue, 0), 2), // Floor at $0
   };
 }
 
+/**
+ * Compare all VPP providers for a customer's state and battery setup.
+ * Returns providers sorted by estimated annual value (highest first).
+ * dailyExportKwh is estimated from battery capacity.
+ */
 export function compareVppProviders(
   providers: VppProvider[],
   customerState: string,
-  needsGasBundle: boolean
+  dailyExportKwh: number
 ): VppComparisonItem[] {
-  return providers
+  const ranked = providers
     .filter(p => {
       const states = p.availableStates as string[] | null;
       if (!states?.includes(customerState)) return false;
-      if (needsGasBundle && !p.hasGasBundle) return false;
-      return true;
+      return p.isActive !== false;
     })
     .map(p => {
-      const income = calculateVppIncome(p);
+      const income = calculateVppIncome(p, dailyExportKwh);
       return {
         provider: p.name,
-        programName: p.programName || '',
-        hasGasBundle: p.hasGasBundle || false,
+        providerType: income.providerType,
+        baseRateCents: income.baseRateCents,
+        monthlyFee: income.monthlyFee,
         estimatedAnnualValue: income.totalAnnualValue,
-        strategicFit: getStrategicFit(income.totalAnnualValue, needsGasBundle, p.hasGasBundle || false),
+        ranking: 0, // Set below
       };
     })
     .sort((a, b) => b.estimatedAnnualValue - a.estimatedAnnualValue);
-}
-
-function getStrategicFit(
-  annualValue: number,
-  needsGasBundle: boolean,
-  hasGasBundle: boolean
-): "excellent" | "good" | "moderate" | "poor" {
-  let score = 0;
   
-  if (annualValue >= 500) score += 3;
-  else if (annualValue >= 300) score += 2;
-  else if (annualValue >= 100) score += 1;
+  // Assign rankings
+  ranked.forEach((item, i) => { item.ranking = i + 1; });
   
-  if (needsGasBundle && hasGasBundle) score += 2;
-  else if (!needsGasBundle) score += 1;
-  
-  if (score >= 4) return "excellent";
-  if (score >= 3) return "good";
-  if (score >= 2) return "moderate";
-  return "poor";
+  return ranked;
 }
 
 // ============================================
@@ -796,14 +801,18 @@ export function generateFullCalculations(
   }
   
   // VPP comparison
+  // Estimate daily export from battery capacity: ~80% of usable capacity (90% DoD)
+  const batteryUsableKwh = battery.recommendedKwh * 0.9;
+  const vppDailyExportKwh = Math.round(batteryUsableKwh * 0.8 * 10) / 10;
   const vppComparison = compareVppProviders(
     vppProviders,
     customer.state,
-    gasBill !== null // Needs gas bundle if they have gas
+    vppDailyExportKwh
   );
   const selectedVpp = vppComparison[0];
   const vppIncome = selectedVpp ? calculateVppIncome(
-    vppProviders.find(p => p.name === selectedVpp.provider)!
+    vppProviders.find(p => p.name === selectedVpp.provider)!,
+    vppDailyExportKwh
   ) : null;
   
   // Calculate rebates
@@ -960,10 +969,11 @@ export function generateFullCalculations(
     
     // ========== VPP ==========
     selectedVppProvider: selectedVpp?.provider,
+    selectedVppProviderType: vppIncome?.providerType,
     vppAnnualValue: vppIncome?.totalAnnualValue,
-    vppDailyCreditAnnual: vppIncome?.dailyCreditAnnual,
-    vppEventPaymentsAnnual: vppIncome?.eventPaymentsAnnual,
-    vppBundleDiscount: vppIncome?.bundleDiscount,
+    vppDailyExportKwh: vppIncome?.dailyExportKwh,
+    vppBaseRateCents: vppIncome?.baseRateCents,
+    vppMonthlyFee: vppIncome?.monthlyFee,
     vppProviderComparison: vppComparison,
     
     // ========== EV ==========

@@ -1649,29 +1649,28 @@ export const appRouter = router({
   // ============================================
   admin: router({
     seedVppProviders: adminProcedure.mutation(async () => {
-      // Seed the 13 VPP providers
+      // Seed the 14 VPP providers matching VPP Calculator source of truth
       const providers = [
-        { name: 'ENGIE', programName: 'VPP Advantage', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: true, dailyCredit: 0.50, eventPayment: 10, estimatedEventsPerYear: 12, bundleDiscount: 100 },
-        { name: 'Origin', programName: 'Loop VPP', availableStates: ['VIC', 'NSW', 'SA', 'QLD', 'ACT'], hasGasBundle: true, dailyCredit: 0.40, eventPayment: 8, estimatedEventsPerYear: 15, bundleDiscount: 80 },
-        { name: 'AGL', programName: 'Night Saver', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: true, dailyCredit: 0.45, eventPayment: 12, estimatedEventsPerYear: 10, bundleDiscount: 120 },
-        { name: 'Amber Electric', programName: 'SmartShift', availableStates: ['VIC', 'NSW', 'SA', 'QLD', 'ACT'], hasGasBundle: false, dailyCredit: 0.60, eventPayment: 15, estimatedEventsPerYear: 8, bundleDiscount: 0 },
-        { name: 'Simply Energy', programName: 'VPP Access', availableStates: ['VIC', 'SA'], hasGasBundle: true, dailyCredit: 0.35, eventPayment: 8, estimatedEventsPerYear: 12, bundleDiscount: 90 },
-        { name: 'Energy Locals', programName: 'Community VPP', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: false, dailyCredit: 0.55, eventPayment: 10, estimatedEventsPerYear: 10, bundleDiscount: 0 },
-        { name: 'Powershop', programName: 'Powerbank', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: false, dailyCredit: 0.45, eventPayment: 9, estimatedEventsPerYear: 12, bundleDiscount: 0 },
-        { name: 'Red Energy', programName: 'VPP Program', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: true, dailyCredit: 0.40, eventPayment: 10, estimatedEventsPerYear: 10, bundleDiscount: 75 },
-        { name: 'Momentum Energy', programName: 'Battery Saver', availableStates: ['VIC', 'SA'], hasGasBundle: true, dailyCredit: 0.38, eventPayment: 8, estimatedEventsPerYear: 12, bundleDiscount: 60 },
-        { name: 'Lumo Energy', programName: 'VPP Rewards', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: true, dailyCredit: 0.42, eventPayment: 9, estimatedEventsPerYear: 11, bundleDiscount: 70 },
-        { name: 'Alinta Energy', programName: 'Home Battery', availableStates: ['VIC', 'NSW', 'SA', 'QLD', 'WA'], hasGasBundle: true, dailyCredit: 0.48, eventPayment: 11, estimatedEventsPerYear: 10, bundleDiscount: 85 },
-        { name: 'GloBird Energy', programName: 'Battery Boost', availableStates: ['VIC', 'NSW', 'SA', 'QLD'], hasGasBundle: false, dailyCredit: 0.58, eventPayment: 14, estimatedEventsPerYear: 8, bundleDiscount: 0 },
+        // Wholesale providers
+        { name: 'Amber for Batteries', slug: 'amber', providerType: 'wholesale', baseRateCents: '35.80', monthlyFee: '15.00', wholesaleMargin: '5.00', availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.amber.com.au', notes: 'Dynamic pricing based on live AEMO wholesale rates', isActive: true },
+        { name: 'Tesla VPP', slug: 'tesla', providerType: 'wholesale', baseRateCents: '32.00', monthlyFee: '0.00', wholesaleMargin: '3.00', availableStates: ['NSW', 'VIC', 'SA'], minBatterySize: '5.00', website: 'https://www.tesla.com/en_au/support/energy/powerwall/own/virtual-power-plant', notes: 'Tesla Powerwall required', isActive: true },
+        { name: 'Reposit', slug: 'reposit', providerType: 'wholesale', baseRateCents: '30.00', monthlyFee: '12.00', wholesaleMargin: '8.00', availableStates: ['NSW', 'VIC', 'QLD', 'SA', 'TAS'], minBatterySize: '5.00', website: 'https://www.repositpower.com', notes: 'GridCredits system', isActive: true },
+        { name: 'ShineHub', slug: 'shinehub', providerType: 'wholesale', baseRateCents: '28.00', monthlyFee: '10.00', wholesaleMargin: '10.00', availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.shinehub.com.au', notes: 'Community solar focus', isActive: true },
+        { name: 'sonnen VPP', slug: 'sonnen', providerType: 'wholesale', baseRateCents: '29.00', monthlyFee: '8.00', wholesaleMargin: '9.00', availableStates: ['NSW', 'VIC', 'QLD', 'SA', 'TAS'], minBatterySize: '5.00', website: 'https://sonnen.com.au', notes: 'sonnen battery preferred', isActive: true },
+        { name: 'Zero Hero (GloBird)', slug: 'zerohero', providerType: 'wholesale', baseRateCents: '15.00', monthlyFee: '0.00', wholesaleMargin: '7.00', availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.globirdenergy.com.au', notes: 'GloBird wholesale VPP', isActive: true },
+        // Fixed rate providers
+        { name: 'AGL VPP', slug: 'agl', providerType: 'fixed', baseRateCents: '12.00', monthlyFee: '5.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.agl.com.au', notes: 'Fixed rate VPP', isActive: true },
+        { name: 'Origin VPP', slug: 'origin', providerType: 'fixed', baseRateCents: '10.00', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.originenergy.com.au', notes: 'Fixed rate, no monthly fee', isActive: true },
+        { name: 'Powershop', slug: 'powershop', providerType: 'fixed', baseRateCents: '11.50', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA', 'TAS'], minBatterySize: '5.00', website: 'https://www.powershop.com.au', notes: 'Fixed rate', isActive: true },
+        { name: 'Discover Energy', slug: 'discover', providerType: 'fixed', baseRateCents: '10.50', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.discoverenergy.com.au', notes: 'Fixed rate VPP', isActive: true },
+        { name: 'Energy Australia', slug: 'energyaustralia', providerType: 'fixed', baseRateCents: '9.50', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.energyaustralia.com.au', notes: 'Fixed rate VPP', isActive: true },
+        { name: 'ENGIE', slug: 'engie', providerType: 'fixed', baseRateCents: '11.00', monthlyFee: '3.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.engie.com.au', notes: 'Fixed rate with small monthly fee', isActive: true },
+        { name: 'Globird', slug: 'globird', providerType: 'fixed', baseRateCents: '10.20', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.globirdenergy.com.au', notes: 'Fixed rate VPP', isActive: true },
+        { name: 'Nectr', slug: 'nectr', providerType: 'fixed', baseRateCents: '12.50', monthlyFee: '0.00', wholesaleMargin: null, availableStates: ['NSW', 'VIC', 'QLD', 'SA'], minBatterySize: '5.00', website: 'https://www.nectrenergy.com.au', notes: 'Highest fixed rate', isActive: true },
       ];
       
       for (const provider of providers) {
-        await db.upsertVppProvider({
-          ...provider,
-          dailyCredit: provider.dailyCredit.toString(),
-          eventPayment: provider.eventPayment.toString(),
-          bundleDiscount: provider.bundleDiscount.toString(),
-        });
+        await db.upsertVppProvider(provider as any);
       }
       
       return { success: true, count: providers.length };
@@ -2496,7 +2495,7 @@ function buildProposalData(
   // Use the top-ranked VPP provider from the comparison, falling back to the selectedVppProvider field
   const topVpp = calc.vppProviderComparison?.[0];
   const vppName = topVpp?.provider || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name : calc.selectedVppProvider) || 'Origin';
-  const vppProgram = topVpp?.programName || (typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName : '') || 'Loop VPP';
+  const vppProviderType = (calc as any).selectedVppProviderType || topVpp?.providerType || 'fixed';
   
   // Solar Proposal Override: If a solar proposal has been uploaded and analysed,
   // use the exact specs from the proposal instead of calculated recommendations
@@ -2615,12 +2614,11 @@ function buildProposalData(
     tenYearSavings: calc.tenYearSavings || (calc.totalAnnualSavings || 3000) * 10,
     twentyFiveYearSavings: calc.twentyFiveYearSavings,
     vppProvider: vppName,
-    vppProgram,
+    vppProviderType,
     vppAnnualValue: calc.vppAnnualValue || 300,
-    hasGasBundle: true,
-    vppDailyCreditAnnual: calc.vppDailyCreditAnnual,
-    vppEventPaymentsAnnual: calc.vppEventPaymentsAnnual,
-    vppBundleDiscount: calc.vppBundleDiscount,
+    vppDailyExportKwh: (calc as any).vppDailyExportKwh,
+    vppBaseRateCents: (calc as any).vppBaseRateCents,
+    vppMonthlyFee: (calc as any).vppMonthlyFee,
     vppProviderComparison: calc.vppProviderComparison,
     existingSolar: (customer.existingSolar as 'none' | 'under_5_years' | 'over_5_years') || 'none',
     hasEV: customer.hasEV ?? false,

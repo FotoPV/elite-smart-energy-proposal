@@ -358,12 +358,12 @@ export function generateSlideHtml(slide: SlideData): string {
       break;
       
     case 'vpp_comparison':
-      const providers = content.providers as Array<{ provider: string; estimatedAnnualValue: number; hasGasBundle: boolean }>;
+      const providers = content.providers as Array<{ provider: string; providerType: string; estimatedAnnualValue: number; monthlyFee: number }>;
       const vppItems = providers?.slice(0, 5).map((p, i) => `
         <div class="vpp-item">
           <span class="vpp-rank">${i + 1}</span>
           <span class="vpp-name">${p.provider}</span>
-          ${p.hasGasBundle ? '<span class="vpp-badge">Gas Bundle</span>' : ''}
+          <span class="vpp-badge">${p.providerType === 'wholesale' ? 'Wholesale' : 'Fixed Rate'}</span>
           <span class="vpp-value">$${p.estimatedAnnualValue?.toFixed(0)}/yr</span>
         </div>
       `).join('') || '';

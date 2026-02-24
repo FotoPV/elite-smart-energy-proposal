@@ -1,0 +1,142 @@
+{
+  "query": "SELECT name, programName, dailyCredit, eventPayment, estimatedEventsPerYear, bundleDiscount, ROUND(dailyCredit * 365 + eventPayment * estimatedEventsPerYear + bundleDiscount, 2) as calculatedAnnualValue, availableStates, hasGasBundle FROM vppProviders WHERE isActive = 1 ORDER BY calculatedAnnualValue DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT name, programName, dailyCredit, eventPayment, estimatedEventsPerYear, bundleDiscount, ROUND(dailyCredit * 365 + eventPayment * estimatedEventsPerYear + bundleDiscount, 2) as calculatedAnnualValue, availableStates, hasGasBundle FROM vppProviders WHERE isActive = 1 ORDER BY calculatedAnnualValue DESC;",
+  "rows": [
+    {
+      "name": "AGL",
+      "programName": "Night Saver",
+      "dailyCredit": "0.45",
+      "eventPayment": "12.00",
+      "estimatedEventsPerYear": "10",
+      "bundleDiscount": "120.00",
+      "calculatedAnnualValue": "404.25",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "ENGIE",
+      "programName": "VPP Advantage",
+      "dailyCredit": "0.50",
+      "eventPayment": "10.00",
+      "estimatedEventsPerYear": "12",
+      "bundleDiscount": "100.00",
+      "calculatedAnnualValue": "402.50",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Alinta Energy",
+      "programName": "Home Battery",
+      "dailyCredit": "0.48",
+      "eventPayment": "11.00",
+      "estimatedEventsPerYear": "10",
+      "bundleDiscount": "85.00",
+      "calculatedAnnualValue": "370.20",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"WA\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Origin",
+      "programName": "Loop VPP",
+      "dailyCredit": "0.40",
+      "eventPayment": "8.00",
+      "estimatedEventsPerYear": "15",
+      "bundleDiscount": "80.00",
+      "calculatedAnnualValue": "346.00",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"ACT\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Amber Electric",
+      "programName": "SmartShift",
+      "dailyCredit": "0.60",
+      "eventPayment": "15.00",
+      "estimatedEventsPerYear": "8",
+      "bundleDiscount": "0.00",
+      "calculatedAnnualValue": "339.00",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"ACT\"]",
+      "hasGasBundle": "0"
+    },
+    {
+      "name": "GloBird Energy",
+      "programName": "Battery Boost",
+      "dailyCredit": "0.58",
+      "eventPayment": "14.00",
+      "estimatedEventsPerYear": "8",
+      "bundleDiscount": "0.00",
+      "calculatedAnnualValue": "323.70",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "0"
+    },
+    {
+      "name": "Lumo Energy",
+      "programName": "VPP Rewards",
+      "dailyCredit": "0.42",
+      "eventPayment": "9.00",
+      "estimatedEventsPerYear": "11",
+      "bundleDiscount": "70.00",
+      "calculatedAnnualValue": "322.30",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Red Energy",
+      "programName": "VPP Program",
+      "dailyCredit": "0.40",
+      "eventPayment": "10.00",
+      "estimatedEventsPerYear": "10",
+      "bundleDiscount": "75.00",
+      "calculatedAnnualValue": "321.00",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Simply Energy",
+      "programName": "VPP Access",
+      "dailyCredit": "0.35",
+      "eventPayment": "8.00",
+      "estimatedEventsPerYear": "12",
+      "bundleDiscount": "90.00",
+      "calculatedAnnualValue": "313.75",
+      "availableStates": "[\"VIC\", \"SA\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Energy Locals",
+      "programName": "Community VPP",
+      "dailyCredit": "0.55",
+      "eventPayment": "10.00",
+      "estimatedEventsPerYear": "10",
+      "bundleDiscount": "0.00",
+      "calculatedAnnualValue": "300.75",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "0"
+    },
+    {
+      "name": "Momentum Energy",
+      "programName": "Battery Saver",
+      "dailyCredit": "0.38",
+      "eventPayment": "8.00",
+      "estimatedEventsPerYear": "12",
+      "bundleDiscount": "60.00",
+      "calculatedAnnualValue": "294.70",
+      "availableStates": "[\"VIC\", \"SA\"]",
+      "hasGasBundle": "1"
+    },
+    {
+      "name": "Powershop",
+      "programName": "Powerbank",
+      "dailyCredit": "0.45",
+      "eventPayment": "9.00",
+      "estimatedEventsPerYear": "12",
+      "bundleDiscount": "0.00",
+      "calculatedAnnualValue": "272.25",
+      "availableStates": "[\"VIC\", \"NSW\", \"SA\", \"QLD\"]",
+      "hasGasBundle": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tprogramName\tdailyCredit\teventPayment\testimatedEventsPerYear\tbundleDiscount\tcalculatedAnnualValue\tavailableStates\thasGasBundle\nAGL\tNight Saver\t0.45\t12.00\t10\t120.00\t404.25\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t1\nENGIE\tVPP Advantage\t0.50\t10.00\t12\t100.00\t402.50\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t1\nAlinta Energy\tHome Battery\t0.48\t11.00\t10\t85.00\t370.20\t[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"WA\"]\t1\nOrigin\tLoop VPP\t0.40\t8.00\t15\t80.00\t346.00\t[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"ACT\"]\t1\nAmber Electric\tSmartShift\t0.60\t15.00\t8\t0.00\t339.00\t[\"VIC\", \"NSW\", \"SA\", \"QLD\", \"ACT\"]\t0\nGloBird Energy\tBattery Boost\t0.58\t14.00\t8\t0.00\t323.70\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t0\nLumo Energy\tVPP Rewards\t0.42\t9.00\t11\t70.00\t322.30\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t1\nRed Energy\tVPP Program\t0.40\t10.00\t10\t75.00\t321.00\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t1\nSimply Energy\tVPP Access\t0.35\t8.00\t12\t90.00\t313.75\t[\"VIC\", \"SA\"]\t1\nEnergy Locals\tCommunity VPP\t0.55\t10.00\t10\t0.00\t300.75\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t0\nMomentum Energy\tBattery Saver\t0.38\t8.00\t12\t60.00\t294.70\t[\"VIC\", \"SA\"]\t1\nPowershop\tPowerbank\t0.45\t9.00\t12\t0.00\t272.25\t[\"VIC\", \"NSW\", \"SA\", \"QLD\"]\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1575
+}

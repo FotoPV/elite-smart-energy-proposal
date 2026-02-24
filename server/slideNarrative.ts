@@ -77,7 +77,7 @@ Net Investment: $${data.netInvestment.toLocaleString()}
 Annual Savings: $${data.annualSavings.toLocaleString()}
 Payback: ${data.paybackYears.toFixed(1)} years
 10-Year Savings: $${data.tenYearSavings.toLocaleString()}
-VPP Provider: ${data.vppProvider} (${data.vppProgram})
+VPP Provider: ${data.vppProvider} (${data.vppProviderType})
 VPP Annual Value: $${data.vppAnnualValue}
 CO2 Reduction: ${data.co2ReductionTonnes.toFixed(1)} tonnes/year
 Has EV: ${data.hasEV}${data.hasEV ? ` (${data.evAnnualKm?.toLocaleString()} km/year, saves $${data.evAnnualSavings}/year)` : ''}
@@ -223,7 +223,7 @@ Use <b>, <span class="hl-aqua">, <span class="hl-orange"> for emphasis.` }
 export async function narrativeVPPRecommendation(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('VPP Recommendation', ctx,
-    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on why ${data.vppProvider} (${data.vppProgram}) is recommended. Cover why selected from 13 providers, the $${data.vppAnnualValue}/year income, and how it works in practice. Use <span class="hl-aqua"> for income figures.`);
+    `Write 1 concise paragraph (3-4 sentences max, under 60 words total) on why ${data.vppProvider} is recommended. Cover why selected from ${(data.vppProviderComparison || []).length || 14} providers, the $${data.vppAnnualValue}/year income, and how it works in practice. Use <span class="hl-aqua"> for income figures.`);
 }
 
 export async function narrativeAnnualFinancialImpact(data: ProposalData): Promise<string> {

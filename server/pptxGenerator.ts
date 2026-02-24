@@ -591,7 +591,7 @@ function slideStrategicAssessment(pptx: PptxGenJS, d: ProposalData) {
   const items = [
     { title: 'SOLAR PV SYSTEM', desc: `${d.solarSizeKw}kW system with ${d.panelCount}× ${d.panelBrand} ${d.panelWattage}W panels. Sized to cover ${fmt(d.annualUsageKwh)} kWh annual consumption plus battery charging and EV needs.`, color: C.aqua },
     { title: 'BATTERY STORAGE', desc: `${d.batterySizeKwh}kWh ${d.batteryBrand} system. Provides overnight home coverage, EV charging buffer, and VPP trading capacity for maximum return.`, color: C.aqua },
-    { title: 'VPP PARTICIPATION', desc: `${d.vppProvider} ${d.vppProgram} — estimated ${fmtDollar(d.vppAnnualValue)}/year income through daily credits, event payments${d.hasGasBundle ? ', and gas bundle discount' : ''}.`, color: C.aqua },
+    { title: 'VPP PARTICIPATION', desc: `${d.vppProvider} — estimated ${fmtDollar(d.vppAnnualValue)}/year income through battery export revenue and VPP participation.`, color: C.aqua },
   ];
 
   if (d.hasGas) {
@@ -717,7 +717,7 @@ function slideVppComparison(pptx: PptxGenJS, d: ProposalData) {
     x: PAD_L + 0.2, y: startY + 0.9, w: 3, h: 0.25,
     fontSize: 9, fontFace: F.label, color: C.aqua,
   });
-  slide.addText(`${d.vppProvider} — ${d.vppProgram}`, {
+  slide.addText(`${d.vppProvider} — ${d.vppProviderType === 'wholesale' ? 'Wholesale VPP' : 'Fixed Rate VPP'}`, {
     x: PAD_L + 0.2, y: startY + 1.15, w: 5, h: 0.4,
     fontSize: 22, fontFace: F.body, color: C.white, bold: true,
   });
@@ -729,10 +729,9 @@ function slideVppComparison(pptx: PptxGenJS, d: ProposalData) {
   // VPP value breakdown
   const vppY = startY + 2.3;
   const vppRows: TableRow[] = [];
-  if (d.vppDailyCreditAnnual) vppRows.push({ label: 'Daily Credits (365 days)', value: fmtDollar(d.vppDailyCreditAnnual), valueColor: C.aqua });
-  if (d.vppEventPaymentsAnnual) vppRows.push({ label: 'Event Payments', value: fmtDollar(d.vppEventPaymentsAnnual), valueColor: C.aqua });
-  if (d.vppBundleDiscount) vppRows.push({ label: 'Gas Bundle Discount', value: fmtDollar(d.vppBundleDiscount), valueColor: C.aqua });
-  vppRows.push({ label: 'Total Annual VPP Value', value: fmtDollar(d.vppAnnualValue), valueColor: C.aqua });
+  vppRows.push({ label: 'Battery Export Revenue', value: fmtDollar(d.vppAnnualValue + (d.vppMonthlyFee ? d.vppMonthlyFee * 12 : 0)), valueColor: C.aqua });
+  if (d.vppMonthlyFee) vppRows.push({ label: 'Monthly Fees (×12)', value: `-${fmtDollar(d.vppMonthlyFee * 12)}`, valueColor: C.orange });
+  vppRows.push({ label: 'Net Annual VPP Value', value: fmtDollar(d.vppAnnualValue), valueColor: C.aqua });
 
   addDataTable(slide, vppRows, PAD_L, vppY, CONTENT_W / 2, 'VALUE BREAKDOWN', '');
 
@@ -743,14 +742,14 @@ function slideVppRecommendation(pptx: PptxGenJS, d: ProposalData) {
   const slide = pptx.addSlide();
   slide.background = { color: C.black };
   addLogo(slide);
-  addSlideHeader(slide, 'VPP Recommendation', `${d.vppProvider} · ${d.vppProgram}`);
+  addSlideHeader(slide, 'VPP Recommendation', `${d.vppProvider} \u00b7 ${d.vppProviderType === 'wholesale' ? 'Wholesale VPP' : 'Fixed Rate VPP'}`);
 
   const startY = 1.5;
 
   // Key benefits
   const benefits = [
-    `Annual VPP income of ${fmtDollar(d.vppAnnualValue)} through daily credits and event payments`,
-    d.hasGasBundle ? `Gas + electricity bundle discount of ${fmtDollar(d.vppBundleDiscount || 0)}/year` : 'No gas bundle required — standalone electricity plan',
+    `Estimated annual VPP income of ${fmtDollar(d.vppAnnualValue)} through battery export credits`,
+    `${d.vppProviderType === 'wholesale' ? 'Wholesale pricing — higher returns when demand peaks' : 'Fixed rate — predictable, stable returns'}`,
     `Compatible with ${d.batteryBrand} ${d.batterySizeKwh}kWh battery system`,
     'Automated battery dispatch — no manual intervention required',
     'Real-time monitoring via provider app',
@@ -1078,7 +1077,7 @@ function slideRoadmap(pptx: PptxGenJS, d: ProposalData) {
     { num: '01', title: 'SITE ASSESSMENT', desc: 'Professional site inspection, roof analysis, switchboard review, and system design.', timeline: 'Week 1-2', color: C.aqua },
     { num: '02', title: 'SYSTEM INSTALLATION', desc: 'Solar panels, battery, inverter installation by CEC-accredited installers.', timeline: 'Week 3-4', color: C.aqua },
     { num: '03', title: 'ELECTRIFICATION', desc: 'Heat pump hot water, reverse cycle AC, induction cooktop installation.', timeline: 'Week 4-6', color: C.orange },
-    { num: '04', title: 'VPP ACTIVATION', desc: `Enrol in ${d.vppProvider} ${d.vppProgram}. Start earning from day one.`, timeline: 'Week 6-8', color: C.aqua },
+    { num: '04', title: 'VPP ACTIVATION', desc: `Enrol in ${d.vppProvider} VPP. Start earning from day one.`, timeline: 'Week 6-8', color: C.aqua },
   ];
 
   const stepW = (CONTENT_W - 0.6) / steps.length;

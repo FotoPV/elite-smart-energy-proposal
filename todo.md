@@ -30,9 +30,8 @@
 - [x] Total savings summary
 
 ### VPP Provider Comparison
-- [x] Database of 13 VPP providers (schema ready)
+- [x] Database of 14 VPP providers (baseRate model, matching VPP Calculator)
 - [x] State-specific availability filtering
-- [x] Gas+electricity bundle analysis
 - [x] Provider ranking by estimated annual value
 - [x] Seed VPP provider data (admin endpoint)
 
@@ -1314,3 +1313,20 @@
 - [x] Regenerated and verified — battery now 49.92 kWh (was 299.52), electrical items deduplicated to 9 (was 16+)
 - [x] Internal Switchboard Surcharge ($300) appearing correctly
 - [ ] NOTE: Anastasios still shows old address (6 Victor Avenue) — needs solar proposal re-upload to pick up new extraction
+
+## VPP Engine Rebuild (Feb 21-24)
+- [x] Replaced 12 wrong providers with correct 14 providers from VPP Calculator source code
+- [x] Updated database schema (removed dailyCredit/eventPayment/bundleDiscount, added baseRate/monthlyFee/type/wholesaleMargin)
+- [x] Rewrote calculateVppIncome() to use correct formula: baseRate × dailyExport × 365 - monthlyFee × 12
+- [x] Rewrote compareVppProviders() to sort by estimated annual value
+- [x] Updated all TypeScript interfaces across calculations.ts, routers.ts, slideGenerator.ts, slideContentGenerator.ts
+- [x] Rewrote genVPPRecommendation() HTML slide template — removed gas bundle column, battery support column, AGL-specific text
+- [x] Added provider type column (Wholesale/Fixed) and monthly fee column to comparison table
+- [x] Dynamic provider count (was hardcoded "13 providers")
+- [x] Updated pptxGenerator VPP slide to remove old model language
+- [x] Updated seedData.ts with correct 14 providers using baseRate model
+- [x] Updated VPP unit tests (3 new tests: baseRate model, $0 floor, fixed rate providers)
+- [x] 0 TypeScript errors, 138 tests passing
+- [ ] Regenerate Anastasios Adgemis proposal to verify VPP slide displays correctly
+- [ ] Beta test VPP calculations across multiple customers with different states/usage patterns
+- [ ] Bulk regenerate all 22 proposals to apply all fixes

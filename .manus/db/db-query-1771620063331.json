@@ -1,0 +1,82 @@
+{
+  "query": "SELECT id, name, programName, isActive FROM vppProviders ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, name, programName, isActive FROM vppProviders ORDER BY name;",
+  "rows": [
+    {
+      "id": "3",
+      "name": "AGL",
+      "programName": "Night Saver",
+      "isActive": "1"
+    },
+    {
+      "id": "11",
+      "name": "Alinta Energy",
+      "programName": "Home Battery",
+      "isActive": "1"
+    },
+    {
+      "id": "4",
+      "name": "Amber Electric",
+      "programName": "SmartShift",
+      "isActive": "1"
+    },
+    {
+      "id": "6",
+      "name": "Energy Locals",
+      "programName": "Community VPP",
+      "isActive": "1"
+    },
+    {
+      "id": "1",
+      "name": "ENGIE",
+      "programName": "VPP Advantage",
+      "isActive": "1"
+    },
+    {
+      "id": "13",
+      "name": "GloBird Energy",
+      "programName": "Battery Boost",
+      "isActive": "1"
+    },
+    {
+      "id": "10",
+      "name": "Lumo Energy",
+      "programName": "VPP Rewards",
+      "isActive": "1"
+    },
+    {
+      "id": "9",
+      "name": "Momentum Energy",
+      "programName": "Battery Saver",
+      "isActive": "1"
+    },
+    {
+      "id": "2",
+      "name": "Origin",
+      "programName": "Loop VPP",
+      "isActive": "1"
+    },
+    {
+      "id": "7",
+      "name": "Powershop",
+      "programName": "Powerbank",
+      "isActive": "1"
+    },
+    {
+      "id": "8",
+      "name": "Red Energy",
+      "programName": "VPP Program",
+      "isActive": "1"
+    },
+    {
+      "id": "5",
+      "name": "Simply Energy",
+      "programName": "VPP Access",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tprogramName\tisActive\n3\tAGL\tNight Saver\t1\n11\tAlinta Energy\tHome Battery\t1\n4\tAmber Electric\tSmartShift\t1\n6\tEnergy Locals\tCommunity VPP\t1\n1\tENGIE\tVPP Advantage\t1\n13\tGloBird Energy\tBattery Boost\t1\n10\tLumo Energy\tVPP Rewards\t1\n9\tMomentum Energy\tBattery Saver\t1\n2\tOrigin\tLoop VPP\t1\n7\tPowershop\tPowerbank\t1\n8\tRed Energy\tVPP Program\t1\n5\tSimply Energy\tVPP Access\t1\n",
+  "stderr": "",
+  "execution_time_ms": 1505
+}

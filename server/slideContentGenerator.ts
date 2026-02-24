@@ -593,22 +593,16 @@ The ${num(calc.recommendedSolarKw, 1)}kW system is sized to generate approximate
 
 ### VPP Provider Comparison Table
 
-| Provider | Program | Gas Bundle | Est. Annual Value | Strategic Fit |
-|----------|---------|-----------|-------------------|--------------|
+| Provider | Type | Monthly Fee | Est. Annual Value | Verdict |
+|----------|------|------------|-------------------|--------|
 ${vppComparison.length > 0 
-  ? vppComparison.map((v: VppComparisonItem) => `| ${v.provider} | ${v.programName} | ${v.hasGasBundle ? 'Yes' : 'No'} | ${fmt(v.estimatedAnnualValue)} | ${v.strategicFit.charAt(0).toUpperCase() + v.strategicFit.slice(1)} |`).join('\n')
-  : `| AGL | Bring Your Own Battery | Yes | $400 | Good |
-| Origin Energy | Origin Battery Lite | Yes | $380 | Good |
-| Amber Electric | SmartShift | No | $450 | Excellent |
-| Energy Locals | Battery Local | No | $350 | Good |
-| Powershop | Battery Boost | No | $320 | Moderate |
-| Red Energy | Battery Credits | No | $300 | Moderate |`}
+  ? vppComparison.map((v: VppComparisonItem, i: number) => `| ${v.provider} | ${v.providerType === 'wholesale' ? 'Wholesale' : 'Fixed Rate'} | ${v.monthlyFee > 0 ? '$' + v.monthlyFee + '/mo' : 'None'} | ${fmt(v.estimatedAnnualValue)} | ${i === 0 ? 'RECOMMENDED' : i <= 2 ? 'Strong Alternative' : 'Alternative'} |`).join('\n')
+  : `| Amber for Batteries | Wholesale | $15/mo | $800 | RECOMMENDED |
+| Tesla VPP | Wholesale | None | $750 | Strong Alternative |
+| Reposit | Wholesale | $12/mo | $700 | Strong Alternative |`}
 
 ### Recommendation Highlight
 The top-ranked provider row should have an aqua left border and slightly brighter background (rgba(0,234,211,0.08))
-
-${hasGas ? `### Gas Bundle Note (orange left border card)
-Providers with gas bundling capability offer additional discounts when you maintain both electricity and gas accounts during the transition period. This can provide ${fmt(calc.vppBundleDiscount || 50)}+ in additional annual savings.` : ''}
 
 ## Style Notes
 - Table should be the primary visual element
@@ -640,10 +634,9 @@ Providers with gas bundling capability offer additional discounts when you maint
 
 | Income Stream | Annual Value |
 |--------------|-------------|
-| Daily Battery Credits | ${fmt(calc.vppDailyCreditAnnual)} |
-| Peak Event Payments | ${fmt(calc.vppEventPaymentsAnnual)} |
-${calc.vppBundleDiscount ? `| Gas Bundle Discount | ${fmt(calc.vppBundleDiscount)} |` : ''}
-| **Total Annual VPP Income** | **${fmt(calc.vppAnnualValue)}** |
+| Battery Export Revenue | ${fmt(calc.vppAnnualValue)} |
+| Monthly Fees | -${fmt(calc.vppMonthlyFee ? calc.vppMonthlyFee * 12 : 0)} |
+| **Net Annual VPP Income** | **${fmt(calc.vppAnnualValue)}** |
 
 ### How It Works (3 step cards)
 1. **ENROL** — Register your battery with the VPP program (no cost, no lock-in)

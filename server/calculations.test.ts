@@ -77,17 +77,24 @@ const mockGasBill: Bill = {
 
 const mockVppProvider: VppProvider = {
   id: 1,
-  name: "Tesla Energy",
-  programName: "Tesla Virtual Power Plant",
-  dailyCredit: "0.50",
-  eventPayment: "20.00",
-  estimatedEventsPerYear: 12,
-  bundleDiscount: "100.00",
+  name: "Amber for Batteries",
+  slug: "amber",
+  providerType: "wholesale",
+  availableStates: ["NSW", "VIC", "QLD", "SA"],
+  baseRateCents: "35.80",
+  monthlyFee: "15.00",
+  wholesaleMargin: "5.00",
+  // Legacy fields (kept for schema compatibility)
+  programName: null,
   hasGasBundle: false,
-  availableStates: ["VIC", "NSW", "QLD", "SA"],
-  requirements: "Tesla Powerwall required",
-  notes: null,
-  createdAt: new Date(),
+  dailyCredit: null,
+  eventPayment: null,
+  estimatedEventsPerYear: null,
+  bundleDiscount: null,
+  minBatterySize: "5.00",
+  website: "https://www.amber.com.au",
+  notes: "Dynamic pricing based on live AEMO wholesale rates",
+  isActive: true,
   updatedAt: new Date(),
 };
 
@@ -198,20 +205,52 @@ describe("Pool Heat Pump", () => {
 });
 
 describe("VPP Income", () => {
-  it("calculates total annual VPP value", () => {
-    const result = calculateVppIncome(mockVppProvider);
+  it("calculates total annual VPP value using baseRate model", () => {
+    // Amber for Batteries: 35.80 c/kWh, $15/mo fee
+    // Daily export: 8 kWh (typical for ~10kWh usable battery)
+    const dailyExportKwh = 8;
+    const result = calculateVppIncome(mockVppProvider, dailyExportKwh);
     
-    // Daily credit: $0.50 * 365 = $182.50
-    expect(result.dailyCreditAnnual).toBe(182.5);
+    // Revenue = 8 kWh × 35.80c/100 × 365 = 8 × 0.358 × 365 = $1,045.36
+    // Fees = $15 × 12 = $180
+    // Net = $1,045.36 - $180 = $865.36
+    expect(result.dailyExportKwh).toBe(8);
+    expect(result.baseRateCents).toBe(35.8);
+    expect(result.monthlyFee).toBe(15);
+    expect(result.providerType).toBe("wholesale");
+    expect(result.totalAnnualValue).toBeCloseTo(865.36, 1);
+  });
+
+  it("floors annual value at $0 when fees exceed revenue", () => {
+    const lowExportProvider: VppProvider = {
+      ...mockVppProvider,
+      baseRateCents: "2.00",
+      monthlyFee: "50.00",
+    };
+    // Revenue = 1 kWh × 2c/100 × 365 = $7.30
+    // Fees = $50 × 12 = $600
+    // Net = $7.30 - $600 = -$592.70 → floored to $0
+    const result = calculateVppIncome(lowExportProvider, 1);
+    expect(result.totalAnnualValue).toBe(0);
+  });
+
+  it("handles fixed rate providers with no monthly fee", () => {
+    const fixedProvider: VppProvider = {
+      ...mockVppProvider,
+      name: "Origin VPP",
+      providerType: "fixed",
+      baseRateCents: "10.00",
+      monthlyFee: "0.00",
+      wholesaleMargin: null,
+    };
+    const dailyExportKwh = 8;
+    const result = calculateVppIncome(fixedProvider, dailyExportKwh);
     
-    // Event payments: $20 * 12 = $240
-    expect(result.eventPaymentsAnnual).toBe(240);
-    
-    // Bundle discount: $100
-    expect(result.bundleDiscount).toBe(100);
-    
-    // Total: $182.50 + $240 + $100 = $522.50
-    expect(result.totalAnnualValue).toBe(522.5);
+    // Revenue = 8 × 10c/100 × 365 = 8 × 0.10 × 365 = $292.00
+    // Fees = $0
+    // Net = $292.00
+    expect(result.providerType).toBe("fixed");
+    expect(result.totalAnnualValue).toBeCloseTo(292.0, 1);
   });
 });
 
