@@ -73,7 +73,8 @@ export const appRouter = router({
         phone: z.string().optional(),
         address: z.string().min(1),
         state: z.string().min(2).max(3),
-        hasGas: z.boolean().optional(),
+        hasSolarNew: z.boolean().optional(),
+        hasSolarOld: z.boolean().optional(),
         gasAppliances: z.array(z.string()).optional(),
         hasPool: z.boolean().optional(),
         poolVolume: z.number().optional(),
@@ -101,7 +102,8 @@ export const appRouter = router({
         phone: z.string().optional(),
         address: z.string().min(1).optional(),
         state: z.string().min(2).max(3).optional(),
-        hasGas: z.boolean().optional(),
+        hasSolarNew: z.boolean().optional(),
+        hasSolarOld: z.boolean().optional(),
         gasAppliances: z.array(z.string()).optional(),
         hasPool: z.boolean().optional(),
         poolVolume: z.number().optional(),
@@ -1125,7 +1127,7 @@ export type AppRouter = typeof appRouter;
 
 import { ProposalCalculations, SlideData } from "../drizzle/schema";
 
-function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGas: boolean): ProposalData {
+function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGas: boolean, hasSolarNew: boolean, hasSolarOld: boolean): ProposalData {
   const vppName = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.name || 'ENGIE' : calc.selectedVppProvider || 'ENGIE';
   const vppProgram = typeof calc.selectedVppProvider === 'object' ? (calc.selectedVppProvider as any)?.programName || 'VPP Advantage' : 'VPP Advantage';
   return {
@@ -1158,6 +1160,8 @@ function buildProposalData(customer: Customer, calc: ProposalCalculations, hasGa
     annualSolarCredit: calc.annualSolarCredit,
     monthlyUsageKwh: calc.monthlyUsageKwh,
     hasGas,
+    hasSolarNew,
+    hasSolarOld,
     gasAnnualMJ: calc.gasBillUsageMj ? (calc.gasBillUsageMj / (calc.gasBillDays || 90)) * 365 : undefined,
     gasAnnualCost: calc.gasAnnualCost,
     gasDailySupplyCharge: calc.gasBillDailySupplyCharge,
@@ -1272,6 +1276,8 @@ function generateSlidesData(
         co2ReductionTonnes: c.co2ReductionTonnes,
         twentyFiveYearSavings: c.twentyFiveYearSavings,
         hasGas: hasGasBill,
+      hasSolarNew: customer.hasSolarNew ?? false,
+      hasSolarOld: customer.hasSolarOld ?? false,
       },
     },
     // Slide 3: Current Bill Analysis
@@ -1371,6 +1377,8 @@ function generateSlidesData(
         netInvestment: c.netInvestment,
         co2ReductionTonnes: c.co2ReductionTonnes,
         hasGas: hasGasBill,
+      hasSolarNew: customer.hasSolarNew ?? false,
+      hasSolarOld: customer.hasSolarOld ?? false,
         hasEV: customer.hasEV,
         hasPool: customer.hasPool,
         hasExistingSolar: customer.hasExistingSolar,
@@ -1408,6 +1416,8 @@ function generateSlidesData(
         providers: c.vppProviderComparison,
         state: customer.state,
         hasGas: hasGasBill,
+      hasSolarNew: customer.hasSolarNew ?? false,
+      hasSolarOld: customer.hasSolarOld ?? false,
       },
     },
     // Slide 12: VPP Recommendation

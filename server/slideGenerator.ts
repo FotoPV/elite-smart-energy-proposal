@@ -39,6 +39,10 @@ export interface ProposalData {
   annualSolarCredit?: number;
   monthlyUsageKwh?: number;
   
+  // Solar Status
+  hasSolarNew?: boolean; // Has Solar PV <5yrs
+  hasSolarOld?: boolean; // Has Solar PV >5yrs
+  
   // Gas Data (optional)
   hasGas: boolean;
   gasAnnualMJ?: number;

@@ -33,7 +33,8 @@ export const customers = mysqlTable("customers", {
   state: varchar("state", { length: 10 }).notNull(), // VIC, NSW, SA, QLD, etc.
   
   // Optional Inputs
-  hasGas: boolean("hasGas").default(false),
+  hasSolarNew: boolean("hasSolarNew").default(false), // Has Solar PV <5yrs
+  hasSolarOld: boolean("hasSolarOld").default(false),  // Has Solar PV >5yrs
   gasAppliances: json("gasAppliances").$type<string[]>(), // ["Hot Water", "Heating", "Cooktop", "Pool Heater"]
   hasPool: boolean("hasPool").default(false),
   poolVolume: int("poolVolume"), // Litres

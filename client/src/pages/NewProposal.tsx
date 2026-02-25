@@ -67,7 +67,8 @@ export default function NewProposal() {
     phone: '',
     address: '',
     state: 'VIC',
-    hasGas: false,
+    hasSolarNew: false,
+    hasSolarOld: false,
     hasPool: false,
     hasEV: false,
     notes: '',
@@ -78,7 +79,8 @@ export default function NewProposal() {
       refetchCustomers();
       setSelectedCustomerId(data.id);
       setShowNewCustomerDialog(false);
-      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasGas: false, hasPool: false, hasEV: false, notes: '' });
+      setNewCustomer({ fullName: '', email: '', phone: '', address: '', state: 'VIC', hasSolarNew: false,
+    hasSolarOld: false, hasPool: false, hasEV: false, notes: '' });
     },
     onError: (err) => toast.error(err.message),
   });
@@ -290,8 +292,11 @@ export default function NewProposal() {
                   <p className="font-medium">{selectedCustomer.fullName}</p>
                   <p className="text-sm text-muted-foreground">{selectedCustomer.address}</p>
                   <div className="flex gap-2 mt-2">
-                    {selectedCustomer.hasGas && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-accent/10 text-accent">Gas</span>
+                    {selectedCustomer.hasSolarNew && (
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-400">Solar &lt;5yrs</span>
+                    )}
+                    {selectedCustomer.hasSolarOld && (
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/10 text-blue-400">Solar &gt;5yrs</span>
                     )}
                     {selectedCustomer.hasPool && (
                       <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">Pool</span>
@@ -734,12 +739,22 @@ export default function NewProposal() {
               <Label className="text-muted-foreground">Property Details</Label>
               <div className="flex items-center gap-3">
                 <Checkbox
-                  id="hasGas"
-                  checked={newCustomer.hasGas}
-                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasGas: !!c }))}
+                  id="hasSolarNew"
+                  checked={newCustomer.hasSolarNew}
+                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasSolarNew: !!c }))}
                 />
-                <label htmlFor="hasGas" className="text-sm flex items-center gap-1.5 cursor-pointer">
-                  <Flame className="h-4 w-4 text-orange-400" /> Has Gas Connection
+                <label htmlFor="hasSolarNew" className="text-sm flex items-center gap-1.5 cursor-pointer">
+                  <span style={{color: '#46B446'}}>&#9728;</span> Has Solar PV &lt;5yrs
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="hasSolarOld"
+                  checked={newCustomer.hasSolarOld}
+                  onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasSolarOld: !!c }))}
+                />
+                <label htmlFor="hasSolarOld" className="text-sm flex items-center gap-1.5 cursor-pointer">
+                  <span style={{color: '#4A6B8A'}}>&#9728;</span> Has Solar PV &gt;5yrs
                 </label>
               </div>
               <div className="flex items-center gap-3">
@@ -781,7 +796,8 @@ export default function NewProposal() {
                     phone: newCustomer.phone || undefined,
                     address: newCustomer.address,
                     state: newCustomer.state,
-                    hasGas: newCustomer.hasGas,
+                    hasSolarNew: newCustomer.hasSolarNew,
+                    hasSolarOld: newCustomer.hasSolarOld,
                     hasPool: newCustomer.hasPool,
                     hasEV: newCustomer.hasEV,
                     notes: newCustomer.notes || undefined,

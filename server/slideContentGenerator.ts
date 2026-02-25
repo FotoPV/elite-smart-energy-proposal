@@ -54,9 +54,11 @@ export function generateSlideContentMarkdown(input: SlideContentInput): string {
   const { customer, calculations: calc, proposalTitle } = input;
   
   const hasGas = customer.hasGas && calc.gasAnnualCost != null && calc.gasAnnualCost > 0;
+  const hasSolarNew = (customer as any).hasSolarNew === true; // Has Solar PV <5yrs
+  const hasSolarOld = (customer as any).hasSolarOld === true; // Has Solar PV >5yrs
   const hasPool = customer.hasPool === true;
   const hasEV = customer.hasEV === true || customer.evInterest === 'owns' || customer.evInterest === 'interested';
-  const hasExistingSolar = customer.hasExistingSolar === true;
+  const hasExistingSolar = customer.hasExistingSolar === true || hasSolarNew || hasSolarOld;
   const gasAppliances = customer.gasAppliances || [];
   const hasHotWater = hasGas && gasAppliances.some(a => a.toLowerCase().includes('hot water'));
   const hasHeating = hasGas && gasAppliances.some(a => a.toLowerCase().includes('heat'));
