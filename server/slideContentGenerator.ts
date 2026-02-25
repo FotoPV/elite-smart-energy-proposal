@@ -15,10 +15,32 @@
 import type { Customer, ProposalCalculations, VppComparisonItem } from '../drizzle/schema';
 import { BRAND } from '../shared/brand';
 
+interface SwitchboardAnalysisData {
+  mainSwitchRating: number | null;
+  mainSwitchType: string | null;
+  totalCircuits: number | null;
+  usedCircuits: number | null;
+  availableCircuits: number | null;
+  hasRcd: boolean;
+  rcdCount: number | null;
+  meterType: string | null;
+  meterNumber: string | null;
+  boardCondition: 'good' | 'fair' | 'poor' | 'unknown';
+  boardAge: string | null;
+  hasSpaceForSolar: boolean;
+  hasSpaceForBattery: boolean;
+  upgradeRequired: boolean;
+  upgradeReason: string | null;
+  notes: string[];
+  warnings: string[];
+  confidence: number;
+}
+
 interface SlideContentInput {
   customer: Customer;
   calculations: ProposalCalculations;
   proposalTitle?: string;
+  switchboardAnalysis?: SwitchboardAnalysisData | null;
 }
 
 /**
@@ -55,7 +77,7 @@ function cents(n: number | undefined | null): string {
  * - Professional tone for educated audience
  */
 export function generateSlideContentMarkdown(input: SlideContentInput): string {
-  const { customer, calculations: calc, proposalTitle } = input;
+  const { customer, calculations: calc, proposalTitle, switchboardAnalysis: sb } = input;
   
   const hasGas = customer.hasGas && calc.gasAnnualCost != null && calc.gasAnnualCost > 0;
   const hasSolarNew = (customer as any).hasSolarNew === true; // Has Solar PV <5yrs
@@ -459,12 +481,76 @@ Feed-in tariffs across ${customerState} have been declining steadily and are pro
 ### Strategic Insight 3: VPP Revenue Opportunity
 **Card** (dark bg, aqua left border)
 Virtual Power Plant programs offer a compelling additional revenue stream. By allowing controlled discharge during grid peak events, your battery can earn ${fmt(calc.vppAnnualValue || 400)}+ annually while maintaining sufficient reserve for household needs. This transforms your battery from a cost-saving device into an income-generating asset.
+${sb ? `### Strategic Insight 4: Electrical Infrastructure
+**Card** (dark bg, ${sb.upgradeRequired ? 'orange' : 'aqua'} left border)
+${sb.upgradeRequired
+  ? `Switchboard assessment indicates an upgrade is required: ${sb.upgradeReason || 'See Electrical Assessment slide'}. Board condition: ${sb.boardCondition}. This has been factored into the investment analysis.`
+  : `Switchboard assessment confirms the existing ${sb.mainSwitchRating ? sb.mainSwitchRating + 'A' : ''} ${sb.mainSwitchType || ''} board is in ${sb.boardCondition} condition with ${sb.availableCircuits || 'sufficient'} available circuits. Space confirmed for both solar inverter and battery connections.`}` : ''}
 
 ## Style Notes
-- Each card should be substantial (roughly 1/3 of content area)
+- Each card should be substantial (roughly 1/${sb ? '4' : '3'} of content area)
 - Aqua borders for opportunities, orange for risks/warnings
 - Strategic language — this slide sets the narrative for the rest of the proposal
 `);
+
+  // ================================================================
+  // SLIDE 8B: ELECTRICAL ASSESSMENT (Conditional — only when switchboard data available)
+  // ================================================================
+  if (sb) {
+    slideNum++;
+    slides.push(`
+---
+# Slide ${slideNum}: ELECTRICAL ASSESSMENT
+
+## Design
+- **Background**: Black (#000000)
+- **Logo**: Top-right corner
+- **Heading**: "ELECTRICAL ASSESSMENT" in Montserrat, white
+- **Subtitle**: "Switchboard & Installation Readiness" in Montserrat Italic, aqua
+- **Aqua line separator**
+
+## Content Layout: Left = switchboard spec table, Right = readiness status cards
+
+### Switchboard Specifications (left 55%)
+
+| Item | Detail |
+|------|--------|
+| **Main Switch** | ${sb.mainSwitchRating ? sb.mainSwitchRating + 'A' : 'Unknown'} ${sb.mainSwitchType || ''} |
+| **Total Circuits** | ${sb.totalCircuits || 'Unknown'} |
+| **Used Circuits** | ${sb.usedCircuits || 'Unknown'} |
+| **Available Circuits** | ${sb.availableCircuits || 'Unknown'} |
+| **RCD / Safety Switch** | ${sb.hasRcd ? 'Yes (' + (sb.rcdCount || 1) + ' unit' + ((sb.rcdCount || 1) > 1 ? 's' : '') + ')' : 'No — Required'} |
+| **Meter Type** | ${sb.meterType || 'Unknown'} |
+| **Meter Number** | ${sb.meterNumber || 'N/A'} |
+| **Board Condition** | ${sb.boardCondition.charAt(0).toUpperCase() + sb.boardCondition.slice(1)} |
+| **Estimated Age** | ${sb.boardAge || 'Unknown'} |
+| **Analysis Confidence** | ${sb.confidence}% |
+
+### Installation Readiness (right 40%, status cards)
+
+| Readiness Check | Status |
+|----------------|--------|
+| Space for Solar Inverter | ${sb.hasSpaceForSolar ? 'READY' : 'UPGRADE NEEDED'} |
+| Space for Battery | ${sb.hasSpaceForBattery ? 'READY' : 'UPGRADE NEEDED'} |
+| Switchboard Upgrade Required | ${sb.upgradeRequired ? 'YES — SEE BELOW' : 'NOT REQUIRED'} |
+| RCD Protection | ${sb.hasRcd ? 'COMPLIANT' : 'REQUIRED'} |
+
+${sb.upgradeRequired ? `### Upgrade Requirement (orange warning card)
+Upgrade Required: ${sb.upgradeReason || 'Switchboard upgrade required prior to solar/battery installation.'}` : ''}
+
+${sb.warnings && sb.warnings.length > 0 ? `### Electrical Warnings
+${sb.warnings.map((w: string) => '- ' + w).join('\n')}` : ''}
+
+${sb.notes && sb.notes.length > 0 ? `### Inspector Notes
+${sb.notes.map((n: string) => '- ' + n).join('\n')}` : ''}
+
+## Style Notes
+- Board condition badge: colour-coded (green=good, orange=fair, red=poor)
+- Readiness checks: green for pass, orange for upgrade needed
+- If upgrade required, the warning card should be prominent with orange border
+- This slide provides the technical due diligence that builds customer confidence
+`);
+  }
 
   // ================================================================
   // SLIDE 9: RECOMMENDED BATTERY SIZE

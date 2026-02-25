@@ -876,11 +876,24 @@ export const appRouter = router({
         }
         
         const calc = proposal.calculations as ProposalCalculations;
+        
+        // Fetch switchboard analysis data if available
+        let switchboardAnalysis = null;
+        try {
+          const switchboardDocs = await db.getDocumentsByType(customer.id, 'switchboard_photo');
+          if (switchboardDocs.length > 0 && switchboardDocs[0].extractedData) {
+            switchboardAnalysis = switchboardDocs[0].extractedData as any;
+          }
+        } catch (e) {
+          console.warn('Could not fetch switchboard analysis:', e);
+        }
+        
         const { generateSlideContentMarkdown } = await import('./slideContentGenerator');
         const markdown = generateSlideContentMarkdown({
           customer,
           calculations: calc,
           proposalTitle: proposal.title || undefined,
+          switchboardAnalysis,
         });
         
         // Upload markdown to S3 for easy access
