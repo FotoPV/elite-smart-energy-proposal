@@ -151,7 +151,7 @@ export default function ProposalBin() {
                     onClick={() => restoreMutation.mutate({ id: item.id })}
                     disabled={restoreMutation.isPending}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#00EAD3' }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(70,180,70,0.3)', color: '#46B446' }}
                   >
                     {restoreMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                     Restore

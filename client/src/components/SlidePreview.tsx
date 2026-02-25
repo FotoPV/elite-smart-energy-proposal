@@ -1,6 +1,6 @@
 /**
  * Slide Preview Component
- * Renders individual proposal slides with Lightning Energy branding
+ * Renders individual proposal slides with Elite Smart Energy Solutions branding
  */
 
 import { SlideData } from "../../../drizzle/schema";

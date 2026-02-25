@@ -4,7 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   LIGHTNING ENERGY — CUSTOM FONTS
+   ELITE SMART ENERGY SOLUTIONS — CUSTOM FONTS
+   Primary: Montserrat (ExtraBold, Bold, SemiBold, Regular)
+   Secondary: Open Sans (SemiBold, Regular, Light)
    ============================================ */
 
 @font-face {
@@ -31,28 +33,13 @@
   font-display: swap;
 }
 
-/* Fallback fonts from CDN for UI components */
-@font-face {
-  font-family: 'Montserrat';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KyJiGtCWZEOyRutS.ttf') format('truetype');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Open Sans';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YXyQKtNsWXINxhqz.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* Google Fonts loaded via index.html <link> for Montserrat + Open Sans */
 
 /* ============================================
-   LIGHTNING ENERGY — THEME VARIABLES
-   Pure Black #000000 as universal background
-   Aqua #00EAD3 as primary accent
-   Orange #f36710 as secondary accent
+   ELITE SMART ENERGY SOLUTIONS — THEME VARIABLES
+   Elite Navy  #1B3A5C — universal background
+   Solar Green #46B446 — primary accent
+   Pure White  #FFFFFF — text
    ============================================ */
 
 @theme inline {
@@ -93,62 +80,64 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Lightning Energy Custom Colors */
-  --color-le-aqua: #00EAD3;
-  --color-le-orange: #f36710;
-  --color-le-black: #000000;
-  --color-le-dark: #0D0D0D;
-  --color-le-card: #111111;
+  /* ESES Brand Colors */
+  --color-eses-navy: #1B3A5C;
+  --color-eses-green: #46B446;
+  --color-eses-white: #FFFFFF;
+  --color-eses-sky: #E8F0F7;
+  --color-eses-steel: #4A6B8A;
+  --color-eses-charcoal: #2C3E50;
+  --color-eses-grey: #F5F7FA;
 }
 
 :root {
-  /* Lightning Energy Brand Primary — Aqua accent */
-  --primary: #00EAD3;
-  --primary-foreground: #000000;
-  --accent: #00EAD3;
-  --accent-foreground: #000000;
+  /* ESES Brand Primary — Solar Green accent */
+  --primary: #46B446;
+  --primary-foreground: #FFFFFF;
+  --accent: #46B446;
+  --accent-foreground: #FFFFFF;
 
-  --sidebar-primary: #00EAD3;
-  --sidebar-primary-foreground: #000000;
+  --sidebar-primary: #46B446;
+  --sidebar-primary-foreground: #FFFFFF;
 
-  /* Chart colors */
-  --chart-1: #00EAD3;
-  --chart-2: #f36710;
-  --chart-3: #00b8a6;
-  --chart-4: #ff8c42;
-  --chart-5: #1a1a1a;
+  /* Chart colors — ESES palette */
+  --chart-1: #46B446;
+  --chart-2: #4A6B8A;
+  --chart-3: #2C3E50;
+  --chart-4: #E8F0F7;
+  --chart-5: #F5F7FA;
 
   --radius: 0.5rem;
 
-  /* ── Dark Navy #0D1B2A — universal background ── */
-  --background: #0D1B2A;
-  --foreground: oklch(95% 0 0);
+  /* ── Elite Navy #1B3A5C — universal background ── */
+  --background: #1B3A5C;
+  --foreground: #FFFFFF;
 
-  /* Cards sit one step lighter than the page bg */
-  --card: #132236;
-  --card-foreground: oklch(95% 0 0);
-  --popover: #132236;
-  --popover-foreground: oklch(95% 0 0);
+  /* Cards — Charcoal surface */
+  --card: #2C3E50;
+  --card-foreground: #FFFFFF;
+  --popover: #2C3E50;
+  --popover-foreground: #FFFFFF;
 
-  --secondary: #1A2E42;
-  --secondary-foreground: oklch(95% 0 0);
-  --muted: #1A2E42;
-  --muted-foreground: oklch(60% 0 0);
+  --secondary: #4A6B8A;
+  --secondary-foreground: #FFFFFF;
+  --muted: #2C3E50;
+  --muted-foreground: #CBD5E1;
 
   --destructive: oklch(60% 0.2 25);
-  --destructive-foreground: oklch(98% 0 0);
+  --destructive-foreground: #FFFFFF;
 
-  --border: #1E3550;
-  --input: #1A2E42;
-  --ring: #00EAD3;
+  --border: #4A6B8A;
+  --input: #2C3E50;
+  --ring: #46B446;
 
-  /* Sidebar — slightly deeper than page bg */
-  --sidebar: #091523;
-  --sidebar-foreground: oklch(95% 0 0);
-  --sidebar-accent: #132236;
-  --sidebar-accent-foreground: oklch(95% 0 0);
-  --sidebar-border: #1E3550;
-  --sidebar-ring: #00EAD3;
+  /* Sidebar — deeper navy */
+  --sidebar: #0F2540;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-accent: #2C3E50;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #4A6B8A;
+  --sidebar-ring: #46B446;
 }
 
 /* ============================================
@@ -162,11 +151,11 @@
 
   html {
     @apply scroll-smooth;
-    background-color: #0D1B2A;
+    background-color: #1B3A5C;
   }
 
   body {
-    background-color: #0D1B2A;
+    background-color: #1B3A5C;
     @apply text-foreground antialiased;
     font-family: 'Open Sans', 'GeneralSans', system-ui, sans-serif;
   }
@@ -204,8 +193,8 @@
   }
 
   ::selection {
-    background: rgba(0, 234, 211, 0.3);
-    color: oklch(95% 0 0);
+    background: rgba(70, 180, 70, 0.3);
+    color: #FFFFFF;
   }
 }
 
@@ -242,40 +231,40 @@
     }
   }
 
-  /* Lightning Energy card components — pure black palette */
-  .le-card {
-    background: #111111;
-    border: 1px solid #222222;
+  /* ESES card components — navy palette */
+  .eses-card {
+    background: #2C3E50;
+    border: 1px solid #4A6B8A;
     border-radius: 0.75rem;
     padding: 1.5rem;
   }
 
-  /* Legacy ESES class aliases for backward compatibility */
-  .eses-card {
-    background: #111111;
-    border: 1px solid #222222;
+  /* Legacy alias */
+  .le-card {
+    background: #2C3E50;
+    border: 1px solid #4A6B8A;
     border-radius: 0.75rem;
     padding: 1.5rem;
   }
 
   .eses-button-primary {
-    background-color: #00EAD3;
-    color: #000000;
-    box-shadow: 0 0 20px rgba(0, 234, 211, 0.3);
+    background-color: #46B446;
+    color: #FFFFFF;
+    box-shadow: 0 0 20px rgba(70, 180, 70, 0.3);
     transition: all 0.2s;
   }
 
   .eses-button-primary:hover {
     opacity: 0.9;
-    box-shadow: 0 0 30px rgba(0, 234, 211, 0.5);
+    box-shadow: 0 0 30px rgba(70, 180, 70, 0.5);
   }
 
   .eses-glow {
-    box-shadow: 0 0 40px rgba(0, 234, 211, 0.2);
+    box-shadow: 0 0 40px rgba(70, 180, 70, 0.2);
   }
 
   .eses-text-gradient {
-    background: linear-gradient(135deg, #00EAD3 0%, #f36710 100%);
+    background: linear-gradient(135deg, #46B446 0%, #4A6B8A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -283,8 +272,8 @@
 
   /* Stat card */
   .stat-card {
-    background: #111111;
-    border: 1px solid #222222;
+    background: #2C3E50;
+    border: 1px solid #4A6B8A;
     border-radius: 0.75rem;
     padding: 1.5rem;
     position: relative;
@@ -298,7 +287,7 @@
     left: 0;
     width: 0.25rem;
     height: 100%;
-    background: #00EAD3;
+    background: #46B446;
   }
 
   /* Status badges */
@@ -317,18 +306,18 @@
   }
 
   .status-badge.calculating {
-    background: rgba(243, 103, 16, 0.2);
-    color: #f36710;
+    background: rgba(74, 107, 138, 0.3);
+    color: #E8F0F7;
   }
 
   .status-badge.generated {
-    background: rgba(0, 234, 211, 0.2);
-    color: #00EAD3;
+    background: rgba(70, 180, 70, 0.2);
+    color: #46B446;
   }
 
   .status-badge.exported {
-    background: rgba(0, 234, 211, 0.15);
-    color: rgba(0, 234, 211, 0.8);
+    background: rgba(70, 180, 70, 0.15);
+    color: rgba(70, 180, 70, 0.9);
   }
 
   .status-badge.archived {
@@ -344,7 +333,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #222222 transparent;
+    scrollbar-color: #4A6B8A transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -357,12 +346,12 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #222222;
+    background: #4A6B8A;
     border-radius: 3px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #333333;
+    background: #46B446;
   }
 
   .animate-fade-in {
@@ -390,7 +379,7 @@
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 30px rgba(0, 234, 211, 0.3);
+    box-shadow: 0 0 30px rgba(70, 180, 70, 0.3);
   }
 }
 
@@ -400,10 +389,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 234, 211, 0.3);
+    box-shadow: 0 0 20px rgba(70, 180, 70, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(0, 234, 211, 0.5);
+    box-shadow: 0 0 40px rgba(70, 180, 70, 0.5);
   }
 }
 

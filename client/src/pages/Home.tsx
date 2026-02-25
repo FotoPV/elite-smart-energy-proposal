@@ -3,10 +3,16 @@ import { Upload, Layers, LayoutGrid, FileText, BarChart2 } from "lucide-react";
 
 const BRAND = {
   iconTransparent: "/elite_icon_white_transparent.png",
-  aqua: "#00EAD3",
-  green: "#3CB55A",
-  orange: "#f36710",
-  black: "#0D1B2A",
+  navy: "#1B3A5C",      // Elite Navy — primary background
+  green: "#46B446",     // Solar Green — primary accent
+  steelBlue: "#4A6B8A", // Steel Blue — secondary accent
+  charcoal: "#2C3E50",  // Charcoal — card surfaces
+  white: "#FFFFFF",     // Pure White — text
+  skyMist: "#E8F0F7",   // Sky Mist — subtle backgrounds
+  // Legacy aliases
+  black: "#1B3A5C",
+  aqua: "#46B446",
+  orange: "#4A6B8A",
 };
 
 export default function Home() {
@@ -16,8 +22,8 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background: BRAND.black,
-        fontFamily: "'GeneralSans', 'Montserrat', 'Open Sans', sans-serif",
+        background: BRAND.navy,
+        fontFamily: "'Montserrat', 'Open Sans', sans-serif",
       }}
     >
       {/* ── HERO ─────────────────────────────────────────────── */}

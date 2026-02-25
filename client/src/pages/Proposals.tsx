@@ -68,7 +68,7 @@ export default function Proposals() {
             style={{ 
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 600,
-              backgroundColor: '#00EAD3',
+              backgroundColor: '#46B446',
               color: '#000000'
             }}
           >
@@ -123,15 +123,15 @@ export default function Proposals() {
                 }}
                 onClick={() => setLocation(`/proposals/${proposal.id}`)}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,234,211,0.4)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(70,180,70,0.4)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'rgba(128,130,133,0.2)';
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(0,234,211,0.3)' }}>
-                    <FileText className="h-5 w-5" style={{ color: '#00EAD3' }} />
+                  <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(70,180,70,0.3)' }}>
+                    <FileText className="h-5 w-5" style={{ color: '#46B446' }} />
                   </div>
                   <div>
                     <p className="text-sm text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -204,7 +204,7 @@ export default function Proposals() {
               <button 
                 onClick={() => setLocation("/proposals/new")} 
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
               >
                 <PlusCircle className="mr-1 h-4 w-4" />
                 NEW PROPOSAL

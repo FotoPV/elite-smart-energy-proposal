@@ -81,13 +81,13 @@ export const BRAND = {
 
   // ── SLIDE / PDF DEFAULTS ───────────────────────────────────
   slide: {
-    bgColor:      "#0F172A",
-    cardColor:    "#2C3E50",
-    borderColor:  "#1B3A5C",
-    accentColor:  "#46B446",
-    headingColor: "#FFFFFF",
-    bodyColor:    "#CBD5E1",
-    mutedColor:   "#94A3B8",
+    bgColor:      "#1B3A5C",   // Elite Navy — universal background
+    cardColor:    "#2C3E50",   // Charcoal — card surfaces
+    borderColor:  "#4A6B8A",   // Steel Blue — borders
+    accentColor:  "#46B446",   // Solar Green — accents
+    headingColor: "#FFFFFF",   // Pure White — headings
+    bodyColor:    "#CBD5E1",   // Light slate — body text
+    mutedColor:   "#94A3B8",   // Muted — secondary text
   },
 
   // ── CONTACT INFO ───────────────────────────────────────────

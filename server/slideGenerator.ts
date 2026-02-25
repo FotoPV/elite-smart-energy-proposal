@@ -716,18 +716,18 @@ function getVPPProviders(state: string, hasGas: boolean): Array<{
 }
 
 // ============================================================
-// HTML SLIDE GENERATORS — Lightning Energy Design System
+// HTML SLIDE GENERATORS — Elite Smart Energy Solutions Design System
 // ============================================================
 
-// ── BRAND CONSTANTS ──────────────────────────────────────────
-const AQUA = '#00EAD3';
-const ORANGE = '#f36710';
-const BLACK = '#000000';
-const WHITE = '#FFFFFF';
-const ASH = '#808285';
-const CARD_BG = 'rgba(255,255,255,0.025)';
-const CARD_BORDER = '#1a1a1a';
-const INSIGHT_BG = '#111111';
+// ── BRAND CONSTANTS — ELITE SMART ENERGY SOLUTIONS ──────────
+const AQUA = '#46B446';         // Solar Green — primary accent
+const ORANGE = '#4A6B8A';       // Steel Blue — secondary accent (replaces orange)
+const BLACK = '#1B3A5C';        // Elite Navy — universal background
+const WHITE = '#FFFFFF';        // Pure White — text
+const ASH = '#4A6B8A';          // Steel Blue — muted text
+const CARD_BG = 'rgba(44,62,80,0.6)';   // Charcoal card surface
+const CARD_BORDER = '#4A6B8A';  // Steel Blue border
+const INSIGHT_BG = '#2C3E50';   // Charcoal insight panels
 
 const LOGO_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/CEecvotbhlfqjFdS.png';
 const COVER_BG_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/efFUlWSUSNJuclEL.png';
@@ -911,14 +911,14 @@ th {
   letter-spacing: 0.1em;
   text-align: left;
   padding: 12px 16px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid #4A6B8A;
 }
-td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; color: ${WHITE}; }
-.highlight-row { background: rgba(0,234,211,0.08); border-left: 3px solid ${AQUA}; }
+td { padding: 14px 16px; border-bottom: 1px solid #4A6B8A; font-size: 15px; color: ${WHITE}; }
+.highlight-row { background: rgba(70,180,70,0.08); border-left: 3px solid ${AQUA}; }
 
 /* ── Badges ── */
 .badge { display: inline-block; padding: 4px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.badge-yes { background: ${AQUA}; color: #000; }
+.badge-yes { background: ${AQUA}; color: #FFFFFF; }
 .badge-no { background: #333; color: ${ASH}; }
 .badge-orange { background: ${ORANGE}; color: #fff; }
 
@@ -934,7 +934,7 @@ td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; colo
   justify-content: space-between;
   align-items: center;
   padding: 14px 0;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid #4A6B8A;
   font-size: 17px;
 }
 .table-row:last-child { border-bottom: none; }
@@ -953,11 +953,11 @@ td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; colo
 .check-tick { color: ${AQUA}; font-weight: 700; min-width: 18px; }
 
 /* ── Progress bars ── */
-.progress-bar-wrap { background: #1a1a1a; border-radius: 3px; height: 8px; margin-top: 8px; overflow: hidden; }
+.progress-bar-wrap { background: #4A6B8A; border-radius: 3px; height: 8px; margin-top: 8px; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 3px; }
 
 /* ── Step items ── */
-.step-item { display: flex; align-items: flex-start; gap: 24px; padding: 20px 0; border-bottom: 1px solid #1a1a1a; }
+.step-item { display: flex; align-items: flex-start; gap: 24px; padding: 20px 0; border-bottom: 1px solid #4A6B8A; }
 .step-item:last-child { border-bottom: none; }
 .step-num { font-family: 'NextSphere', sans-serif; font-size: 36px; font-weight: 800; color: ${AQUA}; min-width: 50px; }
 .step-title { font-size: 20px; font-weight: 600; color: ${WHITE}; margin-bottom: 4px; }
@@ -966,7 +966,7 @@ td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; colo
 /* ── Next step boxes ── */
 .next-step-box {
   background: ${INSIGHT_BG};
-  border: 1px solid #1a1a1a;
+  border: 1px solid #4A6B8A;
   border-left: 3px solid ${AQUA};
   border-radius: 6px;
   padding: 18px 24px;
@@ -985,7 +985,7 @@ td { padding: 14px 16px; border-bottom: 1px solid #1a1a1a; font-size: 15px; colo
 /* ── Benefit cards ── */
 .benefit-card {
   background: ${INSIGHT_BG};
-  border: 1px solid #1a1a1a;
+  border: 1px solid #4A6B8A;
   border-top: 2px solid ${AQUA};
   border-radius: 6px;
   padding: 20px 22px;
@@ -1041,14 +1041,14 @@ function slideHeaderSmall(titleSmall: string, titleRight: string, subtitleRight:
 }
 function slideWrap(num: number, content: string): string {
   return `<!DOCTYPE html>
-<html style="background:#000;margin:0;padding:0;">
+<html style="background:#1B3A5C;margin:0;padding:0;">
 <head><meta charset="UTF-8">${SLIDE_STYLES}</head>
-<body style="background:#000;margin:0;padding:0;">
+<body style="background:#1B3A5C;margin:0;padding:0;">
 <div class="slide">
   <div class="slide-num">${String(num).padStart(2, '0')}</div>
   ${content}
-  <img class="logo" src="${LOGO_URL}" alt="Lightning Energy" />
-  <div class="copyright">© Lightning Energy — Architect George Fotopoulos</div>
+  <img class="logo" src="${LOGO_URL}" alt="Elite Smart Energy" />
+  <div class="copyright">© Elite Smart Energy Solutions</div>
 </div>
 </body>
 </html>`;
@@ -1077,7 +1077,7 @@ function genSolarMonthly(solarKw: number, state: string): number[] {
 function genCover(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `<!DOCTYPE html>
-<html style="background:#000;margin:0;padding:0;">
+<html style="background:#1B3A5C;margin:0;padding:0;">
 <head><meta charset="UTF-8">${SLIDE_STYLES}
 <style>
 .cover-bg {
@@ -1087,7 +1087,7 @@ function genCover(slide: SlideContent): string {
 }
 .cover-overlay {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(to right, #000 42%, rgba(0,0,0,0.25) 100%);
+  background: linear-gradient(to right, #1B3A5C 42%, rgba(27,58,92,0.25) 100%);
   z-index: 1;
 }
 .cover-content {
@@ -1100,14 +1100,14 @@ function genCover(slide: SlideContent): string {
 }
 </style>
 </head>
-<body style="background:#000;margin:0;padding:0;">
-<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#000;">
+<body style="background:#1B3A5C;margin:0;padding:0;">
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#1B3A5C;">
   <div class="cover-bg"></div>
   <div class="cover-overlay"></div>
   <div class="cover-content">
     <div style="display:flex;align-items:center;gap:16px;">
-      <img src="${LOGO_URL}" style="width:52px;height:52px;object-fit:contain;" alt="Lightning Energy" />
-      <span style="font-family:'Urbanist',sans-serif;font-size:20px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:${AQUA};">Lightning Energy</span>
+      <img src="${LOGO_URL}" style="width:52px;height:52px;object-fit:contain;" alt="Elite Smart Energy" />
+      <span style="font-family:'Urbanist',sans-serif;font-size:20px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:${AQUA};">Elite Smart Energy</span>
     </div>
     <div>
       <div style="font-family:'NextSphere',sans-serif;font-size:96px;font-weight:800;text-transform:uppercase;letter-spacing:0.02em;color:${WHITE};line-height:0.95;max-width:750px;">In-Depth<br>Electricity Bill<br>Analysis</div>
@@ -1121,7 +1121,7 @@ function genCover(slide: SlideContent): string {
         </div>
       </div>
     </div>
-    <div style="font-size:14px;color:${ASH};border-top:1px solid #1a1a1a;padding-top:16px;">Prepared by George Fotopoulos | Lightning Energy</div>
+    <div style="font-size:14px;color:${ASH};border-top:1px solid #4A6B8A;padding-top:16px;">Elite Smart Energy Solutions</div>
   </div>
 </div>
 </body>
@@ -1279,7 +1279,7 @@ function genUsageAnalysis(slide: SlideContent): string {
   const minKwh = Math.min(...kwhData);
   const peakIdx = kwhData.indexOf(maxKwh);
   const lowIdx = kwhData.indexOf(minKwh);
-  const seasonColors = ['#FF8C5A','#FF8C5A','#888','#888','#888','#00EAD3','#00EAD3','#00EAD3','#ccc','#ccc','#ccc','#FF8C5A'];
+  const seasonColors = ['#FF8C5A','#FF8C5A','#888','#888','#888','#46B446','#46B446','#46B446','#ccc','#ccc','#ccc','#FF8C5A'];
   const chartId = `chart_${slide.id}_usage`;
 
   return slideWrap(4, `
@@ -1295,15 +1295,15 @@ function genUsageAnalysis(slide: SlideContent): string {
         </div>
       </div>
       <div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">Annual Consumption</div>
           <div class="hero-num white" style="font-size:48px;">${fmtN(annualKwh, 0)}<span class="unit" style="font-size:20px;"> kWh</span></div>
         </div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">Daily Average</div>
           <div class="hero-num white" style="font-size:48px;">${fmtN(dailyKwh, 1)}<span class="unit" style="font-size:20px;"> kWh</span></div>
         </div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">Peak Month</div>
           <div class="hero-num aqua" style="font-size:48px;">${months[peakIdx]}</div>
           <div style="font-size:14px;color:${ASH};margin-top:4px;">${fmtN(maxKwh, 0)} kWh</div>
@@ -1389,15 +1389,15 @@ function genYearlyProjection(slide: SlideContent): string {
         </div>
       </div>
       <div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">Current Annual</div>
           <div class="hero-num orange" style="font-size:48px;">${fmt$(currentCost)}</div>
         </div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">Year 10 (No Action)</div>
           <div class="hero-num orange" style="font-size:48px;">${fmt$(tenYr)}</div>
         </div>
-        <div style="padding:20px 0;border-bottom:1px solid #1a1a1a;">
+        <div style="padding:20px 0;border-bottom:1px solid #4A6B8A;">
           <div class="lbl">25-Year Projection</div>
           <div class="hero-num orange" style="font-size:48px;">${fmt$(yr25)}</div>
         </div>
@@ -1426,8 +1426,8 @@ function genYearlyProjection(slide: SlideContent): string {
           responsive: false,
           plugins: { legend: { display: false }, tooltip: { enabled: false } },
           scales: {
-            x: { grid: { color: '#1a1a1a' }, ticks: { color: '${ASH}', font: { size: 13 }, maxRotation: 0 }, border: { color: '#333' } },
-            y: { grid: { color: '#1a1a1a' }, ticks: { color: '${ASH}', font: { size: 13 }, callback: function(v) { return '$' + (v/1000).toFixed(0) + 'K'; } }, border: { color: '#333' } }
+            x: { grid: { color: '#4A6B8A' }, ticks: { color: '${ASH}', font: { size: 13 }, maxRotation: 0 }, border: { color: '#333' } },
+            y: { grid: { color: '#4A6B8A' }, ticks: { color: '${ASH}', font: { size: 13 }, callback: function(v) { return '$' + (v/1000).toFixed(0) + 'K'; } }, border: { color: '#333' } }
           },
           animation: false
         }
@@ -1591,8 +1591,8 @@ function genBattery(slide: SlideContent): string {
       <div>
         <div class="lbl" style="margin-bottom:12px;">Strategic Capacity Allocation</div>
         <div class="cap-bar">
-          <div class="cap-seg" style="width:${homePct}%;background:${AQUA};color:#000;">Evening Use (${homePct}%)</div>
-          ${evPct > 0 ? `<div class="cap-seg" style="width:${evPct}%;background:#00B8A8;color:#000;">EV (${evPct}%)</div>` : ''}
+          <div class="cap-seg" style="width:${homePct}%;background:${AQUA};color:#FFFFFF;">Evening Use (${homePct}%)</div>
+          ${evPct > 0 ? `<div class="cap-seg" style="width:${evPct}%;background:#4A6B8A;color:#FFFFFF;">EV (${evPct}%)</div>` : ''}
           <div class="cap-seg" style="width:${vppPct}%;background:#005a52;color:#fff;">VPP (${vppPct}%)</div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
@@ -2004,12 +2004,12 @@ function genFinancial(slide: SlideContent): string {
         <div class="hero-num aqua" style="font-size:60px;">${roi25}%</div>
         <div class="lbl" style="margin-top:8px;">Total ROI (25 Years)</div>
       </div>
-      <div style="background:#1a1a1a;"></div>
+      <div style="background:#4A6B8A;"></div>
       <div style="text-align:center;padding:0 24px;">
         <div class="hero-num aqua" style="font-size:60px;">${fmt$(npv > 0 ? npv : 0)}</div>
         <div class="lbl" style="margin-top:8px;">Net Present Value</div>
       </div>
-      <div style="background:#1a1a1a;"></div>
+      <div style="background:#4A6B8A;"></div>
       <div style="text-align:center;padding:0 24px;">
         <div class="hero-num aqua" style="font-size:60px;">${irr}%</div>
         <div class="lbl" style="margin-top:8px;">Internal Rate of Return</div>
@@ -2161,13 +2161,13 @@ function genContact(slide: SlideContent): string {
         <div class="lbl" style="margin-bottom:16px;">Prepared By</div>
         <div style="font-family:'NextSphere',sans-serif;font-size:48px;font-weight:800;text-transform:uppercase;color:${WHITE};line-height:1.1;margin-bottom:10px;">George Fotopoulos</div>
         <div style="font-size:17px;color:${ASH};margin-bottom:4px;">Renewables Strategist &amp; Designer</div>
-        <div style="font-size:17px;color:${AQUA};margin-bottom:24px;">Lightning Energy</div>
+        <div style="font-size:17px;color:${AQUA};margin-bottom:24px;">Elite Smart Energy Solutions</div>
         <div class="contact-row"><span class="contact-icon">📍</span>Showroom 1, Waverley Road, Malvern East VIC 3145</div>
         <div class="contact-row"><span class="contact-icon">📞</span>0419 574 520</div>
         <div class="contact-row"><span class="contact-icon">✉</span>george.f@lightning-energy.com.au</div>
         <div class="contact-row"><span class="contact-icon">🌐</span>www.lightning-energy.com.au</div>
         <div style="margin-top:28px;">
-          <img src="${LOGO_URL}" style="width:90px;height:90px;object-fit:contain;opacity:0.9;" alt="Lightning Energy" />
+          <img src="${LOGO_URL}" style="width:90px;height:90px;object-fit:contain;opacity:0.9;" alt="Elite Smart Energy" />
         </div>
       </div>
     </div>
