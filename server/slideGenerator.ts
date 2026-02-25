@@ -573,13 +573,14 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     subtitle: 'Investment Analysis & ROI',
     content: {
       systemCost: data.systemCost,
-      rebates: data.rebateAmount,
+      rebateAmount: data.rebateAmount,
       netInvestment: data.netInvestment,
-      annualBenefit: data.annualSavings,
+      annualSavings: data.annualSavings,
       paybackYears: data.paybackYears,
       tenYearSavings: data.tenYearSavings,
       twentyFiveYearSavings: data.twentyFiveYearSavings || data.annualSavings * 25,
-      roi: Math.round((data.annualSavings / data.netInvestment) * 100),
+      currentAnnualCost: data.annualCost,
+      roi25Year: Math.round(((data.twentyFiveYearSavings || data.annualSavings * 25)) / data.netInvestment * 100),
       acceleratedBy: data.hasEV ? 'EV & VPP' : 'VPP',
     }
   });
