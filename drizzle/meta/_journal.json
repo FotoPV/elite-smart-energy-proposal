@@ -43,6 +43,13 @@
       "when": 1770370079000,
       "tag": "0005_lethal_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1770380000000,
+      "tag": "0006_elite_solar_flags",
+      "breakpoints": true
     }
   ]
 }
