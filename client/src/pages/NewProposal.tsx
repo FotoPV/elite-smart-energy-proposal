@@ -21,7 +21,13 @@ import {
   X,
   Eye,
   Plus,
-  Ruler
+  Ruler,
+  Sun,
+  Cpu,
+  Gauge,
+  Home,
+  Car,
+  Wrench
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
@@ -76,6 +82,16 @@ export default function NewProposal() {
   const [phaseType, setPhaseType] = useState("Single Phase");
   const [proposalNotes, setProposalNotes] = useState("");
   const docsInputRef = useRef<HTMLInputElement>(null);
+
+  // Dedicated upload section state
+  const [solarProposalDoc, setSolarProposalDoc] = useState<UploadedDoc | null>(null);
+  const [switchboardDoc, setSwitchboardDoc] = useState<UploadedDoc | null>(null);
+  const [meterDoc, setMeterDoc] = useState<UploadedDoc | null>(null);
+  const [roofDoc, setRoofDoc] = useState<UploadedDoc | null>(null);
+  const solarProposalInputRef = useRef<HTMLInputElement>(null);
+  const switchboardInputRef = useRef<HTMLInputElement>(null);
+  const meterInputRef = useRef<HTMLInputElement>(null);
+  const roofInputRef = useRef<HTMLInputElement>(null);
 
   // Legacy single-doc state (for backward compat with summary step)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -280,6 +296,42 @@ export default function NewProposal() {
     setUploadedDocs(prev => prev.filter(d => d.id !== doc.id));
   };
 
+  // Handler for dedicated single-doc uploads (solar proposal, switchboard, meter, roof)
+  const handleSingleDocUpload = async (
+    file: File,
+    docType: 'solar_proposal_pdf' | 'switchboard_photo' | 'meter_photo' | 'roof_photo',
+    setter: (doc: UploadedDoc | null) => void
+  ) => {
+    if (!selectedCustomerId) {
+      toast.error('Please select a customer first');
+      return;
+    }
+    const docId = `${Date.now()}-${Math.random()}`;
+    const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+    setter({ id: docId, file, fileName: file.name, fileUrl: '', mimeType: file.type, status: 'uploading', previewUrl: preview });
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const result = await uploadDocument.mutateAsync({
+        customerId: selectedCustomerId,
+        documentType: docType,
+        fileData: base64,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+      });
+      setter({ id: docId, fileName: file.name, fileUrl: result.fileUrl, mimeType: file.type, status: 'done', previewUrl: preview, documentId: result.documentId });
+      refetchDocuments();
+      toast.success(`${file.name} uploaded successfully`);
+    } catch (err) {
+      setter({ id: docId, fileName: file.name, fileUrl: '', mimeType: file.type, status: 'error', previewUrl: preview });
+      toast.error(`Failed to upload ${file.name}`);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -411,74 +463,328 @@ export default function NewProposal() {
           </Card>
         )}
 
-        {/* Step 2: Upload Bills + Additional Documents */}
+        {/* Step 2: Upload Files */}
         {step === 2 && (
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5 text-primary" />
-                Upload Bills
+                Upload Files
               </CardTitle>
-              <CardDescription>Upload customer energy bills for analysis</CardDescription>
+              <CardDescription>Upload electricity bill, photos, and supporting documents</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              
-              {/* Electricity Bill */}
+
+              {/* ─── ELECTRICITY BILLS (REQUIRED) ───────────────────── */}
               <div className="space-y-3">
-                <Label className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-primary" />
-                  Electricity Bill (Required)
-                </Label>
+                  <span className="text-sm font-semibold text-foreground">Electricity Bills</span>
+                  <span className="text-xs font-semibold text-red-400 ml-1">(Required)</span>
+                </div>
+                <p className="text-xs text-muted-foreground -mt-1">Upload one or more billing periods for more accurate annual projections</p>
+
                 {electricityBillId ? (
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                    <span className="text-green-400 font-medium">Electricity bill uploaded</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-auto text-muted-foreground text-xs"
-                      onClick={() => {
-                        setElectricityBillId(null);
-                        document.getElementById('electricity-upload')?.click();
-                      }}
-                    >
-                      Replace
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload electricity bill PDF for AI analysis</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="electricity-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload('electricity', file);
-                      }}
-                    />
+                    <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-green-400 font-medium text-sm truncate">
+                        {existingBills?.find(b => b.billType === 'electricity')?.fileName || 'Electricity bill uploaded'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">PRIMARY</p>
+                    </div>
                     <button
-                      onClick={() => document.getElementById('electricity-upload')?.click()}
-                      disabled={isUploading}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
-                      style={{ border: '2px solid #46B446', color: '#46B446', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
+                      onClick={() => setElectricityBillId(null)}
+                      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors flex-shrink-0"
                     >
-                      {uploadingType === 'electricity' ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
-                        </>
-                      ) : (
-                        <><Upload className="h-4 w-4" /> Upload Electricity Bill</>
-                      )}
+                      <X className="h-3.5 w-3.5" /> Remove
                     </button>
+                  </div>
+                ) : null}
+
+                <div
+                  className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => document.getElementById('electricity-upload')?.click()}
+                >
+                  <Plus className="h-8 w-8 mx-auto text-primary mb-2" />
+                  <p className="text-sm font-medium text-primary">Add More Bills</p>
+                  <p className="text-xs text-muted-foreground mt-1">Drop PDFs here or click to browse</p>
+                  <Input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    id="electricity-upload"
+                    disabled={isUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload('electricity', file);
+                    }}
+                  />
+                </div>
+
+                {uploadingType === 'electricity' && (
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {uploadStage === 'extracting' ? 'AI extracting bill data...' : 'Uploading...'}
                   </div>
                 )}
               </div>
 
+              {/* ─── SOLAR PROPOSAL PDF ─────────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sun className="h-4 w-4 text-amber-400" />
+                  <span className="text-sm font-semibold text-foreground">Solar Proposal</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Upload the System Details page from the solar proposal to extract exact panel, inverter, and battery specs
+                </p>
+                {solarProposalDoc?.status === 'done' ? (
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                    <FileText className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-amber-400 font-medium text-sm truncate">{solarProposalDoc.fileName}</p>
+                      <p className="text-xs text-muted-foreground">System specs extracted</p>
+                    </div>
+                    <button onClick={() => solarProposalInputRef.current?.click()} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Replace</button>
+                    <button onClick={() => setSolarProposalDoc(null)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-amber-400/50 transition-colors"
+                    onClick={() => solarProposalInputRef.current?.click()}
+                  >
+                    {solarProposalDoc?.status === 'uploading' ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+                        <p className="text-sm text-amber-400">Uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Sun className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm font-medium text-foreground">Drop system details page here or click to browse</p>
+                        <p className="text-xs text-muted-foreground mt-1">Supports images (JPG, PNG) and PDFs</p>
+                      </>
+                    )}
+                    <input
+                      ref={solarProposalInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleSingleDocUpload(file, 'solar_proposal_pdf', setSolarProposalDoc);
+                        e.target.value = '';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* ─── GAS BILL ───────────────────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Flame className="h-4 w-4 text-orange-400" />
+                  <span className="text-sm font-semibold text-foreground">Gas Bill</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional — for electrification analysis)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Upload the customer's gas bill to model gas-to-electric appliance upgrades (hot water, heating, cooking)
+                </p>
+                {gasBillId ? (
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                    <CheckCircle className="h-5 w-5 text-orange-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-orange-400 font-medium text-sm truncate">
+                        {existingBills?.find(b => b.billType === 'gas')?.fileName || 'Gas bill uploaded'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Gas usage data extracted</p>
+                    </div>
+                    <button
+                      onClick={() => setGasBillId(null)}
+                      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors flex-shrink-0"
+                    >
+                      <X className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-orange-400/50 transition-colors"
+                    onClick={() => document.getElementById('gas-upload')?.click()}
+                  >
+                    {uploadingType === 'gas' ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 text-orange-400 animate-spin" />
+                        <p className="text-sm text-orange-400">{uploadStage === 'extracting' ? 'AI extracting...' : 'Uploading...'}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Flame className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm font-medium text-foreground">Drop gas bill PDF here or click to browse</p>
+                        <p className="text-xs text-muted-foreground mt-1">Supports PDF format</p>
+                      </>
+                    )}
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      id="gas-upload"
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('gas', file);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* ─── ELECTRICAL PHOTOS ──────────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Cpu className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm font-semibold text-foreground">Electrical Photos</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional — AI switchboard analysis)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Upload switchboard and meter photos for AI electrical inspection — identifies upgrade requirements, available circuits, and battery connection points
+                </p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Switchboard Photo */}
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <Wrench className="h-3.5 w-3.5" /> Switchboard
+                    </p>
+                    {switchboardDoc?.status === 'done' ? (
+                      <div className="relative rounded-lg overflow-hidden border border-blue-400/30 bg-blue-500/10">
+                        {switchboardDoc.previewUrl ? (
+                          <img src={switchboardDoc.previewUrl} alt="Switchboard" className="w-full h-32 object-cover" />
+                        ) : (
+                          <div className="w-full h-32 flex items-center justify-center bg-muted">
+                            <FileText className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <button onClick={() => window.open(switchboardDoc.fileUrl || switchboardDoc.previewUrl, '_blank')} className="p-1 rounded bg-black/60 hover:bg-black/80"><Eye className="h-3.5 w-3.5 text-white" /></button>
+                          <button onClick={() => setSwitchboardDoc(null)} className="p-1 rounded bg-black/60 hover:bg-red-600/80"><X className="h-3.5 w-3.5 text-white" /></button>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                          <p className="text-xs text-blue-300 truncate">{switchboardDoc.fileName}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-blue-400/50 transition-colors h-32 flex flex-col items-center justify-center"
+                        onClick={() => switchboardInputRef.current?.click()}
+                      >
+                        {switchboardDoc?.status === 'uploading' ? (
+                          <Loader2 className="h-6 w-6 text-blue-400 animate-spin" />
+                        ) : (
+                          <>
+                            <Camera className="h-6 w-6 text-muted-foreground mb-1" />
+                            <p className="text-xs text-muted-foreground">Upload photo</p>
+                          </>
+                        )}
+                        <input ref={switchboardInputRef} type="file" accept="image/*" className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSingleDocUpload(f, 'switchboard_photo', setSwitchboardDoc); e.target.value = ''; }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Meter Photo */}
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <Gauge className="h-3.5 w-3.5" /> Meter
+                    </p>
+                    {meterDoc?.status === 'done' ? (
+                      <div className="relative rounded-lg overflow-hidden border border-blue-400/30 bg-blue-500/10">
+                        {meterDoc.previewUrl ? (
+                          <img src={meterDoc.previewUrl} alt="Meter" className="w-full h-32 object-cover" />
+                        ) : (
+                          <div className="w-full h-32 flex items-center justify-center bg-muted">
+                            <FileText className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <button onClick={() => window.open(meterDoc.fileUrl || meterDoc.previewUrl, '_blank')} className="p-1 rounded bg-black/60 hover:bg-black/80"><Eye className="h-3.5 w-3.5 text-white" /></button>
+                          <button onClick={() => setMeterDoc(null)} className="p-1 rounded bg-black/60 hover:bg-red-600/80"><X className="h-3.5 w-3.5 text-white" /></button>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                          <p className="text-xs text-blue-300 truncate">{meterDoc.fileName}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-blue-400/50 transition-colors h-32 flex flex-col items-center justify-center"
+                        onClick={() => meterInputRef.current?.click()}
+                      >
+                        {meterDoc?.status === 'uploading' ? (
+                          <Loader2 className="h-6 w-6 text-blue-400 animate-spin" />
+                        ) : (
+                          <>
+                            <Gauge className="h-6 w-6 text-muted-foreground mb-1" />
+                            <p className="text-xs text-muted-foreground">Upload photo</p>
+                          </>
+                        )}
+                        <input ref={meterInputRef} type="file" accept="image/*" className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSingleDocUpload(f, 'meter_photo', setMeterDoc); e.target.value = ''; }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── ROOF PHOTO ─────────────────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Home className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-foreground">Roof Photo</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional — orientation &amp; shading assessment)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Upload a roof photo or satellite image to assess panel placement, orientation, and shading factors
+                </p>
+                {roofDoc?.status === 'done' ? (
+                  <div className="relative rounded-lg overflow-hidden border border-primary/30 bg-primary/5">
+                    {roofDoc.previewUrl ? (
+                      <img src={roofDoc.previewUrl} alt="Roof" className="w-full h-40 object-cover" />
+                    ) : (
+                      <div className="w-full h-40 flex items-center justify-center bg-muted">
+                        <Home className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <button onClick={() => window.open(roofDoc.fileUrl || roofDoc.previewUrl, '_blank')} className="p-1.5 rounded bg-black/60 hover:bg-black/80"><Eye className="h-4 w-4 text-white" /></button>
+                      <button onClick={() => setRoofDoc(null)} className="p-1.5 rounded bg-black/60 hover:bg-red-600/80"><X className="h-4 w-4 text-white" /></button>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-3 py-1.5">
+                      <p className="text-xs text-green-300 truncate">{roofDoc.fileName}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => roofInputRef.current?.click()}
+                  >
+                    {roofDoc?.status === 'uploading' ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <p className="text-sm text-primary">Uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Home className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm font-medium text-foreground">Drop roof photo here or click to browse</p>
+                        <p className="text-xs text-muted-foreground mt-1">Supports images (JPG, PNG) — satellite or on-site photos</p>
+                      </>
+                    )}
+                    <input ref={roofInputRef} type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSingleDocUpload(f, 'roof_photo', setRoofDoc); e.target.value = ''; }} />
+                  </div>
+                )}
+              </div>
 
               {/* ─── CABLE RUN DISTANCE ─────────────────────────────── */}
               <div className="border-t border-border pt-6">
