@@ -858,7 +858,15 @@ export function generateFullCalculations(
       rcAc: heatPumpAcRebate ? Number(heatPumpAcRebate.amount) : 0,
     },
     {
-      electricity: solar ? usage.projectedAnnualCost * 0.7 : 0, // 70% reduction with solar
+      // Electricity savings:
+      // - New solar customers: 70% bill reduction from solar + battery
+      // - Existing solar customers adding battery: 60% of remaining bill
+      //   (battery time-shifts solar to evening, avoids peak grid rates)
+      electricity: solar
+        ? usage.projectedAnnualCost * 0.7
+        : hasExistingSolar
+          ? usage.projectedAnnualCost * 0.6
+          : 0,
       gas: gasAnalysis ? gasAnalysis.annualGasCost : 0,
       vpp: vppIncome?.totalAnnualValue,
       ev: evSavings?.savingsWithSolar,

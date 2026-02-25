@@ -1346,3 +1346,12 @@
 - [x] Updated unit tests — 7 new tests for tiered export fractions
 - [x] Verified calculations: David Theochari 25kWh → 7.9kWh daily export → $852 Amber VPP (was $2,172)
 - [x] 145 tests passing, 0 TypeScript errors
+
+## Bug Fix - Final Slide Missing Electricity Savings (Feb 26)
+- [x] Investigate why electricity savings not showing on final slide
+- [x] ROOT CAUSE: existing solar customers (solar=null) get $0 electricity savings because formula is `solar ? cost*0.7 : 0`
+- [x] Fix: For existing solar + battery customers, calculate battery savings = projectedAnnualCost × 0.6 (60% offset)
+- [x] Confirmed: Solar proposal field names already match (solarSystemSizeKw used correctly in routers.ts line 2503)
+- [x] David's stored calculations are stale — proposal needs regeneration to pick up new formula
+- [x] 145 tests passing, 0 TypeScript errors
+- [ ] Regenerate David Theochari's proposal to verify final slide shows ~$2,291 electricity savings
