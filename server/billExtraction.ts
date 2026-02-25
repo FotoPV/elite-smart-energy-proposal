@@ -155,6 +155,7 @@ Provide a confidence score (0-100) based on how clearly you could read and extra
           ]
         }
       ],
+      maxTokens: 1024,
       response_format: {
         type: "json_schema",
         json_schema: {
@@ -207,6 +208,7 @@ Provide a confidence score (0-100) based on how clearly you could read and extra
           ]
         }
       ],
+      maxTokens: 1024,
       response_format: {
         type: "json_schema",
         json_schema: {

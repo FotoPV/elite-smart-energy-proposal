@@ -53,6 +53,7 @@ export default function NewProposal() {
   const [gasBillId, setGasBillId] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingType, setUploadingType] = useState<string | null>(null);
+  const [uploadStage, setUploadStage] = useState<'uploading' | 'extracting' | null>(null);
   
   // Document upload states
   const [switchboardPhotoUrl, setSwitchboardPhotoUrl] = useState<string | null>(null);
@@ -139,6 +140,7 @@ export default function NewProposal() {
     
     setIsUploading(true);
     setUploadingType(billType);
+    setUploadStage('uploading');
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -150,13 +152,14 @@ export default function NewProposal() {
           fileName: file.name
         });
         
-        toast.success("Bill uploaded, extracting data...");
+        setUploadStage('extracting');
+        toast.success("Bill uploaded — AI extracting data...");
         
         try {
           await extractBill.mutateAsync({ billId: result.id });
-          toast.success("Bill data extracted successfully");
+          toast.success("✅ Bill data extracted successfully");
         } catch (err) {
-          toast.error("Extraction failed, you can manually enter data later");
+          toast.error("Extraction failed — you can manually enter data later");
         }
         
         if (billType === 'electricity') {
@@ -168,12 +171,14 @@ export default function NewProposal() {
         refetchBills();
         setIsUploading(false);
         setUploadingType(null);
+        setUploadStage(null);
       };
       reader.readAsDataURL(file);
     } catch (error) {
       toast.error("Failed to upload bill");
       setIsUploading(false);
       setUploadingType(null);
+      setUploadStage(null);
     }
   };
 
@@ -370,7 +375,7 @@ export default function NewProposal() {
                       {uploadingType === 'electricity' ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
+                          {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
                         </>
                       ) : (
                         "Select File"
@@ -414,7 +419,7 @@ export default function NewProposal() {
                       {uploadingType === 'gas' ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
+                          {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
                         </>
                       ) : (
                         "Select File"
