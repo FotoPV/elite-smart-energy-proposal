@@ -550,14 +550,18 @@ export function generateSlides(data: ProposalData): SlideContent[] {
     title: 'TOTAL SAVINGS SUMMARY',
     subtitle: 'Combined Annual Financial Benefits',
     content: {
-      totalAnnualBenefit: data.annualSavings,
-      breakdown: [
-        { category: 'Solar & Battery', value: Math.round((data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0)) * 1), color: 'aqua' },
-        data.hasEV ? { category: 'EV Integration', value: data.evAnnualSavings || 0, color: 'white' } : null,
-        { category: 'VPP Credits', value: data.vppAnnualValue, color: 'orange' },
-        data.hasGas ? { category: 'Gas Elimination', value: data.gasAnnualCost || 0, color: 'orange' } : null,
-      ].filter(Boolean) as Array<{ category: string; value: number; color: string }>,
-      taxFree: true,
+      totalAnnualSavings: data.annualSavings,
+      electricitySavings: Math.round(data.annualSavings - data.vppAnnualValue - (data.evAnnualSavings || 0) - (data.hasGas ? (data.gasAnnualCost || 0) : 0)),
+      vppAnnualValue: data.vppAnnualValue,
+      vppProvider: data.vppProvider,
+      evAnnualSavings: data.hasEV ? (data.evAnnualSavings || 0) : 0,
+      gasAnnualCost: data.hasGas ? (data.gasAnnualCost || 0) : 0,
+      poolHeatPumpSavings: data.hasPoolPump ? (data.poolPumpSavings || 0) : 0,
+      netInvestment: data.netInvestment,
+      totalRebates: data.rebateAmount,
+      paybackYears: data.paybackYears,
+      tenYearSavings: data.tenYearSavings,
+      twentyFiveYearSavings: data.twentyFiveYearSavings || data.annualSavings * 25,
     }
   });
   
