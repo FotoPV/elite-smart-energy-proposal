@@ -25,8 +25,8 @@ export const BRAND = {
     aqua: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg",
   },
 
-  // Cover page background image — Electrification Specialists backdrop
-  coverBg: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/RcCbZwZNUIzvPlwn.jpg",
+  // Cover page background image — Tech Solar backdrop (black + aqua circuit board)
+  coverBg: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/nrpNEXOsUzYPUqQn.png",
 
   // ── PRIMARY COLOUR PALETTE ─────────────────────────────────
   colors: {

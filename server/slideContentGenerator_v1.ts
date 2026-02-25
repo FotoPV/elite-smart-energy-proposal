@@ -1,15 +1,11 @@
 /**
- * Elite Smart Energy Solutions — Slide Content Generator v2
- * Updated per LLM Prompts Registry v2.0 — 25 February 2026
- *
- * v2 Changes:
- * - 9 new slide types added: Tariff Rate Comparison, Daily Load Profile,
- *   Solar Generation vs Consumption, Battery Charge/Discharge Cycle,
- *   Grid Independence Analysis, Rebate & Incentive Breakdown,
- *   25-Year Financial Projection, System Specifications, Warranty & Maintenance
- * - All narratives updated to ultra-concise boardroom style (40-80 words max)
- * - Elite Smart Energy Solutions branding throughout (navy/green/white)
- * - Montserrat + Open Sans typography
+ * Slide Content Markdown Generator
+ * 
+ * Takes ProposalCalculations + Customer data and produces a comprehensive
+ * markdown file for Manus Slides (image mode) rendering.
+ * 
+ * Each slide is written with strategic, analytical content — professional tone
+ * for a HIGH LEVEL OF EDUCATED PUBLICS audience.
  */
 
 import type { Customer, ProposalCalculations, VppComparisonItem } from '../drizzle/schema';
@@ -91,32 +87,40 @@ export function generateSlideContentMarkdown(input: SlideContentInput): string {
   slides.push(`
 ---
 # Slide ${slideNum}: COVER PAGE
+
 ## Design
-- **Background**: Full-bleed cover image (${BRAND.coverBg}) — tech solar circuit board backdrop (black with aqua circuit lines and solar panels). This image fills the ENTIRE slide as the background.
-- **Overlay**: Semi-transparent dark overlay (rgba 0,0,0,0.45) over the full image to ensure text legibility
-- **Logo**: Elite Smart Energy Solutions icon (${BRAND.logo.iconWhite}) positioned top-left, approximately 80x80px, white rays on transparent background
+- **Background**: Midnight Navy (#0F172A) with the Elite Smart Energy Solutions cover background image on the right side
+- **Logo**: Elite Smart Energy Solutions aqua starburst logo (${BRAND.logo.aqua}) positioned top-left with "ELITE SMART ENERGY SOLUTIONS" text beside it in white
+- **Cover background image**: ${BRAND.coverBg}
+
 ## Content
-### Company Name (top-left, beside logo, Montserrat SemiBold, white, small caps)
-ELITE SMART ENERGY SOLUTIONS
-### Main Title (large, white, Montserrat ExtraBold, ALL CAPS, centred vertically on left half)
-IN-DEPTH BILL ANALYSIS
-& SOLAR BATTERY
-PROPOSAL
-### Aqua accent bar (thin horizontal line, Solar Green #46B446, beneath title)
-### Subtitle (smaller, white, Open Sans Regular)
+
+### Title (large, white, Montserrat font)
+IN-DEPTH BILL ANALYSIS & SOLAR BATTERY PROPOSAL
+
+### Subtitle (smaller, aqua line separator, then white text)
 Prepared exclusively for
-### Customer Details (white, Montserrat SemiBold)
+
+### Customer Details (white, Open Sans font)
 **${customerName}**
-${customerAddress}, ${customerState}
-### Prepared By (small, ash/muted text, bottom-left)
+${customerAddress}
+${customerState}
+
+### Orange accent bar
+A thin horizontal orange (#46B446) bar beneath the customer details
+
+### Aqua separator line
+A thin aqua (#46B446) horizontal line near the bottom
+
+### Prepared By (small, ash text at bottom)
 Prepared by ${BRAND.contact.name} | ${BRAND.contact.company}
-${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
+${BRAND.contact.phone} | ${BRAND.contact.email}
+
 ## Style Notes
-- The backdrop image is the HERO element — full bleed, no cropping
-- Text sits on the left half with the dark overlay providing contrast
-- The aqua circuit lines in the image complement the ESES brand palette
+- The cover must feel premium and authoritative
+- Right side has the background image (solar panels/energy imagery)
+- Left side has all text content, left-aligned
 - No data tables on this slide — purely branding and identification
-- Premium, authoritative, technology-forward aesthetic
 `);
 
   // ================================================================
@@ -1122,220 +1126,6 @@ ${BRAND.contact.copyright}
 - Contact details are clean and scannable
 - Orange accent bar adds warmth
 - Minimal content — let the branding speak
-`);
-
-  // ================================================================
-  // SLIDE: TARIFF RATE COMPARISON (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: TARIFF RATE COMPARISON
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Accent**: Solar Green (#46B446) for savings values
-## Narrative
-Your current tariff structure creates a significant arbitrage gap. At <span class="hl-orange">${calc.usageRateCentsPerKwh?.toFixed(1) ?? 'N/A'}¢/kWh</span> import versus <span class="hl-aqua">${calc.feedInTariffCents?.toFixed(1) ?? 'N/A'}¢/kWh</span> feed-in, every kilowatt-hour self-consumed through battery storage is worth <span class="hl-aqua">${((calc.usageRateCentsPerKwh ?? 0) - (calc.feedInTariffCents ?? 0)).toFixed(1)}¢</span> more than exporting to the grid. This differential is the financial engine driving your solar and battery investment.
-## Rate Comparison Table
-| Tariff Component | Rate | Annual Cost Impact |
-|---|---|---|
-| Peak Import Rate | ${calc.usageRateCentsPerKwh?.toFixed(1) ?? 'N/A'}¢/kWh | <span class="hl-orange">High</span> |
-| Off-Peak Import Rate | ${calc.offPeakRateCents?.toFixed(1) ?? 'N/A'}¢/kWh | Medium |
-| Feed-in Tariff | ${calc.feedInTariffCents?.toFixed(1) ?? 'N/A'}¢/kWh | <span class="hl-aqua">Low return</span> |
-| Battery Self-Consumption Value | ${calc.usageRateCentsPerKwh?.toFixed(1) ?? 'N/A'}¢/kWh | <span class="hl-aqua">Maximum</span> |
-| Daily Supply Charge | ${calc.dailySupplyCharge?.toFixed(2) ?? 'N/A'}/day | Fixed |
-`);
-
-  // ================================================================
-  // SLIDE: DAILY LOAD PROFILE (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: DAILY LOAD PROFILE
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Chart**: 24-hour bar chart — Solar Green for solar generation, white for consumption, orange for grid draw
-## Narrative
-Your household consumes approximately <span class="hl-orange">${calc.dailyUsageKwh?.toFixed(1) ?? 'N/A'}kWh</span> per day. Solar generation peaks between 10am and 2pm, creating a surplus that — without battery storage — is exported at the low feed-in rate of <span class="hl-orange">${calc.feedInTariffCents?.toFixed(1) ?? 'N/A'}¢/kWh</span>. Evening demand from 5pm to 10pm represents your highest-cost grid draw period, which the <span class="hl-aqua">${calc.batterySizeKwh ?? 'N/A'}kWh battery</span> is specifically sized to cover.
-## Key Load Metrics
-| Metric | Value |
-|---|---|
-| Daily Consumption | ${calc.dailyUsageKwh?.toFixed(1) ?? 'N/A'} kWh |
-| Estimated Solar Generation | ${calc.estimatedAnnualGeneration ? (calc.estimatedAnnualGeneration / 365).toFixed(1) : 'N/A'} kWh/day |
-| Peak Demand Period | 5pm – 10pm |
-| Battery Coverage | Evening peak demand |
-| Self-Consumption Target | >80% |
-`);
-
-  // ================================================================
-  // SLIDE: SOLAR GENERATION vs CONSUMPTION (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: SOLAR GENERATION vs CONSUMPTION
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Chart**: Monthly bar chart — Solar Green for generation, white for consumption
-## Narrative
-Your <span class="hl-aqua">${calc.solarSizeKw ?? 'N/A'}kW solar system</span> is projected to generate approximately <span class="hl-aqua">${calc.estimatedAnnualGeneration?.toLocaleString() ?? 'N/A'}kWh annually</span> in ${calc.customerState ?? 'your state'}, based on local peak sun hours. During summer months, generation will exceed consumption, creating surplus energy that charges your battery and earns feed-in credits. Winter generation remains sufficient to offset a significant portion of your daily demand.
-## Annual Generation Summary
-| Metric | Value |
-|---|---|
-| System Size | ${calc.solarSizeKw ?? 'N/A'} kW |
-| Annual Generation | ${calc.estimatedAnnualGeneration?.toLocaleString() ?? 'N/A'} kWh |
-| Annual Consumption | ${calc.annualUsageKwh?.toLocaleString() ?? 'N/A'} kWh |
-| Generation Coverage | ${calc.estimatedAnnualGeneration && calc.annualUsageKwh ? Math.round((calc.estimatedAnnualGeneration / calc.annualUsageKwh) * 100) : 'N/A'}% |
-| Self-Consumption Rate | ~80% (with battery) |
-`);
-
-  // ================================================================
-  // SLIDE: BATTERY CHARGE & DISCHARGE CYCLE (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: BATTERY CHARGE & DISCHARGE CYCLE
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Diagram**: 24-hour cycle showing charge (green) and discharge (white) phases
-## Narrative
-The <span class="hl-aqua">${calc.batterySizeKwh ?? 'N/A'}kWh battery</span> operates on a daily charge-discharge cycle optimised for maximum bill savings. Charging occurs during peak solar hours (10am–3pm) when generation exceeds household demand. Discharge begins at sunset, powering your home through the high-tariff evening period until the battery reaches its minimum state of charge, typically around midnight. The VPP integration adds a secondary optimisation layer, dispatching stored energy to the grid during peak demand events for additional income.
-## Battery Cycle Summary
-| Phase | Time | Action |
-|---|---|---|
-| Solar Charge | 10am – 3pm | Battery charges from solar surplus |
-| Idle / Export | 3pm – 5pm | Excess solar exported to grid |
-| Discharge | 5pm – 12am | Battery powers evening demand |
-| Grid Standby | 12am – 6am | Minimal grid draw overnight |
-| VPP Dispatch | On demand | Grid support events |
-`);
-
-  // ================================================================
-  // SLIDE: GRID INDEPENDENCE ANALYSIS (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: GRID INDEPENDENCE ANALYSIS
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Gauge**: Large circular gauge showing grid independence percentage
-## Narrative
-With the proposed <span class="hl-aqua">${calc.solarSizeKw ?? 'N/A'}kW solar + ${calc.batterySizeKwh ?? 'N/A'}kWh battery system</span>, your household is projected to achieve approximately <span class="hl-aqua">${calc.gridIndependencePercent ?? 85}% grid independence</span>. This means only <span class="hl-orange">${100 - (calc.gridIndependencePercent ?? 85)}%</span> of your annual energy needs will be drawn from the grid, dramatically reducing your exposure to electricity price increases and network outages.
-## Independence Breakdown
-| Energy Source | Contribution | Value |
-|---|---|---|
-| Solar Self-Consumption | ~55% | <span class="hl-aqua">Free energy</span> |
-| Battery Discharge | ~30% | <span class="hl-aqua">Stored solar</span> |
-| Grid Import | ~${100 - (calc.gridIndependencePercent ?? 85)}% | <span class="hl-orange">Paid energy</span> |
-| **Grid Independence** | **~${calc.gridIndependencePercent ?? 85}%** | **Target** |
-`);
-
-  // ================================================================
-  // SLIDE: REBATE & INCENTIVE BREAKDOWN (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: REBATE & INCENTIVE BREAKDOWN
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Accent**: Solar Green for rebate values
-## Narrative
-${calc.customerState ?? 'Your state'} currently offers a combination of federal and state incentives that significantly reduce the upfront cost of your solar and battery investment. The federal Small-scale Technology Certificate (STC) scheme provides an immediate point-of-sale discount, while state-level battery rebates further reduce your net investment. Acting before the next STC deeming period reduction ensures you capture the maximum available incentive value.
-## Available Incentives
-| Incentive | Type | Estimated Value |
-|---|---|---|
-| Federal STC Rebate | Point-of-sale discount | <span class="hl-aqua">$${calc.solarRebate?.toLocaleString() ?? 'TBC'}</span> |
-| ${calc.customerState ?? 'State'} Battery Rebate | State government | <span class="hl-aqua">$${calc.batteryRebate?.toLocaleString() ?? 'TBC'}</span> |
-| Total Rebates | Combined | <span class="hl-aqua">$${((calc.solarRebate ?? 0) + (calc.batteryRebate ?? 0)).toLocaleString()}</span> |
-| Net System Cost | After rebates | <span class="hl-orange">$${calc.netInvestment?.toLocaleString() ?? 'TBC'}</span> |
-`);
-
-  // ================================================================
-  // SLIDE: 25-YEAR FINANCIAL PROJECTION (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: 25-YEAR FINANCIAL PROJECTION
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Chart**: Line chart — orange for no-solar cost trajectory, green for with-solar trajectory
-## Narrative
-Over a 25-year horizon at <span class="hl-orange">3.5% annual electricity inflation</span>, your current bill of <span class="hl-orange">$${calc.annualCost?.toLocaleString() ?? 'N/A'}/year</span> escalates to approximately <span class="hl-orange">$${calc.twentyFiveYearCostNoSolar?.toLocaleString() ?? 'N/A'}</span> in cumulative spend. With the proposed system, your cumulative 25-year energy cost is reduced to approximately <span class="hl-aqua">$${calc.twentyFiveYearCostWithSolar?.toLocaleString() ?? 'N/A'}</span> — a total saving of <span class="hl-aqua">$${calc.twentyFiveYearSavings?.toLocaleString() ?? 'N/A'}</span>. This represents a return that far exceeds most conventional investment vehicles.
-## 25-Year Financial Summary
-| Year | Without Solar | With Solar | Annual Saving |
-|---|---|---|---|
-| Year 1 | $${calc.annualCost?.toLocaleString() ?? 'N/A'} | $${calc.projectedAnnualCost?.toLocaleString() ?? 'N/A'} | $${calc.annualSavings?.toLocaleString() ?? 'N/A'} |
-| Year 10 | $${calc.tenYearCostNoSolar?.toLocaleString() ?? 'N/A'} | $${calc.tenYearCostWithSolar?.toLocaleString() ?? 'N/A'} | Growing |
-| Year 25 | $${calc.twentyFiveYearCostNoSolar?.toLocaleString() ?? 'N/A'} | $${calc.twentyFiveYearCostWithSolar?.toLocaleString() ?? 'N/A'} | <span class="hl-aqua">$${calc.twentyFiveYearSavings?.toLocaleString() ?? 'N/A'}</span> |
-`);
-
-  // ================================================================
-  // SLIDE: SYSTEM SPECIFICATIONS (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: SYSTEM SPECIFICATIONS
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Layout**: Two-column spec sheet — Solar on left, Battery on right
-## Narrative
-The recommended system has been precisely engineered for your property's energy profile. Every component is selected for Australian conditions, grid compliance, and long-term reliability. All equipment carries manufacturer warranties and is installed by Clean Energy Council accredited installers to Australian Standards.
-## Solar System
-| Component | Specification |
-|---|---|
-| System Size | ${calc.solarSizeKw ?? 'N/A'} kW |
-| Panel Count | ${calc.panelCount ?? 'N/A'} panels |
-| Inverter Brand | ${calc.inverterBrand ?? 'Premium Brand'} |
-| Inverter Size | ${calc.inverterSizeKw ?? 'N/A'} kW |
-| Annual Generation | ${calc.estimatedAnnualGeneration?.toLocaleString() ?? 'N/A'} kWh |
-| Warranty | 25-year panel, 10-year inverter |
-## Battery System
-| Component | Specification |
-|---|---|
-| Battery Brand | ${calc.batteryBrand ?? 'Premium Brand'} |
-| Usable Capacity | ${calc.batterySizeKwh ?? 'N/A'} kWh |
-| Peak Power | ${calc.batteryPeakPower ?? 'N/A'} kW |
-| Chemistry | Lithium Iron Phosphate (LFP) |
-| Cycles | 6,000+ cycles |
-| Warranty | 10 years |
-`);
-
-  // ================================================================
-  // SLIDE: WARRANTY & MAINTENANCE (v2 New)
-  // ================================================================
-  slideNum++;
-  slides.push(`
----
-# Slide ${slideNum}: WARRANTY & MAINTENANCE
-## Design
-- **Background**: Midnight Navy (#0F172A)
-- **Logo**: Top-right, Elite Smart Energy Solutions icon
-- **Icons**: Shield icons for each warranty category
-## Narrative
-Your investment is protected by a comprehensive multi-layer warranty structure. Elite Smart Energy Solutions provides a workmanship guarantee on all installation work, backed by manufacturer warranties on every component. The system is monitored remotely 24/7, with any performance anomalies flagged and resolved proactively — ensuring your system performs at its rated output for the full warranty period.
-## Warranty Coverage
-| Component | Warranty Period | Coverage |
-|---|---|---|
-| Solar Panels | 25 years | Performance guarantee (>80% output) |
-| Inverter | 10 years | Full replacement |
-| Battery | 10 years | Capacity guarantee (>70% retention) |
-| Installation | 5 years | Workmanship guarantee |
-| Monitoring | Ongoing | 24/7 remote performance monitoring |
-| CEC Accreditation | Ongoing | Australian Standards compliance |
 `);
 
   // ================================================================

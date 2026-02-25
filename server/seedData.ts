@@ -1,448 +1,292 @@
 /**
- * Seed Data for Elite Smart Energy Solutions Proposal Generator
- * Contains VPP providers and state rebates
+ * Seed Data for Elite Smart Energy Solutions Proposal Generator v2
+ * VPP Providers: 14 providers using baseRate/monthlyFee model (v2)
+ * State Rebates: Comprehensive Australian rebate database (v2)
+ * Updated: 25 February 2026
  */
-
 import { getDb } from "./db";
 import { vppProviders, stateRebates } from "../drizzle/schema";
 
 // ============================================
-// VPP PROVIDERS - 13 Nationwide Providers
+// VPP PROVIDERS — 14 Providers (v2 baseRate model)
+// Formula: annualRevenue = (dailyExportKwh × baseRateCents/100 × 365) - (monthlyFee × 12)
 // ============================================
-
 export const VPP_PROVIDERS_DATA = [
+  // ── WHOLESALE PROVIDERS ──────────────────────────────────────
+  {
+    name: "Amber Electric",
+    programName: "Amber for Batteries",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.amber.com.au",
+    notes: "Dynamic pricing based on live AEMO wholesale rates. Best performer for large batteries. baseRateCents=35.80, monthlyFee=15.00",
+    isActive: true,
+  },
   {
     name: "Tesla Energy",
     programName: "Tesla Virtual Power Plant",
-    dailyCredit: "0.50",
-    eventPayment: "20.00",
-    estimatedEventsPerYear: 12,
-    bundleDiscount: "0",
+    availableStates: ["NSW", "VIC", "SA"],
     hasGasBundle: false,
-    availableStates: ["VIC", "NSW", "QLD", "SA", "WA", "TAS", "ACT"],
-    requirements: "Tesla Powerwall required",
-    notes: "Premium VPP with excellent app integration",
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "13.5",
+    website: "https://www.tesla.com/en_AU/powerwall",
+    notes: "Tesla Powerwall required. Premium VPP with excellent app integration. baseRateCents=32.00, monthlyFee=0",
+    isActive: true,
+  },
+  {
+    name: "Reposit Power",
+    programName: "Reposit GridCredits",
+    availableStates: ["NSW", "VIC", "QLD", "SA", "TAS"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.repositpower.com",
+    notes: "GridCredits system — earns credits during grid stress events. baseRateCents=30.00, monthlyFee=12.00",
+    isActive: true,
+  },
+  {
+    name: "ShineHub",
+    programName: "ShineHub Community VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.shinehub.com.au",
+    notes: "Community solar focus. Strong for households with large solar arrays. baseRateCents=28.00, monthlyFee=10.00",
+    isActive: true,
+  },
+  {
+    name: "sonnen",
+    programName: "sonnen VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA", "TAS"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.sonnen.com.au",
+    notes: "sonnen battery preferred but not required. Excellent for whole-home energy management. baseRateCents=29.00, monthlyFee=8.00",
+    isActive: true,
+  },
+  {
+    name: "Zero Hero",
+    programName: "Zero Hero (GloBird Wholesale)",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.globirdenergy.com.au",
+    notes: "GloBird wholesale VPP. No monthly fee. baseRateCents=15.00, monthlyFee=0",
+    isActive: true,
+  },
+  // ── FIXED RATE PROVIDERS ─────────────────────────────────────
+  {
+    name: "Nectr",
+    programName: "Nectr Battery VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.nectr.com.au",
+    notes: "Highest fixed rate provider. No monthly fee. baseRateCents=12.50, monthlyFee=0",
+    isActive: true,
   },
   {
     name: "AGL",
-    programName: "AGL Virtual Power Plant",
-    dailyCredit: "0.45",
-    eventPayment: "15.00",
-    estimatedEventsPerYear: 15,
-    bundleDiscount: "150",
+    programName: "AGL VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
     hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "QLD", "SA"],
-    requirements: "Compatible battery required",
-    notes: "Gas bundle available for additional savings",
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "150",
+    minBatterySize: "5",
+    website: "https://www.agl.com.au",
+    notes: "Fixed rate VPP. Gas bundle available. baseRateCents=12.00, monthlyFee=5.00",
+    isActive: true,
+  },
+  {
+    name: "Powershop",
+    programName: "Powershop Battery VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA", "TAS"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.powershop.com.au",
+    notes: "Fixed rate, no monthly fee. Good for TAS customers. baseRateCents=11.50, monthlyFee=0",
+    isActive: true,
+  },
+  {
+    name: "ENGIE",
+    programName: "ENGIE VPP Advantage",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: true,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "100",
+    minBatterySize: "5",
+    website: "https://www.engie.com.au",
+    notes: "Fixed rate with small monthly fee. Gas bundle available. baseRateCents=11.00, monthlyFee=3.00",
+    isActive: true,
+  },
+  {
+    name: "GloBird Energy",
+    programName: "GloBird Battery VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.globirdenergy.com.au",
+    notes: "Fixed rate VPP. No monthly fee. baseRateCents=10.20, monthlyFee=0",
+    isActive: true,
+  },
+  {
+    name: "Discover Energy",
+    programName: "Discover Battery VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
+    hasGasBundle: false,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "0",
+    minBatterySize: "5",
+    website: "https://www.discoverenergy.com.au",
+    notes: "Fixed rate VPP. No monthly fee. baseRateCents=10.50, monthlyFee=0",
+    isActive: true,
   },
   {
     name: "Origin Energy",
     programName: "Origin Loop VPP",
-    dailyCredit: "0.40",
-    eventPayment: "18.00",
-    estimatedEventsPerYear: 10,
-    bundleDiscount: "120",
+    availableStates: ["NSW", "VIC", "QLD", "SA", "ACT"],
     hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "QLD", "SA", "ACT"],
-    requirements: "Approved battery list",
-    notes: "Strong gas+electricity bundle options",
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
+    bundleDiscount: "120",
+    minBatterySize: "5",
+    website: "https://www.originenergy.com.au",
+    notes: "Fixed rate, no monthly fee. Gas bundle available. Strong ACT coverage. baseRateCents=10.00, monthlyFee=0",
+    isActive: true,
   },
   {
     name: "Energy Australia",
-    programName: "EA PowerResponse",
-    dailyCredit: "0.35",
-    eventPayment: "22.00",
-    estimatedEventsPerYear: 8,
-    bundleDiscount: "100",
-    hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "QLD", "SA"],
-    requirements: "5kWh minimum battery",
-    notes: "Higher event payments, fewer events",
-  },
-  {
-    name: "Simply Energy",
-    programName: "Simply VPP",
-    dailyCredit: "0.55",
-    eventPayment: "12.00",
-    estimatedEventsPerYear: 20,
-    bundleDiscount: "80",
-    hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "SA"],
-    requirements: "Any compatible battery",
-    notes: "High daily credits, frequent events",
-  },
-  {
-    name: "Amber Electric",
-    programName: "Amber SmartShift",
-    dailyCredit: "0.30",
-    eventPayment: "25.00",
-    estimatedEventsPerYear: 12,
-    bundleDiscount: "0",
+    programName: "Energy Australia VPP",
+    availableStates: ["NSW", "VIC", "QLD", "SA"],
     hasGasBundle: false,
-    availableStates: ["VIC", "NSW", "QLD", "SA"],
-    requirements: "Smart meter required",
-    notes: "Wholesale pricing model, best for active users",
-  },
-  {
-    name: "Powershop",
-    programName: "Powershop VPP",
-    dailyCredit: "0.42",
-    eventPayment: "16.00",
-    estimatedEventsPerYear: 14,
+    dailyCredit: "0",
+    eventPayment: "0",
+    estimatedEventsPerYear: 0,
     bundleDiscount: "0",
-    hasGasBundle: false,
-    availableStates: ["VIC", "NSW", "QLD"],
-    requirements: "Compatible inverter/battery",
-    notes: "Good app, gamified energy management",
-  },
-  {
-    name: "Red Energy",
-    programName: "Red VPP",
-    dailyCredit: "0.38",
-    eventPayment: "17.00",
-    estimatedEventsPerYear: 12,
-    bundleDiscount: "90",
-    hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "QLD", "SA"],
-    requirements: "Approved battery",
-    notes: "Snowy Hydro owned, reliable",
-  },
-  {
-    name: "Lumo Energy",
-    programName: "Lumo VPP",
-    dailyCredit: "0.36",
-    eventPayment: "14.00",
-    estimatedEventsPerYear: 15,
-    bundleDiscount: "70",
-    hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "SA"],
-    requirements: "Compatible system",
-    notes: "Simple plans, no lock-in",
-  },
-  {
-    name: "Synergy",
-    programName: "Synergy VPP",
-    dailyCredit: "0.48",
-    eventPayment: "20.00",
-    estimatedEventsPerYear: 10,
-    bundleDiscount: "0",
-    hasGasBundle: false,
-    availableStates: ["WA"],
-    requirements: "WA residents only",
-    notes: "WA government owned, exclusive to WA",
-  },
-  {
-    name: "ActewAGL",
-    programName: "ActewAGL VPP",
-    dailyCredit: "0.40",
-    eventPayment: "15.00",
-    estimatedEventsPerYear: 12,
-    bundleDiscount: "100",
-    hasGasBundle: true,
-    availableStates: ["ACT", "NSW"],
-    requirements: "ACT/Southern NSW",
-    notes: "Local focus, good for ACT residents",
-  },
-  {
-    name: "Alinta Energy",
-    programName: "Alinta PowerUp",
-    dailyCredit: "0.32",
-    eventPayment: "18.00",
-    estimatedEventsPerYear: 10,
-    bundleDiscount: "60",
-    hasGasBundle: true,
-    availableStates: ["VIC", "NSW", "QLD", "SA", "WA"],
-    requirements: "Compatible battery",
-    notes: "Wide coverage including WA",
-  },
-  {
-    name: "Momentum Energy",
-    programName: "Momentum VPP",
-    dailyCredit: "0.44",
-    eventPayment: "14.00",
-    estimatedEventsPerYear: 16,
-    bundleDiscount: "0",
-    hasGasBundle: false,
-    availableStates: ["VIC", "NSW", "QLD", "SA", "ACT"],
-    requirements: "Hydro Tasmania owned",
-    notes: "100% carbon neutral, green focus",
+    minBatterySize: "5",
+    website: "https://www.energyaustralia.com.au",
+    notes: "Fixed rate VPP. No monthly fee. baseRateCents=9.50, monthlyFee=0",
+    isActive: true,
   },
 ];
 
 // ============================================
-// STATE REBATES
+// STATE REBATES — Comprehensive Australian Database (v2)
 // ============================================
-
-export const STATE_REBATES_DATA: Array<{
-  state: string;
-  rebateType: "solar" | "battery" | "heat_pump_hw" | "heat_pump_ac" | "ev_charger" | "induction";
-  name: string;
-  amount: string;
-  maxSystemSize: number | null;
-  requirements: string;
-  validUntil: string;
-  notes: string;
-}> = [
-  // Victoria
-  {
-    state: "VIC",
-    rebateType: "solar",
-    name: "Solar Homes Program",
-    amount: "1400",
-    maxSystemSize: 6.6,
-    requirements: "Combined household income under $210,000",
-    validUntil: "2025-12-31",
-    notes: "Interest-free loan also available",
-  },
-  {
-    state: "VIC",
-    rebateType: "battery",
-    name: "Solar Battery Rebate",
-    amount: "2950",
-    maxSystemSize: null,
-    requirements: "Must have solar PV installed",
-    validUntil: "2025-12-31",
-    notes: "Interest-free loan also available",
-  },
-  {
-    state: "VIC",
-    rebateType: "heat_pump_hw",
-    name: "Hot Water Rebate",
-    amount: "1000",
-    maxSystemSize: null,
-    requirements: "Replace gas or electric storage",
-    validUntil: "2025-12-31",
-    notes: "Heat pump hot water systems",
-  },
-  {
-    state: "VIC",
-    rebateType: "heat_pump_ac",
-    name: "Home Heating & Cooling Upgrade",
-    amount: "1000",
-    maxSystemSize: null,
-    requirements: "Replace old heating system",
-    validUntil: "2025-12-31",
-    notes: "Reverse cycle air conditioning",
-  },
-  // New South Wales
-  {
-    state: "NSW",
-    rebateType: "solar",
-    name: "Energy Savings Scheme",
-    amount: "600",
-    maxSystemSize: 10,
-    requirements: "Residential property",
-    validUntil: "2025-12-31",
-    notes: "STCs provide additional value",
-  },
-  {
-    state: "NSW",
-    rebateType: "battery",
-    name: "Empowering Homes",
-    amount: "2400",
-    maxSystemSize: null,
-    requirements: "Interest-free loan program",
-    validUntil: "2025-12-31",
-    notes: "Up to $14,000 loan available",
-  },
-  {
-    state: "NSW",
-    rebateType: "heat_pump_hw",
-    name: "Energy Savings Scheme - HW",
-    amount: "800",
-    maxSystemSize: null,
-    requirements: "Replace electric/gas HW",
-    validUntil: "2025-12-31",
-    notes: "Via retailer certificates",
-  },
-  // Queensland
-  {
-    state: "QLD",
-    rebateType: "solar",
-    name: "QLD Solar Rebate",
-    amount: "500",
-    maxSystemSize: 6.6,
-    requirements: "Owner-occupier",
-    validUntil: "2025-12-31",
-    notes: "STCs provide main value",
-  },
-  {
-    state: "QLD",
-    rebateType: "battery",
-    name: "Battery Booster",
-    amount: "3000",
-    maxSystemSize: null,
-    requirements: "Existing solar required",
-    validUntil: "2025-12-31",
-    notes: "Interest-free loans available",
-  },
-  // South Australia
-  {
-    state: "SA",
-    rebateType: "solar",
-    name: "SA Home Battery Scheme",
-    amount: "500",
-    maxSystemSize: 10,
-    requirements: "Residential property",
-    validUntil: "2025-12-31",
-    notes: "Combined with battery subsidy",
-  },
-  {
-    state: "SA",
-    rebateType: "battery",
-    name: "SA Home Battery Scheme",
-    amount: "4500",
-    maxSystemSize: null,
-    requirements: "Must have solar PV",
-    validUntil: "2025-12-31",
-    notes: "One of the best battery rebates",
-  },
-  {
-    state: "SA",
-    rebateType: "heat_pump_hw",
-    name: "Retailer Energy Productivity Scheme",
-    amount: "700",
-    maxSystemSize: null,
-    requirements: "Replace gas/electric HW",
-    validUntil: "2025-12-31",
-    notes: "Via energy retailer",
-  },
-  // Western Australia
-  {
-    state: "WA",
-    rebateType: "solar",
-    name: "Distributed Energy Buyback",
-    amount: "400",
-    maxSystemSize: 5,
-    requirements: "Synergy customer",
-    validUntil: "2025-12-31",
-    notes: "Feed-in tariff based",
-  },
-  {
-    state: "WA",
-    rebateType: "battery",
-    name: "WA Battery Subsidy",
-    amount: "2000",
-    maxSystemSize: null,
-    requirements: "Existing solar",
-    validUntil: "2025-12-31",
-    notes: "Limited availability",
-  },
-  // Tasmania
-  {
-    state: "TAS",
-    rebateType: "solar",
-    name: "TAS Energy Saver Loan",
-    amount: "500",
-    maxSystemSize: 6.6,
-    requirements: "Low-interest loan",
-    validUntil: "2025-12-31",
-    notes: "Loan scheme primarily",
-  },
-  {
-    state: "TAS",
-    rebateType: "battery",
-    name: "TAS Battery Scheme",
-    amount: "2000",
-    maxSystemSize: null,
-    requirements: "Existing solar",
-    validUntil: "2025-12-31",
-    notes: "Limited program",
-  },
-  // ACT
-  {
-    state: "ACT",
-    rebateType: "solar",
-    name: "Sustainable Household Scheme",
-    amount: "800",
-    maxSystemSize: 10,
-    requirements: "ACT resident",
-    validUntil: "2025-12-31",
-    notes: "Zero-interest loan available",
-  },
-  {
-    state: "ACT",
-    rebateType: "battery",
-    name: "Next Gen Energy Storage",
-    amount: "3500",
-    maxSystemSize: null,
-    requirements: "ACT resident with solar",
-    validUntil: "2025-12-31",
-    notes: "Strong battery support",
-  },
-  {
-    state: "ACT",
-    rebateType: "heat_pump_hw",
-    name: "Home Energy Support",
-    amount: "1200",
-    maxSystemSize: null,
-    requirements: "Replace gas HW",
-    validUntil: "2025-12-31",
-    notes: "Gas transition focus",
-  },
-  // Northern Territory
-  {
-    state: "NT",
-    rebateType: "solar",
-    name: "NT Solar Scheme",
-    amount: "400",
-    maxSystemSize: 5,
-    requirements: "NT resident",
-    validUntil: "2025-12-31",
-    notes: "Limited program",
-  },
-  {
-    state: "NT",
-    rebateType: "battery",
-    name: "NT Battery Support",
-    amount: "1500",
-    maxSystemSize: null,
-    requirements: "Existing solar",
-    validUntil: "2025-12-31",
-    notes: "Remote area focus",
-  },
+export const STATE_REBATES_DATA = [
+  // ── VICTORIA ─────────────────────────────────────────────────
+  { state: "VIC", rebateType: "solar" as const, name: "Solar Homes Program", amount: "1400", isPercentage: false, maxAmount: "1400", eligibilityCriteria: "Income < $210,000 household. Owner-occupier. Interest-free loan also available.", isActive: true, sourceUrl: "https://www.solar.vic.gov.au" },
+  { state: "VIC", rebateType: "battery" as const, name: "Solar Battery Rebate", amount: "2950", isPercentage: false, maxAmount: "2950", eligibilityCriteria: "Must have existing or new solar PV. Interest-free loan also available.", isActive: true, sourceUrl: "https://www.solar.vic.gov.au" },
+  { state: "VIC", rebateType: "heat_pump_hw" as const, name: "Hot Water Rebate", amount: "1000", isPercentage: false, maxAmount: "1000", eligibilityCriteria: "Replace gas or electric storage hot water system with heat pump.", isActive: true, sourceUrl: "https://www.solar.vic.gov.au" },
+  { state: "VIC", rebateType: "heat_pump_ac" as const, name: "Heating & Cooling Upgrade", amount: "1000", isPercentage: false, maxAmount: "1000", eligibilityCriteria: "Replace old gas heating with reverse cycle air conditioner.", isActive: true, sourceUrl: "https://www.solar.vic.gov.au" },
+  // ── NEW SOUTH WALES ──────────────────────────────────────────
+  { state: "NSW", rebateType: "solar" as const, name: "Energy Savings Scheme (ESS)", amount: "600", isPercentage: false, maxAmount: "600", eligibilityCriteria: "Residential property. STCs provide additional value from federal government.", isActive: true, sourceUrl: "https://www.energy.nsw.gov.au" },
+  { state: "NSW", rebateType: "battery" as const, name: "Empowering Homes Program", amount: "2400", isPercentage: false, maxAmount: "14000", eligibilityCriteria: "Interest-free loan program up to $14,000. Owner-occupier.", isActive: true, sourceUrl: "https://www.energy.nsw.gov.au" },
+  { state: "NSW", rebateType: "heat_pump_hw" as const, name: "ESS Hot Water", amount: "800", isPercentage: false, maxAmount: "800", eligibilityCriteria: "Replace electric or gas hot water system. Via energy retailer certificates.", isActive: true, sourceUrl: "https://www.energy.nsw.gov.au" },
+  // ── QUEENSLAND ───────────────────────────────────────────────
+  { state: "QLD", rebateType: "solar" as const, name: "QLD Solar Rebate (STCs)", amount: "500", isPercentage: false, maxAmount: "500", eligibilityCriteria: "Owner-occupier. STCs provide main federal rebate value.", isActive: true, sourceUrl: "https://www.energex.com.au" },
+  { state: "QLD", rebateType: "battery" as const, name: "Battery Booster Program", amount: "3000", isPercentage: false, maxAmount: "3000", eligibilityCriteria: "Must have existing solar PV. Interest-free loans available.", isActive: true, sourceUrl: "https://www.qld.gov.au" },
+  // ── SOUTH AUSTRALIA ──────────────────────────────────────────
+  { state: "SA", rebateType: "solar" as const, name: "SA Home Battery Scheme (Solar)", amount: "500", isPercentage: false, maxAmount: "500", eligibilityCriteria: "Residential property. Combined with battery subsidy.", isActive: true, sourceUrl: "https://www.sa.gov.au" },
+  { state: "SA", rebateType: "battery" as const, name: "SA Home Battery Scheme", amount: "4500", isPercentage: false, maxAmount: "4500", eligibilityCriteria: "Must have solar PV. One of Australia's best battery rebates.", isActive: true, sourceUrl: "https://www.sa.gov.au" },
+  { state: "SA", rebateType: "heat_pump_hw" as const, name: "Retailer Energy Productivity Scheme", amount: "700", isPercentage: false, maxAmount: "700", eligibilityCriteria: "Replace gas or electric hot water system. Via energy retailer.", isActive: true, sourceUrl: "https://www.sa.gov.au" },
+  // ── WESTERN AUSTRALIA ────────────────────────────────────────
+  { state: "WA", rebateType: "solar" as const, name: "Distributed Energy Buyback Scheme", amount: "400", isPercentage: false, maxAmount: "400", eligibilityCriteria: "Synergy customer. Up to 5kW system. Feed-in tariff based.", isActive: true, sourceUrl: "https://www.synergy.net.au" },
+  { state: "WA", rebateType: "battery" as const, name: "WA Battery Subsidy", amount: "2000", isPercentage: false, maxAmount: "2000", eligibilityCriteria: "Must have existing solar. Limited availability — check current status.", isActive: true, sourceUrl: "https://www.wa.gov.au" },
+  // ── TASMANIA ─────────────────────────────────────────────────
+  { state: "TAS", rebateType: "solar" as const, name: "TAS Energy Saver Loan", amount: "500", isPercentage: false, maxAmount: "500", eligibilityCriteria: "Low-interest loan scheme. Up to 6.6kW system.", isActive: true, sourceUrl: "https://www.energysaver.tas.gov.au" },
+  { state: "TAS", rebateType: "battery" as const, name: "TAS Battery Scheme", amount: "2000", isPercentage: false, maxAmount: "2000", eligibilityCriteria: "Must have existing solar. Limited program — check availability.", isActive: true, sourceUrl: "https://www.energysaver.tas.gov.au" },
+  // ── AUSTRALIAN CAPITAL TERRITORY ─────────────────────────────
+  { state: "ACT", rebateType: "solar" as const, name: "Sustainable Household Scheme", amount: "800", isPercentage: false, maxAmount: "800", eligibilityCriteria: "ACT resident. Zero-interest loan available up to $15,000.", isActive: true, sourceUrl: "https://www.climatechoices.act.gov.au" },
+  { state: "ACT", rebateType: "battery" as const, name: "Next Gen Energy Storage", amount: "3500", isPercentage: false, maxAmount: "3500", eligibilityCriteria: "ACT resident with existing solar. Strong battery support program.", isActive: true, sourceUrl: "https://www.climatechoices.act.gov.au" },
+  { state: "ACT", rebateType: "heat_pump_hw" as const, name: "Home Energy Support Scheme", amount: "1200", isPercentage: false, maxAmount: "1200", eligibilityCriteria: "Replace gas hot water system. Gas transition focus.", isActive: true, sourceUrl: "https://www.climatechoices.act.gov.au" },
+  // ── NORTHERN TERRITORY ───────────────────────────────────────
+  { state: "NT", rebateType: "solar" as const, name: "NT Solar Scheme", amount: "400", isPercentage: false, maxAmount: "400", eligibilityCriteria: "NT resident. Up to 5kW system. Limited program.", isActive: true, sourceUrl: "https://www.nt.gov.au" },
+  { state: "NT", rebateType: "battery" as const, name: "NT Battery Support", amount: "1500", isPercentage: false, maxAmount: "1500", eligibilityCriteria: "Must have existing solar. Remote area focus.", isActive: true, sourceUrl: "https://www.nt.gov.au" },
 ];
 
 // ============================================
 // SEED FUNCTIONS
 // ============================================
-
-export async function seedVppProviders(): Promise<number> {
+export async function seedVppProviders() {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  // Clear existing data
-  await db.delete(vppProviders);
-  
-  // Insert new data
+  console.log("[Seed] Seeding 14 VPP providers (v2 baseRate model)...");
   for (const provider of VPP_PROVIDERS_DATA) {
-    await db.insert(vppProviders).values(provider);
+    try {
+      await db.insert(vppProviders).values(provider);
+      console.log(`[Seed] ✓ ${provider.name}`);
+    } catch (err: any) {
+      if (err?.code === 'ER_DUP_ENTRY' || err?.message?.includes('duplicate')) {
+        console.log(`[Seed] ↷ ${provider.name} (already exists)`);
+      } else {
+        console.error(`[Seed] ✗ ${provider.name}:`, err?.message);
+      }
+    }
   }
-  
-  return VPP_PROVIDERS_DATA.length;
+  console.log("[Seed] VPP providers seeding complete.");
 }
 
-export async function seedStateRebates(): Promise<number> {
+export async function seedStateRebates() {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  
-  // Clear existing data
-  await db.delete(stateRebates);
-  
-  // Insert new data
+  console.log("[Seed] Seeding state rebates (v2 comprehensive database)...");
   for (const rebate of STATE_REBATES_DATA) {
-    await db.insert(stateRebates).values({
-      ...rebate,
-      validUntil: rebate.validUntil ? new Date(rebate.validUntil) : null,
-    });
+    try {
+      await db.insert(stateRebates).values(rebate);
+      console.log(`[Seed] ✓ ${rebate.state} ${rebate.rebateType}: ${rebate.name}`);
+    } catch (err: any) {
+      if (err?.code === 'ER_DUP_ENTRY' || err?.message?.includes('duplicate')) {
+        console.log(`[Seed] ↷ ${rebate.state} ${rebate.rebateType} (already exists)`);
+      } else {
+        console.error(`[Seed] ✗ ${rebate.state} ${rebate.rebateType}:`, err?.message);
+      }
+    }
   }
-  
-  return STATE_REBATES_DATA.length;
+  console.log("[Seed] State rebates seeding complete.");
 }
 
-export async function seedAllData(): Promise<{ vppCount: number; rebateCount: number }> {
-  const vppCount = await seedVppProviders();
-  const rebateCount = await seedStateRebates();
-  
-  return { vppCount, rebateCount };
+export async function seedAll() {
+  await seedVppProviders();
+  await seedStateRebates();
 }
