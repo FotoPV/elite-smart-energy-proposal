@@ -7,3 +7,6 @@ startCommand = "NODE_ENV=production node dist/index.js"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+
+[build.nixpacksPlan.phases.setup]
+nixPkgs = ["nodejs_22"]
