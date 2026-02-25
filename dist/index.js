@@ -5639,10 +5639,12 @@ function genGeneric(slide) {
 
 // server/pptxGenerator.ts
 init_brand();
-import PptxGenJS from "pptxgenjs";
+import { createRequire } from "module";
 import * as fs2 from "fs";
 import * as path2 from "path";
 import { fileURLToPath } from "url";
+var _require = createRequire(import.meta.url);
+var PptxGenJS = _require("pptxgenjs");
 var PptxCtor = PptxGenJS.default || PptxGenJS;
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path2.dirname(__filename);

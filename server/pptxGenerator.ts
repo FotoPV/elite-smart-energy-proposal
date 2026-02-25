@@ -2,8 +2,10 @@
 // Generates native .pptx files with embedded brand fonts and full data tables
 // Uses pptxgenjs for pixel-perfect control
 
-import PptxGenJS from 'pptxgenjs';
-// Runtime constructor - handles both ESM default and CJS module formats
+import { createRequire } from 'module';
+const _require = createRequire(import.meta.url);
+// Force CJS version of pptxgenjs to avoid jszip ESM import error
+const PptxGenJS = _require('pptxgenjs') as typeof import('pptxgenjs');
 const PptxCtor = ((PptxGenJS as any).default || PptxGenJS) as typeof PptxGenJS;
 import { BRAND } from '../shared/brand';
 import { ProposalData } from './slideGenerator';
