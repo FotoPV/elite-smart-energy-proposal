@@ -892,7 +892,7 @@ export default function ProposalDetailPage() {
         
         {/* Footer */}
         <div className="text-center text-xs text-[#4A6B8A]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-          Lightning Energy Proposal Generator
+          Elite Smart Energy Solutions
         </div>
       </div>
     </DashboardLayout>

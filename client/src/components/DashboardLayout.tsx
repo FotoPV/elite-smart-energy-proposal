@@ -158,7 +158,7 @@ function DashboardLayoutContent({
               >
                 <img 
                   src={LOGO_ICON_WHITE} 
-                  alt="Lightning Energy" 
+                  alt="Elite Smart Energy" 
                   className="h-8 w-8 shrink-0"
                   style={{ filter: 'drop-shadow(0 0 6px rgba(0,234,211,0.4))' }}
                 />

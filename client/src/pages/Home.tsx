@@ -26,7 +26,7 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img
             src={BRAND.iconTransparent}
-            alt="Lightning Energy"
+            alt="Elite Smart Energy"
             style={{ height: "72px", width: "72px", objectFit: "contain" }}
           />
         </div>
@@ -316,7 +316,7 @@ export default function Home() {
           fontFamily: "'GeneralSans', 'Open Sans', sans-serif",
         }}
       >
-        © Lightning Energy — Proposal Generator
+        © Elite Smart Energy Solutions
       </div>
     </div>
   );

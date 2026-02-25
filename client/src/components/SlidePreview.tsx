@@ -103,7 +103,7 @@ export function FullSlideRenderer({ slide }: { slide: SlideData }) {
       
       {/* Footer */}
       <div className="absolute bottom-4 left-8 right-8 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Lightning Energy</span>
+        <span>Elite Smart Energy</span>
         <span>Slide {slide.slideNumber}</span>
       </div>
     </div>

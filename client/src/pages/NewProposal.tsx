@@ -750,7 +750,7 @@ export default function NewProposal() {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          Lightning Energy Proposal Generator
+          Elite Smart Energy Solutions
         </div>
       </div>
 
