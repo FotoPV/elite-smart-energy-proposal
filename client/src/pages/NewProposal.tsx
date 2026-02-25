@@ -1004,6 +1004,36 @@ export default function NewProposal() {
                     <span className="text-muted-foreground">Electricity Bill:</span>
                     <span className="text-green-400">Uploaded</span>
                   </div>
+                  {solarProposalDoc?.status === 'done' && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Solar Proposal:</span>
+                      <span className="text-amber-400">Uploaded</span>
+                    </div>
+                  )}
+                  {gasBillId && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Gas Bill:</span>
+                      <span className="text-orange-400">Uploaded</span>
+                    </div>
+                  )}
+                  {switchboardDoc?.status === 'done' && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Switchboard Photo:</span>
+                      <span className="text-blue-400">Uploaded</span>
+                    </div>
+                  )}
+                  {meterDoc?.status === 'done' && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Meter Photo:</span>
+                      <span className="text-blue-400">Uploaded</span>
+                    </div>
+                  )}
+                  {roofDoc?.status === 'done' && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Roof Photo:</span>
+                      <span className="text-green-400">Uploaded</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Additional Documents:</span>
                     <span className={uploadedDocs.filter(d => d.status === 'done').length > 0 ? "text-green-400" : "text-muted-foreground"}>
