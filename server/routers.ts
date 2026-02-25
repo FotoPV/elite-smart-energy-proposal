@@ -1680,6 +1680,7 @@ function generateSlidesData(
       isConditional: false, isIncluded: true,
       content: {
         totalAnnualSavings: c.totalAnnualSavings,
+        electricitySavings: c.electricitySavings,
         projectedAnnualCost: c.projectedAnnualCost,
         gasAnnualCost: c.gasAnnualCost,
         hotWaterSavings: c.hotWaterSavings,
@@ -1687,7 +1688,13 @@ function generateSlidesData(
         cookingSavings: c.cookingSavings,
         evAnnualSavings: c.evAnnualSavings,
         vppAnnualValue: c.vppAnnualValue,
+        vppProvider: c.selectedVppProvider,
         poolHeatPumpSavings: c.poolHeatPumpSavings,
+        tenYearSavings: c.tenYearSavings,
+        twentyFiveYearSavings: c.twentyFiveYearSavings,
+        netInvestment: c.netInvestment,
+        totalRebates: c.totalRebates,
+        paybackYears: c.paybackYears,
       },
     },
     // Slide 21: Financial Summary & Payback

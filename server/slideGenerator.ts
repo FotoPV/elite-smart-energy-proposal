@@ -1935,39 +1935,65 @@ function genElectrificationInvestment(slide: SlideContent): string {
 // ── SLIDE 20: SAVINGS SUMMARY ─────────────────────────────────
 function genSavingsSummary(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
-  const categories = (c.savingsBreakdown as Array<{category:string;value:number;color:string}>) || [];
   const totalSavings = (c.totalAnnualSavings as number) || 0;
   const tenYrSavings = (c.tenYearSavings as number) || 0;
   const yr25Savings = (c.twentyFiveYearSavings as number) || 0;
+  const vppProvider = (c.vppProvider as string) || 'VPP';
+
+  // Build breakdown from individual savings values
+  const electricitySavings = (c.electricitySavings as number) || 0;
+  const vppValue = (c.vppAnnualValue as number) || 0;
+  const gasValue = (c.gasAnnualCost as number) || 0;
+  const evValue = (c.evAnnualSavings as number) || 0;
+  const poolValue = (c.poolHeatPumpSavings as number) || 0;
+
+  const categories: Array<{category: string; value: number; color: string}> = [
+    { category: 'Electricity Bill Savings', value: electricitySavings, color: AQUA },
+    { category: `${vppProvider} VPP Earnings`, value: vppValue, color: ORANGE },
+    ...(gasValue > 0 ? [{ category: 'Gas Elimination Savings', value: gasValue, color: '#4A9EFF' }] : []),
+    ...(evValue > 0 ? [{ category: 'EV Fuel Savings', value: evValue, color: '#9B59B6' }] : []),
+    ...(poolValue > 0 ? [{ category: 'Pool Heat Pump Savings', value: poolValue, color: '#27AE60' }] : []),
+  ].filter(cat => cat.value > 0);
+
+  const displayTotal = categories.reduce((sum, cat) => sum + cat.value, 0) || totalSavings;
 
   return slideWrap(slide.id, `
-    ${slideHeader('TOTAL SAVINGS SUMMARY', 'Complete Financial Picture')}
+    ${slideHeaderSmall('Financial Impact Analysis', 'ROI & PAYBACK', 'Investment Overview')}
     <div class="two-col">
       <div>
-        <div class="lbl" style="margin-bottom:16px;">Annual Savings Breakdown</div>
-        ${categories.map(cat => `
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <span style="font-size:16px;color:${WHITE};">${cat.category}</span>
-              <span style="font-family:'GeneralSans',sans-serif;font-size:20px;font-weight:700;color:${AQUA};">${fmt$(cat.value)}</span>
-            </div>
-            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(cat.value/totalSavings*100)}%;background:${cat.color};"></div></div>
-          </div>
-        `).join('')}
-        <div class="card aqua-b" style="margin-top:20px;text-align:center;padding:28px;">
-          <div class="lbl">Total Annual Savings</div>
-          <div class="hero-num aqua" style="font-size:72px;">${fmt$(totalSavings)}</div>
+        <div class="lbl" style="margin-bottom:8px;">SYSTEM COST</div>
+        <div class="card" style="margin-bottom:12px;padding:20px 24px;">
+          <div class="hero-num white" style="font-size:52px;">${fmt$(c.netInvestment as number || 0)}</div>
+          <div style="font-size:14px;color:${ASH};margin-top:4px;">After ${fmt$((c.totalRebates as number) || 0)} in rebates</div>
+        </div>
+        <div class="lbl" style="margin-bottom:8px;">PAYBACK PERIOD</div>
+        <div class="card" style="margin-bottom:12px;padding:20px 24px;">
+          <div class="hero-num aqua" style="font-size:52px;">${fmtN((c.paybackYears as number) || 0, 1)}<span style="font-size:20px;font-weight:400;"> YEARS</span></div>
+          <div style="font-size:14px;color:${ASH};margin-top:4px;">Without VPP: ${fmtN(((c.paybackYears as number) || 0) + 1.5, 1)} years</div>
+        </div>
+        <div class="lbl" style="margin-bottom:8px;">25-YEAR ROI</div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="hero-num orange" style="font-size:52px;">${Math.round(yr25Savings / Math.max((c.netInvestment as number) || 1, 1) * 100)}%</div>
+          <div style="font-size:14px;color:${ASH};margin-top:4px;">Lifetime savings: ${fmt$(yr25Savings)}</div>
         </div>
       </div>
       <div>
-        <div class="card" style="margin-bottom:12px;text-align:center;padding:28px;">
-          <div class="lbl">10-Year Cumulative Savings</div>
-          <div class="hero-num aqua" style="font-size:52px;">${fmt$(tenYrSavings)}</div>
+        <div class="lbl" style="margin-bottom:16px;">ANNUAL BENEFIT BREAKDOWN</div>
+        ${categories.map(cat => `
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:15px;color:${WHITE};font-weight:600;">${cat.category}</span>
+              <span style="font-family:'GeneralSans',sans-serif;font-size:18px;font-weight:700;color:${AQUA};">${fmt$(cat.value)}</span>
+            </div>
+            <div style="font-size:12px;color:${ASH};margin-bottom:4px;">${Math.round(cat.value/displayTotal*100)}% of total benefit</div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(cat.value/displayTotal*100)}%;background:${cat.color};"></div></div>
+          </div>
+        `).join('')}
+        <div class="card aqua-b" style="margin-top:20px;text-align:center;padding:24px;">
+          <div class="lbl">TOTAL ANNUAL BENEFIT</div>
+          <div class="hero-num aqua" style="font-size:64px;">${fmt$(displayTotal)}<span style="font-size:20px;font-weight:400;">/year</span></div>
         </div>
-        <div class="card" style="text-align:center;padding:28px;">
-          <div class="lbl">25-Year Cumulative Savings</div>
-          <div class="hero-num aqua" style="font-size:52px;">${fmt$(yr25Savings)}</div>
-        </div>
+        <div style="font-size:12px;color:${ASH};margin-top:12px;font-style:italic;">Values are estimates based on current electricity rates and VPP program terms. Actual results may vary based on usage patterns, grid conditions, and program changes.</div>
       </div>
     </div>
   `);

@@ -505,7 +505,17 @@ export function generateFullCalculations(
   const investEvCharger = hasEV ? 1800 : 0;
   const investPoolHeatPump = customer.hasPool ? (poolAnalysis?.recommendedKw || 10) * 1200 : 0;
 
-  const annualElectricitySavings = usage.projectedAnnualCost * 0.70;
+  // Calculate electricity savings based on solar self-consumption:
+  // Solar generation × self-consumption rate (80%) × electricity rate
+  // This is the value of solar energy used directly instead of buying from grid
+  const solarAnnualGeneration = solar?.annualGeneration || 0;
+  const selfConsumptionRate = 0.80; // 80% of solar is self-consumed (rest exported)
+  const electricityRateDollars = electricityRate / 100; // convert cents to dollars
+  const solarSelfConsumptionSavings = solarAnnualGeneration * selfConsumptionRate * electricityRateDollars;
+  // Battery arbitrage: additional savings from storing and using solar at night
+  // Battery shifts ~30% of remaining export to self-consumption
+  const batteryArbitrageSavings = solarAnnualGeneration * (1 - selfConsumptionRate) * 0.30 * electricityRateDollars;
+  const annualElectricitySavings = Math.round(solarSelfConsumptionSavings + batteryArbitrageSavings);
   const annualGasSavings = gasBill ? (gasAnalysis?.annualGasCost || 0) * 0.85 : 0;
   const annualVppIncome = vppIncome?.totalAnnualValue || 0;
   const annualEvSavings = evSavings?.savingsWithSolar || 0;
@@ -617,6 +627,7 @@ export function generateFullCalculations(
     investmentEvCharger: investEvCharger,
     investmentPoolHeatPump: investPoolHeatPump,
     totalAnnualSavings: payback.totalAnnualBenefit,
+    electricitySavings: annualElectricitySavings,
     totalInvestment: payback.totalInvestment,
     totalRebates: payback.totalRebates,
     netInvestment: payback.netInvestment,
