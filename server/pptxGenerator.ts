@@ -41,14 +41,14 @@ const FONT_DIR = path.join(__dirname, 'fonts');
 
 // Font names (pptxgenjs uses system fonts or embedded)
 const F = {
-  heading: 'NextSphere',
-  body: 'GeneralSans',
-  label: 'Urbanist',
+  heading: 'Montserrat',
+  body: 'Open Sans',
+  label: 'Montserrat',
 };
 
 // CDN URLs for assets needed at runtime
 const ASSET_CDN: Record<string, string> = {
-  'elite-logo.jpg': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg',
+  'elite-logo.jpg': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png',
 };
 
 // Ensure logo is available locally (download from CDN if needed)
@@ -107,7 +107,7 @@ function addCopyright(slide: PptxGenJS.Slide) {
 }
 
 function addSlideHeader(slide: PptxGenJS.Slide, title: string, subtitle?: string) {
-  // Title (NextSphere, large, white, ALL CAPS)
+  // Title (Montserrat, large, white, ALL CAPS)
   slide.addText(title.toUpperCase(), {
     x: PAD_L,
     y: PAD_T,
@@ -119,7 +119,7 @@ function addSlideHeader(slide: PptxGenJS.Slide, title: string, subtitle?: string
     bold: true,
   });
 
-  // Subtitle (Urbanist Italic, aqua, right-aligned)
+  // Subtitle (Montserrat Italic, aqua, right-aligned)
   if (subtitle) {
     slide.addText(subtitle, {
       x: PAD_L + CONTENT_W * 0.6,
@@ -191,10 +191,21 @@ function addDataTable(
 
 function slideCover(pptx: PptxGenJS, d: ProposalData) {
   const slide = pptx.addSlide();
-  slide.background = { color: C.black };
 
-  // Try to add cover background image
-  const coverBgPath = path.join(FONT_DIR, '..', '..', 'client', 'public', 'cover-bg.png');
+  // Cover backdrop — Electrification Specialists background image
+  const coverBgPath = path.join(FONT_DIR, '..', '..', 'client', 'public', 'cover_backdrop.jpg');
+  if (fs.existsSync(coverBgPath)) {
+    slide.background = { path: coverBgPath };
+  } else {
+    slide.background = { color: C.black };
+  }
+
+  // Dark overlay rectangle for text legibility
+  slide.addShape('rect' as any, {
+    x: 0, y: 0, w: 10, h: 7.5,
+    fill: { color: '0F172A', transparency: 30 },
+    line: { color: '0F172A', width: 0 },
+  });
 
   // Logo + Company Name
   const logoPath = path.join(FONT_DIR, 'elite-logo.jpg');
@@ -202,20 +213,24 @@ function slideCover(pptx: PptxGenJS, d: ProposalData) {
     slide.addImage({ path: logoPath, x: 0.8, y: 0.5, w: 0.7, h: 0.7 });
   }
   slide.addText('ELITE SMART ENERGY SOLUTIONS', {
-    x: 1.7, y: 0.55, w: 4, h: 0.6,
-    fontSize: 22, fontFace: F.heading, color: C.white, bold: true,
+    x: 1.7, y: 0.55, w: 5, h: 0.4,
+    fontSize: 20, fontFace: F.heading, color: C.white, bold: true, charSpacing: 2,
+  });
+  slide.addText('ELECTRIFICATION SPECIALISTS', {
+    x: 1.7, y: 0.95, w: 5, h: 0.3,
+    fontSize: 10, fontFace: F.label, color: '46B446', charSpacing: 3,
   });
 
   // Main Title
   slide.addText('IN-DEPTH BILL ANALYSIS\n& SOLAR BATTERY PROPOSAL', {
-    x: 0.8, y: 2.0, w: 6, h: 1.5,
-    fontSize: 32, fontFace: F.heading, color: C.white, bold: true, lineSpacing: 42,
+    x: 0.8, y: 2.0, w: 6.5, h: 1.6,
+    fontSize: 34, fontFace: F.heading, color: C.white, bold: true, lineSpacing: 44,
   });
 
-  // Orange accent bar
+  // Solar Green accent bar
   slide.addShape('rect' as any, {
     x: 0.8, y: 4.0, w: 0.08, h: 1.0,
-    fill: { color: C.orange },
+    fill: { color: '46B446' },
   });
 
   // Customer details
@@ -227,10 +242,10 @@ function slideCover(pptx: PptxGenJS, d: ProposalData) {
     x: 1.1, y: 3.9, w: 5, h: 1.2,
   });
 
-  // Aqua line
+  // Solar Green line
   slide.addShape('rect' as any, {
-    x: 0.8, y: 5.5, w: 5, h: 0.02,
-    fill: { color: C.aqua },
+    x: 0.8, y: 5.5, w: 8, h: 0.03,
+    fill: { color: '46B446' },
   });
 
   // Prepared by

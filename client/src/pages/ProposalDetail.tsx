@@ -615,7 +615,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
         >
           <FileDown className="mr-3 h-4 w-4 text-[#f36710]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PDF</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PDF</div>
             <div className="text-[10px] text-[#808285]">Embedded brand fonts</div>
           </div>
         </DropdownMenuItem>
@@ -625,7 +625,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
         >
           <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PowerPoint</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PowerPoint</div>
             <div className="text-[10px] text-[#808285]">Editable .pptx file</div>
           </div>
         </DropdownMenuItem>
@@ -635,7 +635,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
         >
           <FileText className="mr-3 h-4 w-4 text-[#808285]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>HTML PDF</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>HTML PDF</div>
             <div className="text-[10px] text-[#808285]">Browser-rendered slides</div>
           </div>
         </DropdownMenuItem>
@@ -646,7 +646,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
         >
           <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
           <div>
-            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Urbanist', sans-serif" }}>Manus Slides</div>
+            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
             <div className="text-[10px] text-[#808285]">Pixel-perfect image slides</div>
           </div>
         </DropdownMenuItem>
@@ -733,7 +733,7 @@ export default function ProposalDetailPage() {
           </Button>
         </div>
         
-        {/* Page Title - BILL ANALYSIS in NextSphere */}
+        {/* Page Title - BILL ANALYSIS in Montserrat */}
         <div>
           <h1 
             className="text-4xl md:text-5xl tracking-tight text-white uppercase"

@@ -189,7 +189,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       state: data.state,
       preparedBy: BRAND.contact.name,
       company: BRAND.contact.company,
-      logoUrl: BRAND.logo.aqua,
+      logoUrl: BRAND.logo.iconWhite,
       date: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }),
     }
   });
@@ -645,7 +645,7 @@ export function generateSlides(data: ProposalData): SlideContent[] {
       email: BRAND.contact.email,
       website: BRAND.contact.website,
       copyright: BRAND.contact.copyright,
-      logoUrl: BRAND.logo.aqua,
+      logoUrl: BRAND.logo.iconWhite,
       nextSteps: [
         'Review this proposal and ask any questions',
         'Approve the proposal to lock in current rebates',
@@ -717,10 +717,7 @@ function getVPPProviders(state: string, hasGas: boolean): Array<{
 
 const SLIDE_STYLES = `
 <style>
-  @font-face { font-family: 'NextSphere'; src: url('${BRAND.fontUrls.nextSphere}') format('truetype'); font-weight: 800; }
-  @font-face { font-family: 'GeneralSans'; src: url('${BRAND.fontUrls.generalSans}') format('opentype'); font-weight: 400; }
-  @font-face { font-family: 'Urbanist'; src: url('${BRAND.fontUrls.urbanist}') format('truetype'); font-weight: 600; }
-  @font-face { font-family: 'UrbanistItalic'; src: url('${BRAND.fontUrls.urbanistItalic}') format('truetype'); font-weight: 600; font-style: italic; }
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Open+Sans:wght@300;400;600&display=swap');
   
   * { margin: 0; padding: 0; box-sizing: border-box; }
   
@@ -729,7 +726,7 @@ const SLIDE_STYLES = `
     height: 1080px;
     background: #0F172A;
     color: #FFFFFF;
-    font-family: 'GeneralSans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     padding: 60px 80px;
     position: relative;
     overflow: hidden;
@@ -744,7 +741,7 @@ const SLIDE_STYLES = `
   }
   
   .slide-title {
-    font-family: 'NextSphere', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 64px;
     font-weight: 800;
     text-transform: uppercase;
@@ -754,7 +751,7 @@ const SLIDE_STYLES = `
   }
   
   .slide-subtitle {
-    font-family: 'UrbanistItalic', 'Urbanist', sans-serif;
+    font-family: 'MontserratItalic', 'Montserrat', sans-serif;
     font-size: 22px;
     color: #00EAD3;
     font-style: italic;
@@ -779,20 +776,20 @@ const SLIDE_STYLES = `
     height: 60px;
   }
   
-  /* Hero numbers - GeneralSans for all numeric content */
+  /* Hero numbers - Open Sans for all numeric content */
   .hero-num {
-    font-family: 'GeneralSans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-weight: 700;
     line-height: 1;
   }
   .hero-num.aqua { color: #00EAD3; }
   .hero-num.white { color: #FFFFFF; }
   .hero-num.orange { color: #f36710; }
-  .hero-num .unit { font-family: 'GeneralSans', sans-serif; font-weight: 400; }
+  .hero-num .unit { font-family: 'Open Sans', sans-serif; font-weight: 400; }
   
   /* Labels */
   .lbl {
-    font-family: 'Urbanist', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 12px;
     color: #808285;
     text-transform: uppercase;
@@ -820,7 +817,7 @@ const SLIDE_STYLES = `
   }
   .insight-card.orange { border-left-color: #f36710; }
   .insight-card .insight-title {
-    font-family: 'NextSphere', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 18px;
     font-weight: 800;
     color: #00EAD3;
@@ -846,7 +843,7 @@ const SLIDE_STYLES = `
   /* Tables */
   table { width: 100%; border-collapse: collapse; }
   th {
-    font-family: 'Urbanist', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 11px;
     color: #00EAD3;
     text-transform: uppercase;
@@ -871,7 +868,7 @@ const SLIDE_STYLES = `
     left: 80px;
     font-size: 11px;
     color: #808285;
-    font-family: 'GeneralSans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
   }
 </style>
 `;
@@ -922,22 +919,30 @@ export function generateSlideHTML(slide: SlideContent): string {
 // ---- SLIDE 1: COVER ----
 function genCover(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
+  const backdropUrl = BRAND.coverBg || 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/RcCbZwZNUIzvPlwn.jpg';
   return `
-    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; background: #0F172A${BRAND.coverBg ? ` url('${BRAND.coverBg}') no-repeat right center; background-size: contain` : ''};">
-      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 60px;">
-        <img src="${c.logoUrl}" style="width: 50px; height: 50px;" alt="Elite Smart Energy Solutions" />
-        <span style="font-family: 'NextSphere', sans-serif; font-size: 24px; color: #00EAD3; letter-spacing: 0.15em;">ELITE SMART ENERGY SOLUTIONS</span>
-      </div>
-      <h1 style="font-family: 'NextSphere', sans-serif; font-size: 56px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 800px;">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
-      <div style="position: absolute; bottom: 80px; left: 80px; display: flex; align-items: flex-start; gap: 16px;">
-        <div style="width: 4px; height: 50px; background: #f36710; border-radius: 2px;"></div>
+    <div class="slide" style="display: flex; flex-direction: column; justify-content: center; padding: 80px; position: relative; overflow: hidden; background: url('${backdropUrl}') center center / cover no-repeat;">
+      <!-- Dark overlay for text legibility -->
+      <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.65) 50%, rgba(15,23,42,0.45) 100%); z-index: 0;"></div>
+      <div style="position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 48px;">
+        <img src="${BRAND.logo.iconWhite}" style="width: 56px; height: 56px; filter: drop-shadow(0 0 12px rgba(70,180,70,0.6));" alt="Elite Smart Energy Solutions" />
         <div>
-          <p style="font-family: 'Urbanist', sans-serif; font-size: 20px; color: #00EAD3; font-weight: 600;">${slide.title}</p>
-          <p style="font-family: 'GeneralSans', sans-serif; font-size: 16px; color: #00EAD3;">${c.address}</p>
+          <span style="font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: 0.12em; display: block;">ELITE SMART ENERGY SOLUTIONS</span>
+          <span style="font-family: 'Open Sans', sans-serif; font-size: 13px; color: #46B446; letter-spacing: 0.2em; text-transform: uppercase;">ELECTRIFICATION SPECIALISTS</span>
         </div>
       </div>
-      <div style="position: absolute; bottom: 28px; left: 80px; right: 80px; height: 1px; background: #00EAD3;"></div>
-      <div style="position: absolute; bottom: 10px; left: 80px; font-size: 11px; color: #808285;">Prepared by ${c.preparedBy} | ${c.company}</div>
+      <h1 style="font-family: 'Montserrat', sans-serif; font-size: 54px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; line-height: 1.15; max-width: 820px; text-shadow: 0 2px 20px rgba(0,0,0,0.8);">IN-DEPTH BILL ANALYSIS &amp; SOLAR BATTERY PROPOSAL</h1>
+      <div style="margin-top: auto; display: flex; align-items: flex-start; gap: 16px; padding-top: 40px;">
+        <div style="width: 4px; height: 56px; background: #46B446; border-radius: 2px; flex-shrink: 0;"></div>
+        <div>
+          <p style="font-family: 'Montserrat', sans-serif; font-size: 20px; color: #FFFFFF; font-weight: 700;">${slide.title}</p>
+          <p style="font-family: 'Open Sans', sans-serif; font-size: 15px; color: #CBD5E1;">${c.address}</p>
+          <p style="font-family: 'Open Sans', sans-serif; font-size: 12px; color: #94A3B8; margin-top: 8px;">Prepared by ${c.preparedBy} | ${c.company}</p>
+        </div>
+      </div>
+      <div style="margin-top: 24px; height: 2px; background: linear-gradient(90deg, #46B446 0%, rgba(70,180,70,0.2) 100%);"></div>
+      </div>
     </div>
   `;
 }
@@ -947,7 +952,7 @@ function genExecutiveSummary(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 0; margin-top: 20px;">
         <div style="flex: 1; text-align: center; border-right: 1px solid #333; padding: 20px;">
@@ -984,7 +989,7 @@ function genBillAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1033,7 +1038,7 @@ function genUsageAnalysis(slide: SlideContent): string {
   const maxKwh = Math.max(...benchmarks.map(b => b.kwh), 16);
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1073,7 +1078,7 @@ function genYearlyProjection(slide: SlideContent): string {
   const projection = (c.yearlyProjection as Array<{ year: number; withoutSolar: number; withSolar: number; cumulativeSavings: number }>) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1088,7 +1093,7 @@ function genYearlyProjection(slide: SlideContent): string {
           </div>
         </div>
         <div style="flex: 1;">
-          <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 16px;">25-YEAR CUMULATIVE FINANCIAL OUTLOOK</p>
+          <p style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 16px;">25-YEAR CUMULATIVE FINANCIAL OUTLOOK</p>
           <div style="height: 320px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #2D3F5C; padding: 10px;">
             ${projection.filter((_, i) => i % 5 === 0 || i === projection.length - 1).map((p, i, arr) => {
               const maxVal = (c.twentyFiveYearSavings as number) * 1.2;
@@ -1118,7 +1123,7 @@ function genGasFootprint(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1153,7 +1158,7 @@ function genGasAppliances(slide: SlideContent): string {
   const priorities = (c.electrificationPriority as Array<{ name: string; type: string; priority: string; savings: number }>) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <table style="margin-top: 10px;">
         <tr><th>APPLIANCE</th><th>CURRENT TYPE</th><th>PRIORITY</th><th style="text-align: right;">EST. ANNUAL SAVINGS</th></tr>
@@ -1182,20 +1187,20 @@ function genStrategic(slide: SlideContent): string {
   const considerations = c.considerations as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
             <span style="color: #00EAD3; font-size: 24px;">✓</span>
-            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #00EAD3;">KEY ADVANTAGES</span>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #00EAD3;">KEY ADVANTAGES</span>
           </div>
           <div style="border-bottom: 2px solid #00EAD3; margin-bottom: 20px;"></div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             ${advantages.map(a => `
               <div>
                 <p style="font-size: 20px; margin-bottom: 6px;">${a.icon}</p>
-                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${a.title}</p>
+                <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${a.title}</p>
                 <p style="color: #808285; font-size: 12px; line-height: 1.5;">${a.description}</p>
               </div>
             `).join('')}
@@ -1205,14 +1210,14 @@ function genStrategic(slide: SlideContent): string {
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
             <span style="color: #f36710; font-size: 24px;">⚠</span>
-            <span style="font-family: 'NextSphere', sans-serif; font-size: 20px; font-weight: 800; color: #f36710;">CONSIDERATIONS</span>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #f36710;">CONSIDERATIONS</span>
           </div>
           <div style="border-bottom: 2px solid #f36710; margin-bottom: 20px;"></div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             ${considerations.map(co => `
               <div>
                 <p style="font-size: 20px; margin-bottom: 6px;">${co.icon}</p>
-                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${co.title}</p>
+                <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${co.title}</p>
                 <p style="color: #808285; font-size: 12px; line-height: 1.5;">${co.description}</p>
               </div>
             `).join('')}
@@ -1231,7 +1236,7 @@ function genBattery(slide: SlideContent): string {
   const total = c.totalCapacity as number;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1255,7 +1260,7 @@ function genBattery(slide: SlideContent): string {
           </div>
         </div>
         <div style="flex: 1;">
-          <p style="font-family: 'NextSphere', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 20px;">WHY THIS CAPACITY?</p>
+          <p style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 20px;">WHY THIS CAPACITY?</p>
           <div style="display: flex; height: 44px; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
             <div style="width: ${(cap.home / total) * 100}%; background: #808285; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">HOME ~${cap.home.toFixed(0)}kWh</div>
             ${cap.evCharge > 0 ? `<div style="width: ${(cap.evCharge / total) * 100}%; background: #00EAD3; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">EV CHARGE ~${cap.evCharge}kWh</div>` : ''}
@@ -1280,7 +1285,7 @@ function genSolar(slide: SlideContent): string {
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 30px; margin-top: 10px;">
         <div class="card" style="flex: 1; text-align: center; padding: 30px;">
@@ -1303,7 +1308,7 @@ function genSolar(slide: SlideContent): string {
           <p>${c.whyThisBrand}</p>
         </div>
         <div style="flex: 1;">
-          <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: #f36710; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
+          <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: #f36710; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
           ${features.map(f => `
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
               <span style="color: #00EAD3; font-size: 10px; margin-top: 4px;">●</span>
@@ -1327,7 +1332,7 @@ function genVPPComparison(slide: SlideContent): string {
   const rec = c.recommendedProvider as string;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <table style="margin-top: 10px;">
         <tr><th>PROVIDER</th><th>VPP MODEL</th><th>GAS BUNDLE</th><th>EST. ANNUAL VALUE</th><th>STRATEGIC FIT</th></tr>
@@ -1352,18 +1357,18 @@ function genVPPRecommendation(slide: SlideContent): string {
   const features = c.features as Array<{ icon: string; title: string; description: string }>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="text-align: center; margin-top: 20px;">
         <p class="lbl">SELECTED PARTNER</p>
-        <p style="font-family: 'NextSphere', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider}</p>
-        <p style="color: #00EAD3; font-size: 22px; font-family: 'Urbanist', sans-serif;">${c.program}</p>
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider}</p>
+        <p style="color: #00EAD3; font-size: 22px; font-family: 'Montserrat', sans-serif;">${c.program}</p>
       </div>
       <div style="display: flex; gap: 24px; margin-top: 36px;">
         ${features.map(f => `
           <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #f36710;">
             <p style="color: #f36710; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
-            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
+            <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
             <p style="color: #808285; font-size: 13px; line-height: 1.5;">${f.description}</p>
           </div>
         `).join('')}
@@ -1386,7 +1391,7 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
   const features = (c.features as string[]) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1443,7 +1448,7 @@ function genEVAnalysis(slide: SlideContent): string {
   const comparison = (c.comparison as Array<{ scenario: string; costPer100km: number; annualCost: number }>) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1487,7 +1492,7 @@ function genEVCharger(slide: SlideContent): string {
   const benefits = (c.solarChargingBenefits as string[]) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1524,7 +1529,7 @@ function genElectrificationInvestment(slide: SlideContent): string {
   const items = (c.items as Array<{ item: string; cost: number; rebate: number }>) || [];
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
@@ -1570,7 +1575,7 @@ function genSavingsSummary(slide: SlideContent): string {
   const maxVal = Math.max(...breakdown.map(b => b.value));
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1619,7 +1624,7 @@ function genFinancial(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1653,7 +1658,7 @@ function genFinancial(slide: SlideContent): string {
             </div>
           </div>
           <div class="card" style="text-align: center; padding: 24px;">
-            <p style="font-family: 'NextSphere', sans-serif; font-size: 22px; font-weight: 800;">10-YEAR TOTAL SAVINGS: <span class="aqua">~$${(c.tenYearSavings as number).toLocaleString()}</span></p>
+            <p style="font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800;">10-YEAR TOTAL SAVINGS: <span class="aqua">~$${(c.tenYearSavings as number).toLocaleString()}</span></p>
           </div>
         </div>
       </div>
@@ -1667,7 +1672,7 @@ function genEnvironmental(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -1701,7 +1706,7 @@ function genEnvironmental(slide: SlideContent): string {
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
               <span style="font-size: 22px;">${b.icon}</span>
               <div>
-                <p style="font-family: 'NextSphere', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase;">${b.title}</p>
+                <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase;">${b.title}</p>
                 <p style="color: #808285; font-size: 12px;">${b.description}</p>
               </div>
             </div>
@@ -1719,7 +1724,7 @@ function genRoadmap(slide: SlideContent): string {
   const steps = c.steps as Array<{ number: string; title: string; description: string; timeline: string; color: string }>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
         ${steps.map((s, i) => `
@@ -1732,10 +1737,10 @@ function genRoadmap(slide: SlideContent): string {
       <div style="display: flex; gap: 16px;">
         ${steps.map(s => `
           <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};">
-            <p style="font-size: 40px; color: #333; font-weight: 800; font-family: 'NextSphere', sans-serif;">${s.number}</p>
-            <p style="font-family: 'NextSphere', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#f36710'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
+            <p style="font-size: 40px; color: #333; font-weight: 800; font-family: 'Montserrat', sans-serif;">${s.number}</p>
+            <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#f36710'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
             <p style="color: #808285; font-size: 12px; line-height: 1.5; margin-bottom: 14px;">${s.description}</p>
-            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}; font-size: 12px; font-family: 'Urbanist', sans-serif;">⏱ ${s.timeline}</p>
+            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}; font-size: 12px; font-family: 'Montserrat', sans-serif;">⏱ ${s.timeline}</p>
           </div>
         `).join('')}
       </div>
@@ -1750,7 +1755,7 @@ function genConclusion(slide: SlideContent): string {
   const features = c.features as Array<{ icon: string; title: string; description: string; border: string }>;
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 24px; margin-top: 10px;">
         ${features.map(f => {
@@ -1759,16 +1764,16 @@ function genConclusion(slide: SlideContent): string {
           return `
             <div class="card" style="flex: 1; text-align: center; border-top: 3px solid ${borderCol}; padding: 30px;">
               <p style="color: ${iconCol}; font-size: 36px; margin-bottom: 14px;">${f.icon}</p>
-              <p style="font-family: 'NextSphere', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#f36710' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
+              <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#f36710' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
               <p style="color: #808285; font-size: 13px; line-height: 1.6;">${f.description}</p>
             </div>
           `;
         }).join('')}
       </div>
       <div style="text-align: center; margin-top: 40px;">
-        <p style="font-family: 'NextSphere', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.4; max-width: 1200px; margin: 0 auto;">${c.quote}</p>
+        <p style="font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.4; max-width: 1200px; margin: 0 auto;">${c.quote}</p>
         <div style="width: 200px; height: 2px; background: #00EAD3; margin: 24px auto;"></div>
-        <p style="color: #00EAD3; font-size: 18px; font-family: 'Urbanist', sans-serif;">${c.callToAction}</p>
+        <p style="color: #00EAD3; font-size: 18px; font-family: 'Montserrat', sans-serif;">${c.callToAction}</p>
       </div>
       
     </div>
@@ -1788,7 +1793,7 @@ function genContact(slide: SlideContent): string {
         <div style="text-align: left;">
           <p class="lbl" style="margin-bottom: 8px;">PREPARED BY</p>
           <p style="font-size: 22px; font-weight: 600;">${c.preparedBy}</p>
-          <p style="color: #00EAD3; font-family: 'Urbanist', sans-serif;">${c.title}</p>
+          <p style="color: #00EAD3; font-family: 'Montserrat', sans-serif;">${c.title}</p>
           <p class="gray" style="margin-top: 8px;">${c.company}</p>
         </div>
         <div style="text-align: left;">
@@ -1819,7 +1824,7 @@ function genContact(slide: SlideContent): string {
 function genGeneric(slide: SlideContent): string {
   return `
     <div class="slide">
-      ${BRAND.logo.aqua ? `<img src="${BRAND.logo.aqua}" class="logo" alt="Logo" />` : ""}
+      ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="margin-top: 20px;">
         <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>

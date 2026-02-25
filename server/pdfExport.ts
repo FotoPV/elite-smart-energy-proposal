@@ -67,7 +67,7 @@ function generateFullHtml(
   <title>${proposalTitle} - ${customerName}</title>
   <style>
     @font-face {
-      font-family: 'NextSphere';
+      font-family: 'Montserrat';
       src: url('${BRAND.fontUrls.nextSphere}') format('truetype');
       font-weight: 800;
     }
@@ -77,7 +77,7 @@ function generateFullHtml(
       font-weight: 400;
     }
     @font-face {
-      font-family: 'Urbanist';
+      font-family: 'Montserrat';
       src: url('${BRAND.fontUrls.urbanist}') format('truetype');
       font-weight: 600;
     }
@@ -115,7 +115,7 @@ function generateFullHtml(
     }
     
     .slide-title {
-      font-family: 'NextSphere', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-size: 36px;
       font-weight: 800;
       color: ${BRAND.colors.white};
@@ -285,7 +285,7 @@ function generateFullHtml(
     }
     
     .cover-title {
-      font-family: 'NextSphere', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-size: 48px;
       font-weight: 800;
       color: ${BRAND.colors.white};
@@ -302,7 +302,7 @@ function generateFullHtml(
     }
     
     .cover-customer {
-      font-family: 'Urbanist', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-size: 28px;
       font-weight: 600;
       color: ${BRAND.colors.white};
@@ -331,7 +331,7 @@ function generateFullHtml(
     }
     
     .contact-name {
-      font-family: 'Urbanist', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-size: 18px;
       font-weight: 600;
       color: ${BRAND.colors.white};

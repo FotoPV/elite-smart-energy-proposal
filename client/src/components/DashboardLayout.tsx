@@ -159,10 +159,10 @@ function DashboardLayoutContent({
                 />
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
-                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
+                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
                       Elite Smart Energy Solutions
                     </span>
-                    <span className="text-[10px] truncate" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+                    <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
                       Proposal Generator
                     </span>
                   </div>
@@ -188,7 +188,7 @@ function DashboardLayoutContent({
                           ? "bg-primary/10 text-primary border-l-2 border-primary" 
                           : "hover:bg-muted"
                       }`}
-                      style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}
+                      style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
@@ -209,15 +209,15 @@ function DashboardLayoutContent({
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <Avatar className="h-9 w-9 border border-primary/30 shrink-0">
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
                       {user?.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm truncate leading-none" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#FFFFFF' }}>
+                    <p className="text-sm truncate leading-none" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF' }}>
                       {user?.name || "User"}
                     </p>
-                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                       {user?.email || "-"}
                     </p>
                   </div>
@@ -225,14 +225,14 @@ function DashboardLayoutContent({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-2">
-                  <p className="text-sm" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>{user?.name}</p>
-                  <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>{user?.email}</p>
+                  <p className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>{user?.name}</p>
+                  <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
-                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>
@@ -241,7 +241,7 @@ function DashboardLayoutContent({
             </DropdownMenu>
             
             {!isCollapsed && (
-              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                 © Elite Smart Energy Solutions
               </p>
             )}
@@ -268,7 +268,7 @@ function DashboardLayoutContent({
                   alt="Elite Smart Energy Solutions" 
                   className="h-6 w-6"
                 />
-                <span className="text-sm" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
+                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
                   {activeMenuItem?.label ?? "Proposals"}
                 </span>
               </div>

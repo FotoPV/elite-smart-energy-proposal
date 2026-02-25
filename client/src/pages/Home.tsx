@@ -15,7 +15,7 @@ export default function Home() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="animate-pulse flex flex-col items-center gap-4">
         <img src={LOGO_URL} alt="Elite Smart Energy Solutions" className="h-16" />
-        <p style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>Loading...</p>
+        <p style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>Loading...</p>
       </div>
     </div>
   );

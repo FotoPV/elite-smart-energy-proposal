@@ -93,13 +93,13 @@ export function generateSlideContentMarkdown(input: SlideContentInput): string {
 
 ## Content
 
-### Title (large, white, NextSphere font)
+### Title (large, white, Montserrat font)
 IN-DEPTH BILL ANALYSIS & SOLAR BATTERY PROPOSAL
 
 ### Subtitle (smaller, aqua line separator, then white text)
 Prepared exclusively for
 
-### Customer Details (white, GeneralSans font)
+### Customer Details (white, Open Sans font)
 **${customerName}**
 ${customerAddress}
 ${customerState}
@@ -136,8 +136,8 @@ ${BRAND.contact.phone} | ${BRAND.contact.email}
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner, 60x60px aqua logo
-- **Heading**: "EXECUTIVE SUMMARY" in NextSphere font, white, ALL CAPS
-- **Subtitle**: "Strategic Overview" in Urbanist Italic, aqua, right-aligned
+- **Heading**: "EXECUTIVE SUMMARY" in Montserrat font, white, ALL CAPS
+- **Subtitle**: "Strategic Overview" in Montserrat Italic, aqua, right-aligned
 - **Aqua line separator** beneath heading
 
 ## Content Layout: 4 key metric cards in a row, then insight box below
@@ -154,12 +154,12 @@ ${BRAND.contact.phone} | ${BRAND.contact.email}
 ### Key Insight Box (dark grey #1a1a1a background, 4px aqua left border)
 ${execInsight}
 
-### Summary Text (GeneralSans, white, below the cards)
+### Summary Text (Open Sans, white, below the cards)
 This proposal presents a comprehensive analysis of your current energy position and a strategic pathway to significantly reduce costs through battery storage${hasGas ? ', gas-to-electric conversion' : ''}, and Virtual Power Plant participation. The recommended solution delivers a strong return on investment while enhancing your energy independence.
 
 ## Style Notes
 - Metric values should be large (40px+) and color-coded as specified
-- Labels above values in Urbanist, 11px, ash, ALL CAPS
+- Labels above values in Montserrat, 11px, ash, ALL CAPS
 - The insight box should stand out with the aqua left border
 - Copyright at bottom-left: "${BRAND.contact.copyright}"
 `);
@@ -176,8 +176,8 @@ This proposal presents a comprehensive analysis of your current energy position 
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "CURRENT BILL ANALYSIS" in NextSphere, white
-- **Subtitle**: "Rate Structure & Cost Breakdown" in Urbanist Italic, aqua, right-aligned
+- **Heading**: "CURRENT BILL ANALYSIS" in Montserrat, white
+- **Subtitle**: "Rate Structure & Cost Breakdown" in Montserrat Italic, aqua, right-aligned
 - **Aqua line separator**
 
 ## Content Layout: Left side = bill summary table, Right side = cost breakdown chart
@@ -216,8 +216,8 @@ ${calc.billFeedInTariffCents && calc.billFeedInTariffCents < 5
   : `Your current rate structure reveals opportunities for cost optimisation through strategic load shifting and battery storage to minimise peak-rate consumption.`}
 
 ## Style Notes
-- Table headers in Urbanist, aqua, ALL CAPS
-- Table values in GeneralSans, white
+- Table headers in Montserrat, aqua, ALL CAPS
+- Table values in Open Sans, white
 - Highlight the total row with aqua left border
 - Numbers right-aligned in table cells
 `);
@@ -236,8 +236,8 @@ ${calc.billFeedInTariffCents && calc.billFeedInTariffCents < 5
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "MONTHLY USAGE ANALYSIS" in NextSphere, white
-- **Subtitle**: "Consumption Pattern & Solar Opportunity" in Urbanist Italic, aqua
+- **Heading**: "MONTHLY USAGE ANALYSIS" in Montserrat, white
+- **Subtitle**: "Consumption Pattern & Solar Opportunity" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Bar chart showing 12-month usage pattern
@@ -292,8 +292,8 @@ Winter months (June–August) show consumption ${Math.round((winterMultiplier - 
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "YEARLY COST PROJECTION" in NextSphere, white
-- **Subtitle**: "10-Year Outlook Without Intervention" in Urbanist Italic, aqua
+- **Heading**: "YEARLY COST PROJECTION" in Montserrat, white
+- **Subtitle**: "10-Year Outlook Without Intervention" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Rising cost chart + cumulative table
@@ -346,8 +346,8 @@ At the current ${inflationRate}% annual electricity price inflation, your energy
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "CURRENT GAS FOOTPRINT" in NextSphere, white
-- **Subtitle**: "Gas Consumption & Conversion Analysis" in Urbanist Italic, aqua
+- **Heading**: "CURRENT GAS FOOTPRINT" in Montserrat, white
+- **Subtitle**: "Gas Consumption & Conversion Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Gas bill breakdown + conversion analysis
@@ -398,8 +398,8 @@ Your gas connection costs ${fmt(calc.gasAnnualCost)} annually, with ${fmt(calc.g
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "GAS APPLIANCE INVENTORY" in NextSphere, white
-- **Subtitle**: "Electrification Opportunity Assessment" in Urbanist Italic, aqua
+- **Heading**: "GAS APPLIANCE INVENTORY" in Montserrat, white
+- **Subtitle**: "Electrification Opportunity Assessment" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Table showing each gas appliance with replacement recommendation
@@ -442,8 +442,8 @@ Full electrification of your gas appliances eliminates the ${fmt(calc.gasAnnualS
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "STRATEGIC ASSESSMENT" in NextSphere, white
-- **Subtitle**: "Opportunity Analysis" in Urbanist Italic, aqua
+- **Heading**: "STRATEGIC ASSESSMENT" in Montserrat, white
+- **Subtitle**: "Opportunity Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: 3 strategic insight cards stacked vertically
@@ -479,8 +479,8 @@ Virtual Power Plant programs offer a compelling additional revenue stream. By al
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "RECOMMENDED BATTERY SIZE" in NextSphere, white
-- **Subtitle**: "Sizing Analysis & Specification" in Urbanist Italic, aqua
+- **Heading**: "RECOMMENDED BATTERY SIZE" in Montserrat, white
+- **Subtitle**: "Sizing Analysis & Specification" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Battery spec card + sizing breakdown
@@ -525,8 +525,8 @@ The ${num(calc.recommendedBatteryKwh, 1)} kWh battery is sized to cover your ove
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "${hasExistingSolar ? 'EXISTING SOLAR ASSESSMENT' : 'PROPOSED SOLAR PV SYSTEM'}" in NextSphere, white
-- **Subtitle**: "${hasExistingSolar ? 'Performance Review & Battery Impact' : 'System Specification & Generation'}" in Urbanist Italic, aqua
+- **Heading**: "${hasExistingSolar ? 'EXISTING SOLAR ASSESSMENT' : 'PROPOSED SOLAR PV SYSTEM'}" in Montserrat, white
+- **Subtitle**: "${hasExistingSolar ? 'Performance Review & Battery Impact' : 'System Specification & Generation'}" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content
@@ -586,8 +586,8 @@ The ${num(calc.recommendedSolarKw, 1)}kW system is sized to generate approximate
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "VPP PROVIDER COMPARISON" in NextSphere, white
-- **Subtitle**: "${customerState} Market Analysis" in Urbanist Italic, aqua
+- **Heading**: "VPP PROVIDER COMPARISON" in Montserrat, white
+- **Subtitle**: "${customerState} Market Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Full-width comparison table
@@ -628,8 +628,8 @@ Providers with gas bundling capability offer additional discounts when you maint
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "VPP RECOMMENDATION" in NextSphere, white
-- **Subtitle**: "Recommended Program Analysis" in Urbanist Italic, aqua
+- **Heading**: "VPP RECOMMENDATION" in Montserrat, white
+- **Subtitle**: "Recommended Program Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Featured provider card + value breakdown
@@ -672,8 +672,8 @@ VPP participation transforms your battery from a passive storage device into an 
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "HOT WATER ELECTRIFICATION" in NextSphere, white
-- **Subtitle**: "Heat Pump Conversion Analysis" in Urbanist Italic, aqua
+- **Heading**: "HOT WATER ELECTRIFICATION" in Montserrat, white
+- **Subtitle**: "Heat Pump Conversion Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content: Before/After comparison
@@ -701,8 +701,8 @@ A heat pump hot water system operates at a Coefficient of Performance (COP) of 3
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "HEATING & COOLING UPGRADE" in NextSphere, white
-- **Subtitle**: "Reverse Cycle AC Analysis" in Urbanist Italic, aqua
+- **Heading**: "HEATING & COOLING UPGRADE" in Montserrat, white
+- **Subtitle**: "Reverse Cycle AC Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content: Before/After comparison
@@ -730,8 +730,8 @@ Modern reverse cycle air conditioning delivers both heating and cooling at a COP
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "INDUCTION COOKING UPGRADE" in NextSphere, white
-- **Subtitle**: "Gas to Induction Analysis" in Urbanist Italic, aqua
+- **Heading**: "INDUCTION COOKING UPGRADE" in Montserrat, white
+- **Subtitle**: "Gas to Induction Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content
@@ -761,8 +761,8 @@ Induction cooking is approximately 90% energy efficient compared to 40% for gas,
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "EV CHARGING ANALYSIS" in NextSphere, white
-- **Subtitle**: "Petrol vs Electric Cost Comparison" in Urbanist Italic, aqua
+- **Heading**: "EV CHARGING ANALYSIS" in Montserrat, white
+- **Subtitle**: "Petrol vs Electric Cost Comparison" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content
@@ -793,8 +793,8 @@ Charging your EV from solar during the day effectively costs just ${cents(calc.b
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "POOL HEAT PUMP" in NextSphere, white
-- **Subtitle**: "Efficient Pool Heating Solution" in Urbanist Italic, aqua
+- **Heading**: "POOL HEAT PUMP" in Montserrat, white
+- **Subtitle**: "Efficient Pool Heating Solution" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content
@@ -825,8 +825,8 @@ A ${num(calc.poolRecommendedKw)} kW pool heat pump extends your swimming season 
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "FULL ELECTRIFICATION INVESTMENT" in NextSphere, white
-- **Subtitle**: "Complete Gas Elimination Pathway" in Urbanist Italic, aqua
+- **Heading**: "FULL ELECTRIFICATION INVESTMENT" in Montserrat, white
+- **Subtitle**: "Complete Gas Elimination Pathway" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content: Investment breakdown table
@@ -864,8 +864,8 @@ Full electrification eliminates your entire gas bill — both consumption and th
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "TOTAL SAVINGS SUMMARY" in NextSphere, white
-- **Subtitle**: "Annual Impact Analysis" in Urbanist Italic, aqua
+- **Heading**: "TOTAL SAVINGS SUMMARY" in Montserrat, white
+- **Subtitle**: "Annual Impact Analysis" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Before/After visual comparison + savings breakdown
@@ -905,8 +905,8 @@ ${hasEV ? '- EV fuel savings (aqua bar)' : ''}
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "FINANCIAL SUMMARY & PAYBACK" in NextSphere, white
-- **Subtitle**: "Investment Analysis & Return" in Urbanist Italic, aqua
+- **Heading**: "FINANCIAL SUMMARY & PAYBACK" in Montserrat, white
+- **Subtitle**: "Investment Analysis & Return" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: Investment table + ROI metrics + payback chart
@@ -962,8 +962,8 @@ With a net investment of ${fmt(calc.netInvestment)} after rebates and a ${num(ca
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "ENVIRONMENTAL IMPACT" in NextSphere, white
-- **Subtitle**: "Carbon Reduction & Sustainability" in Urbanist Italic, aqua
+- **Heading**: "ENVIRONMENTAL IMPACT" in Montserrat, white
+- **Subtitle**: "Carbon Reduction & Sustainability" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: 3 large metric cards + context
@@ -1003,8 +1003,8 @@ By reducing your carbon footprint by ${num(calc.co2ReductionTonnes, 1)} tonnes a
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "RECOMMENDED ROADMAP" in NextSphere, white
-- **Subtitle**: "Implementation Timeline" in Urbanist Italic, aqua
+- **Heading**: "RECOMMENDED ROADMAP" in Montserrat, white
+- **Subtitle**: "Implementation Timeline" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: 4-phase horizontal timeline
@@ -1055,8 +1055,8 @@ ${hasHeating ? '- Reverse cycle AC installation' : ''}
 ## Design
 - **Background**: Black (#000000)
 - **Logo**: Top-right corner
-- **Heading**: "CONCLUSION" in NextSphere, white
-- **Subtitle**: "Your Energy Future" in Urbanist Italic, aqua
+- **Heading**: "CONCLUSION" in Montserrat, white
+- **Subtitle**: "Your Energy Future" in Montserrat Italic, aqua
 - **Aqua line separator**
 
 ## Content Layout: 3 key value propositions + call to action
@@ -1100,10 +1100,10 @@ Contact ${BRAND.contact.name} to discuss your personalised implementation plan.
 
 ## Content Layout: Centred contact details below logo
 
-### Company Name (NextSphere, white, large)
+### Company Name (Montserrat, white, large)
 ELITE SMART ENERGY SOLUTIONS
 
-### Contact Details (GeneralSans, white, centred)
+### Contact Details (Open Sans, white, centred)
 
 | | |
 |--|--|
@@ -1140,9 +1140,9 @@ ${BRAND.contact.copyright}
 
 ## Design Specifications
 - **Background**: Midnight Navy (#0F172A) on ALL slides
-- **Primary Font (Headings ONLY)**: NextSphere ExtraBold — ALL CAPS, white
-- **Body Font (all text & numbers)**: GeneralSans Regular — white for primary, ash (#808285) for secondary
-- **Label Font (subtitles, table headers)**: Urbanist SemiBold — ALL CAPS, aqua for subtitles, ash for labels
+- **Primary Font (Headings ONLY)**: Montserrat ExtraBold — ALL CAPS, white
+- **Body Font (all text & numbers)**: Open Sans Regular — white for primary, ash (#808285) for secondary
+- **Label Font (subtitles, table headers)**: Montserrat SemiBold — ALL CAPS, aqua for subtitles, ash for labels
 - **Primary Accent**: Aqua (#00EAD3) — used sparingly for savings, positive values, borders, subtitles
 - **Secondary Accent**: Burnt Orange (#f36710) — used minimally for costs, warnings, accent bars
 - **Logo**: Elite Smart Energy Solutions aqua starburst (${BRAND.logo.aqua}) — top-right on every slide except cover
