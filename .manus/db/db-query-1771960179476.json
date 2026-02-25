@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, fullName, state FROM customers WHERE fullName LIKE '%Test%' OR fullName LIKE '%test%' OR fullName LIKE '%TEST%' OR fullName LIKE '%Sample%' OR fullName LIKE '%Demo%' OR fullName LIKE '%Dummy%' ORDER BY id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, state FROM customers WHERE fullName LIKE '%Test%' OR fullName LIKE '%test%' OR fullName LIKE '%TEST%' OR fullName LIKE '%Sample%' OR fullName LIKE '%Demo%' OR fullName LIKE '%Dummy%' ORDER BY id",
+  "rows": [
+    {
+      "id": "1380002",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    },
+    {
+      "id": "1380003",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    },
+    {
+      "id": "1380004",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    },
+    {
+      "id": "1560002",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    },
+    {
+      "id": "1560003",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    },
+    {
+      "id": "1560004",
+      "fullName": "Test Customer",
+      "state": "VIC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\n1380002\tTest Customer\tVIC\n1380003\tTest Customer\tVIC\n1380004\tTest Customer\tVIC\n1560002\tTest Customer\tVIC\n1560003\tTest Customer\tVIC\n1560004\tTest Customer\tVIC\n",
+  "stderr": "",
+  "execution_time_ms": 1491
+}

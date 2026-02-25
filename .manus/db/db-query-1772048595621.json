@@ -1,0 +1,16 @@
+{
+  "query": "SELECT hasEV, evInterest, hasPool, existingSolar FROM customers WHERE id = 1530001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT hasEV, evInterest, hasPool, existingSolar FROM customers WHERE id = 1530001;",
+  "rows": [
+    {
+      "hasEV": "0",
+      "evInterest": "none",
+      "hasPool": "1",
+      "existingSolar": "under_5_years"
+    }
+  ],
+  "messages": [],
+  "stdout": "hasEV\tevInterest\thasPool\texistingSolar\n0\tnone\t1\tunder_5_years\n",
+  "stderr": "",
+  "execution_time_ms": 1610
+}

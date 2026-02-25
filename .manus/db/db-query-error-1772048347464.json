@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, documentType, fileName, analysisData IS NOT NULL as has_analysis, createdAt FROM customer_documents WHERE customerId = 1530001 ORDER BY createdAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, documentType, fileName, analysisData IS NOT NULL as has_analysis, createdAt FROM customer_documents WHERE customerId = 1530001 ORDER BY createdAt;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'p6ctqt8enbmi3weqmjdcem.customer_documents' doesn't exist"
+  ]
+}

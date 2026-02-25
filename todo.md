@@ -1330,3 +1330,19 @@
 - [ ] Regenerate Anastasios Adgemis proposal to verify VPP slide displays correctly
 - [ ] Beta test VPP calculations across multiple customers with different states/usage patterns
 - [ ] Bulk regenerate all 22 proposals to apply all fixes
+
+## Remove Test Customers (Feb 25)
+- [x] Identify all 6 "Test Customer" records in database
+- [x] Delete associated proposals, bills, documents, and analytics data (slideEngagement, proposalViews, proposalAccessTokens, proposals, customerDocuments, bills)
+- [x] Delete the 6 test customer records themselves
+- [x] Verify 0 test customers remain — 28 real customers confirmed
+
+## David Theochari Investigation (Feb 26)
+- [x] Investigate why solar proposal PDF data points are not fully populating — ROOT CAUSE: extractedData is NULL, LLM extraction never ran
+- [x] Investigate VPP overestimation — ROOT CAUSE: flat 80% of usable battery capacity exported daily, unrealistic
+- [x] Changed VPP export from 80% to 50% of usable capacity
+- [x] Implement tiered VPP export: 50kWh+=50%, 30-40kWh=45%, 20-30kWh=35%, 15-20kWh=20%, <15kWh=15%
+- [x] Added getVppExportFraction() function with tiered logic
+- [x] Updated unit tests — 7 new tests for tiered export fractions
+- [x] Verified calculations: David Theochari 25kWh → 7.9kWh daily export → $852 Amber VPP (was $2,172)
+- [x] 145 tests passing, 0 TypeScript errors

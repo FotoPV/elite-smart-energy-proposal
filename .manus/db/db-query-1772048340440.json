@@ -1,0 +1,13 @@
+{
+  "query": "SELECT c.id, c.fullName, c.state, c.address, c.existingSolar, p.id as proposal_id, p.status, p.title FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Theochari%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT c.id, c.fullName, c.state, c.address, c.existingSolar, p.id as proposal_id, p.status, p.title FROM customers c LEFT JOIN proposals p ON p.customerId = c.id WHERE c.fullName LIKE '%Theochari%';",
+  "rows": [],
+  "messages": [
+    "1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1350001\tgenerated\tElectrification Proposal for David Theochari",
+    "1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1500002\tgenerated\tElectrification Proposal for David Theochari",
+    "1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1500003\tgenerated\tElectrification Proposal for David Theochari"
+  ],
+  "stdout": "id\tfullName\tstate\taddress\texistingSolar\tproposal_id\tstatus\ttitle\n1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1350001\tgenerated\tElectrification Proposal for David Theochari\n1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1500002\tgenerated\tElectrification Proposal for David Theochari\n1530001\tDavid Theochari\tVIC\t10 Twining Avenue\tBundoora Vic 3083\tunder_5_years\t1500003\tgenerated\tElectrification Proposal for David Theochari\n",
+  "stderr": "",
+  "execution_time_ms": 1535
+}

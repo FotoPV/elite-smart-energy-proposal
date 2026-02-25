@@ -415,6 +415,23 @@ export function calculatePoolHeatPump(
 // Formula: annualRevenue = (dailyExport × baseRate/100 × 365) - (monthlyFee × 12)
 // ============================================
 
+/**
+ * Tiered VPP export fraction based on battery capacity.
+ * Larger batteries have more headroom beyond self-consumption for VPP dispatch.
+ *   50kWh+   → 50% of usable capacity exported to VPP daily
+ *   30-40kWh → 45%
+ *   20-30kWh → 35%
+ *   15-20kWh → 20%
+ *   <15kWh   → 15% (minimal VPP participation)
+ */
+export function getVppExportFraction(batteryKwh: number): number {
+  if (batteryKwh >= 50) return 0.50;
+  if (batteryKwh >= 30) return 0.45;
+  if (batteryKwh >= 20) return 0.35;
+  if (batteryKwh >= 15) return 0.20;
+  return 0.15; // Below 15kWh — minimal VPP value
+}
+
 export interface VppIncome {
   dailyExportKwh: number;
   baseRateCents: number;
@@ -429,7 +446,7 @@ export interface VppIncome {
  *   annualRevenue = (dailyExport × rate/100 × 365) - (monthlyFee × 12)
  * 
  * For wholesale providers without live AEMO data, uses the static baseRate as fallback.
- * dailyExportKwh is estimated from battery capacity (typically 80% of usable capacity).
+ * dailyExportKwh is estimated from battery capacity using tiered export fractions.
  */
 export function calculateVppIncome(
   provider: VppProvider,
@@ -801,9 +818,11 @@ export function generateFullCalculations(
   }
   
   // VPP comparison
-  // Estimate daily export from battery capacity: ~80% of usable capacity (90% DoD)
+  // Tiered VPP export % based on battery size — larger batteries have more headroom for VPP
+  // 50kWh+ = 50%, 30-40kWh = 45%, 20-30kWh = 35%, 15-20kWh = 20%
   const batteryUsableKwh = battery.recommendedKwh * 0.9;
-  const vppDailyExportKwh = Math.round(batteryUsableKwh * 0.8 * 10) / 10;
+  const vppExportFraction = getVppExportFraction(battery.recommendedKwh);
+  const vppDailyExportKwh = Math.round(batteryUsableKwh * vppExportFraction * 10) / 10;
   const vppComparison = compareVppProviders(
     vppProviders,
     customer.state,

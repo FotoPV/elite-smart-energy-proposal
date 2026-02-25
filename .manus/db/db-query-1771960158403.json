@@ -1,0 +1,214 @@
+{
+  "query": "SELECT id, fullName, state, createdAt FROM customers ORDER BY fullName",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, fullName, state, createdAt FROM customers ORDER BY fullName",
+  "rows": [
+    {
+      "id": "900001",
+      "fullName": "Abhishek Mish",
+      "state": "VIC",
+      "createdAt": "2026-02-15 08:50:52"
+    },
+    {
+      "id": "420001",
+      "fullName": "Ajith Premathilaka",
+      "state": "VIC",
+      "createdAt": "2026-02-10 16:04:25"
+    },
+    {
+      "id": "1290001",
+      "fullName": "Alex Chow",
+      "state": "VIC",
+      "createdAt": "2026-02-19 05:37:26"
+    },
+    {
+      "id": "1380001",
+      "fullName": "Anastasios Adgemis",
+      "state": "VIC",
+      "createdAt": "2026-02-20 01:10:18"
+    },
+    {
+      "id": "240002",
+      "fullName": "Boris Sirota",
+      "state": "VIC",
+      "createdAt": "2026-02-10 00:14:19"
+    },
+    {
+      "id": "1500001",
+      "fullName": "Dave Baker",
+      "state": "VIC",
+      "createdAt": "2026-02-23 00:07:12"
+    },
+    {
+      "id": "1530001",
+      "fullName": "David Theochari",
+      "state": "VIC",
+      "createdAt": "2026-02-23 06:14:04"
+    },
+    {
+      "id": "690001",
+      "fullName": "Fab Defazio",
+      "state": "VIC",
+      "createdAt": "2026-02-13 08:22:54"
+    },
+    {
+      "id": "1020001",
+      "fullName": "Fayyaz Khan",
+      "state": "VIC",
+      "createdAt": "2026-02-17 23:42:27"
+    },
+    {
+      "id": "240001",
+      "fullName": "Frieda Lay",
+      "state": "SA",
+      "createdAt": "2026-02-09 23:39:47"
+    },
+    {
+      "id": "510001",
+      "fullName": "George Fotopoulos",
+      "state": "VIC",
+      "createdAt": "2026-02-11 20:53:08"
+    },
+    {
+      "id": "390001",
+      "fullName": "Jared Blode",
+      "state": "VIC",
+      "createdAt": "2026-02-10 14:50:50"
+    },
+    {
+      "id": "360001",
+      "fullName": "Jon Shoebridge",
+      "state": "QLD",
+      "createdAt": "2026-02-10 06:17:27"
+    },
+    {
+      "id": "540001",
+      "fullName": "Joshua Nicholas Richman",
+      "state": "SA",
+      "createdAt": "2026-02-12 01:53:01"
+    },
+    {
+      "id": "660001",
+      "fullName": "Mark Anthony Duero",
+      "state": "VIC",
+      "createdAt": "2026-02-13 03:37:05"
+    },
+    {
+      "id": "450001",
+      "fullName": "Michael Killicoat",
+      "state": "VIC",
+      "createdAt": "2026-02-10 21:26:10"
+    },
+    {
+      "id": "1230006",
+      "fullName": "Michael Palumbieri",
+      "state": "VIC",
+      "createdAt": "2026-02-18 19:31:51"
+    },
+    {
+      "id": "930001",
+      "fullName": "Michael Thyreum",
+      "state": "VIC",
+      "createdAt": "2026-02-16 05:25:49"
+    },
+    {
+      "id": "1470001",
+      "fullName": "Nimal Jose Nimal Jose",
+      "state": "VIC",
+      "createdAt": "2026-02-20 23:45:35"
+    },
+    {
+      "id": "1140003",
+      "fullName": "Peter Chu",
+      "state": "VIC",
+      "createdAt": "2026-02-18 05:26:13"
+    },
+    {
+      "id": "960001",
+      "fullName": "Peter Maumov",
+      "state": "VIC",
+      "createdAt": "2026-02-16 21:23:33"
+    },
+    {
+      "id": "270001",
+      "fullName": "Seong Heng Chua",
+      "state": "VIC",
+      "createdAt": "2026-02-10 02:05:25"
+    },
+    {
+      "id": "1440001",
+      "fullName": "Steve Zafiriou",
+      "state": "VIC",
+      "createdAt": "2026-02-20 05:13:09"
+    },
+    {
+      "id": "600001",
+      "fullName": "Stuart Naylor",
+      "state": "VIC",
+      "createdAt": "2026-02-12 03:56:06"
+    },
+    {
+      "id": "1380004",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-20 01:43:31"
+    },
+    {
+      "id": "1380003",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-20 01:33:25"
+    },
+    {
+      "id": "1380002",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-20 01:31:48"
+    },
+    {
+      "id": "1560002",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-24 04:48:40"
+    },
+    {
+      "id": "1560003",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-24 04:50:09"
+    },
+    {
+      "id": "1560004",
+      "fullName": "Test Customer",
+      "state": "VIC",
+      "createdAt": "2026-02-24 04:51:35"
+    },
+    {
+      "id": "1560001",
+      "fullName": "Vinod Samuel",
+      "state": "VIC",
+      "createdAt": "2026-02-24 03:51:00"
+    },
+    {
+      "id": "480001",
+      "fullName": "Wayne Fallows",
+      "state": "VIC",
+      "createdAt": "2026-02-11 03:34:52"
+    },
+    {
+      "id": "1410001",
+      "fullName": "Wei Liu",
+      "state": "VIC",
+      "createdAt": "2026-02-20 02:48:26"
+    },
+    {
+      "id": "630001",
+      "fullName": "Yianni Valiontis",
+      "state": "VIC",
+      "createdAt": "2026-02-12 18:29:19"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tfullName\tstate\tcreatedAt\n900001\tAbhishek Mish\tVIC\t2026-02-15 08:50:52\n420001\tAjith Premathilaka\tVIC\t2026-02-10 16:04:25\n1290001\tAlex Chow\tVIC\t2026-02-19 05:37:26\n1380001\tAnastasios Adgemis\tVIC\t2026-02-20 01:10:18\n240002\tBoris Sirota\tVIC\t2026-02-10 00:14:19\n1500001\tDave Baker\tVIC\t2026-02-23 00:07:12\n1530001\tDavid Theochari\tVIC\t2026-02-23 06:14:04\n690001\tFab Defazio\tVIC\t2026-02-13 08:22:54\n1020001\tFayyaz Khan\tVIC\t2026-02-17 23:42:27\n240001\tFrieda Lay\tSA\t2026-02-09 23:39:47\n510001\tGeorge Fotopoulos\tVIC\t2026-02-11 20:53:08\n390001\tJared Blode\tVIC\t2026-02-10 14:50:50\n360001\tJon Shoebridge\tQLD\t2026-02-10 06:17:27\n540001\tJoshua Nicholas Richman\tSA\t2026-02-12 01:53:01\n660001\tMark Anthony Duero\tVIC\t2026-02-13 03:37:05\n450001\tMichael Killicoat\tVIC\t2026-02-10 21:26:10\n1230006\tMichael Palumbieri\tVIC\t2026-02-18 19:31:51\n930001\tMichael Thyreum\tVIC\t2026-02-16 05:25:49\n1470001\tNimal Jose Nimal Jose\tVIC\t2026-02-20 23:45:35\n1140003\tPeter Chu\tVIC\t2026-02-18 05:26:13\n960001\tPeter Maumov\tVIC\t2026-02-16 21:23:33\n270001\tSeong Heng Chua\tVIC\t2026-02-10 02:05:25\n1440001\tSteve Zafiriou\tVIC\t2026-02-20 05:13:09\n600001\tStuart Naylor\tVIC\t2026-02-12 03:56:06\n1380004\tTest Customer\tVIC\t2026-02-20 01:43:31\n1380003\tTest Customer\tVIC\t2026-02-20 01:33:25\n1380002\tTest Customer\tVIC\t2026-02-20 01:31:48\n1560002\tTest Customer\tVIC\t2026-02-24 04:48:40\n1560003\tTest Customer\tVIC\t2026-02-24 04:50:09\n1560004\tTest Customer\tVIC\t2026-02-24 04:51:35\n1560001\tVinod Samuel\tVIC\t2026-02-24 03:51:00\n480001\tWayne Fallows\tVIC\t2026-02-11 03:34:52\n1410001\tWei Liu\tVIC\t2026-02-20 02:48:26\n630001\tYianni Valiontis\tVIC\t2026-02-12 18:29:19\n",
+  "stderr": "",
+  "execution_time_ms": 1605
+}

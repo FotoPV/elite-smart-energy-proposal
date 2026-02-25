@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, documentType, fileName, extractedData IS NOT NULL as has_extraction, createdAt FROM customerDocuments WHERE customerId = 1530001 ORDER BY createdAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, documentType, fileName, extractedData IS NOT NULL as has_extraction, createdAt FROM customerDocuments WHERE customerId = 1530001 ORDER BY createdAt;",
+  "rows": [
+    {
+      "id": "1230001",
+      "documentType": "switchboard_photo",
+      "fileName": "aft sht.jpg",
+      "has_extraction": "1",
+      "createdAt": "2026-02-23 06:17:11"
+    },
+    {
+      "id": "1230003",
+      "documentType": "switchboard_photo",
+      "fileName": "image4.jpeg",
+      "has_extraction": "1",
+      "createdAt": "2026-02-23 06:17:29"
+    },
+    {
+      "id": "1230004",
+      "documentType": "switchboard_photo",
+      "fileName": "image5.jpeg",
+      "has_extraction": "1",
+      "createdAt": "2026-02-23 06:17:36"
+    },
+    {
+      "id": "1350003",
+      "documentType": "solar_proposal_pdf",
+      "fileName": "Solar Proposal for David Theochari at 10 Twining Avenue 3083 VIC (9136-6907-5).pdf",
+      "has_extraction": "0",
+      "createdAt": "2026-02-25 19:31:51"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdocumentType\tfileName\thas_extraction\tcreatedAt\n1230001\tswitchboard_photo\taft sht.jpg\t1\t2026-02-23 06:17:11\n1230003\tswitchboard_photo\timage4.jpeg\t1\t2026-02-23 06:17:29\n1230004\tswitchboard_photo\timage5.jpeg\t1\t2026-02-23 06:17:36\n1350003\tsolar_proposal_pdf\tSolar Proposal for David Theochari at 10 Twining Avenue 3083 VIC (9136-6907-5).pdf\t0\t2026-02-25 19:31:51\n",
+  "stderr": "",
+  "execution_time_ms": 1582
+}

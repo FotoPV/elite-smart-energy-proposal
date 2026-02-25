@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, documentType, fileName, LEFT(CAST(extractedData AS CHAR), 200) as extracted_preview FROM customerDocuments WHERE customerId = 1530001 ORDER BY createdAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2p3K1dfddpGHimM.570595ac1fed --database P6CTqT8eNBMi3wEqmJdcEm --execute SELECT id, documentType, fileName, LEFT(CAST(extractedData AS CHAR), 200) as extracted_preview FROM customerDocuments WHERE customerId = 1530001 ORDER BY createdAt;",
+  "rows": [
+    {
+      "id": "1230001",
+      "documentType": "switchboard_photo",
+      "fileName": "aft sht.jpg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":null,\\\"meterType\\\":null"
+    },
+    {
+      "id": "1230003",
+      "documentType": "switchboard_photo",
+      "fileName": "image4.jpeg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":80,\\\"mainSwitchType\\\":\\\"Main Switch\\\",\\\"totalCircuits\\\":14,\\\"usedCircuits\\\":14,\\\"availableCircuits\\\":0,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUs"
+    },
+    {
+      "id": "1230004",
+      "documentType": "switchboard_photo",
+      "fileName": "image5.jpeg",
+      "extracted_preview": "\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":null,\\\"meterType\\\":\\\"sm"
+    },
+    {
+      "id": "1350003",
+      "documentType": "solar_proposal_pdf",
+      "fileName": "Solar Proposal for David Theochari at 10 Twining Avenue 3083 VIC (9136-6907-5).pdf",
+      "extracted_preview": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdocumentType\tfileName\textracted_preview\n1230001\tswitchboard_photo\taft sht.jpg\t\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":null,\\\"meterType\\\":null\n1230003\tswitchboard_photo\timage4.jpeg\t\"{\\\"mainSwitchRating\\\":80,\\\"mainSwitchType\\\":\\\"Main Switch\\\",\\\"totalCircuits\\\":14,\\\"usedCircuits\\\":14,\\\"availableCircuits\\\":0,\\\"circuitBreakers\\\":[{\\\"position\\\":1,\\\"rating\\\":10,\\\"type\\\":\\\"MCB\\\",\\\"isUs\n1230004\tswitchboard_photo\timage5.jpeg\t\"{\\\"mainSwitchRating\\\":null,\\\"mainSwitchType\\\":null,\\\"totalCircuits\\\":null,\\\"usedCircuits\\\":null,\\\"availableCircuits\\\":null,\\\"circuitBreakers\\\":[],\\\"hasRcd\\\":false,\\\"rcdCount\\\":null,\\\"meterType\\\":\\\"sm\n1350003\tsolar_proposal_pdf\tSolar Proposal for David Theochari at 10 Twining Avenue 3083 VIC (9136-6907-5).pdf\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1547
+}

@@ -8,6 +8,7 @@ import {
   calculateCookingSavings,
   calculatePoolHeatPump,
   calculateVppIncome,
+  getVppExportFraction,
   calculateEvSavings,
   calculateBatterySize,
   calculateSolarSize,
@@ -251,6 +252,53 @@ describe("VPP Income", () => {
     // Net = $292.00
     expect(result.providerType).toBe("fixed");
     expect(result.totalAnnualValue).toBeCloseTo(292.0, 1);
+  });
+});
+
+describe("VPP Export Fraction (Tiered)", () => {
+  it("returns 50% for 50kWh+ batteries", () => {
+    expect(getVppExportFraction(50)).toBe(0.50);
+    expect(getVppExportFraction(60)).toBe(0.50);
+    expect(getVppExportFraction(100)).toBe(0.50);
+  });
+
+  it("returns 45% for 30-40kWh batteries", () => {
+    expect(getVppExportFraction(40)).toBe(0.45);
+    expect(getVppExportFraction(30)).toBe(0.45);
+    expect(getVppExportFraction(35)).toBe(0.45);
+  });
+
+  it("returns 35% for 20-30kWh batteries", () => {
+    expect(getVppExportFraction(25)).toBe(0.35);
+    expect(getVppExportFraction(20)).toBe(0.35);
+    expect(getVppExportFraction(29)).toBe(0.35);
+  });
+
+  it("returns 20% for 15-20kWh batteries", () => {
+    expect(getVppExportFraction(15)).toBe(0.20);
+    expect(getVppExportFraction(19)).toBe(0.20);
+  });
+
+  it("returns 15% for batteries under 15kWh", () => {
+    expect(getVppExportFraction(10)).toBe(0.15);
+    expect(getVppExportFraction(5)).toBe(0.15);
+  });
+
+  it("produces correct daily export for David Theochari (25kWh battery)", () => {
+    // 25kWh battery → 35% tier
+    const fraction = getVppExportFraction(25);
+    expect(fraction).toBe(0.35);
+    const usable = 25 * 0.9; // 22.5kWh
+    const dailyExport = Math.round(usable * fraction * 10) / 10;
+    expect(dailyExport).toBe(7.9); // 22.5 × 0.35 = 7.875 → 7.9
+  });
+
+  it("produces correct daily export for large 50kWh battery", () => {
+    const fraction = getVppExportFraction(50);
+    expect(fraction).toBe(0.50);
+    const usable = 50 * 0.9; // 45kWh
+    const dailyExport = Math.round(usable * fraction * 10) / 10;
+    expect(dailyExport).toBe(22.5); // 45 × 0.50 = 22.5
   });
 });
 
