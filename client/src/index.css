@@ -1,0 +1,398 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   ELITE SMART ENERGY SOLUTIONS — CUSTOM FONTS
+   ============================================ */
+
+@font-face {
+  font-family: 'NextSphere';
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KyJiGtCWZEOyRutS.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GeneralSans';
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/YXyQKtNsWXINxhqz.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/IwTijsrkypfLpHZK.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/zIpydVeIeSysfLZE.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ============================================
+   ELITE SMART ENERGY SOLUTIONS — THEME VARIABLES
+   Midnight Navy #0F172A as universal background
+   ============================================ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ESES Custom Colors */
+  --color-eses-aqua: oklch(82.5% 0.14 180);
+  --color-eses-orange: oklch(68% 0.19 45);
+  --color-eses-navy: #0F172A;
+  --color-eses-navy-light: #1E293B;
+  --color-eses-green: #4CAF50;
+}
+
+/* ============================================
+   ELITE SMART ENERGY SOLUTIONS — DARK THEME
+   Midnight Navy #0F172A as universal background
+   ============================================ */
+
+:root {
+  /* ESES Brand Primary — Aqua accent */
+  --primary: oklch(82.5% 0.14 180);
+  --primary-foreground: oklch(10% 0 0);
+  --accent: oklch(82.5% 0.14 180);
+  --accent-foreground: oklch(10% 0 0);
+
+  --sidebar-primary: oklch(82.5% 0.14 180);
+  --sidebar-primary-foreground: oklch(10% 0 0);
+
+  /* Chart colors */
+  --chart-1: oklch(82.5% 0.14 180);
+  --chart-2: oklch(75% 0.12 160);
+  --chart-3: oklch(70% 0.12 150);
+  --chart-4: oklch(75% 0.10 200);
+  --chart-5: oklch(65% 0.15 30);
+
+  --radius: 0.5rem;
+
+  /* ── Midnight Navy #0F172A — universal background ── */
+  --background: #0F172A;
+  --foreground: oklch(95% 0 0);
+
+  /* Cards sit one step lighter than the page bg */
+  --card: #1E293B;
+  --card-foreground: oklch(95% 0 0);
+  --popover: #1E293B;
+  --popover-foreground: oklch(95% 0 0);
+
+  --secondary: #1E293B;
+  --secondary-foreground: oklch(95% 0 0);
+  --muted: #1E293B;
+  --muted-foreground: oklch(60% 0 0);
+
+  --destructive: oklch(60% 0.2 25);
+  --destructive-foreground: oklch(98% 0 0);
+
+  --border: #2D3F5C;
+  --input: #2D3F5C;
+  --ring: oklch(82.5% 0.14 180);
+
+  /* Sidebar — slightly deeper than page bg */
+  --sidebar: #0B1120;
+  --sidebar-foreground: oklch(95% 0 0);
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: oklch(95% 0 0);
+  --sidebar-border: #2D3F5C;
+  --sidebar-ring: oklch(82.5% 0.14 180);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply scroll-smooth;
+    background-color: #0F172A;
+  }
+
+  body {
+    background-color: #0F172A;
+    @apply text-foreground antialiased;
+    font-family: 'GeneralSans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'NextSphere', 'GeneralSans', system-ui, sans-serif;
+    @apply font-extrabold tracking-tight;
+  }
+
+  /* Numbers and data use GeneralSans */
+  .font-mono {
+    font-family: 'GeneralSans', system-ui, sans-serif !important;
+  }
+
+  /* UI elements use Urbanist */
+  button, [role="button"], nav, .nav-item, label,
+  .sidebar-item, [data-sidebar] a, [data-sidebar] button {
+    font-family: 'Urbanist', 'GeneralSans', system-ui, sans-serif;
+  }
+
+  input, textarea, select {
+    font-family: 'GeneralSans', system-ui, sans-serif;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  ::selection {
+    background: oklch(82.5% 0.14 180 / 0.3);
+    color: oklch(95% 0 0);
+  }
+}
+
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+
+  /* ESES card components — Midnight Navy palette */
+  .eses-card {
+    background: linear-gradient(135deg, #1E293B 0%, #162032 100%);
+    border: 1px solid #2D3F5C;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  .eses-button-primary {
+    background-color: oklch(82.5% 0.14 180);
+    color: oklch(10% 0 0);
+    box-shadow: 0 0 20px oklch(82.5% 0.14 180 / 0.3);
+    transition: all 0.2s;
+  }
+
+  .eses-button-primary:hover {
+    opacity: 0.9;
+    box-shadow: 0 0 30px oklch(82.5% 0.14 180 / 0.5);
+  }
+
+  .eses-glow {
+    box-shadow: 0 0 40px oklch(82.5% 0.14 180 / 0.2);
+  }
+
+  .eses-text-gradient {
+    background: linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(70% 0.12 190) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Stat card */
+  .stat-card {
+    background: linear-gradient(135deg, #1E293B 0%, #162032 100%);
+    border: 1px solid #2D3F5C;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.25rem;
+    height: 100%;
+    background: oklch(82.5% 0.14 180);
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-badge.draft {
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+  }
+
+  .status-badge.calculating {
+    background: oklch(75% 0.15 85 / 0.2);
+    color: oklch(75% 0.15 85);
+  }
+
+  .status-badge.generated {
+    background: oklch(82.5% 0.14 180 / 0.2);
+    color: oklch(82.5% 0.14 180);
+  }
+
+  .status-badge.exported {
+    background: oklch(70% 0.15 150 / 0.2);
+    color: oklch(70% 0.15 150);
+  }
+
+  .status-badge.archived {
+    background: oklch(50% 0 0 / 0.2);
+    color: oklch(60% 0 0);
+  }
+}
+
+/* ============================================
+   UTILITY STYLES
+   ============================================ */
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #2D3F5C transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #2D3F5C;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #3D5070;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 30px oklch(82.5% 0.14 180 / 0.3);
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px oklch(82.5% 0.14 180 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px oklch(82.5% 0.14 180 / 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1770340045002,
+      "tag": "0000_messy_joshua_kane",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1770340205578,
+      "tag": "0001_gorgeous_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1770346964677,
+      "tag": "0002_gray_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1770357016654,
+      "tag": "0003_mighty_jack_flag",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1770361376412,
+      "tag": "0004_cynical_shatterstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1770370079000,
+      "tag": "0005_lethal_hairball",
+      "breakpoints": true
+    }
+  ]
+}
