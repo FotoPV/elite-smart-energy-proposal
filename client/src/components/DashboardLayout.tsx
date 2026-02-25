@@ -35,8 +35,8 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 // Elite brand icons
-const LOGO_ICON_WHITE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png"; // white-transparent (for dark sidebar)
-const LOGO_ICON_NAVY = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg"; // full logo (fallback)
+const LOGO_ICON_WHITE = "/elite_icon_white_transparent.png"; // ESES sun + leaf icon (white/transparent)
+const LOGO_ICON_NAVY = "/elite_icon_white_transparent.png"; // fallback
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
@@ -165,7 +165,7 @@ function DashboardLayoutContent({
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
-                      Lightning Energy
+                      Elite Smart Energy
                     </span>
                     <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
                       Proposal Generator
@@ -247,7 +247,7 @@ function DashboardLayoutContent({
             
             {!isCollapsed && (
               <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
-                © Lightning Energy — Proposal Generator
+                © Elite Smart Energy Solutions
               </p>
             )}
           </SidebarFooter>
@@ -270,7 +270,7 @@ function DashboardLayoutContent({
               <div className="flex items-center gap-2">
                 <img 
                   src={LOGO_ICON_WHITE} 
-                  alt="Lightning Energy" 
+                  alt="Elite Smart Energy" 
                   className="h-6 w-6"
                 />
                 <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#00EAD3' }}>

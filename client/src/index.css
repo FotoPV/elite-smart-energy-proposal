@@ -168,27 +168,27 @@
   body {
     background-color: #000000;
     @apply text-foreground antialiased;
-    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif;
+    font-family: 'Open Sans', 'GeneralSans', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'NextSphere', 'GeneralSans', 'Montserrat', system-ui, sans-serif;
+    font-family: 'Montserrat', 'NextSphere', system-ui, sans-serif;
     @apply font-extrabold tracking-tight;
   }
 
-  /* Numbers and data use GeneralSans */
+  /* Numbers and data use Open Sans */
   .font-mono {
-    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif !important;
+    font-family: 'Open Sans', 'GeneralSans', system-ui, sans-serif !important;
   }
 
-  /* UI elements use GeneralSans */
+  /* UI elements use Montserrat */
   button, [role="button"], nav, .nav-item, label,
   .sidebar-item, [data-sidebar] a, [data-sidebar] button {
-    font-family: 'GeneralSans', 'Montserrat', system-ui, sans-serif;
+    font-family: 'Montserrat', 'GeneralSans', system-ui, sans-serif;
   }
 
   input, textarea, select {
-    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif;
+    font-family: 'Open Sans', 'GeneralSans', system-ui, sans-serif;
   }
 
   button:not(:disabled),
