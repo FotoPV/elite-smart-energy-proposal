@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Proposals from "./pages/Proposals";
 import ProposalDetail from "./pages/ProposalDetail";
 import NewProposal from "./pages/NewProposal";
+import BulkUpload from "./pages/BulkUpload";
 import ProposalBin from "./pages/ProposalBin";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/dashboard">{() => <Redirect to="/proposals/new" />}</Route>
       <Route path="/proposals" component={Proposals} />
       <Route path="/proposals/new" component={NewProposal} />
+      <Route path="/proposals/bulk" component={BulkUpload} />
       <Route path="/proposals/bin" component={ProposalBin} />
       <Route path="/proposals/:id" component={ProposalDetail} />
       <Route path="/404" component={NotFound} />

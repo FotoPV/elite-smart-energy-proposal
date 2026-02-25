@@ -896,6 +896,138 @@ export const appRouter = router({
         };
       }),
 
+    // ============================================
+    // BULK CREATE — up to 10 bills at once
+    // Each bill: upload → extract customer info → create customer → create bill → generate proposal
+    // ============================================
+    bulkCreate: publicProcedure
+      .input(z.object({
+        bills: z.array(z.object({
+          fileData: z.string(),   // base64
+          fileName: z.string(),
+        })).min(1).max(10),
+      }))
+      .mutation(async ({ input }) => {
+        const results: Array<{
+          fileName: string;
+          status: 'success' | 'error';
+          proposalId?: number;
+          customerName?: string;
+          error?: string;
+        }> = [];
+
+        for (const bill of input.bills) {
+          try {
+            // 1. Upload bill to S3
+            const fileBuffer = Buffer.from(bill.fileData, 'base64');
+            const fileKey = `bills/bulk/${nanoid()}-${bill.fileName}`;
+            const { url: fileUrl } = await storagePut(fileKey, fileBuffer, 'application/pdf');
+
+            // 2. Extract bill data (customer name, address, state, usage, costs)
+            const extracted = await extractElectricityBillData(fileUrl);
+
+            // 3. Derive customer fields from extracted data
+            const fullName = extracted.customerName || bill.fileName.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+            const address = extracted.serviceAddress || 'Unknown Address';
+            const rawState = extracted.state || '';
+            const stateMap: Record<string, string> = {
+              'victoria': 'VIC', 'new south wales': 'NSW', 'queensland': 'QLD',
+              'south australia': 'SA', 'western australia': 'WA', 'tasmania': 'TAS',
+              'northern territory': 'NT', 'australian capital territory': 'ACT',
+            };
+            const state = rawState.length <= 3 ? rawState.toUpperCase() || 'VIC'
+              : stateMap[rawState.toLowerCase()] || 'VIC';
+
+            // 4. Create customer
+            const customerId = await db.createCustomer({
+              fullName,
+              address,
+              state,
+              userId: 1,
+            });
+
+            // 5. Create bill record
+            const billId = await db.createBill({
+              customerId,
+              billType: 'electricity',
+              fileUrl,
+              fileKey,
+              fileName: bill.fileName,
+            });
+
+            // 6. Save extracted bill data
+            await db.updateBill(billId, {
+              retailer: extracted.retailer,
+              billingPeriodStart: extracted.billingPeriodStart ? new Date(extracted.billingPeriodStart) : undefined,
+              billingPeriodEnd: extracted.billingPeriodEnd ? new Date(extracted.billingPeriodEnd) : undefined,
+              billingDays: extracted.billingDays,
+              totalAmount: extracted.totalAmount?.toString(),
+              dailySupplyCharge: extracted.dailySupplyCharge?.toString(),
+              totalUsageKwh: extracted.totalUsageKwh?.toString(),
+              peakUsageKwh: extracted.peakUsageKwh?.toString(),
+              offPeakUsageKwh: extracted.offPeakUsageKwh?.toString(),
+              shoulderUsageKwh: extracted.shoulderUsageKwh?.toString(),
+              solarExportsKwh: extracted.solarExportsKwh?.toString(),
+              peakRateCents: extracted.peakRateCents?.toString(),
+              offPeakRateCents: extracted.offPeakRateCents?.toString(),
+              shoulderRateCents: extracted.shoulderRateCents?.toString(),
+              feedInTariffCents: extracted.feedInTariffCents?.toString(),
+              rawExtractedData: extracted.rawData,
+              extractionConfidence: extracted.extractionConfidence?.toString(),
+            });
+
+            // 7. Create proposal and auto-generate slides
+            const customer = await db.getCustomerById(customerId);
+            const billRecord = await db.getBillById(billId);
+            const vppProviders = await db.getVppProvidersByState(state);
+            const rebates = await db.getRebatesByState(state);
+
+            const proposalId = await db.createProposal({
+              customerId,
+              userId: 1,
+              title: `Proposal for ${fullName}`,
+              electricityBillId: billId,
+              status: 'draft',
+            });
+
+            // Auto-generate calculations + slides (best-effort)
+            try {
+              if (customer && billRecord) {
+                const calculations = generateFullCalculations(customer, billRecord, null, vppProviders, rebates);
+                const proposalData = buildProposalData(customer, calculations, false, false, false);
+                const slides = generateSlides(proposalData);
+                const slideData = slides.map((s, i) => ({
+                  slideNumber: i + 1,
+                  slideType: s.type,
+                  title: s.title,
+                  isConditional: false,
+                  isIncluded: true,
+                  content: s as unknown as Record<string, unknown>,
+                }));
+                await db.updateProposal(proposalId, {
+                  calculations,
+                  slidesData: slideData,
+                  slideCount: slideData.length,
+                  status: 'generated',
+                });
+              }
+            } catch (genErr) {
+              console.error('Bulk slide gen failed:', genErr);
+            }
+
+            results.push({ fileName: bill.fileName, status: 'success', proposalId, customerName: fullName });
+          } catch (err) {
+            results.push({
+              fileName: bill.fileName,
+              status: 'error',
+              error: err instanceof Error ? err.message : 'Unknown error',
+            });
+          }
+        }
+
+        return { results };
+      }),
+
   }),
 
   // ============================================

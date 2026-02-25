@@ -26,7 +26,8 @@ import {
   FileText, 
   PlusCircle,
   ChevronRight,
-  Trash2
+  Trash2,
+  Upload
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -39,6 +40,7 @@ const LOGO_ICON_NAVY = "https://files.manuscdn.com/user_upload_by_module/session
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
+  { icon: Upload, label: "Bulk Upload", path: "/proposals/bulk" },
   { icon: FileText, label: "Proposals", path: "/proposals" },
   { icon: Trash2, label: "Bin", path: "/proposals/bin" },
 ];
