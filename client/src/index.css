@@ -120,34 +120,34 @@
 
   --radius: 0.5rem;
 
-  /* ── Pure Black #000000 — universal background ── */
-  --background: #000000;
+  /* ── Dark Navy #0D1B2A — universal background ── */
+  --background: #0D1B2A;
   --foreground: oklch(95% 0 0);
 
   /* Cards sit one step lighter than the page bg */
-  --card: #111111;
+  --card: #132236;
   --card-foreground: oklch(95% 0 0);
-  --popover: #111111;
+  --popover: #132236;
   --popover-foreground: oklch(95% 0 0);
 
-  --secondary: #1a1a1a;
+  --secondary: #1A2E42;
   --secondary-foreground: oklch(95% 0 0);
-  --muted: #1a1a1a;
+  --muted: #1A2E42;
   --muted-foreground: oklch(60% 0 0);
 
   --destructive: oklch(60% 0.2 25);
   --destructive-foreground: oklch(98% 0 0);
 
-  --border: #222222;
-  --input: #1a1a1a;
+  --border: #1E3550;
+  --input: #1A2E42;
   --ring: #00EAD3;
 
   /* Sidebar — slightly deeper than page bg */
-  --sidebar: #000000;
+  --sidebar: #091523;
   --sidebar-foreground: oklch(95% 0 0);
-  --sidebar-accent: #111111;
+  --sidebar-accent: #132236;
   --sidebar-accent-foreground: oklch(95% 0 0);
-  --sidebar-border: #222222;
+  --sidebar-border: #1E3550;
   --sidebar-ring: #00EAD3;
 }
 
@@ -162,11 +162,11 @@
 
   html {
     @apply scroll-smooth;
-    background-color: #000000;
+    background-color: #0D1B2A;
   }
 
   body {
-    background-color: #000000;
+    background-color: #0D1B2A;
     @apply text-foreground antialiased;
     font-family: 'Open Sans', 'GeneralSans', system-ui, sans-serif;
   }

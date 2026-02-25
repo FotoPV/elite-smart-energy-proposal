@@ -2,10 +2,11 @@ import { useLocation } from "wouter";
 import { Upload, Layers, LayoutGrid, FileText, BarChart2 } from "lucide-react";
 
 const BRAND = {
-  iconTransparent: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vkYTXfpVJByJjaGo.png",
+  iconTransparent: "/elite_icon_white_transparent.png",
   aqua: "#00EAD3",
+  green: "#3CB55A",
   orange: "#f36710",
-  black: "#000000",
+  black: "#0D1B2A",
 };
 
 export default function Home() {
@@ -90,8 +91,8 @@ export default function Home() {
               fontWeight: 700,
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
-              border: `2px solid ${BRAND.aqua}`,
-              color: BRAND.aqua,
+              border: `2px solid ${BRAND.green}`,
+              color: BRAND.green,
               background: "transparent",
               cursor: "pointer",
               transition: "transform 0.15s",
@@ -117,7 +118,7 @@ export default function Home() {
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
               border: "none",
-              background: BRAND.orange,
+              background: BRAND.green,
               color: "#FFFFFF",
               cursor: "pointer",
               transition: "transform 0.15s",
@@ -221,8 +222,8 @@ export default function Home() {
           style={{
             borderRadius: "12px",
             padding: "28px",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
           }}
         >
           <h3
@@ -232,7 +233,7 @@ export default function Home() {
               fontSize: "0.8rem",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: BRAND.aqua,
+              color: BRAND.green,
               marginBottom: "12px",
               lineHeight: 1.4,
             }}
@@ -250,8 +251,8 @@ export default function Home() {
           style={{
             borderRadius: "12px",
             padding: "28px",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
           }}
         >
           <h3
@@ -279,8 +280,8 @@ export default function Home() {
           style={{
             borderRadius: "12px",
             padding: "28px",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
           }}
         >
           <h3
