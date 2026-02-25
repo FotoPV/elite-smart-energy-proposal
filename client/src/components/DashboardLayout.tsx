@@ -40,7 +40,7 @@ const LOGO_ICON_NAVY = "https://files.manuscdn.com/user_upload_by_module/session
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
-  { icon: Upload, label: "Bulk Upload", path: "/proposals/bulk" },
+  { icon: Upload, label: "Bulk Upload", path: "/bulk-upload" },
   { icon: FileText, label: "Proposals", path: "/proposals" },
   { icon: Trash2, label: "Bin", path: "/proposals/bin" },
 ];
@@ -160,7 +160,7 @@ function DashboardLayoutContent({
                   src={LOGO_ICON_WHITE} 
                   alt="Lightning Energy" 
                   className="h-8 w-8 shrink-0"
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(70,180,70,0.4))' }}
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(0,234,211,0.4))' }}
                 />
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
@@ -247,7 +247,7 @@ function DashboardLayoutContent({
             
             {!isCollapsed && (
               <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
-                © Lightning Energy — Architect George Fotopoulos
+                © Lightning Energy — Proposal Generator
               </p>
             )}
           </SidebarFooter>
