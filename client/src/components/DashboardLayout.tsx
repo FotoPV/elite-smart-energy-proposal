@@ -158,14 +158,14 @@ function DashboardLayoutContent({
               >
                 <img 
                   src={LOGO_ICON_WHITE} 
-                  alt="Elite Smart Energy Solutions" 
+                  alt="Lightning Energy" 
                   className="h-8 w-8 shrink-0"
                   style={{ filter: 'drop-shadow(0 0 6px rgba(70,180,70,0.4))' }}
                 />
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
-                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#46B446' }}>
-                      Elite Smart Energy Solutions
+                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
+                      Lightning Energy
                     </span>
                     <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
                       Proposal Generator
@@ -247,7 +247,7 @@ function DashboardLayoutContent({
             
             {!isCollapsed && (
               <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
-                © Elite Smart Energy Solutions — Architect George Fotopoulos
+                © Lightning Energy — Architect George Fotopoulos
               </p>
             )}
           </SidebarFooter>
@@ -270,10 +270,10 @@ function DashboardLayoutContent({
               <div className="flex items-center gap-2">
                 <img 
                   src={LOGO_ICON_WHITE} 
-                  alt="Elite Smart Energy Solutions" 
+                  alt="Lightning Energy" 
                   className="h-6 w-6"
                 />
-                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#46B446' }}>
+                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
                   {activeMenuItem?.label ?? "Proposals"}
                 </span>
               </div>

@@ -464,7 +464,7 @@ export default function NewProposal() {
                       onClick={() => document.getElementById('electricity-upload')?.click()}
                       disabled={isUploading}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
-                      style={{ border: '2px solid #46B446', color: '#46B446', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
+                      style={{ border: '2px solid #00EAD3', color: '#00EAD3', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
                     >
                       {uploadingType === 'electricity' ? (
                         <>
@@ -488,7 +488,7 @@ export default function NewProposal() {
                   <span className="text-xs text-muted-foreground ml-1">(Optional)</span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per ESES T&amp;Cs.
+                  Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per Lightning Energy T&amp;Cs.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -750,7 +750,7 @@ export default function NewProposal() {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          COPYRIGHT Elite Smart Energy Solutions - Architect George Fotopoulos
+          Lightning Energy Proposal Generator
         </div>
       </div>
 
@@ -839,7 +839,7 @@ export default function NewProposal() {
                   onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasSolarNew: !!c }))}
                 />
                 <label htmlFor="hasSolarNew" className="text-sm flex items-center gap-1.5 cursor-pointer">
-                  <span style={{color: '#46B446'}}>&#9728;</span> Has Solar PV &lt;5yrs
+                  <span style={{color: '#00EAD3'}}>&#9728;</span> Has Solar PV &lt;5yrs
                 </label>
               </div>
               <div className="flex items-center gap-3">

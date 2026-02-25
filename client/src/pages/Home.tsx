@@ -3,8 +3,9 @@ import { Upload, Layers, LayoutGrid, FileText, BarChart2 } from "lucide-react";
 
 const BRAND = {
   iconTransparent: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vkYTXfpVJByJjaGo.png",
-  solarGreen: "#46B446",
-  midnightNavy: "#0D1117",
+  aqua: "#00EAD3",
+  orange: "#f36710",
+  black: "#000000",
 };
 
 export default function Home() {
@@ -14,8 +15,8 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background: BRAND.midnightNavy,
-        fontFamily: "'Montserrat', 'Open Sans', sans-serif",
+        background: BRAND.black,
+        fontFamily: "'GeneralSans', 'Montserrat', 'Open Sans', sans-serif",
       }}
     >
       {/* ── HERO ─────────────────────────────────────────────── */}
@@ -25,7 +26,7 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img
             src={BRAND.iconTransparent}
-            alt="Elite Smart Energy Solutions"
+            alt="Lightning Energy"
             style={{ height: "72px", width: "72px", objectFit: "contain" }}
           />
         </div>
@@ -33,7 +34,7 @@ export default function Home() {
         {/* Massive bold hero title — fills viewport width like the reference */}
         <h1
           style={{
-            fontFamily: "'Montserrat', sans-serif",
+            fontFamily: "'NextSphere', 'Montserrat', sans-serif",
             fontWeight: 900,
             fontSize: "clamp(3.5rem, 12vw, 9rem)",
             lineHeight: 0.92,
@@ -55,7 +56,7 @@ export default function Home() {
         <p
           style={{
             color: "#94A3B8",
-            fontFamily: "'Open Sans', sans-serif",
+            fontFamily: "'GeneralSans', 'Open Sans', sans-serif",
             fontSize: "1rem",
             lineHeight: 1.7,
             maxWidth: "620px",
@@ -76,7 +77,7 @@ export default function Home() {
             marginBottom: "1.5rem",
           }}
         >
-          {/* Upload Bill — outlined green */}
+          {/* Upload Bill — outlined aqua */}
           <button
             onClick={() => setLocation("/proposals/new")}
             style={{
@@ -85,12 +86,12 @@ export default function Home() {
               gap: "8px",
               padding: "12px 24px",
               borderRadius: "6px",
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 700,
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
-              border: `2px solid ${BRAND.solarGreen}`,
-              color: BRAND.solarGreen,
+              border: `2px solid ${BRAND.aqua}`,
+              color: BRAND.aqua,
               background: "transparent",
               cursor: "pointer",
               transition: "transform 0.15s",
@@ -102,21 +103,21 @@ export default function Home() {
             Upload Bill
           </button>
 
-          {/* Bulk Upload — solid green */}
+          {/* Bulk Upload — solid orange */}
           <button
-            onClick={() => setLocation("/proposals/new")}
+            onClick={() => setLocation("/bulk-upload")}
             style={{
               display: "flex",
               alignItems: "center",
               gap: "8px",
               padding: "12px 24px",
               borderRadius: "6px",
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 700,
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
               border: "none",
-              background: BRAND.solarGreen,
+              background: BRAND.orange,
               color: "#FFFFFF",
               cursor: "pointer",
               transition: "transform 0.15s",
@@ -137,7 +138,7 @@ export default function Home() {
               gap: "8px",
               padding: "12px 24px",
               borderRadius: "6px",
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 700,
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
@@ -163,7 +164,7 @@ export default function Home() {
               gap: "8px",
               padding: "12px 24px",
               borderRadius: "6px",
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 700,
               fontSize: "0.875rem",
               letterSpacing: "0.03em",
@@ -193,7 +194,7 @@ export default function Home() {
             border: "none",
             color: "#64748B",
             fontSize: "0.75rem",
-            fontFamily: "'Open Sans', sans-serif",
+            fontFamily: "'GeneralSans', 'Open Sans', sans-serif",
             cursor: "pointer",
             opacity: 0.8,
           }}
@@ -226,19 +227,19 @@ export default function Home() {
         >
           <h3
             style={{
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 900,
               fontSize: "0.8rem",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: BRAND.solarGreen,
+              color: BRAND.aqua,
               marginBottom: "12px",
               lineHeight: 1.4,
             }}
           >
             AUTOMATIC<br />EXTRACTION
           </h3>
-          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'GeneralSans', 'Open Sans', sans-serif" }}>
             AI-powered PDF scanning extracts customer details, usage data, tariff
             rates, and billing periods automatically.
           </p>
@@ -255,19 +256,19 @@ export default function Home() {
         >
           <h3
             style={{
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 900,
               fontSize: "0.8rem",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#F97316",
+              color: BRAND.orange,
               marginBottom: "12px",
               lineHeight: 1.4,
             }}
           >
             LLM-POWERED<br />ANALYSIS
           </h3>
-          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'GeneralSans', 'Open Sans', sans-serif" }}>
             Each slide is generated with AI-written, customer-specific narrative
             analysis — not just data tables.
           </p>
@@ -284,7 +285,7 @@ export default function Home() {
         >
           <h3
             style={{
-              fontFamily: "'Montserrat', sans-serif",
+              fontFamily: "'GeneralSans', 'Montserrat', sans-serif",
               fontWeight: 900,
               fontSize: "0.8rem",
               letterSpacing: "0.08em",
@@ -296,7 +297,7 @@ export default function Home() {
           >
             INSTANT<br />PROPOSALS
           </h3>
-          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'GeneralSans', 'Open Sans', sans-serif" }}>
             Generate professional branded proposals with solar, battery, VPP,
             and financial analysis in minutes.
           </p>
@@ -312,10 +313,10 @@ export default function Home() {
           fontSize: "0.7rem",
           color: "#334155",
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          fontFamily: "'Open Sans', sans-serif",
+          fontFamily: "'GeneralSans', 'Open Sans', sans-serif",
         }}
       >
-        © Elite Smart Energy Solutions — Architect George Fotopoulos
+        © Lightning Energy — Proposal Generator
       </div>
     </div>
   );

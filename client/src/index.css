@@ -4,9 +4,34 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
-   ELITE SMART ENERGY SOLUTIONS — CUSTOM FONTS
+   LIGHTNING ENERGY — CUSTOM FONTS
    ============================================ */
 
+@font-face {
+  font-family: 'NextSphere';
+  src: url('/fonts/NextSphere-ExtraBold.ttf') format('truetype');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GeneralSans';
+  src: url('/fonts/GeneralSans-Regular.otf') format('opentype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('/fonts/Urbanist-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback fonts from CDN for UI components */
 @font-face {
   font-family: 'Montserrat';
   src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/KyJiGtCWZEOyRutS.ttf') format('truetype');
@@ -23,25 +48,11 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Montserrat';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/IwTijsrkypfLpHZK.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Montserrat';
-  src: url('https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/zIpydVeIeSysfLZE.ttf') format('truetype');
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-
 /* ============================================
-   ELITE SMART ENERGY SOLUTIONS — THEME VARIABLES
-   Midnight Navy #0F172A as universal background
+   LIGHTNING ENERGY — THEME VARIABLES
+   Pure Black #000000 as universal background
+   Aqua #00EAD3 as primary accent
+   Orange #f36710 as secondary accent
    ============================================ */
 
 @theme inline {
@@ -82,67 +93,62 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* ESES Custom Colors */
-  --color-eses-aqua: #46B446;
-  --color-eses-navy-brand: #1B3A5C;
-  --color-eses-navy: #0F172A;
-  --color-eses-navy-light: #2C3E50;
-  --color-eses-solar-green: #46B446;
+  /* Lightning Energy Custom Colors */
+  --color-le-aqua: #00EAD3;
+  --color-le-orange: #f36710;
+  --color-le-black: #000000;
+  --color-le-dark: #0D0D0D;
+  --color-le-card: #111111;
 }
 
-/* ============================================
-   ELITE SMART ENERGY SOLUTIONS — DARK THEME
-   Midnight Navy #0F172A as universal background
-   ============================================ */
-
 :root {
-  /* ESES Brand Primary — Aqua accent */
-  --primary: #46B446;
-  --primary-foreground: #0F172A;
-  --accent: #46B446;
-  --accent-foreground: #0F172A;
+  /* Lightning Energy Brand Primary — Aqua accent */
+  --primary: #00EAD3;
+  --primary-foreground: #000000;
+  --accent: #00EAD3;
+  --accent-foreground: #000000;
 
-  --sidebar-primary: #46B446;
-  --sidebar-primary-foreground: #0F172A;
+  --sidebar-primary: #00EAD3;
+  --sidebar-primary-foreground: #000000;
 
   /* Chart colors */
-  --chart-1: #46B446;
-  --chart-2: #3DA03D;
-  --chart-3: #2E8B2E;
-  --chart-4: #4A6B8A;
-  --chart-5: #1B3A5C;
+  --chart-1: #00EAD3;
+  --chart-2: #f36710;
+  --chart-3: #00b8a6;
+  --chart-4: #ff8c42;
+  --chart-5: #1a1a1a;
 
   --radius: 0.5rem;
 
-  /* ── Midnight Navy #0F172A — universal background ── */
-  --background: #0F172A;
+  /* ── Pure Black #000000 — universal background ── */
+  --background: #000000;
   --foreground: oklch(95% 0 0);
 
   /* Cards sit one step lighter than the page bg */
-  --card: #2C3E50;
+  --card: #111111;
   --card-foreground: oklch(95% 0 0);
-  --popover: #2C3E50;
+  --popover: #111111;
   --popover-foreground: oklch(95% 0 0);
 
-  --secondary: #2C3E50;
+  --secondary: #1a1a1a;
   --secondary-foreground: oklch(95% 0 0);
-  --muted: #2C3E50;
+  --muted: #1a1a1a;
   --muted-foreground: oklch(60% 0 0);
 
   --destructive: oklch(60% 0.2 25);
   --destructive-foreground: oklch(98% 0 0);
 
-  --border: #1B3A5C;
-  --input: #1B3A5C;
-  --ring: #46B446;
+  --border: #222222;
+  --input: #1a1a1a;
+  --ring: #00EAD3;
 
   /* Sidebar — slightly deeper than page bg */
-  --sidebar: #0F172A;
+  --sidebar: #000000;
   --sidebar-foreground: oklch(95% 0 0);
-  --sidebar-accent: #2C3E50;
+  --sidebar-accent: #111111;
   --sidebar-accent-foreground: oklch(95% 0 0);
-  --sidebar-border: #1B3A5C;
-  --sidebar-ring: #46B446;
+  --sidebar-border: #222222;
+  --sidebar-ring: #00EAD3;
 }
 
 /* ============================================
@@ -156,33 +162,33 @@
 
   html {
     @apply scroll-smooth;
-    background-color: #0F172A;
+    background-color: #000000;
   }
 
   body {
-    background-color: #0F172A;
+    background-color: #000000;
     @apply text-foreground antialiased;
-    font-family: 'Open Sans', system-ui, sans-serif;
+    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', 'Open Sans', system-ui, sans-serif;
+    font-family: 'NextSphere', 'GeneralSans', 'Montserrat', system-ui, sans-serif;
     @apply font-extrabold tracking-tight;
   }
 
-  /* Numbers and data use Open Sans */
+  /* Numbers and data use GeneralSans */
   .font-mono {
-    font-family: 'Open Sans', system-ui, sans-serif !important;
+    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif !important;
   }
 
-  /* UI elements use Montserrat */
+  /* UI elements use GeneralSans */
   button, [role="button"], nav, .nav-item, label,
   .sidebar-item, [data-sidebar] a, [data-sidebar] button {
-    font-family: 'Montserrat', 'Open Sans', system-ui, sans-serif;
+    font-family: 'GeneralSans', 'Montserrat', system-ui, sans-serif;
   }
 
   input, textarea, select {
-    font-family: 'Open Sans', system-ui, sans-serif;
+    font-family: 'GeneralSans', 'Open Sans', system-ui, sans-serif;
   }
 
   button:not(:disabled),
@@ -198,7 +204,7 @@
   }
 
   ::selection {
-    background: oklch(82.5% 0.14 180 / 0.3);
+    background: rgba(0, 234, 211, 0.3);
     color: oklch(95% 0 0);
   }
 }
@@ -236,32 +242,40 @@
     }
   }
 
-  /* ESES card components — Midnight Navy palette */
+  /* Lightning Energy card components — pure black palette */
+  .le-card {
+    background: #111111;
+    border: 1px solid #222222;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  /* Legacy ESES class aliases for backward compatibility */
   .eses-card {
-    background: linear-gradient(135deg, #2C3E50 0%, #162032 100%);
-    border: 1px solid #1B3A5C;
+    background: #111111;
+    border: 1px solid #222222;
     border-radius: 0.75rem;
     padding: 1.5rem;
   }
 
   .eses-button-primary {
-    background-color: #46B446;
-    color: #0F172A;
-    box-shadow: 0 0 20px oklch(82.5% 0.14 180 / 0.3);
+    background-color: #00EAD3;
+    color: #000000;
+    box-shadow: 0 0 20px rgba(0, 234, 211, 0.3);
     transition: all 0.2s;
   }
 
   .eses-button-primary:hover {
     opacity: 0.9;
-    box-shadow: 0 0 30px oklch(82.5% 0.14 180 / 0.5);
+    box-shadow: 0 0 30px rgba(0, 234, 211, 0.5);
   }
 
   .eses-glow {
-    box-shadow: 0 0 40px oklch(82.5% 0.14 180 / 0.2);
+    box-shadow: 0 0 40px rgba(0, 234, 211, 0.2);
   }
 
   .eses-text-gradient {
-    background: linear-gradient(135deg, #46B446 0%, oklch(70% 0.12 190) 100%);
+    background: linear-gradient(135deg, #00EAD3 0%, #f36710 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -269,8 +283,8 @@
 
   /* Stat card */
   .stat-card {
-    background: linear-gradient(135deg, #2C3E50 0%, #162032 100%);
-    border: 1px solid #1B3A5C;
+    background: #111111;
+    border: 1px solid #222222;
     border-radius: 0.75rem;
     padding: 1.5rem;
     position: relative;
@@ -284,7 +298,7 @@
     left: 0;
     width: 0.25rem;
     height: 100%;
-    background: #46B446;
+    background: #00EAD3;
   }
 
   /* Status badges */
@@ -303,18 +317,18 @@
   }
 
   .status-badge.calculating {
-    background: oklch(75% 0.15 85 / 0.2);
-    color: oklch(75% 0.15 85);
+    background: rgba(243, 103, 16, 0.2);
+    color: #f36710;
   }
 
   .status-badge.generated {
-    background: oklch(82.5% 0.14 180 / 0.2);
-    color: #46B446;
+    background: rgba(0, 234, 211, 0.2);
+    color: #00EAD3;
   }
 
   .status-badge.exported {
-    background: oklch(70% 0.15 150 / 0.2);
-    color: oklch(70% 0.15 150);
+    background: rgba(0, 234, 211, 0.15);
+    color: rgba(0, 234, 211, 0.8);
   }
 
   .status-badge.archived {
@@ -330,7 +344,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #1B3A5C transparent;
+    scrollbar-color: #222222 transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -343,12 +357,12 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #1B3A5C;
+    background: #222222;
     border-radius: 3px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #3D5070;
+    background: #333333;
   }
 
   .animate-fade-in {
@@ -376,7 +390,7 @@
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 30px oklch(82.5% 0.14 180 / 0.3);
+    box-shadow: 0 0 30px rgba(0, 234, 211, 0.3);
   }
 }
 
@@ -386,10 +400,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px oklch(82.5% 0.14 180 / 0.3);
+    box-shadow: 0 0 20px rgba(0, 234, 211, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px oklch(82.5% 0.14 180 / 0.5);
+    box-shadow: 0 0 40px rgba(0, 234, 211, 0.5);
   }
 }
 

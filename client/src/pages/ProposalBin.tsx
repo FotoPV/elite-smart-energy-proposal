@@ -151,7 +151,7 @@ export default function ProposalBin() {
                     onClick={() => restoreMutation.mutate({ id: item.id })}
                     disabled={restoreMutation.isPending}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#46B446' }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#00EAD3' }}
                   >
                     {restoreMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                     Restore
@@ -198,7 +198,7 @@ export default function ProposalBin() {
 
         {/* Footer */}
         <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
-          © Elite Smart Energy Solutions — Architect George Fotopoulos
+          © Lightning Energy — Proposal Generator
         </div>
       </div>
     </DashboardLayout>

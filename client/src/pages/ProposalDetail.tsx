@@ -305,7 +305,7 @@ function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { pro
       <Button 
         onClick={handleDownload}
         disabled={isGenerating}
-        className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
+        className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
         size={size}
       >
         {isGenerating ? (
@@ -419,7 +419,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
         onClick={handleUpdateAndPublish}
         disabled={isProcessing}
         variant="outline"
-        className="border-[#46B446]/30 text-[#46B446] hover:bg-[#46B446]/10 hover:border-[#46B446] font-semibold"
+        className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10 hover:border-[#00EAD3] font-semibold"
       >
         {isProcessing ? (
           <>
@@ -589,7 +589,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     return (
       <div className="flex items-center gap-3">
         <div className="space-y-1.5 min-w-[180px]">
-          <Button disabled className="bg-[#46B446] text-black font-semibold w-full">
+          <Button disabled className="bg-[#00EAD3] text-black font-semibold w-full">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {currentStep || 'Exporting...'}
           </Button>
@@ -602,7 +602,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold">
+        <Button className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold">
           <Download className="mr-2 h-4 w-4" />
           Export
           <ChevronDown className="ml-2 h-3 w-3" />
@@ -613,7 +613,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handleExportNativePdf}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <FileDown className="mr-3 h-4 w-4 text-[#46B446]" />
+          <FileDown className="mr-3 h-4 w-4 text-[#00EAD3]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PDF</div>
             <div className="text-[10px] text-[#4A6B8A]">Embedded brand fonts</div>
@@ -623,7 +623,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handleExportPptx}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PowerPoint</div>
             <div className="text-[10px] text-[#4A6B8A]">Editable .pptx file</div>
@@ -644,9 +644,9 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handlePrepareSlides}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
           <div>
-            <div className="font-medium text-[#46B446]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
+            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
             <div className="text-[10px] text-[#4A6B8A]">Pixel-perfect image slides</div>
           </div>
         </DropdownMenuItem>
@@ -750,8 +750,8 @@ export default function ProposalDetailPage() {
         <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-[#46B446]/10 border border-[#46B446]/20">
-                <FileText className="h-6 w-6 text-[#46B446]" />
+              <div className="p-3 rounded-lg bg-[#00EAD3]/10 border border-[#00EAD3]/20">
+                <FileText className="h-6 w-6 text-[#00EAD3]" />
               </div>
               <div>
                 <h2 
@@ -771,7 +771,7 @@ export default function ProposalDetailPage() {
               {hasSlides && (
                 <Button
                   variant="ghost"
-                  className="text-[#46B446] hover:text-[#46B446] hover:bg-[#46B446]/10 font-semibold"
+                  className="text-[#00EAD3] hover:text-[#00EAD3] hover:bg-[#00EAD3]/10 font-semibold"
                   onClick={() => {
                     const win = window.open('', '_blank');
                     if (win && slides[0]) {
@@ -855,7 +855,7 @@ export default function ProposalDetailPage() {
               <Button
                 onClick={() => generateMutation.mutate({ proposalId })}
                 disabled={generateMutation.isPending || calculateMutation.isPending}
-                className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
+                className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
               >
                 {(generateMutation.isPending || calculateMutation.isPending) ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -885,14 +885,14 @@ export default function ProposalDetailPage() {
         {/* Loading state for slides */}
         {slidesLoading && (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-[#46B446]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#00EAD3]" />
             <span className="ml-3 text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>
           </div>
         )}
         
         {/* Footer */}
         <div className="text-center text-xs text-[#4A6B8A]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-          COPYRIGHT Elite Smart Energy Solutions — Architect George Fotopoulos
+          Lightning Energy Proposal Generator
         </div>
       </div>
     </DashboardLayout>

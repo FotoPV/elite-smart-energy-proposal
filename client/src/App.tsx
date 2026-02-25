@@ -18,7 +18,7 @@ function Router() {
       <Route path="/dashboard">{() => <Redirect to="/proposals/new" />}</Route>
       <Route path="/proposals" component={Proposals} />
       <Route path="/proposals/new" component={NewProposal} />
-      <Route path="/proposals/bulk" component={BulkUpload} />
+      <Route path="/bulk-upload" component={BulkUpload} />
       <Route path="/proposals/bin" component={ProposalBin} />
       <Route path="/proposals/:id" component={ProposalDetail} />
       <Route path="/404" component={NotFound} />

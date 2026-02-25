@@ -1,6 +1,6 @@
 /**
  * Slide Preview Component
- * Renders individual proposal slides with Elite Smart Energy Solutions branding
+ * Renders individual proposal slides with Lightning Energy branding
  */
 
 import { SlideData } from "../../../drizzle/schema";
@@ -103,7 +103,7 @@ export function FullSlideRenderer({ slide }: { slide: SlideData }) {
       
       {/* Footer */}
       <div className="absolute bottom-4 left-8 right-8 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Elite Smart Energy Solutions</span>
+        <span>Lightning Energy</span>
         <span>Slide {slide.slideNumber}</span>
       </div>
     </div>
