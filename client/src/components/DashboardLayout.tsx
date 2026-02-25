@@ -33,7 +33,9 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg";
+// Elite brand icons
+const LOGO_ICON_WHITE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png"; // white-transparent (for dark sidebar)
+const LOGO_ICON_NAVY = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg"; // full logo (fallback)
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
@@ -153,16 +155,17 @@ function DashboardLayoutContent({
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none"
               >
                 <img 
-                  src={LOGO_URL} 
+                  src={LOGO_ICON_WHITE} 
                   alt="Elite Smart Energy Solutions" 
                   className="h-8 w-8 shrink-0"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(70,180,70,0.4))' }}
                 />
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
-                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
+                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#46B446' }}>
                       Elite Smart Energy Solutions
                     </span>
-                    <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
+                    <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
                       Proposal Generator
                     </span>
                   </div>
@@ -217,7 +220,7 @@ function DashboardLayoutContent({
                     <p className="text-sm truncate leading-none" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF' }}>
                       {user?.name || "User"}
                     </p>
-                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                       {user?.email || "-"}
                     </p>
                   </div>
@@ -226,7 +229,7 @@ function DashboardLayoutContent({
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-2">
                   <p className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>{user?.name}</p>
-                  <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>{user?.email}</p>
+                  <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -241,7 +244,7 @@ function DashboardLayoutContent({
             </DropdownMenu>
             
             {!isCollapsed && (
-              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                 © Elite Smart Energy Solutions
               </p>
             )}
@@ -268,7 +271,7 @@ function DashboardLayoutContent({
                   alt="Elite Smart Energy Solutions" 
                   className="h-6 w-6"
                 />
-                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
+                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#46B446' }}>
                   {activeMenuItem?.label ?? "Proposals"}
                 </span>
               </div>

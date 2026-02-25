@@ -63,7 +63,7 @@ export default function ProposalBin() {
             <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               Bin
             </h1>
-            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
               Deleted proposals — restore or permanently remove
             </p>
           </div>
@@ -118,11 +118,11 @@ export default function ProposalBin() {
           </div>
         ) : !binItems || binItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
-            <Trash2 className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
+            <Trash2 className="h-16 w-16 mb-4" style={{ color: '#4A6B8A', opacity: 0.3 }} />
             <h3 className="text-base text-white mb-2" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               Bin is empty
             </h3>
-            <p className="text-sm text-center" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+            <p className="text-sm text-center" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
               Deleted proposals will appear here
             </p>
           </div>
@@ -134,13 +134,13 @@ export default function ProposalBin() {
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(128,130,133,0.2)' }}>
-                    <FileText className="h-5 w-5" style={{ color: '#808285' }} />
+                    <FileText className="h-5 w-5" style={{ color: '#4A6B8A' }} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm text-white truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {item.title || `Proposal #${item.id}`}
                     </p>
-                    <p className="text-xs mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                       {item.customerName || "Unknown"} · Deleted {formatDate(item.deletedAt)}
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export default function ProposalBin() {
                     onClick={() => restoreMutation.mutate({ id: item.id })}
                     disabled={restoreMutation.isPending}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#00EAD3' }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#46B446' }}
                   >
                     {restoreMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                     Restore
@@ -197,7 +197,7 @@ export default function ProposalBin() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
           © Elite Smart Energy Solutions — Architect [Consultant Name]
         </div>
       </div>

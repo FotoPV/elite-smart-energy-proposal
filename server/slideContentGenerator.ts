@@ -105,10 +105,10 @@ ${customerAddress}
 ${customerState}
 
 ### Orange accent bar
-A thin horizontal orange (#f36710) bar beneath the customer details
+A thin horizontal orange (#46B446) bar beneath the customer details
 
 ### Aqua separator line
-A thin aqua (#00EAD3) horizontal line near the bottom
+A thin aqua (#46B446) horizontal line near the bottom
 
 ### Prepared By (small, ash text at bottom)
 Prepared by ${BRAND.contact.name} | ${BRAND.contact.company}
@@ -146,10 +146,10 @@ ${BRAND.contact.phone} | ${BRAND.contact.email}
 
 | Metric | Value | Color |
 |--------|-------|-------|
-| CURRENT ANNUAL COST | ${fmt(totalCurrentCost)} | Orange (#f36710) |
+| CURRENT ANNUAL COST | ${fmt(totalCurrentCost)} | Orange (#46B446) |
 | RECOMMENDED SYSTEM | ${num(calc.recommendedBatteryKwh, 1)} kWh Battery${calc.recommendedSolarKw ? ' + ' + num(calc.recommendedSolarKw, 1) + 'kW Solar' : ''} | White |
-| PROJECTED ANNUAL SAVINGS | ${fmt(calc.totalAnnualSavings)} | Aqua (#00EAD3) |
-| PAYBACK PERIOD | ${num(calc.paybackYears, 1)} Years | Aqua (#00EAD3) |
+| PROJECTED ANNUAL SAVINGS | ${fmt(calc.totalAnnualSavings)} | Aqua (#46B446) |
+| PAYBACK PERIOD | ${num(calc.paybackYears, 1)} Years | Aqua (#46B446) |
 
 ### Key Insight Box (dark grey #1a1a1a background, 4px aqua left border)
 ${execInsight}
@@ -1143,8 +1143,8 @@ ${BRAND.contact.copyright}
 - **Primary Font (Headings ONLY)**: Montserrat ExtraBold — ALL CAPS, white
 - **Body Font (all text & numbers)**: Open Sans Regular — white for primary, ash (#808285) for secondary
 - **Label Font (subtitles, table headers)**: Montserrat SemiBold — ALL CAPS, aqua for subtitles, ash for labels
-- **Primary Accent**: Aqua (#00EAD3) — used sparingly for savings, positive values, borders, subtitles
-- **Secondary Accent**: Burnt Orange (#f36710) — used minimally for costs, warnings, accent bars
+- **Primary Accent**: Aqua (#46B446) — used sparingly for savings, positive values, borders, subtitles
+- **Secondary Accent**: Solar Green (#46B446) — used minimally for costs, warnings, accent bars
 - **Logo**: Elite Smart Energy Solutions aqua starburst (${BRAND.logo.aqua}) — top-right on every slide except cover
 - **Cover Background**: ${BRAND.coverBg}
 - **Style**: Minimal, data-driven, professional. NO purple. NO gradients. NO decorative elements.

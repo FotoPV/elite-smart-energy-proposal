@@ -58,7 +58,7 @@ export default function Proposals() {
             <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               Proposals
             </h1>
-            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
               All processed customer proposals
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function Proposals() {
             style={{ 
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 600,
-              backgroundColor: '#00EAD3',
+              backgroundColor: '#46B446',
               color: '#000000'
             }}
           >
@@ -80,7 +80,7 @@ export default function Proposals() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#808285' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: '#4A6B8A' }} />
             <Input
               placeholder="Search proposals..."
               value={searchTerm}
@@ -131,19 +131,19 @@ export default function Proposals() {
               >
                 <div className="flex items-center gap-4">
                   <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(0,234,211,0.3)' }}>
-                    <FileText className="h-5 w-5" style={{ color: '#00EAD3' }} />
+                    <FileText className="h-5 w-5" style={{ color: '#46B446' }} />
                   </div>
                   <div>
                     <p className="text-sm text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {proposal.title}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+                      <span className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                         <Calendar className="h-3 w-3" />
                         {new Date(proposal.createdAt).toLocaleDateString('en-AU')}
                       </span>
                       {proposal.slideCount && (
-                        <span className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+                        <span className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                           {proposal.slideCount} slides
                         </span>
                       )}
@@ -191,11 +191,11 @@ export default function Proposals() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
-            <FileText className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
+            <FileText className="h-16 w-16 mb-4" style={{ color: '#4A6B8A', opacity: 0.3 }} />
             <h3 className="text-base text-white mb-2" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               {searchTerm || statusFilter !== "all" ? "No matching proposals" : "No proposals yet"}
             </h3>
-            <p className="text-sm text-center mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
+            <p className="text-sm text-center mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
               {searchTerm || statusFilter !== "all" 
                 ? "Try adjusting your filters" 
                 : "Create your first proposal to get started"}
@@ -204,7 +204,7 @@ export default function Proposals() {
               <button 
                 onClick={() => setLocation("/proposals/new")} 
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
               >
                 <PlusCircle className="mr-1 h-4 w-4" />
                 NEW PROPOSAL
@@ -214,7 +214,7 @@ export default function Proposals() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
           © Elite Smart Energy Solutions — Architect [Consultant Name]
         </div>
       </div>

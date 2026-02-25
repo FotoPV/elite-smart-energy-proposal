@@ -753,7 +753,7 @@ const SLIDE_STYLES = `
   .slide-subtitle {
     font-family: 'MontserratItalic', 'Montserrat', sans-serif;
     font-size: 22px;
-    color: #00EAD3;
+    color: #46B446;
     font-style: italic;
     letter-spacing: 0.05em;
     text-align: right;
@@ -764,7 +764,7 @@ const SLIDE_STYLES = `
   .aqua-line {
     width: 100%;
     height: 1px;
-    background: #00EAD3;
+    background: #46B446;
     margin-bottom: 36px;
   }
   
@@ -782,16 +782,16 @@ const SLIDE_STYLES = `
     font-weight: 700;
     line-height: 1;
   }
-  .hero-num.aqua { color: #00EAD3; }
+  .hero-num.aqua { color: #46B446; }
   .hero-num.white { color: #FFFFFF; }
-  .hero-num.orange { color: #f36710; }
+  .hero-num.orange { color: #46B446; }
   .hero-num .unit { font-family: 'Open Sans', sans-serif; font-weight: 400; }
   
   /* Labels */
   .lbl {
     font-family: 'Montserrat', sans-serif;
     font-size: 12px;
-    color: #808285;
+    color: #4A6B8A;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     margin-bottom: 6px;
@@ -800,44 +800,44 @@ const SLIDE_STYLES = `
   /* Cards */
   .card {
     background: rgba(255,255,255,0.03);
-    border: 1px solid #2D3F5C;
+    border: 1px solid #1B3A5C;
     border-radius: 8px;
     padding: 24px;
   }
-  .card.aqua-b { border-color: #00EAD3; }
-  .card.orange-b { border-color: #f36710; }
+  .card.aqua-b { border-color: #46B446; }
+  .card.orange-b { border-color: #46B446; }
   .card.white-b { border-color: #FFFFFF; }
   
   /* Insight cards - dark grey bg with colored left border */
   .insight-card {
-    background: #1E293B;
+    background: #2C3E50;
     border-radius: 8px;
     padding: 24px 28px;
-    border-left: 4px solid #00EAD3;
+    border-left: 4px solid #46B446;
   }
-  .insight-card.orange { border-left-color: #f36710; }
+  .insight-card.orange { border-left-color: #46B446; }
   .insight-card .insight-title {
     font-family: 'Montserrat', sans-serif;
     font-size: 18px;
     font-weight: 800;
-    color: #00EAD3;
+    color: #46B446;
     text-transform: uppercase;
     margin-bottom: 10px;
   }
-  .insight-card.orange .insight-title { color: #f36710; }
-  .insight-card p { color: #808285; font-size: 14px; line-height: 1.6; }
-  .insight-card .hl-aqua { color: #00EAD3; font-weight: 600; }
-  .insight-card .hl-orange { color: #f36710; font-weight: 600; }
+  .insight-card.orange .insight-title { color: #46B446; }
+  .insight-card p { color: #4A6B8A; font-size: 14px; line-height: 1.6; }
+  .insight-card .hl-aqua { color: #46B446; font-weight: 600; }
+  .insight-card .hl-orange { color: #46B446; font-weight: 600; }
   .insight-card .hl-white { color: #FFFFFF; font-weight: 600; }
   
   /* Badges */
   .badge { display: inline-block; padding: 4px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-  .badge.excellent { background: #00EAD3; color: #000; }
+  .badge.excellent { background: #46B446; color: #000; }
   .badge.good { background: #22c55e; color: #000; }
-  .badge.moderate { background: #f36710; color: #000; }
+  .badge.moderate { background: #46B446; color: #000; }
   .badge.complex { background: #555; color: #fff; }
   .badge.high { background: #ef4444; color: #fff; }
-  .badge.medium { background: #f36710; color: #000; }
+  .badge.medium { background: #46B446; color: #000; }
   .badge.low { background: #22c55e; color: #000; }
   
   /* Tables */
@@ -845,20 +845,20 @@ const SLIDE_STYLES = `
   th {
     font-family: 'Montserrat', sans-serif;
     font-size: 11px;
-    color: #00EAD3;
+    color: #46B446;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-align: left;
     padding: 12px 16px;
-    border-bottom: 1px solid #2D3F5C;
+    border-bottom: 1px solid #1B3A5C;
   }
-  td { padding: 14px 16px; border-bottom: 1px solid #1E293B; font-size: 15px; }
-  .highlight-row { background: rgba(0, 234, 211, 0.06); border-left: 3px solid #00EAD3; }
+  td { padding: 14px 16px; border-bottom: 1px solid #2C3E50; font-size: 15px; }
+  .highlight-row { background: rgba(0, 234, 211, 0.06); border-left: 3px solid #46B446; }
   
   /* Colors */
-  .aqua { color: #00EAD3; }
-  .orange { color: #f36710; }
-  .gray { color: #808285; }
+  .aqua { color: #46B446; }
+  .orange { color: #46B446; }
+  .gray { color: #4A6B8A; }
   .white { color: #FFFFFF; }
   
   /* Copyright */
@@ -867,7 +867,7 @@ const SLIDE_STYLES = `
     bottom: 28px;
     left: 80px;
     font-size: 11px;
-    color: #808285;
+    color: #4A6B8A;
     font-family: 'Open Sans', sans-serif;
   }
 </style>
@@ -994,11 +994,11 @@ function genBillAnalysis(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1.2;">
           <table>
-            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #f36710;">AMOUNT</th></tr>
+            <tr><th>COMPONENT</th><th>DETAILS</th><th style="text-align: right; color: #46B446;">AMOUNT</th></tr>
             <tr><td>General Usage</td><td class="gray">${(c.annualCost as number / (c.usageRate as number / 100)).toFixed(0)} kWh @ $${(c.usageRate as number / 100).toFixed(4)}/kWh</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.usageCost as number).toLocaleString()}</td></tr>
             <tr><td>Daily Supply Charge</td><td class="gray">365 days @ $${(c.supplyCharge as number / 100).toFixed(4)}/day</td><td style="text-align: right; font-weight: 600;">$${Math.round(c.supplyCost as number).toLocaleString()}</td></tr>
-            <tr><td>Solar Feed-in Credit</td><td class="gray">@ ${c.feedInTariff}¢/kWh</td><td style="text-align: right; color: #00EAD3;">Credit</td></tr>
-            <tr class="highlight-row"><td style="font-weight: 700; color: #00EAD3;">NET ANNUAL BILL</td><td></td><td style="text-align: right; font-weight: 700; color: #00EAD3; font-size: 20px;">$${(c.annualCost as number).toLocaleString()}</td></tr>
+            <tr><td>Solar Feed-in Credit</td><td class="gray">@ ${c.feedInTariff}¢/kWh</td><td style="text-align: right; color: #46B446;">Credit</td></tr>
+            <tr class="highlight-row"><td style="font-weight: 700; color: #46B446;">NET ANNUAL BILL</td><td></td><td style="text-align: right; font-weight: 700; color: #46B446; font-size: 20px;">$${(c.annualCost as number).toLocaleString()}</td></tr>
           </table>
         </div>
         <div style="flex: 0.8;">
@@ -1009,12 +1009,12 @@ function genBillAnalysis(slide: SlideContent): string {
           <div style="display: flex; gap: 16px;">
             <div class="card" style="flex: 1; text-align: center;">
               <p class="lbl">USAGE RATE</p>
-              <p style="font-size: 28px; color: #f36710; font-weight: 600;">${c.usageRate}¢</p>
+              <p style="font-size: 28px; color: #46B446; font-weight: 600;">${c.usageRate}¢</p>
               <p class="gray" style="font-size: 11px;">per kWh</p>
             </div>
             <div class="card" style="flex: 1; text-align: center;">
               <p class="lbl">FEED-IN</p>
-              <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">${c.feedInTariff}¢</p>
+              <p style="font-size: 28px; color: #46B446; font-weight: 600;">${c.feedInTariff}¢</p>
               <p class="gray" style="font-size: 11px;">per kWh</p>
             </div>
           </div>
@@ -1030,7 +1030,7 @@ function genUsageAnalysis(slide: SlideContent): string {
   const c = slide.content as Record<string, unknown>;
   const daily = c.dailyAverageKwh as number;
   const benchmarks = [
-    { label: 'Your Usage', kwh: daily, color: '#00EAD3' },
+    { label: 'Your Usage', kwh: daily, color: '#46B446' },
     { label: 'Small Home', kwh: 7.49, color: '#333' },
     { label: 'Medium Home', kwh: 12.70, color: '#333' },
     { label: 'Large Home', kwh: 14.71, color: '#333' },
@@ -1046,9 +1046,9 @@ function genUsageAnalysis(slide: SlideContent): string {
           <div style="display: flex; align-items: flex-end; height: 320px; gap: 30px; padding: 0 20px;">
             ${benchmarks.map(b => `
               <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;">
-                <p style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: ${b.color === '#00EAD3' ? '#00EAD3' : '#FFFFFF'};">${b.kwh.toFixed(1)}</p>
+                <p style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: ${b.color === '#46B446' ? '#46B446' : '#FFFFFF'};">${b.kwh.toFixed(1)}</p>
                 <div style="width: 100%; height: ${(b.kwh / maxKwh) * 260}px; background: ${b.color}; border-radius: 4px 4px 0 0;"></div>
-                <p style="font-size: 11px; color: #808285; margin-top: 8px; text-align: center;">${b.label}</p>
+                <p style="font-size: 11px; color: #4A6B8A; margin-top: 8px; text-align: center;">${b.label}</p>
               </div>
             `).join('')}
           </div>
@@ -1056,9 +1056,9 @@ function genUsageAnalysis(slide: SlideContent): string {
         <div style="flex: 0.8;">
           <p class="lbl" style="margin-bottom: 16px;">COMPARISON TABLE</p>
           ${benchmarks.map(b => `
-            <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1E293B;">
-              <span style="color: #808285;">${b.label}</span>
-              <span style="font-weight: 600; color: ${b.color === '#00EAD3' ? '#00EAD3' : '#FFFFFF'};">${b.kwh.toFixed(2)} KWH</span>
+            <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #2C3E50;">
+              <span style="color: #4A6B8A;">${b.label}</span>
+              <span style="font-weight: 600; color: ${b.color === '#46B446' ? '#46B446' : '#FFFFFF'};">${b.kwh.toFixed(2)} KWH</span>
             </div>
           `).join('')}
           <div class="insight-card orange" style="margin-top: 24px;">
@@ -1094,22 +1094,22 @@ function genYearlyProjection(slide: SlideContent): string {
         </div>
         <div style="flex: 1;">
           <p style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 16px;">25-YEAR CUMULATIVE FINANCIAL OUTLOOK</p>
-          <div style="height: 320px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #2D3F5C; padding: 10px;">
+          <div style="height: 320px; position: relative; border-left: 1px solid #333; border-bottom: 1px solid #1B3A5C; padding: 10px;">
             ${projection.filter((_, i) => i % 5 === 0 || i === projection.length - 1).map((p, i, arr) => {
               const maxVal = (c.twentyFiveYearSavings as number) * 1.2;
               const x = (p.year / 25) * 100;
               const yOrange = 100 - ((p.withoutSolar * p.year * 0.5) / maxVal) * 100;
               const yAqua = 100 - (p.cumulativeSavings / maxVal) * 100;
               return `
-                <div style="position: absolute; left: ${x}%; bottom: 0; width: 2px; height: 100%; border-left: 1px dashed #1E293B;"></div>
-                <div style="position: absolute; left: ${x}%; bottom: ${100 - yAqua}%; width: 8px; height: 8px; background: #00EAD3; border-radius: 50%; transform: translate(-4px, 4px);"></div>
-                <div style="position: absolute; left: ${x}%; bottom: ${100 - yOrange}%; width: 8px; height: 8px; background: #f36710; border-radius: 50%; transform: translate(-4px, 4px);"></div>
+                <div style="position: absolute; left: ${x}%; bottom: 0; width: 2px; height: 100%; border-left: 1px dashed #2C3E50;"></div>
+                <div style="position: absolute; left: ${x}%; bottom: ${100 - yAqua}%; width: 8px; height: 8px; background: #46B446; border-radius: 50%; transform: translate(-4px, 4px);"></div>
+                <div style="position: absolute; left: ${x}%; bottom: ${100 - yOrange}%; width: 8px; height: 8px; background: #46B446; border-radius: 50%; transform: translate(-4px, 4px);"></div>
               `;
             }).join('')}
           </div>
           <div style="display: flex; gap: 24px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Bill Cost (Current)</span></div>
-            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Cumulative Total Benefit (Proposed)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #46B446; border-radius: 50%;"></div><span style="font-size: 11px; color: #4A6B8A;">Cumulative Bill Cost (Current)</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #46B446; border-radius: 50%;"></div><span style="font-size: 11px; color: #4A6B8A;">Cumulative Total Benefit (Proposed)</span></div>
           </div>
         </div>
       </div>
@@ -1139,7 +1139,7 @@ function genGasFootprint(slide: SlideContent): string {
         <div style="flex: 1;">
           <div class="card" style="margin-bottom: 20px;">
             <p class="lbl">CO2 EMISSIONS FROM GAS</p>
-            <p class="hero-num orange" style="font-size: 48px;">${(c.co2Emissions as number).toFixed(1)}<span style="font-size: 18px; color: #808285;"> tonnes/year</span></p>
+            <p class="hero-num orange" style="font-size: 48px;">${(c.co2Emissions as number).toFixed(1)}<span style="font-size: 18px; color: #4A6B8A;"> tonnes/year</span></p>
           </div>
           <div class="insight-card">
             <p class="insight-title">ELECTRIFICATION OPPORTUNITY</p>
@@ -1167,7 +1167,7 @@ function genGasAppliances(slide: SlideContent): string {
             <td style="font-weight: 600;">${p.name}</td>
             <td class="gray">${p.type}</td>
             <td><span class="badge ${p.priority.toLowerCase()}">${p.priority}</span></td>
-            <td style="text-align: right; color: #00EAD3; font-weight: 600;">$${p.savings.toLocaleString()}</td>
+            <td style="text-align: right; color: #46B446; font-weight: 600;">$${p.savings.toLocaleString()}</td>
           </tr>
         `).join('')}
       </table>
@@ -1192,16 +1192,16 @@ function genStrategic(slide: SlideContent): string {
       <div style="display: flex; gap: 40px; margin-top: 10px;">
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <span style="color: #00EAD3; font-size: 24px;">✓</span>
-            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #00EAD3;">KEY ADVANTAGES</span>
+            <span style="color: #46B446; font-size: 24px;">✓</span>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #46B446;">KEY ADVANTAGES</span>
           </div>
-          <div style="border-bottom: 2px solid #00EAD3; margin-bottom: 20px;"></div>
+          <div style="border-bottom: 2px solid #46B446; margin-bottom: 20px;"></div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             ${advantages.map(a => `
               <div>
                 <p style="font-size: 20px; margin-bottom: 6px;">${a.icon}</p>
                 <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${a.title}</p>
-                <p style="color: #808285; font-size: 12px; line-height: 1.5;">${a.description}</p>
+                <p style="color: #4A6B8A; font-size: 12px; line-height: 1.5;">${a.description}</p>
               </div>
             `).join('')}
           </div>
@@ -1209,16 +1209,16 @@ function genStrategic(slide: SlideContent): string {
         <div style="width: 1px; background: #333;"></div>
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <span style="color: #f36710; font-size: 24px;">⚠</span>
-            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #f36710;">CONSIDERATIONS</span>
+            <span style="color: #46B446; font-size: 24px;">⚠</span>
+            <span style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 800; color: #46B446;">CONSIDERATIONS</span>
           </div>
-          <div style="border-bottom: 2px solid #f36710; margin-bottom: 20px;"></div>
+          <div style="border-bottom: 2px solid #46B446; margin-bottom: 20px;"></div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             ${considerations.map(co => `
               <div>
                 <p style="font-size: 20px; margin-bottom: 6px;">${co.icon}</p>
                 <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px;">${co.title}</p>
-                <p style="color: #808285; font-size: 12px; line-height: 1.5;">${co.description}</p>
+                <p style="color: #4A6B8A; font-size: 12px; line-height: 1.5;">${co.description}</p>
               </div>
             `).join('')}
           </div>
@@ -1245,16 +1245,16 @@ function genBattery(slide: SlideContent): string {
             <p class="hero-num aqua" style="font-size: 96px;">${total}<span style="font-size: 28px; color: #FFFFFF;"> KWH</span></p>
           </div>
           <div style="display: flex; gap: 16px;">
-            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
-              <p class="lbl" style="color: #00EAD3;">INVERTER</p>
+            <div class="card" style="flex: 1; border-top: 3px solid #46B446;">
+              <p class="lbl" style="color: #46B446;">INVERTER</p>
               <p style="font-size: 20px; font-weight: 600;">${c.inverterSize} KW ${c.inverterType}</p>
             </div>
-            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
-              <p class="lbl" style="color: #00EAD3;">MODULES</p>
+            <div class="card" style="flex: 1; border-top: 3px solid #46B446;">
+              <p class="lbl" style="color: #46B446;">MODULES</p>
               <p style="font-size: 20px; font-weight: 600;">${c.modules}</p>
             </div>
-            <div class="card" style="flex: 1; border-top: 3px solid #00EAD3;">
-              <p class="lbl" style="color: #00EAD3;">TECHNOLOGY</p>
+            <div class="card" style="flex: 1; border-top: 3px solid #46B446;">
+              <p class="lbl" style="color: #46B446;">TECHNOLOGY</p>
               <p style="font-size: 20px; font-weight: 600;">${c.technology}</p>
             </div>
           </div>
@@ -1262,16 +1262,16 @@ function genBattery(slide: SlideContent): string {
         <div style="flex: 1;">
           <p style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 20px;">WHY THIS CAPACITY?</p>
           <div style="display: flex; height: 44px; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
-            <div style="width: ${(cap.home / total) * 100}%; background: #808285; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">HOME ~${cap.home.toFixed(0)}kWh</div>
-            ${cap.evCharge > 0 ? `<div style="width: ${(cap.evCharge / total) * 100}%; background: #00EAD3; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">EV CHARGE ~${cap.evCharge}kWh</div>` : ''}
-            <div style="width: ${(cap.vppTrade / total) * 100}%; background: #f36710; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">VPP TRADE ~${cap.vppTrade.toFixed(0)}kWh</div>
+            <div style="width: ${(cap.home / total) * 100}%; background: #4A6B8A; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">HOME ~${cap.home.toFixed(0)}kWh</div>
+            ${cap.evCharge > 0 ? `<div style="width: ${(cap.evCharge / total) * 100}%; background: #46B446; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">EV CHARGE ~${cap.evCharge}kWh</div>` : ''}
+            <div style="width: ${(cap.vppTrade / total) * 100}%; background: #46B446; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">VPP TRADE ~${cap.vppTrade.toFixed(0)}kWh</div>
           </div>
           <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #808285; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">Home Overnight</span></div>
-            ${cap.evCharge > 0 ? `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #00EAD3; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">EV Charging</span></div>` : ''}
-            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #f36710; border-radius: 50%;"></div><span style="font-size: 11px; color: #808285;">VPP Trading</span></div>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #4A6B8A; border-radius: 50%;"></div><span style="font-size: 11px; color: #4A6B8A;">Home Overnight</span></div>
+            ${cap.evCharge > 0 ? `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #46B446; border-radius: 50%;"></div><span style="font-size: 11px; color: #4A6B8A;">EV Charging</span></div>` : ''}
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 10px; height: 10px; background: #46B446; border-radius: 50%;"></div><span style="font-size: 11px; color: #4A6B8A;">VPP Trading</span></div>
           </div>
-          <p style="color: #808285; font-size: 14px; line-height: 1.6;">${c.explanation}</p>
+          <p style="color: #4A6B8A; font-size: 14px; line-height: 1.6;">${c.explanation}</p>
         </div>
       </div>
       
@@ -1290,15 +1290,15 @@ function genSolar(slide: SlideContent): string {
       <div style="display: flex; gap: 30px; margin-top: 10px;">
         <div class="card" style="flex: 1; text-align: center; padding: 30px;">
           <p class="lbl">SYSTEM SIZE</p>
-          <p class="hero-num white" style="font-size: 72px;">${c.systemSize}<span style="font-size: 20px; color: #808285;"> KW</span></p>
+          <p class="hero-num white" style="font-size: 72px;">${c.systemSize}<span style="font-size: 20px; color: #4A6B8A;"> KW</span></p>
         </div>
         <div class="card" style="flex: 1; text-align: center; padding: 30px;">
           <p class="lbl">PANEL COUNT</p>
-          <p class="hero-num white" style="font-size: 72px;">${c.panelCount}<span style="font-size: 20px; color: #00EAD3;"> UNITS</span></p>
+          <p class="hero-num white" style="font-size: 72px;">${c.panelCount}<span style="font-size: 20px; color: #46B446;"> UNITS</span></p>
         </div>
         <div class="card orange-b" style="flex: 1; text-align: center; padding: 30px; background: rgba(232,115,26,0.05);">
-          <p class="lbl" style="color: #f36710;">HARDWARE TECHNOLOGY</p>
-          <p class="hero-num orange" style="font-size: 72px;">${c.panelPower}<span style="font-size: 20px; color: #808285;"> W</span></p>
+          <p class="lbl" style="color: #46B446;">HARDWARE TECHNOLOGY</p>
+          <p class="hero-num orange" style="font-size: 72px;">${c.panelPower}<span style="font-size: 20px; color: #4A6B8A;"> W</span></p>
           <p class="gray" style="font-size: 13px; margin-top: 8px;">${c.panelBrand}</p>
         </div>
       </div>
@@ -1308,13 +1308,13 @@ function genSolar(slide: SlideContent): string {
           <p>${c.whyThisBrand}</p>
         </div>
         <div style="flex: 1;">
-          <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: #f36710; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
+          <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: #46B446; margin-bottom: 16px;">PERFORMANCE & WARRANTY</p>
           ${features.map(f => `
             <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
-              <span style="color: #00EAD3; font-size: 10px; margin-top: 4px;">●</span>
+              <span style="color: #46B446; font-size: 10px; margin-top: 4px;">●</span>
               <div>
                 <p style="font-weight: 600; font-size: 14px;">${f.title}</p>
-                <p style="color: #808285; font-size: 12px;">${f.description}</p>
+                <p style="color: #4A6B8A; font-size: 12px;">${f.description}</p>
               </div>
             </div>
           `).join('')}
@@ -1338,9 +1338,9 @@ function genVPPComparison(slide: SlideContent): string {
         <tr><th>PROVIDER</th><th>VPP MODEL</th><th>GAS BUNDLE</th><th>EST. ANNUAL VALUE</th><th>STRATEGIC FIT</th></tr>
         ${providers.map(p => `
           <tr class="${p.provider === rec ? 'highlight-row' : ''}">
-            <td style="font-weight: 600;">${p.provider}${p.provider === rec ? '<br/><span style="color: #f36710; font-size: 11px;">Recommended</span>' : ''}</td>
-            <td><span style="color: #f36710;">${p.program}</span></td>
-            <td>${p.gasBundle ? '<span style="color: #00EAD3;">✓ Yes</span>' : '<span class="gray">✗ No</span>'}</td>
+            <td style="font-weight: 600;">${p.provider}${p.provider === rec ? '<br/><span style="color: #46B446; font-size: 11px;">Recommended</span>' : ''}</td>
+            <td><span style="color: #46B446;">${p.program}</span></td>
+            <td>${p.gasBundle ? '<span style="color: #46B446;">✓ Yes</span>' : '<span class="gray">✗ No</span>'}</td>
             <td style="font-weight: 600;">${p.annualValue}</td>
             <td><span class="badge ${p.strategicFit.toLowerCase()}">${p.strategicFit}</span></td>
           </tr>
@@ -1362,19 +1362,19 @@ function genVPPRecommendation(slide: SlideContent): string {
       <div style="text-align: center; margin-top: 20px;">
         <p class="lbl">SELECTED PARTNER</p>
         <p style="font-family: 'Montserrat', sans-serif; font-size: 72px; font-weight: 800; margin: 10px 0;">${c.provider}</p>
-        <p style="color: #00EAD3; font-size: 22px; font-family: 'Montserrat', sans-serif;">${c.program}</p>
+        <p style="color: #46B446; font-size: 22px; font-family: 'Montserrat', sans-serif;">${c.program}</p>
       </div>
       <div style="display: flex; gap: 24px; margin-top: 36px;">
         ${features.map(f => `
-          <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #f36710;">
-            <p style="color: #f36710; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
+          <div class="card" style="flex: 1; text-align: center; border-top: 3px solid #46B446;">
+            <p style="color: #46B446; font-size: 28px; margin-bottom: 12px;">${f.icon}</p>
             <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; margin-bottom: 8px;">${f.title}</p>
-            <p style="color: #808285; font-size: 13px; line-height: 1.5;">${f.description}</p>
+            <p style="color: #4A6B8A; font-size: 13px; line-height: 1.5;">${f.description}</p>
           </div>
         `).join('')}
       </div>
       <div style="display: flex; align-items: center; gap: 20px; margin-top: 36px;">
-        <div style="width: 4px; height: 60px; background: #00EAD3; border-radius: 2px;"></div>
+        <div style="width: 4px; height: 60px; background: #46B446; border-radius: 2px;"></div>
         <div>
           <p class="lbl">Estimated Annual Value (Credits + Bundle Savings)</p>
           <p class="hero-num aqua" style="font-size: 64px;">~$${c.annualValue}<span style="font-size: 22px;"> / YEAR</span></p>
@@ -1397,13 +1397,13 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
         <div style="flex: 1;">
           <div class="card" style="margin-bottom: 20px;">
             <p class="lbl">CURRENT SYSTEM</p>
-            <p style="font-size: 22px; color: #f36710; font-weight: 600;">${c.currentSystem}</p>
+            <p style="font-size: 22px; color: #46B446; font-weight: 600;">${c.currentSystem}</p>
             <p class="gray" style="margin-top: 8px;">Annual Cost: <span class="orange">$${c[type === 'hot_water' ? 'annualGasCost' : type === 'heating' ? 'annualGasCost' : 'annualGasCost']}/year</span></p>
           </div>
           <div class="card aqua-b">
-            <p class="lbl" style="color: #00EAD3;">RECOMMENDED UPGRADE</p>
+            <p class="lbl" style="color: #46B446;">RECOMMENDED UPGRADE</p>
             <p style="font-size: 22px; font-weight: 600;">${c.recommendedSystem}</p>
-            ${c.cop ? `<p style="color: #00EAD3; margin-top: 8px;">COP: ${c.cop} (${c.cop}x more efficient)</p>` : ''}
+            ${c.cop ? `<p style="color: #46B446; margin-top: 8px;">COP: ${c.cop} (${c.cop}x more efficient)</p>` : ''}
           </div>
         </div>
         <div style="flex: 1;">
@@ -1418,8 +1418,8 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
             </div>
             ${c.rebates !== undefined ? `
               <div class="card" style="flex: 1; text-align: center;">
-                <p class="lbl" style="color: #00EAD3;">REBATES</p>
-                <p style="font-size: 20px; color: #00EAD3;">-$${(c.rebates as number).toLocaleString()}</p>
+                <p class="lbl" style="color: #46B446;">REBATES</p>
+                <p style="font-size: 20px; color: #46B446;">-$${(c.rebates as number).toLocaleString()}</p>
               </div>
               <div class="card aqua-b" style="flex: 1; text-align: center;">
                 <p class="lbl">NET COST</p>
@@ -1429,7 +1429,7 @@ function genElectrificationSlide(slide: SlideContent, type: string): string {
           </div>
           ${features.length > 0 ? `
             <p class="lbl" style="margin-bottom: 10px;">KEY BENEFITS</p>
-            ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 6px;">✓ ${f}</p>`).join('')}
+            ${features.map(f => `<p style="color: #4A6B8A; font-size: 13px; margin-bottom: 6px;">✓ ${f}</p>`).join('')}
           ` : ''}
         </div>
       </div>
@@ -1457,22 +1457,22 @@ function genEVAnalysis(slide: SlideContent): string {
             ${comparison.map((comp, i) => `
               <tr class="${i === 2 ? 'highlight-row' : ''}">
                 <td>${comp.scenario}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
-                <td style="text-align: right; color: ${i === 0 ? '#f36710' : i === 1 ? '#FFFFFF' : '#00EAD3'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#46B446' : i === 1 ? '#FFFFFF' : '#46B446'}; font-weight: 600;">$${comp.costPer100km.toFixed(2)}</td>
+                <td style="text-align: right; color: ${i === 0 ? '#46B446' : i === 1 ? '#FFFFFF' : '#46B446'}; font-weight: 600;">$${comp.annualCost.toLocaleString()}</td>
               </tr>
             `).join('')}
           </table>
         </div>
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
-            <div style="width: 4px; height: 60px; background: #00EAD3; border-radius: 2px;"></div>
+            <div style="width: 4px; height: 60px; background: #46B446; border-radius: 2px;"></div>
             <div>
-              <p class="lbl" style="color: #00EAD3;">POTENTIAL ANNUAL SAVINGS</p>
+              <p class="lbl" style="color: #46B446;">POTENTIAL ANNUAL SAVINGS</p>
               <p class="hero-num white" style="font-size: 64px;">$${(c.annualSavings as number).toLocaleString()}</p>
             </div>
           </div>
           <div class="insight-card">
-            <p style="color: #808285; font-size: 14px; line-height: 1.6;">Solar-charged EV driving eliminates fuel costs entirely. With your proposed solar system, every kilometre driven is effectively <span class="hl-aqua">free</span>.</p>
+            <p style="color: #4A6B8A; font-size: 14px; line-height: 1.6;">Solar-charged EV driving eliminates fuel costs entirely. With your proposed solar system, every kilometre driven is effectively <span class="hl-aqua">free</span>.</p>
           </div>
           <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
             <span style="color: #22c55e;">🌿</span>
@@ -1497,7 +1497,7 @@ function genEVCharger(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
           <div class="card aqua-b" style="margin-bottom: 20px;">
-            <p class="lbl" style="color: #00EAD3;">RECOMMENDED CHARGER</p>
+            <p class="lbl" style="color: #46B446;">RECOMMENDED CHARGER</p>
             <p style="font-size: 24px; font-weight: 600;">${c.recommendedCharger}</p>
             <p class="gray" style="margin-top: 8px;">${c.chargingSpeed}</p>
           </div>
@@ -1508,9 +1508,9 @@ function genEVCharger(slide: SlideContent): string {
         </div>
         <div style="flex: 1;">
           <p class="lbl" style="margin-bottom: 14px;">SMART FEATURES</p>
-          ${features.map(f => `<p style="color: #808285; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
-          <p class="lbl" style="margin-top: 24px; margin-bottom: 14px; color: #00EAD3;">SOLAR CHARGING BENEFITS</p>
-          ${benefits.map(b => `<p style="color: #00EAD3; font-size: 13px; margin-bottom: 8px;">⚡ ${b}</p>`).join('')}
+          ${features.map(f => `<p style="color: #4A6B8A; font-size: 13px; margin-bottom: 8px;">✓ ${f}</p>`).join('')}
+          <p class="lbl" style="margin-top: 24px; margin-bottom: 14px; color: #46B446;">SOLAR CHARGING BENEFITS</p>
+          ${benefits.map(b => `<p style="color: #46B446; font-size: 13px; margin-bottom: 8px;">⚡ ${b}</p>`).join('')}
         </div>
       </div>
       
@@ -1539,26 +1539,26 @@ function genElectrificationInvestment(slide: SlideContent): string {
               <tr>
                 <td>${item.item}</td>
                 <td style="text-align: right;">$${item.cost.toLocaleString()}</td>
-                <td style="text-align: right; color: #00EAD3;">-$${item.rebate.toLocaleString()}</td>
+                <td style="text-align: right; color: #46B446;">-$${item.rebate.toLocaleString()}</td>
                 <td style="text-align: right; font-weight: 600;">$${(item.cost - item.rebate).toLocaleString()}</td>
               </tr>
             `).join('')}
             <tr class="highlight-row">
               <td style="font-weight: 700;">TOTAL</td>
               <td style="text-align: right; font-weight: 700;">$${(c.totalCost as number).toLocaleString()}</td>
-              <td style="text-align: right; color: #00EAD3; font-weight: 700;">-$${(c.totalRebates as number).toLocaleString()}</td>
+              <td style="text-align: right; color: #46B446; font-weight: 700;">-$${(c.totalRebates as number).toLocaleString()}</td>
               <td style="text-align: right; font-weight: 700;">$${(c.netInvestment as number).toLocaleString()}</td>
             </tr>
           </table>
         </div>
         <div style="flex: 0.8;">
           <div class="card aqua-b" style="text-align: center; margin-bottom: 20px; padding: 30px;">
-            <p class="lbl" style="color: #00EAD3;">ANNUAL GAS SAVINGS</p>
+            <p class="lbl" style="color: #46B446;">ANNUAL GAS SAVINGS</p>
             <p class="hero-num aqua" style="font-size: 56px;">$${(c.annualGasSavings as number).toLocaleString()}</p>
           </div>
           <div class="card" style="text-align: center;">
             <p class="lbl">GAS SUPPLY CHARGE SAVED</p>
-            <p style="font-size: 28px; color: #00EAD3; font-weight: 600;">$${Math.round(c.gasSupplyChargeSaved as number).toLocaleString()}/year</p>
+            <p style="font-size: 28px; color: #46B446; font-weight: 600;">$${Math.round(c.gasSupplyChargeSaved as number).toLocaleString()}/year</p>
           </div>
         </div>
       </div>
@@ -1582,28 +1582,28 @@ function genSavingsSummary(slide: SlideContent): string {
           <div style="height: 380px; display: flex; align-items: flex-end; justify-content: center;">
             <div style="width: 200px; display: flex; flex-direction: column;">
               ${breakdown.map(b => {
-                const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
+                const col = b.color === 'aqua' ? '#46B446' : b.color === 'orange' ? '#46B446' : '#FFFFFF';
                 return `<div style="height: ${(b.value / total) * 300}px; background: ${col}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: 600;">${b.category}</div>`;
               }).join('')}
             </div>
           </div>
           <div style="display: flex; gap: 16px; margin-top: 16px; justify-content: center;">
             ${breakdown.map(b => {
-              const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
-              return `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: ${col};"></div><span style="font-size: 11px; color: #808285;">${b.category}</span></div>`;
+              const col = b.color === 'aqua' ? '#46B446' : b.color === 'orange' ? '#46B446' : '#FFFFFF';
+              return `<div style="display: flex; align-items: center; gap: 6px;"><div style="width: 12px; height: 12px; background: ${col};"></div><span style="font-size: 11px; color: #4A6B8A;">${b.category}</span></div>`;
             }).join('')}
           </div>
         </div>
         <div style="flex: 1;">
           <div class="card aqua-b" style="text-align: center; padding: 36px; margin-bottom: 24px;">
-            <p class="lbl" style="color: #00EAD3;">TOTAL ANNUAL BENEFIT</p>
+            <p class="lbl" style="color: #46B446;">TOTAL ANNUAL BENEFIT</p>
             <p class="hero-num white" style="font-size: 80px;">$${total.toLocaleString()}</p>
             <p class="gray" style="margin-top: 8px;">Tax-Free Savings</p>
           </div>
           ${breakdown.map(b => {
-            const col = b.color === 'aqua' ? '#00EAD3' : b.color === 'orange' ? '#f36710' : '#FFFFFF';
+            const col = b.color === 'aqua' ? '#46B446' : b.color === 'orange' ? '#46B446' : '#FFFFFF';
             return `
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1E293B;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #2C3E50;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <div style="width: 14px; height: 14px; background: ${col};"></div>
                   <span>${b.category}</span>
@@ -1629,16 +1629,16 @@ function genFinancial(slide: SlideContent): string {
       <div style="display: flex; gap: 60px; margin-top: 10px;">
         <div style="flex: 1;">
           <p class="lbl" style="margin-bottom: 16px;">INVESTMENT BREAKDOWN</p>
-          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #2D3F5C;">
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1B3A5C;">
             <span>Solar & Battery System</span>
             <span style="font-weight: 600; font-style: italic;">$${(c.systemCost as number).toLocaleString()}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #2D3F5C;">
+          <div style="display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1B3A5C;">
             <span>Govt. Rebates & Incentives</span>
-            <span style="font-weight: 600; color: #00EAD3; font-style: italic;">-$${(c.rebates as number).toLocaleString()}</span>
+            <span style="font-weight: 600; color: #46B446; font-style: italic;">-$${(c.rebates as number).toLocaleString()}</span>
           </div>
           <div class="card orange-b" style="margin-top: 20px; padding: 30px;">
-            <p class="lbl" style="color: #f36710;">NET INVESTMENT</p>
+            <p class="lbl" style="color: #46B446;">NET INVESTMENT</p>
             <p class="hero-num white" style="font-size: 64px;">$${(c.netInvestment as number).toLocaleString()}</p>
             <p class="gray" style="font-size: 13px; margin-top: 8px;">Fully Installed (Inc. GST)</p>
           </div>
@@ -1647,12 +1647,12 @@ function genFinancial(slide: SlideContent): string {
           <p class="lbl" style="margin-bottom: 16px;">PROJECTED RETURNS</p>
           <div style="display: flex; gap: 16px; margin-bottom: 20px;">
             <div class="card aqua-b" style="flex: 1; text-align: center; padding: 24px;">
-              <p class="lbl" style="color: #00EAD3;">ANNUAL BENEFIT</p>
+              <p class="lbl" style="color: #46B446;">ANNUAL BENEFIT</p>
               <p style="font-size: 36px; font-weight: 700;">$${(c.annualBenefit as number).toLocaleString()}</p>
               <p class="gray" style="font-size: 11px;">Combined Savings & Income</p>
             </div>
             <div class="card aqua-b" style="flex: 1; text-align: center; padding: 24px;">
-              <p class="lbl" style="color: #00EAD3;">PAYBACK PERIOD</p>
+              <p class="lbl" style="color: #46B446;">PAYBACK PERIOD</p>
               <p style="font-size: 36px; font-weight: 700;">${(c.paybackYears as number).toFixed(1)} YRS</p>
               <p class="gray" style="font-size: 11px;">Accelerated by ${c.acceleratedBy}</p>
             </div>
@@ -1687,12 +1687,12 @@ function genEnvironmental(slide: SlideContent): string {
             </div>
             <div class="card" style="text-align: center; padding: 24px;">
               <p class="lbl">TREES EQUIVALENT</p>
-              <p style="font-size: 32px; color: #00EAD3; font-weight: 600;">${c.treesEquivalent}</p>
+              <p style="font-size: 32px; color: #46B446; font-weight: 600;">${c.treesEquivalent}</p>
               <p class="gray" style="font-size: 11px;">trees/year</p>
             </div>
             <div class="card" style="text-align: center; padding: 24px;">
               <p class="lbl">CARS OFF ROAD</p>
-              <p style="font-size: 32px; color: #f36710; font-weight: 600;">${c.carsOffRoad}</p>
+              <p style="font-size: 32px; color: #46B446; font-weight: 600;">${c.carsOffRoad}</p>
               <p class="gray" style="font-size: 11px;">equivalent</p>
             </div>
           </div>
@@ -1707,7 +1707,7 @@ function genEnvironmental(slide: SlideContent): string {
               <span style="font-size: 22px;">${b.icon}</span>
               <div>
                 <p style="font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase;">${b.title}</p>
-                <p style="color: #808285; font-size: 12px;">${b.description}</p>
+                <p style="color: #4A6B8A; font-size: 12px;">${b.description}</p>
               </div>
             </div>
           `).join('')}
@@ -1729,18 +1729,18 @@ function genRoadmap(slide: SlideContent): string {
       <div style="display: flex; align-items: center; margin: 20px 0 30px; padding: 0 40px;">
         ${steps.map((s, i) => `
           <div style="display: flex; align-items: center;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};"></div>
-            ${i < steps.length - 1 ? `<div style="width: ${800 / steps.length}px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}, ${steps[i + 1].color === 'aqua' ? '#00EAD3' : '#f36710'});"></div>` : ''}
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: ${s.color === 'aqua' ? '#46B446' : '#46B446'};"></div>
+            ${i < steps.length - 1 ? `<div style="width: ${800 / steps.length}px; height: 2px; background: linear-gradient(to right, ${s.color === 'aqua' ? '#46B446' : '#46B446'}, ${steps[i + 1].color === 'aqua' ? '#46B446' : '#46B446'});"></div>` : ''}
           </div>
         `).join('')}
       </div>
       <div style="display: flex; gap: 16px;">
         ${steps.map(s => `
-          <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#00EAD3' : '#f36710'};">
+          <div class="card" style="flex: 1; border-top: 3px solid ${s.color === 'aqua' ? '#46B446' : '#46B446'};">
             <p style="font-size: 40px; color: #333; font-weight: 800; font-family: 'Montserrat', sans-serif;">${s.number}</p>
-            <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#f36710'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
-            <p style="color: #808285; font-size: 12px; line-height: 1.5; margin-bottom: 14px;">${s.description}</p>
-            <p style="color: ${s.color === 'aqua' ? '#00EAD3' : '#f36710'}; font-size: 12px; font-family: 'Montserrat', sans-serif;">⏱ ${s.timeline}</p>
+            <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: ${s.color === 'aqua' ? '#FFFFFF' : '#46B446'}; margin: 10px 0; text-transform: uppercase;">${s.title}</p>
+            <p style="color: #4A6B8A; font-size: 12px; line-height: 1.5; margin-bottom: 14px;">${s.description}</p>
+            <p style="color: ${s.color === 'aqua' ? '#46B446' : '#46B446'}; font-size: 12px; font-family: 'Montserrat', sans-serif;">⏱ ${s.timeline}</p>
           </div>
         `).join('')}
       </div>
@@ -1759,21 +1759,21 @@ function genConclusion(slide: SlideContent): string {
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="display: flex; gap: 24px; margin-top: 10px;">
         ${features.map(f => {
-          const borderCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#f36710' : '#FFFFFF';
-          const iconCol = f.border === 'aqua' ? '#00EAD3' : f.border === 'orange' ? '#f36710' : '#FFFFFF';
+          const borderCol = f.border === 'aqua' ? '#46B446' : f.border === 'orange' ? '#46B446' : '#FFFFFF';
+          const iconCol = f.border === 'aqua' ? '#46B446' : f.border === 'orange' ? '#46B446' : '#FFFFFF';
           return `
             <div class="card" style="flex: 1; text-align: center; border-top: 3px solid ${borderCol}; padding: 30px;">
               <p style="color: ${iconCol}; font-size: 36px; margin-bottom: 14px;">${f.icon}</p>
-              <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#f36710' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
-              <p style="color: #808285; font-size: 13px; line-height: 1.6;">${f.description}</p>
+              <p style="font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: ${f.border === 'orange' ? '#46B446' : '#FFFFFF'}; margin-bottom: 12px;">${f.title}</p>
+              <p style="color: #4A6B8A; font-size: 13px; line-height: 1.6;">${f.description}</p>
             </div>
           `;
         }).join('')}
       </div>
       <div style="text-align: center; margin-top: 40px;">
         <p style="font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.4; max-width: 1200px; margin: 0 auto;">${c.quote}</p>
-        <div style="width: 200px; height: 2px; background: #00EAD3; margin: 24px auto;"></div>
-        <p style="color: #00EAD3; font-size: 18px; font-family: 'Montserrat', sans-serif;">${c.callToAction}</p>
+        <div style="width: 200px; height: 2px; background: #46B446; margin: 24px auto;"></div>
+        <p style="color: #46B446; font-size: 18px; font-family: 'Montserrat', sans-serif;">${c.callToAction}</p>
       </div>
       
     </div>
@@ -1793,14 +1793,14 @@ function genContact(slide: SlideContent): string {
         <div style="text-align: left;">
           <p class="lbl" style="margin-bottom: 8px;">PREPARED BY</p>
           <p style="font-size: 22px; font-weight: 600;">${c.preparedBy}</p>
-          <p style="color: #00EAD3; font-family: 'Montserrat', sans-serif;">${c.title}</p>
+          <p style="color: #46B446; font-family: 'Montserrat', sans-serif;">${c.title}</p>
           <p class="gray" style="margin-top: 8px;">${c.company}</p>
         </div>
         <div style="text-align: left;">
           <p class="lbl" style="margin-bottom: 8px;">CONTACT</p>
           <p class="gray">📞 ${c.phone}</p>
           <p class="gray">✉️ ${c.email}</p>
-          <p style="color: #00EAD3;">🌐 ${c.website}</p>
+          <p style="color: #46B446;">🌐 ${c.website}</p>
         </div>
         <div style="text-align: left;">
           <p class="lbl" style="margin-bottom: 8px;">LOCATION</p>
@@ -1808,10 +1808,10 @@ function genContact(slide: SlideContent): string {
         </div>
       </div>
       <div class="card aqua-b" style="max-width: 800px; text-align: left; padding: 28px;">
-        <p class="lbl" style="color: #00EAD3; margin-bottom: 14px;">YOUR NEXT STEPS</p>
+        <p class="lbl" style="color: #46B446; margin-bottom: 14px;">YOUR NEXT STEPS</p>
         ${nextSteps.map((step, i) => `
           <p style="font-size: 15px; margin-bottom: 10px;">
-            <span style="color: #f36710; font-weight: 700;">${i + 1}.</span> ${step}
+            <span style="color: #46B446; font-weight: 700;">${i + 1}.</span> ${step}
           </p>
         `).join('')}
       </div>
@@ -1827,7 +1827,7 @@ function genGeneric(slide: SlideContent): string {
       ${BRAND.logo.iconWhite ? `<img src="${BRAND.logo.iconWhite}" class="logo" alt="Logo" />` : ""}
       ${slideHeader(slide.title, slide.subtitle || '')}
       <div style="margin-top: 20px;">
-        <pre style="color: #808285; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
+        <pre style="color: #4A6B8A; font-size: 13px; white-space: pre-wrap;">${JSON.stringify(slide.content, null, 2)}</pre>
       </div>
       
     </div>

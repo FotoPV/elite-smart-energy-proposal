@@ -21,10 +21,10 @@ const CW = W - PAD.l - PAD.r; // Content width
 // Colors
 const C = {
   black: '#0F172A',
-  aqua: '#00EAD3',
-  orange: '#f36710',
+  aqua: '#46B446',
+  orange: '#46B446',
   white: '#FFFFFF',
-  ash: '#808285',
+  ash: '#4A6B8A',
   darkGrey: '#1a1a1a',
   cardBg: '#0d0d0d',
   cardBorder: '#333333',

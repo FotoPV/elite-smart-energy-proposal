@@ -43,8 +43,8 @@ export const BRAND = {
 
     // Dashboard & slide backgrounds
     midnightNavy: "#0F172A",   // Darkest navy — slide/dashboard backgrounds
-    slideCard:    "#1E293B",   // Slide card surface
-    slideBorder:  "#2D3F5C",   // Slide border / divider
+    slideCard:    "#2C3E50",   // Slide card surface
+    slideBorder:  "#1B3A5C",   // Slide border / divider
 
     // Legacy aliases (keep for backward compatibility)
     aqua:   "#46B446",         // Maps to Solar Green
@@ -82,8 +82,8 @@ export const BRAND = {
   // ── SLIDE / PDF DEFAULTS ───────────────────────────────────
   slide: {
     bgColor:      "#0F172A",
-    cardColor:    "#1E293B",
-    borderColor:  "#2D3F5C",
+    cardColor:    "#2C3E50",
+    borderColor:  "#1B3A5C",
     accentColor:  "#46B446",
     headingColor: "#FFFFFF",
     bodyColor:    "#CBD5E1",

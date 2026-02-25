@@ -305,7 +305,7 @@ function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { pro
       <Button 
         onClick={handleDownload}
         disabled={isGenerating}
-        className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+        className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
         size={size}
       >
         {isGenerating ? (
@@ -419,7 +419,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
         onClick={handleUpdateAndPublish}
         disabled={isProcessing}
         variant="outline"
-        className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10 hover:border-[#00EAD3] font-semibold"
+        className="border-[#46B446]/30 text-[#46B446] hover:bg-[#46B446]/10 hover:border-[#46B446] font-semibold"
       >
         {isProcessing ? (
           <>
@@ -436,7 +436,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
       {isProcessing && (
         <div className="space-y-1">
           <Progress value={progress} className="h-1.5" />
-          <p className="text-xs text-[#808285] text-center">{progress}% Complete</p>
+          <p className="text-xs text-[#4A6B8A] text-center">{progress}% Complete</p>
         </div>
       )}
     </div>
@@ -589,7 +589,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     return (
       <div className="flex items-center gap-3">
         <div className="space-y-1.5 min-w-[180px]">
-          <Button disabled className="bg-[#00EAD3] text-black font-semibold w-full">
+          <Button disabled className="bg-[#46B446] text-black font-semibold w-full">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {currentStep || 'Exporting...'}
           </Button>
@@ -602,7 +602,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold">
+        <Button className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold">
           <Download className="mr-2 h-4 w-4" />
           Export
           <ChevronDown className="ml-2 h-3 w-3" />
@@ -613,30 +613,30 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handleExportNativePdf}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <FileDown className="mr-3 h-4 w-4 text-[#f36710]" />
+          <FileDown className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PDF</div>
-            <div className="text-[10px] text-[#808285]">Embedded brand fonts</div>
+            <div className="text-[10px] text-[#4A6B8A]">Embedded brand fonts</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={handleExportPptx}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PowerPoint</div>
-            <div className="text-[10px] text-[#808285]">Editable .pptx file</div>
+            <div className="text-[10px] text-[#4A6B8A]">Editable .pptx file</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={handleExportHtmlPdf}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <FileText className="mr-3 h-4 w-4 text-[#808285]" />
+          <FileText className="mr-3 h-4 w-4 text-[#4A6B8A]" />
           <div>
             <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>HTML PDF</div>
-            <div className="text-[10px] text-[#808285]">Browser-rendered slides</div>
+            <div className="text-[10px] text-[#4A6B8A]">Browser-rendered slides</div>
           </div>
         </DropdownMenuItem>
         <div className="h-px bg-[#1a1a1a] my-1" />
@@ -644,10 +644,10 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handlePrepareSlides}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
-            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
-            <div className="text-[10px] text-[#808285]">Pixel-perfect image slides</div>
+            <div className="font-medium text-[#46B446]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
+            <div className="text-[10px] text-[#4A6B8A]">Pixel-perfect image slides</div>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -701,10 +701,10 @@ export default function ProposalDetailPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-16">
-          <FileText className="h-16 w-16 mx-auto mb-4 text-[#808285] opacity-50" />
+          <FileText className="h-16 w-16 mx-auto mb-4 text-[#4A6B8A] opacity-50" />
           <h2 className="text-xl" style={{ fontFamily: "'Next Sphere', sans-serif" }}>Proposal Not Found</h2>
-          <p className="text-[#808285] mb-4 mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>The proposal you're looking for doesn't exist.</p>
-          <Button onClick={() => setLocation('/proposals')} variant="outline" className="border-[#808285]/30">
+          <p className="text-[#4A6B8A] mb-4 mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>The proposal you're looking for doesn't exist.</p>
+          <Button onClick={() => setLocation('/proposals')} variant="outline" className="border-[#4A6B8A]/30">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Proposals
           </Button>
@@ -727,7 +727,7 @@ export default function ProposalDetailPage() {
             variant="ghost"
             size="icon"
             onClick={() => setLocation('/proposals')}
-            className="text-[#808285] hover:text-white"
+            className="text-[#4A6B8A] hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -741,7 +741,7 @@ export default function ProposalDetailPage() {
           >
             Bill Analysis
           </h1>
-          <p className="text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
+          <p className="text-[#4A6B8A] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
             View and download your electricity bill analysis
           </p>
         </div>
@@ -750,8 +750,8 @@ export default function ProposalDetailPage() {
         <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-[#00EAD3]/10 border border-[#00EAD3]/20">
-                <FileText className="h-6 w-6 text-[#00EAD3]" />
+              <div className="p-3 rounded-lg bg-[#46B446]/10 border border-[#46B446]/20">
+                <FileText className="h-6 w-6 text-[#46B446]" />
               </div>
               <div>
                 <h2 
@@ -760,7 +760,7 @@ export default function ProposalDetailPage() {
                 >
                   Bill Analysis
                 </h2>
-                <p className="text-sm text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                <p className="text-sm text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
                   Bill Analysis.pdf
                 </p>
               </div>
@@ -771,7 +771,7 @@ export default function ProposalDetailPage() {
               {hasSlides && (
                 <Button
                   variant="ghost"
-                  className="text-[#00EAD3] hover:text-[#00EAD3] hover:bg-[#00EAD3]/10 font-semibold"
+                  className="text-[#46B446] hover:text-[#46B446] hover:bg-[#46B446]/10 font-semibold"
                   onClick={() => {
                     const win = window.open('', '_blank');
                     if (win && slides[0]) {
@@ -809,7 +809,7 @@ export default function ProposalDetailPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-[#808285] hover:text-white"
+                      className="text-[#4A6B8A] hover:text-white"
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -818,7 +818,7 @@ export default function ProposalDetailPage() {
                     <DropdownMenuItem
                       onClick={() => calculateMutation.mutate({ proposalId })}
                       disabled={calculateMutation.isPending}
-                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                      className="text-[#4A6B8A] hover:text-white focus:text-white cursor-pointer"
                     >
                       <Calculator className="mr-2 h-4 w-4" />
                       Recalculate
@@ -826,7 +826,7 @@ export default function ProposalDetailPage() {
                     <DropdownMenuItem
                       onClick={() => generateMutation.mutate({ proposalId })}
                       disabled={generateMutation.isPending}
-                      className="text-[#808285] hover:text-white focus:text-white cursor-pointer"
+                      className="text-[#4A6B8A] hover:text-white focus:text-white cursor-pointer"
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Regenerate Slides
@@ -841,21 +841,21 @@ export default function ProposalDetailPage() {
         {/* If no slides yet, show generation actions */}
         {!hasSlides && (
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-8 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-[#808285]/50" />
+            <FileText className="h-12 w-12 mx-auto mb-4 text-[#4A6B8A]/50" />
             <h3 
               className="text-xl text-white mb-2 uppercase"
               style={{ fontFamily: "'Next Sphere', sans-serif" }}
             >
               No Slides Generated Yet
             </h3>
-            <p className="text-[#808285] mb-6" style={{ fontFamily: "'General Sans', sans-serif" }}>
+            <p className="text-[#4A6B8A] mb-6" style={{ fontFamily: "'General Sans', sans-serif" }}>
               Click below to automatically calculate and generate the bill analysis slides.
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button
                 onClick={() => generateMutation.mutate({ proposalId })}
                 disabled={generateMutation.isPending || calculateMutation.isPending}
-                className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+                className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
               >
                 {(generateMutation.isPending || calculateMutation.isPending) ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -885,13 +885,13 @@ export default function ProposalDetailPage() {
         {/* Loading state for slides */}
         {slidesLoading && (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-[#00EAD3]" />
-            <span className="ml-3 text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>
+            <Loader2 className="h-8 w-8 animate-spin text-[#46B446]" />
+            <span className="ml-3 text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>
           </div>
         )}
         
         {/* Footer */}
-        <div className="text-center text-xs text-[#808285]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+        <div className="text-center text-xs text-[#4A6B8A]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
           COPYRIGHT Elite Smart Energy Solutions — Architect [Consultant Name]
         </div>
       </div>

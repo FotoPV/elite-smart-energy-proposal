@@ -24,16 +24,24 @@ const PAD_B = 0.5;
 const CONTENT_W = SLIDE_W - PAD_L - PAD_R;
 const CONTENT_H = SLIDE_H - PAD_T - PAD_B;
 
-// Colors (no # prefix for pptxgenjs)
+// Colors (no # prefix for pptxgenjs) — Elite Smart Energy Solutions brand palette
 const C = {
-  black: '0F172A',
-  aqua: '00EAD3',
-  orange: 'f36710',
-  white: 'FFFFFF',
-  ash: '808285',
-  darkGrey: '1a1a1a',
-  cardBg: '0d0d0d',
-  cardBorder: '333333',
+  black: '0F172A',       // Midnight Navy — slide background
+  navy: '1B3A5C',        // Elite Navy — primary brand colour
+  solarGreen: '46B446',  // Solar Green — primary accent
+  white: 'FFFFFF',       // Pure White
+  steelBlue: '4A6B8A',   // Steel Blue — secondary text
+  charcoal: '2C3E50',    // Charcoal — card backgrounds
+  skyMist: 'E8F0F7',     // Sky Mist — light backgrounds
+  lightGrey: 'F5F7FA',   // Light Grey
+  darkCard: '1E2D40',    // Dark card variant
+  cardBorder: '1B3A5C',  // Elite Navy border
+  // Legacy aliases (keep for backward compat)
+  aqua: '46B446',
+  orange: '46B446',
+  ash: '4A6B8A',
+  darkGrey: '2C3E50',
+  cardBg: '1E2D40',
 };
 
 // Font paths for embedding
@@ -48,7 +56,12 @@ const F = {
 
 // CDN URLs for assets needed at runtime
 const ASSET_CDN: Record<string, string> = {
+  // White-transparent icon — used on dark slide backgrounds
   'elite-logo.jpg': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png',
+  // White-on-navy icon — used on navy/charcoal backgrounds
+  'elite-icon-navy.png': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png',
+  // Transparent icon (dark rays) — used on light backgrounds
+  'elite-icon-transparent.png': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vkYTXfpVJByJjaGo.png',
 };
 
 // Ensure logo is available locally (download from CDN if needed)

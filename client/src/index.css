@@ -83,11 +83,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* ESES Custom Colors */
-  --color-eses-aqua: oklch(82.5% 0.14 180);
-  --color-eses-orange: oklch(68% 0.19 45);
+  --color-eses-aqua: #46B446;
+  --color-eses-navy-brand: #1B3A5C;
   --color-eses-navy: #0F172A;
-  --color-eses-navy-light: #1E293B;
-  --color-eses-green: #4CAF50;
+  --color-eses-navy-light: #2C3E50;
+  --color-eses-solar-green: #46B446;
 }
 
 /* ============================================
@@ -97,20 +97,20 @@
 
 :root {
   /* ESES Brand Primary — Aqua accent */
-  --primary: oklch(82.5% 0.14 180);
-  --primary-foreground: oklch(10% 0 0);
-  --accent: oklch(82.5% 0.14 180);
-  --accent-foreground: oklch(10% 0 0);
+  --primary: #46B446;
+  --primary-foreground: #0F172A;
+  --accent: #46B446;
+  --accent-foreground: #0F172A;
 
-  --sidebar-primary: oklch(82.5% 0.14 180);
-  --sidebar-primary-foreground: oklch(10% 0 0);
+  --sidebar-primary: #46B446;
+  --sidebar-primary-foreground: #0F172A;
 
   /* Chart colors */
-  --chart-1: oklch(82.5% 0.14 180);
-  --chart-2: oklch(75% 0.12 160);
-  --chart-3: oklch(70% 0.12 150);
-  --chart-4: oklch(75% 0.10 200);
-  --chart-5: oklch(65% 0.15 30);
+  --chart-1: #46B446;
+  --chart-2: #3DA03D;
+  --chart-3: #2E8B2E;
+  --chart-4: #4A6B8A;
+  --chart-5: #1B3A5C;
 
   --radius: 0.5rem;
 
@@ -119,30 +119,30 @@
   --foreground: oklch(95% 0 0);
 
   /* Cards sit one step lighter than the page bg */
-  --card: #1E293B;
+  --card: #2C3E50;
   --card-foreground: oklch(95% 0 0);
-  --popover: #1E293B;
+  --popover: #2C3E50;
   --popover-foreground: oklch(95% 0 0);
 
-  --secondary: #1E293B;
+  --secondary: #2C3E50;
   --secondary-foreground: oklch(95% 0 0);
-  --muted: #1E293B;
+  --muted: #2C3E50;
   --muted-foreground: oklch(60% 0 0);
 
   --destructive: oklch(60% 0.2 25);
   --destructive-foreground: oklch(98% 0 0);
 
-  --border: #2D3F5C;
-  --input: #2D3F5C;
-  --ring: oklch(82.5% 0.14 180);
+  --border: #1B3A5C;
+  --input: #1B3A5C;
+  --ring: #46B446;
 
   /* Sidebar — slightly deeper than page bg */
-  --sidebar: #0B1120;
+  --sidebar: #0F172A;
   --sidebar-foreground: oklch(95% 0 0);
-  --sidebar-accent: #1E293B;
+  --sidebar-accent: #2C3E50;
   --sidebar-accent-foreground: oklch(95% 0 0);
-  --sidebar-border: #2D3F5C;
-  --sidebar-ring: oklch(82.5% 0.14 180);
+  --sidebar-border: #1B3A5C;
+  --sidebar-ring: #46B446;
 }
 
 /* ============================================
@@ -238,15 +238,15 @@
 
   /* ESES card components — Midnight Navy palette */
   .eses-card {
-    background: linear-gradient(135deg, #1E293B 0%, #162032 100%);
-    border: 1px solid #2D3F5C;
+    background: linear-gradient(135deg, #2C3E50 0%, #162032 100%);
+    border: 1px solid #1B3A5C;
     border-radius: 0.75rem;
     padding: 1.5rem;
   }
 
   .eses-button-primary {
-    background-color: oklch(82.5% 0.14 180);
-    color: oklch(10% 0 0);
+    background-color: #46B446;
+    color: #0F172A;
     box-shadow: 0 0 20px oklch(82.5% 0.14 180 / 0.3);
     transition: all 0.2s;
   }
@@ -261,7 +261,7 @@
   }
 
   .eses-text-gradient {
-    background: linear-gradient(135deg, oklch(82.5% 0.14 180) 0%, oklch(70% 0.12 190) 100%);
+    background: linear-gradient(135deg, #46B446 0%, oklch(70% 0.12 190) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -269,8 +269,8 @@
 
   /* Stat card */
   .stat-card {
-    background: linear-gradient(135deg, #1E293B 0%, #162032 100%);
-    border: 1px solid #2D3F5C;
+    background: linear-gradient(135deg, #2C3E50 0%, #162032 100%);
+    border: 1px solid #1B3A5C;
     border-radius: 0.75rem;
     padding: 1.5rem;
     position: relative;
@@ -284,7 +284,7 @@
     left: 0;
     width: 0.25rem;
     height: 100%;
-    background: oklch(82.5% 0.14 180);
+    background: #46B446;
   }
 
   /* Status badges */
@@ -309,7 +309,7 @@
 
   .status-badge.generated {
     background: oklch(82.5% 0.14 180 / 0.2);
-    color: oklch(82.5% 0.14 180);
+    color: #46B446;
   }
 
   .status-badge.exported {
@@ -330,7 +330,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #2D3F5C transparent;
+    scrollbar-color: #1B3A5C transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -343,7 +343,7 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #2D3F5C;
+    background: #1B3A5C;
     border-radius: 3px;
   }
 
