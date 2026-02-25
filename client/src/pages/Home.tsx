@@ -35,11 +35,11 @@ export default function Home() {
         {/* Massive bold hero title — fills viewport width like the reference */}
         <h1
           style={{
-            fontFamily: "'NextSphere', 'Montserrat', sans-serif",
-            fontWeight: 900,
-            fontSize: "clamp(3.5rem, 12vw, 9rem)",
-            lineHeight: 0.92,
-            letterSpacing: "-0.02em",
+            fontFamily: "'Montserrat', 'Open Sans', sans-serif",
+            fontWeight: 800,
+            fontSize: "clamp(1.8rem, 5vw, 3.75rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.01em",
             color: "#FFFFFF",
             textTransform: "uppercase",
             marginBottom: "1.5rem",
