@@ -34,7 +34,7 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 // Elite brand icons
-const LOGO_ICON_WHITE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png"; // white-transparent (for dark sidebar)
+const LOGO_ICON_WHITE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png"; // white-transparent (for dark sidebar)
 const LOGO_ICON_NAVY = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg"; // full logo (fallback)
 
 const menuItems = [

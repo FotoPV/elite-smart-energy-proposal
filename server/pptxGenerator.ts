@@ -57,7 +57,7 @@ const F = {
 // CDN URLs for assets needed at runtime
 const ASSET_CDN: Record<string, string> = {
   // White-transparent icon — used on dark slide backgrounds
-  'elite-logo.jpg': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png',
+  'elite-logo.jpg': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png',
   // White-on-navy icon — used on navy/charcoal backgrounds
   'elite-icon-navy.png': 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png',
   // Transparent icon (dark rays) — used on light backgrounds

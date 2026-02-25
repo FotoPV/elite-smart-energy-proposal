@@ -20,7 +20,7 @@ export const BRAND = {
     // Icon only — white rays on Elite Navy square — use on dark backgrounds
     iconNavy: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png",
     // Icon only — white outline rays, transparent — use on dark/coloured backgrounds
-    iconWhite: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/MrcAvpDerlCqOZTn.png",
+    iconWhite: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png",
     // Aqua variant (legacy)
     aqua: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg",
   },
