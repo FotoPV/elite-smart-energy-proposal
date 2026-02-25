@@ -1,5 +1,7 @@
 node_modules/
-dist/
 .env
 *.log
 .DS_Store
+# Exclude dist/index.js (server bundle - rebuilt each time)
+dist/index.js
+# But keep dist/public/ (frontend assets)
