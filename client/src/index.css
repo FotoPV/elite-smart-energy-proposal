@@ -131,8 +131,8 @@
   --input: #2C3E50;
   --ring: #46B446;
 
-  /* Sidebar — deeper navy */
-  --sidebar: #0F2540;
+  /* Sidebar — Elite Navy (same as background for seamless look) */
+  --sidebar: #1B3A5C;
   --sidebar-foreground: #FFFFFF;
   --sidebar-accent: #2C3E50;
   --sidebar-accent-foreground: #FFFFFF;

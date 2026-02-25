@@ -204,7 +204,7 @@ export default function Proposals() {
               <button 
                 onClick={() => setLocation("/proposals/new")} 
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#FFFFFF' }}
               >
                 <PlusCircle className="mr-1 h-4 w-4" />
                 NEW PROPOSAL
