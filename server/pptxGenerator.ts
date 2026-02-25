@@ -4,8 +4,11 @@
 
 import { createRequire } from 'module';
 const _require = createRequire(import.meta.url);
-// Force CJS version of pptxgenjs to avoid jszip ESM import error
-const PptxGenJS = _require('pptxgenjs') as typeof import('pptxgenjs');
+// Force CJS version of pptxgenjs to avoid jszip ESM import error on Node 18/19
+// Explicitly resolve to pptxgen.cjs.js to bypass the exports.import condition
+const _pptxResolved = _require.resolve('pptxgenjs');
+const _pptxCjsPath = _pptxResolved.replace(/pptxgen\.es\.js$/, 'pptxgen.cjs.js');
+const PptxGenJS = _require(_pptxCjsPath) as typeof import('pptxgenjs');
 const PptxCtor = ((PptxGenJS as any).default || PptxGenJS) as typeof PptxGenJS;
 import { BRAND } from '../shared/brand';
 import { ProposalData } from './slideGenerator';
