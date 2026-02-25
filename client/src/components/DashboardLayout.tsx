@@ -245,7 +245,7 @@ function DashboardLayoutContent({
             
             {!isCollapsed && (
               <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
-                © Elite Smart Energy Solutions
+                © Elite Smart Energy Solutions — Architect George Fotopoulos
               </p>
             )}
           </SidebarFooter>
@@ -267,7 +267,7 @@ function DashboardLayoutContent({
               <SidebarTrigger className="h-9 w-9 rounded-lg" />
               <div className="flex items-center gap-2">
                 <img 
-                  src={LOGO_URL} 
+                  src={LOGO_ICON_WHITE} 
                   alt="Elite Smart Energy Solutions" 
                   className="h-6 w-6"
                 />

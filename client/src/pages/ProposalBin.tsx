@@ -198,7 +198,7 @@ export default function ProposalBin() {
 
         {/* Footer */}
         <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
-          © Elite Smart Energy Solutions — Architect [Consultant Name]
+          © Elite Smart Energy Solutions — Architect George Fotopoulos
         </div>
       </div>
     </DashboardLayout>

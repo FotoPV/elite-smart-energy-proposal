@@ -2,9 +2,10 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useSearch } from "wouter";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { 
   ArrowLeft,
   ArrowRight,
@@ -18,7 +19,9 @@ import {
   Camera,
   File,
   X,
-  Eye
+  Eye,
+  Plus,
+  Ruler
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
@@ -38,6 +41,17 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
+interface UploadedDoc {
+  id: string;
+  file?: File;
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  documentId?: number;
+  status: 'pending' | 'uploading' | 'done' | 'error';
+  previewUrl?: string;
+}
+
 export default function NewProposal() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -55,9 +69,15 @@ export default function NewProposal() {
   const [uploadingType, setUploadingType] = useState<string | null>(null);
   const [uploadStage, setUploadStage] = useState<'uploading' | 'extracting' | null>(null);
   
-  // Document upload states
-  const [switchboardPhotoUrl, setSwitchboardPhotoUrl] = useState<string | null>(null);
-  const [solarProposalPdfUrl, setSolarProposalPdfUrl] = useState<string | null>(null);
+  // Multi-document upload state
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDoc[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [cableRunDistance, setCableRunDistance] = useState("");
+  const [phaseType, setPhaseType] = useState("Single Phase");
+  const [proposalNotes, setProposalNotes] = useState("");
+  const docsInputRef = useRef<HTMLInputElement>(null);
+
+  // Legacy single-doc state (for backward compat with summary step)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const { data: customers, refetch: refetchCustomers } = trpc.customers.list.useQuery({});
@@ -101,6 +121,7 @@ export default function NewProposal() {
   const uploadBill = trpc.bills.upload.useMutation();
   const extractBill = trpc.bills.extract.useMutation();
   const uploadDocument = trpc.documents.upload.useMutation();
+  const deleteDocument = trpc.documents.delete.useMutation();
   const createProposal = trpc.proposals.create.useMutation({
     onSuccess: (data) => {
       toast.success("Proposal created");
@@ -120,11 +141,17 @@ export default function NewProposal() {
   }, [existingBills]);
 
   useEffect(() => {
-    if (existingDocuments) {
-      const switchboard = existingDocuments.find(d => d.documentType === 'switchboard_photo');
-      const solarPdf = existingDocuments.find(d => d.documentType === 'solar_proposal_pdf');
-      if (switchboard) setSwitchboardPhotoUrl(switchboard.fileUrl);
-      if (solarPdf) setSolarProposalPdfUrl(solarPdf.fileUrl);
+    if (existingDocuments && existingDocuments.length > 0) {
+      const docs: UploadedDoc[] = existingDocuments.map(d => ({
+        id: `existing-${d.id}`,
+        fileName: d.fileName || 'document',
+        fileUrl: d.fileUrl,
+        mimeType: d.mimeType || 'application/octet-stream',
+        documentId: d.id,
+        status: 'done' as const,
+        previewUrl: d.mimeType?.startsWith('image/') ? d.fileUrl : undefined,
+      }));
+      setUploadedDocs(docs);
     }
   }, [existingDocuments]);
 
@@ -182,42 +209,92 @@ export default function NewProposal() {
     }
   };
 
-  const handleDocumentUpload = async (docType: 'switchboard_photo' | 'solar_proposal_pdf', file: File) => {
-    if (!selectedCustomerId) return;
-    
-    setIsUploading(true);
-    setUploadingType(docType);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = (e.target?.result as string).split(',')[1];
+  const getDocumentType = (file: File): 'switchboard_photo' | 'meter_photo' | 'roof_photo' | 'property_photo' | 'solar_proposal_pdf' | 'other' => {
+    if (file.type === 'application/pdf') return 'solar_proposal_pdf';
+    if (file.type.startsWith('image/')) return 'switchboard_photo';
+    return 'other';
+  };
+
+  const handleMultiDocUpload = async (files: File[]) => {
+    if (!selectedCustomerId) {
+      toast.error("Please select a customer first");
+      return;
+    }
+
+    for (const file of files) {
+      const docId = `${Date.now()}-${Math.random()}`;
+      const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+      
+      // Add to list as pending
+      const newDoc: UploadedDoc = {
+        id: docId,
+        file,
+        fileName: file.name,
+        fileUrl: '',
+        mimeType: file.type || 'application/octet-stream',
+        status: 'uploading',
+        previewUrl,
+      };
+      setUploadedDocs(prev => [...prev, newDoc]);
+
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
         const result = await uploadDocument.mutateAsync({
           customerId: selectedCustomerId,
-          documentType: docType,
+          documentType: getDocumentType(file),
           fileData: base64,
           fileName: file.name,
           mimeType: file.type || 'application/octet-stream',
         });
-        
-        toast.success(`${docType === 'switchboard_photo' ? 'Switchboard photo' : 'Solar proposal PDF'} uploaded`);
-        
-        if (docType === 'switchboard_photo') {
-          setSwitchboardPhotoUrl(result.fileUrl);
-        } else {
-          setSolarProposalPdfUrl(result.fileUrl);
-        }
-        
+
+        setUploadedDocs(prev => prev.map(d => d.id === docId ? {
+          ...d,
+          status: 'done' as const,
+          fileUrl: result.fileUrl,
+          documentId: result.documentId,
+        } : d));
+
         refetchDocuments();
-        setIsUploading(false);
-        setUploadingType(null);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      toast.error("Failed to upload document");
-      setIsUploading(false);
-      setUploadingType(null);
+      } catch (error) {
+        setUploadedDocs(prev => prev.map(d => d.id === docId ? { ...d, status: 'error' as const } : d));
+        toast.error(`Failed to upload ${file.name}`);
+      }
     }
   };
+
+  const handleRemoveDoc = async (doc: UploadedDoc) => {
+    if (doc.documentId) {
+      try {
+        await deleteDocument.mutateAsync({ id: doc.documentId });
+        refetchDocuments();
+      } catch (e) {
+        // ignore
+      }
+    }
+    setUploadedDocs(prev => prev.filter(d => d.id !== doc.id));
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files).filter(f =>
+      f.type.startsWith('image/') || f.type === 'application/pdf'
+    );
+    if (files.length) handleMultiDocUpload(files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => setIsDragOver(false);
 
   const handleCreateProposal = () => {
     if (!selectedCustomerId) {
@@ -236,6 +313,9 @@ export default function NewProposal() {
       gasBillId: gasBillId || undefined,
     });
   };
+
+  const switchboardUploaded = uploadedDocs.some(d => d.status === 'done' && (d.mimeType?.startsWith('image/') || d.previewUrl));
+  const solarPdfUploaded = uploadedDocs.some(d => d.status === 'done' && d.mimeType === 'application/pdf');
 
   return (
     <DashboardLayout>
@@ -292,31 +372,32 @@ export default function NewProposal() {
                 </Select>
               </div>
               
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowNewCustomerDialog(true)}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Add New Customer
+              </Button>
+
               {selectedCustomer && (
-                <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                  <p className="font-medium">{selectedCustomer.fullName}</p>
-                  <p className="text-sm text-muted-foreground">{selectedCustomer.address}</p>
-                  <div className="flex gap-2 mt-2">
-                    {selectedCustomer.hasSolarNew && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-400">Solar &lt;5yrs</span>
-                    )}
-                    {selectedCustomer.hasSolarOld && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/10 text-blue-400">Solar &gt;5yrs</span>
-                    )}
-                    {selectedCustomer.hasPool && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">Pool</span>
-                    )}
-                    {selectedCustomer.hasEV && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-green-500/10 text-green-400">EV</span>
-                    )}
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Selected: {selectedCustomer.fullName}</span>
                   </div>
+                  <p className="text-xs text-muted-foreground">{selectedCustomer.address} — {selectedCustomer.state}</p>
                 </div>
               )}
               
-              <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setShowNewCustomerDialog(true)}>
-                  Add New Customer
-                </Button>
+              <div className="flex justify-end pt-4">
                 <Button 
                   onClick={() => setStep(2)} 
                   disabled={!selectedCustomerId}
@@ -330,7 +411,7 @@ export default function NewProposal() {
           </Card>
         )}
 
-        {/* Step 2: Upload Bills & Documents */}
+        {/* Step 2: Upload Bills + Additional Documents */}
         {step === 2 && (
           <Card className="bg-card border-border">
             <CardHeader>
@@ -341,6 +422,7 @@ export default function NewProposal() {
               <CardDescription>Upload customer energy bills for analysis</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              
               {/* Electricity Bill */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
@@ -351,11 +433,22 @@ export default function NewProposal() {
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                     <CheckCircle className="h-5 w-5 text-green-400" />
                     <span className="text-green-400 font-medium">Electricity bill uploaded</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto text-muted-foreground text-xs"
+                      onClick={() => {
+                        setElectricityBillId(null);
+                        document.getElementById('electricity-upload')?.click();
+                      }}
+                    >
+                      Replace
+                    </Button>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
                     <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload electricity bill (PDF)</p>
+                    <p className="text-sm text-muted-foreground mb-4">Upload electricity bill PDF for AI analysis</p>
                     <Input
                       type="file"
                       accept=".pdf"
@@ -367,20 +460,21 @@ export default function NewProposal() {
                         if (file) handleFileUpload('electricity', file);
                       }}
                     />
-                    <Button 
-                      variant="outline" 
+                    <button
                       onClick={() => document.getElementById('electricity-upload')?.click()}
                       disabled={isUploading}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                      style={{ border: '2px solid #46B446', color: '#46B446', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
                     >
                       {uploadingType === 'electricity' ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
                         </>
                       ) : (
-                        "Select File"
+                        <><Upload className="h-4 w-4" /> Upload Electricity Bill</>
                       )}
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
@@ -395,6 +489,17 @@ export default function NewProposal() {
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                     <CheckCircle className="h-5 w-5 text-green-400" />
                     <span className="text-green-400 font-medium">Gas bill uploaded</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto text-muted-foreground text-xs"
+                      onClick={() => {
+                        setGasBillId(null);
+                        document.getElementById('gas-upload')?.click();
+                      }}
+                    >
+                      Replace
+                    </Button>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
@@ -411,150 +516,188 @@ export default function NewProposal() {
                         if (file) handleFileUpload('gas', file);
                       }}
                     />
-                    <Button 
-                      variant="outline" 
+                    <button
                       onClick={() => document.getElementById('gas-upload')?.click()}
                       disabled={isUploading}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                      style={{ border: '2px solid #46B446', color: '#46B446', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
                     >
                       {uploadingType === 'gas' ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
                         </>
                       ) : (
-                        "Select File"
+                        <><Upload className="h-4 w-4" /> Upload Gas Bill</>
                       )}
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Divider */}
+              {/* ─── CABLE RUN DISTANCE ─────────────────────────────── */}
               <div className="border-t border-border pt-6">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-4">ADDITIONAL DOCUMENTS (Optional)</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <Ruler className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary tracking-wide uppercase">Cable Run Distance</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per ESES T&amp;Cs.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">Distance (metres)</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 21.3"
+                      value={cableRunDistance}
+                      onChange={(e) => setCableRunDistance(e.target.value)}
+                      className="bg-card border-border"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Phase Type</Label>
+                    <Select value={phaseType} onValueChange={setPhaseType}>
+                      <SelectTrigger className="bg-card border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Single Phase">Single Phase</SelectItem>
+                        <SelectItem value="Three Phase">Three Phase</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
 
-              {/* Switchboard Photo */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-primary" />
-                  Switchboard Photo (Optional)
-                </Label>
-                {switchboardPhotoUrl ? (
-                  <div className="relative">
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                      <img 
-                        src={switchboardPhotoUrl} 
-                        alt="Switchboard" 
-                        className="h-20 w-20 object-cover rounded-lg cursor-pointer"
-                        onClick={() => setPreviewUrl(switchboardPhotoUrl)}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-5 w-5 text-green-400" />
-                          <span className="text-green-400 font-medium">Switchboard photo uploaded</span>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="mt-2 text-muted-foreground"
-                          onClick={() => setPreviewUrl(switchboardPhotoUrl)}
+              {/* ─── ADDITIONAL DOCUMENTS ───────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="mb-1">
+                  <h3 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">Additional Documents (Optional)</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Upload multiple photos (switchboard, roof, meter) and PDFs (quotes, other documents)</p>
+                </div>
+
+                {/* Drag-drop zone */}
+                <div
+                  className={`mt-4 border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors ${isDragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => docsInputRef.current?.click()}
+                >
+                  <div className="flex items-center justify-center gap-3 mb-3">
+                    <Camera className="h-8 w-8 text-muted-foreground" />
+                    <Plus className="h-5 w-5 text-muted-foreground" />
+                    <FileText className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Drop files here or click to browse</p>
+                  <p className="text-xs text-muted-foreground mt-1">Supports multiple photos (JPG, PNG) and PDFs</p>
+                  <input
+                    ref={docsInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length) handleMultiDocUpload(files);
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
+
+                {/* Uploaded files list */}
+                {uploadedDocs.length > 0 && (
+                  <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-sm font-semibold">Uploaded Files ({uploadedDocs.length})</span>
+                      <span className="text-xs text-muted-foreground">
+                        {uploadedDocs.filter(d => d.mimeType?.startsWith('image/')).length} photos
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {uploadedDocs.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Full Size
-                        </Button>
-                      </div>
+                          {/* Thumbnail */}
+                          {doc.previewUrl ? (
+                            <img
+                              src={doc.previewUrl}
+                              alt={doc.fileName}
+                              className="h-12 w-12 object-cover rounded-md flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
+                              <FileText className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          
+                          {/* Filename */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{doc.fileName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {doc.mimeType?.startsWith('image/') ? 'Photo' : 'PDF'}
+                            </p>
+                          </div>
+
+                          {/* Status + actions */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {doc.status === 'uploading' && (
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            )}
+                            {doc.status === 'done' && (
+                              <CheckCircle className="h-5 w-5 text-green-400" />
+                            )}
+                            {doc.status === 'error' && (
+                              <X className="h-5 w-5 text-red-400" />
+                            )}
+                            
+                            {/* Preview */}
+                            {doc.status === 'done' && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); window.open(doc.fileUrl || doc.previewUrl, '_blank'); }}
+                                className="p-1.5 rounded hover:bg-muted transition-colors"
+                                title="Preview"
+                              >
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              </button>
+                            )}
+                            
+                            {/* Remove */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveDoc(doc); }}
+                              className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
+                              title="Remove"
+                            >
+                              <X className="h-4 w-4 text-muted-foreground hover:text-red-400" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload switchboard photo for assessment</p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      id="switchboard-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleDocumentUpload('switchboard_photo', file);
-                      }}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('switchboard-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'switchboard_photo' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select Photo"
-                      )}
-                    </Button>
                   </div>
                 )}
               </div>
 
-              {/* Solar Proposal PDF */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <File className="h-4 w-4 text-accent" />
-                  Solar Proposal PDF (Optional)
-                </Label>
-                {solarProposalPdfUrl ? (
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <FileText className="h-10 w-10 text-accent" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-400" />
-                        <span className="text-green-400 font-medium">Solar proposal PDF uploaded</span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 text-muted-foreground"
-                        onClick={() => window.open(solarProposalPdfUrl, '_blank')}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View PDF
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload existing solar proposal for reference</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="solar-proposal-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleDocumentUpload('solar_proposal_pdf', file);
-                      }}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('solar-proposal-upload')?.click()}
-                      disabled={isUploading}
-                    >
-                      {uploadingType === 'solar_proposal_pdf' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Uploading...
-                        </>
-                      ) : (
-                        "Select PDF"
-                      )}
-                    </Button>
-                  </div>
-                )}
+              {/* ─── PROPOSAL NOTES ─────────────────────────────────── */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary tracking-wide uppercase">Proposal Notes</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Add observations about the install — switchboard condition, existing system details, special requirements. These notes will be included in the AI-generated narrative.
+                </p>
+                <Textarea
+                  placeholder="e.g. Switchboard needs upgrade — old style with ceramic fuses. 3-phase supply confirmed. Customer wants battery backup for essential circuits..."
+                  value={proposalNotes}
+                  onChange={(e) => setProposalNotes(e.target.value)}
+                  className="min-h-[120px] bg-card border-border resize-none"
+                />
               </div>
               
               <div className="flex justify-between pt-4">
@@ -617,17 +760,25 @@ export default function NewProposal() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Switchboard Photo:</span>
-                    <span className={switchboardPhotoUrl ? "text-green-400" : "text-muted-foreground"}>
-                      {switchboardPhotoUrl ? "Uploaded" : "Not provided"}
+                    <span className="text-muted-foreground">Additional Documents:</span>
+                    <span className={uploadedDocs.filter(d => d.status === 'done').length > 0 ? "text-green-400" : "text-muted-foreground"}>
+                      {uploadedDocs.filter(d => d.status === 'done').length > 0 
+                        ? `${uploadedDocs.filter(d => d.status === 'done').length} file(s) uploaded` 
+                        : "Not provided"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Solar Proposal PDF:</span>
-                    <span className={solarProposalPdfUrl ? "text-green-400" : "text-muted-foreground"}>
-                      {solarProposalPdfUrl ? "Uploaded" : "Not provided"}
-                    </span>
-                  </div>
+                  {cableRunDistance && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cable Run:</span>
+                      <span>{cableRunDistance}m — {phaseType}</span>
+                    </div>
+                  )}
+                  {proposalNotes && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Notes:</span>
+                      <span className="text-green-400">Added</span>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -660,7 +811,7 @@ export default function NewProposal() {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          COPYRIGHT Elite Smart Energy Solutions - Architect [Consultant Name]
+          COPYRIGHT Elite Smart Energy Solutions - Architect George Fotopoulos
         </div>
       </div>
 
@@ -668,10 +819,10 @@ export default function NewProposal() {
       <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Switchboard Photo</DialogTitle>
+            <DialogTitle>Document Preview</DialogTitle>
           </DialogHeader>
           {previewUrl && (
-            <img src={previewUrl} alt="Switchboard Preview" className="w-full h-auto rounded-lg" />
+            <img src={previewUrl} alt="Preview" className="w-full h-auto rounded-lg" />
           )}
         </DialogContent>
       </Dialog>
@@ -759,7 +910,7 @@ export default function NewProposal() {
                   onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasSolarOld: !!c }))}
                 />
                 <label htmlFor="hasSolarOld" className="text-sm flex items-center gap-1.5 cursor-pointer">
-                  <span style={{color: '#4A6B8A'}}>&#9728;</span> Has Solar PV &gt;5yrs
+                  <span style={{color: '#F59E0B'}}>&#9728;</span> Has Solar PV &gt;5yrs
                 </label>
               </div>
               <div className="flex items-center gap-3">
@@ -768,7 +919,7 @@ export default function NewProposal() {
                   checked={newCustomer.hasPool}
                   onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasPool: !!c }))}
                 />
-                <label htmlFor="hasPool" className="text-sm cursor-pointer">Has Swimming Pool</label>
+                <label htmlFor="hasPool" className="text-sm cursor-pointer">Has Pool</label>
               </div>
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -776,46 +927,27 @@ export default function NewProposal() {
                   checked={newCustomer.hasEV}
                   onCheckedChange={(c) => setNewCustomer(p => ({ ...p, hasEV: !!c }))}
                 />
-                <label htmlFor="hasEV" className="text-sm cursor-pointer">Has / Interested in EV</label>
+                <label htmlFor="hasEV" className="text-sm cursor-pointer">Has EV / EV Charger</label>
               </div>
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
-              <Input
+              <Textarea
                 value={newCustomer.notes}
                 onChange={(e) => setNewCustomer(p => ({ ...p, notes: e.target.value }))}
-                placeholder="Any additional notes..."
+                placeholder="Any additional notes about the customer..."
+                className="min-h-[80px]"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setShowNewCustomerDialog(false)}>Cancel</Button>
               <Button
-                onClick={() => {
-                  if (!newCustomer.fullName.trim() || !newCustomer.address.trim()) {
-                    toast.error('Name and address are required');
-                    return;
-                  }
-                  createCustomer.mutate({
-                    fullName: newCustomer.fullName,
-                    email: newCustomer.email || undefined,
-                    phone: newCustomer.phone || undefined,
-                    address: newCustomer.address,
-                    state: newCustomer.state,
-                    hasSolarNew: newCustomer.hasSolarNew,
-                    hasSolarOld: newCustomer.hasSolarOld,
-                    hasPool: newCustomer.hasPool,
-                    hasEV: newCustomer.hasEV,
-                    notes: newCustomer.notes || undefined,
-                  });
-                }}
-                disabled={createCustomer.isPending}
+                onClick={() => createCustomer.mutate(newCustomer)}
+                disabled={!newCustomer.fullName || !newCustomer.address || createCustomer.isPending}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {createCustomer.isPending ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
-                ) : (
-                  'Create Customer'
-                )}
+                {createCustomer.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create Customer
               </Button>
             </div>
           </div>
@@ -826,15 +958,17 @@ export default function NewProposal() {
 }
 
 function StepIndicator({ step, currentStep, label }: { step: number; currentStep: number; label: string }) {
-  const isActive = step === currentStep;
-  const isCompleted = step < currentStep;
+  const isCompleted = currentStep > step;
+  const isActive = currentStep === step;
   
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all ${
-        isCompleted ? 'bg-green-400/10 border-green-400 text-green-400' :
-        isActive ? 'bg-primary/10 border-primary text-primary' :
-        'bg-muted border-border text-muted-foreground'
+    <div className="flex flex-col items-center gap-1">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+        isCompleted 
+          ? 'bg-primary text-primary-foreground' 
+          : isActive 
+            ? 'border-2 border-primary text-primary' 
+            : 'border-2 border-border text-muted-foreground'
       }`}>
         {isCompleted ? <CheckCircle className="h-5 w-5" /> : step}
       </div>

@@ -2,11 +2,9 @@ import { useLocation } from "wouter";
 import { Upload, Layers, LayoutGrid, FileText, BarChart2 } from "lucide-react";
 
 const BRAND = {
-  iconWhite: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png",
+  iconTransparent: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vkYTXfpVJByJjaGo.png",
   solarGreen: "#46B446",
-  midnightNavy: "#0F172A",
-  eliteNavy: "#1B3A5C",
-  steelBlue: "#4A6B8A",
+  midnightNavy: "#0D1117",
 };
 
 export default function Home() {
@@ -14,204 +12,310 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-start"
+      className="min-h-screen flex flex-col"
       style={{
         background: BRAND.midnightNavy,
         fontFamily: "'Montserrat', 'Open Sans', sans-serif",
       }}
     >
-      {/* ── HERO ─────────────────────────────────────────── */}
-      <div className="w-full max-w-5xl mx-auto px-6 pt-16 pb-10 text-center">
-        {/* Logo icon */}
-        <div className="flex justify-center mb-6">
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full px-4 pt-14 pb-8 text-center">
+
+        {/* Logo — centered, medium size */}
+        <div className="flex justify-center mb-8">
           <img
-            src={BRAND.iconWhite}
+            src={BRAND.iconTransparent}
             alt="Elite Smart Energy Solutions"
-            className="h-20 w-20 object-contain"
+            style={{ height: "72px", width: "72px", objectFit: "contain" }}
           />
         </div>
 
-        {/* Bold hero title */}
+        {/* Massive bold hero title — fills viewport width like the reference */}
         <h1
-          className="font-black uppercase leading-none tracking-tight mb-6"
           style={{
             fontFamily: "'Montserrat', sans-serif",
             fontWeight: 900,
-            fontSize: "clamp(2.8rem, 8vw, 6rem)",
+            fontSize: "clamp(3.5rem, 12vw, 9rem)",
+            lineHeight: 0.92,
+            letterSpacing: "-0.02em",
             color: "#FFFFFF",
-            textShadow: "0 2px 24px rgba(70,180,70,0.18)",
-            letterSpacing: "-0.01em",
+            textTransform: "uppercase",
+            marginBottom: "1.5rem",
+            maxWidth: "1100px",
           }}
         >
           IN-DEPTH BILL ANALYSIS
           <br />
-          &amp; PROPOSAL GENERATOR
+          &amp; PROPOSAL
+          <br />
+          GENERATOR
         </h1>
 
         {/* Subtitle */}
         <p
-          className="max-w-2xl mx-auto mb-10 text-base md:text-lg"
-          style={{ color: "#94A3B8", fontFamily: "'Open Sans', sans-serif", lineHeight: 1.7 }}
+          style={{
+            color: "#94A3B8",
+            fontFamily: "'Open Sans', sans-serif",
+            fontSize: "1rem",
+            lineHeight: 1.7,
+            maxWidth: "620px",
+            marginBottom: "2.5rem",
+          }}
         >
           Upload your electricity bill PDF and automatically generate a beautiful,
           in-depth analysis with system details, financial projections, and state rebates.
         </p>
 
-        {/* ── ACTION BUTTONS ─────────────────────────────── */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
+        {/* ── ACTION BUTTONS ─────────────────────────────────── */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: "12px",
+            marginBottom: "1.5rem",
+          }}
+        >
           {/* Upload Bill — outlined green */}
           <button
             onClick={() => setLocation("/proposals/new")}
-            className="flex items-center gap-2 px-6 py-3 rounded-md font-semibold text-sm transition-all hover:scale-105"
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              letterSpacing: "0.03em",
               border: `2px solid ${BRAND.solarGreen}`,
               color: BRAND.solarGreen,
               background: "transparent",
-              fontFamily: "'Montserrat', sans-serif",
-              letterSpacing: "0.03em",
+              cursor: "pointer",
+              transition: "transform 0.15s",
             }}
+            onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
+            onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <Upload className="h-4 w-4" />
+            <Upload style={{ width: "16px", height: "16px" }} />
             Upload Bill
           </button>
 
           {/* Bulk Upload — solid green */}
           <button
             onClick={() => setLocation("/proposals/new")}
-            className="flex items-center gap-2 px-6 py-3 rounded-md font-semibold text-sm transition-all hover:scale-105"
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              letterSpacing: "0.03em",
+              border: "none",
               background: BRAND.solarGreen,
               color: "#FFFFFF",
-              border: "none",
-              fontFamily: "'Montserrat', sans-serif",
-              letterSpacing: "0.03em",
+              cursor: "pointer",
+              transition: "transform 0.15s",
             }}
+            onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
+            onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <Layers className="h-4 w-4" />
+            <Layers style={{ width: "16px", height: "16px" }} />
             Bulk Upload
           </button>
 
           {/* View Bills & Photos — outlined white */}
           <button
-            onClick={() => setLocation("/proposals")}
-            className="flex items-center gap-2 px-6 py-3 rounded-md font-semibold text-sm transition-all hover:scale-105"
+            onClick={() => setLocation("/bills")}
             style={{
-              border: "2px solid rgba(255,255,255,0.25)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              letterSpacing: "0.03em",
+              border: "2px solid rgba(255,255,255,0.3)",
               color: "#FFFFFF",
               background: "transparent",
-              fontFamily: "'Montserrat', sans-serif",
-              letterSpacing: "0.03em",
+              cursor: "pointer",
+              transition: "transform 0.15s",
             }}
+            onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
+            onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid style={{ width: "16px", height: "16px" }} />
             View Bills &amp; Photos
           </button>
 
           {/* View Proposals — outlined white */}
           <button
             onClick={() => setLocation("/proposals")}
-            className="flex items-center gap-2 px-6 py-3 rounded-md font-semibold text-sm transition-all hover:scale-105"
             style={{
-              border: "2px solid rgba(255,255,255,0.25)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              letterSpacing: "0.03em",
+              border: "2px solid rgba(255,255,255,0.3)",
               color: "#FFFFFF",
               background: "transparent",
-              fontFamily: "'Montserrat', sans-serif",
-              letterSpacing: "0.03em",
+              cursor: "pointer",
+              transition: "transform 0.15s",
             }}
+            onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
+            onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <FileText className="h-4 w-4" />
+            <FileText style={{ width: "16px", height: "16px" }} />
             View Proposals
           </button>
         </div>
 
-        {/* Admin link */}
+        {/* Admin analytics link */}
         <button
           onClick={() => setLocation("/proposals")}
-          className="flex items-center gap-2 mx-auto text-xs transition-opacity hover:opacity-80"
-          style={{ color: "#64748B", fontFamily: "'Open Sans', sans-serif" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            margin: "0 auto",
+            background: "none",
+            border: "none",
+            color: "#64748B",
+            fontSize: "0.75rem",
+            fontFamily: "'Open Sans', sans-serif",
+            cursor: "pointer",
+            opacity: 0.8,
+          }}
         >
-          <BarChart2 className="h-3.5 w-3.5" />
+          <BarChart2 style={{ width: "14px", height: "14px" }} />
           Admin: Bill Extraction Analytics
         </button>
       </div>
 
-      {/* ── FEATURE CARDS ────────────────────────────────── */}
-      <div className="w-full max-w-5xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Card 1 */}
-          <div
-            className="rounded-xl p-7"
+      {/* ── FEATURE CARDS ──────────────────────────────────────── */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "0 24px 64px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "20px",
+        }}
+      >
+        {/* Card 1 — Automatic Extraction */}
+        <div
+          style={{
+            borderRadius: "12px",
+            padding: "28px",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 900,
+              fontSize: "0.8rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: BRAND.solarGreen,
+              marginBottom: "12px",
+              lineHeight: 1.4,
             }}
           >
-            <h3
-              className="text-sm font-black uppercase mb-3 tracking-wide"
-              style={{ color: BRAND.solarGreen, fontFamily: "'Montserrat', sans-serif" }}
-            >
-              AUTOMATIC
-              <br />
-              EXTRACTION
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "#94A3B8", fontFamily: "'Open Sans', sans-serif" }}>
-              AI-powered PDF scanning extracts customer details, usage data, tariff
-              rates, and billing periods automatically.
-            </p>
-          </div>
+            AUTOMATIC<br />EXTRACTION
+          </h3>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+            AI-powered PDF scanning extracts customer details, usage data, tariff
+            rates, and billing periods automatically.
+          </p>
+        </div>
 
-          {/* Card 2 */}
-          <div
-            className="rounded-xl p-7"
+        {/* Card 2 — LLM-Powered Analysis */}
+        <div
+          style={{
+            borderRadius: "12px",
+            padding: "28px",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 900,
+              fontSize: "0.8rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#F97316",
+              marginBottom: "12px",
+              lineHeight: 1.4,
             }}
           >
-            <h3
-              className="text-sm font-black uppercase mb-3 tracking-wide"
-              style={{ color: "#F97316", fontFamily: "'Montserrat', sans-serif" }}
-            >
-              LLM-POWERED
-              <br />
-              ANALYSIS
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "#94A3B8", fontFamily: "'Open Sans', sans-serif" }}>
-              Each slide is generated with AI-written, customer-specific narrative
-              analysis — not just data tables.
-            </p>
-          </div>
+            LLM-POWERED<br />ANALYSIS
+          </h3>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+            Each slide is generated with AI-written, customer-specific narrative
+            analysis — not just data tables.
+          </p>
+        </div>
 
-          {/* Card 3 */}
-          <div
-            className="rounded-xl p-7"
+        {/* Card 3 — Instant Proposals */}
+        <div
+          style={{
+            borderRadius: "12px",
+            padding: "28px",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 900,
+              fontSize: "0.8rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+              marginBottom: "12px",
+              lineHeight: 1.4,
             }}
           >
-            <h3
-              className="text-sm font-black uppercase mb-3 tracking-wide"
-              style={{ color: "#FFFFFF", fontFamily: "'Montserrat', sans-serif" }}
-            >
-              INSTANT
-              <br />
-              PROPOSALS
-            </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "#94A3B8", fontFamily: "'Open Sans', sans-serif" }}>
-              Generate professional branded proposals with solar, battery, VPP,
-              and financial analysis in minutes.
-            </p>
-          </div>
+            INSTANT<br />PROPOSALS
+          </h3>
+          <p style={{ color: "#94A3B8", fontSize: "0.875rem", lineHeight: 1.65, fontFamily: "'Open Sans', sans-serif" }}>
+            Generate professional branded proposals with solar, battery, VPP,
+            and financial analysis in minutes.
+          </p>
         </div>
       </div>
 
-      {/* ── FOOTER ───────────────────────────────────────── */}
+      {/* ── FOOTER ─────────────────────────────────────────────── */}
       <div
-        className="w-full text-center py-4 text-xs"
-        style={{ color: "#334155", borderTop: "1px solid rgba(255,255,255,0.06)", fontFamily: "'Open Sans', sans-serif" }}
+        style={{
+          width: "100%",
+          textAlign: "center",
+          padding: "16px",
+          fontSize: "0.7rem",
+          color: "#334155",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          fontFamily: "'Open Sans', sans-serif",
+        }}
       >
-        © Elite Smart Energy Solutions — South Australia
+        © Elite Smart Energy Solutions — Architect George Fotopoulos
       </div>
     </div>
   );

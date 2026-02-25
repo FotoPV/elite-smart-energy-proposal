@@ -56,20 +56,37 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
     <div className="space-y-4">
       {/* Slide Preview */}
       <div className="relative bg-black rounded-lg overflow-hidden border border-gray-800">
-        {/* Slide Content */}
+        {/* Slide Content - 1920x1080 slides scaled to fit container */}
         <div 
-          className="aspect-video w-full"
-          style={{ maxHeight: '500px' }}
+          className="w-full"
+          style={{ paddingBottom: '56.25%', position: 'relative', overflow: 'hidden' }}
         >
           <iframe
             srcDoc={currentSlideData.html}
-            className="w-full h-full border-0"
             title={`Slide ${currentSlide + 1}: ${currentSlideData.title}`}
             style={{ 
-              transform: 'scale(0.5)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '1920px',
+              height: '1080px',
+              border: 'none',
               transformOrigin: 'top left',
-              width: '200%',
-              height: '200%',
+              transform: 'scale(var(--slide-scale, 0.5))',
+            }}
+            ref={(el) => {
+              if (el) {
+                const updateScale = () => {
+                  const container = el.parentElement;
+                  if (container) {
+                    const scale = container.offsetWidth / 1920;
+                    el.style.transform = `scale(${scale})`;
+                  }
+                };
+                updateScale();
+                const ro = new ResizeObserver(updateScale);
+                ro.observe(el.parentElement!);
+              }
             }}
           />
         </div>
