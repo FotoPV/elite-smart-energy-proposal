@@ -479,61 +479,6 @@ export default function NewProposal() {
                 )}
               </div>
 
-              {/* Gas Bill */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-accent" />
-                  Gas Bill (Optional)
-                </Label>
-                {gasBillId ? (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                    <span className="text-green-400 font-medium">Gas bill uploaded</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-auto text-muted-foreground text-xs"
-                      onClick={() => {
-                        setGasBillId(null);
-                        document.getElementById('gas-upload')?.click();
-                      }}
-                    >
-                      Replace
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-4">Upload gas bill for electrification analysis</p>
-                    <Input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      id="gas-upload"
-                      disabled={isUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload('gas', file);
-                      }}
-                    />
-                    <button
-                      onClick={() => document.getElementById('gas-upload')?.click()}
-                      disabled={isUploading}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
-                      style={{ border: '2px solid #46B446', color: '#46B446', background: 'transparent', fontFamily: "'Montserrat', sans-serif", letterSpacing: '0.03em' }}
-                    >
-                      {uploadingType === 'gas' ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          {uploadStage === 'extracting' ? 'AI Extracting...' : 'Uploading...'}
-                        </>
-                      ) : (
-                        <><Upload className="h-4 w-4" /> Upload Gas Bill</>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
 
               {/* ─── CABLE RUN DISTANCE ─────────────────────────────── */}
               <div className="border-t border-border pt-6">
@@ -752,12 +697,6 @@ export default function NewProposal() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Electricity Bill:</span>
                     <span className="text-green-400">Uploaded</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gas Bill:</span>
-                    <span className={gasBillId ? "text-green-400" : "text-muted-foreground"}>
-                      {gasBillId ? "Uploaded" : "Not provided"}
-                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Additional Documents:</span>
