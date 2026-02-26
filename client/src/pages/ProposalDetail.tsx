@@ -871,17 +871,29 @@ export default function ProposalDetailPage() {
                 </span>
               </div>
               <div className="ml-auto text-sm text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-                {streamSlides.length} / {streamTotal || '?'} slides
+                {streamTotal > 0 ? `${streamSlides.length} / ${streamTotal} slides` : 'Initialising...'}
               </div>
             </div>
             {/* Progress bar */}
             <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 mb-4">
-              <div
-                className="bg-[#00EAD3] h-1.5 rounded-full transition-all duration-500"
-                style={{ width: streamTotal > 0 ? `${(streamSlides.length / streamTotal) * 100}%` : '0%' }}
-              />
+              {streamTotal === 0 ? (
+                <div className="bg-[#00EAD3]/40 h-1.5 rounded-full animate-pulse w-1/4" />
+              ) : (
+                <div
+                  className="bg-[#00EAD3] h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${(streamSlides.length / streamTotal) * 100}%` }}
+                />
+              )}
             </div>
-            {/* Current slide being generated */}
+            {/* Current slide being generated — or initialising message */}
+            {!streamCurrentTitle && streamTotal === 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <Loader2 className="h-3.5 w-3.5 text-[#00EAD3] animate-spin flex-shrink-0" />
+                <span className="text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                  Initialising — connecting to AI engine...
+                </span>
+              </div>
+            )}
             {streamCurrentTitle && (
               <div className="flex items-center gap-2 text-sm">
                 {streamCurrentStatus === 'generating' ? (
