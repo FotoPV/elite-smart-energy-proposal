@@ -17,6 +17,8 @@ import {
   FileDown,
   Presentation,
   ChevronDown,
+  CheckCircle,
+  Zap,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -660,10 +662,98 @@ export default function ProposalDetailPage() {
   const [, setLocation] = useLocation();
   const proposalId = parseInt(params.id || '0');
   
+  // ── Streaming state ──────────────────────────────────────────────────────
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamTotal, setStreamTotal] = useState(0);
+  const [streamSlides, setStreamSlides] = useState<Array<{
+    index: number;
+    slideId: number;
+    slideType: string;
+    title: string;
+    html: string;
+  }>>([]);
+  const [streamCurrentTitle, setStreamCurrentTitle] = useState('');
+  const [streamCurrentStatus, setStreamCurrentStatus] = useState<'generating' | 'done'>('generating');
+  const [streamComplete, setStreamComplete] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const sseRef = useRef<EventSource | null>(null);
+  // refetchRef allows startStreamGeneration to call refetch without being declared after it
+  const refetchRef = useRef<(() => void) | null>(null);
+
+  const startStreamGeneration = useCallback(() => {
+    // Close any existing SSE connection
+    if (sseRef.current) {
+      sseRef.current.close();
+      sseRef.current = null;
+    }
+    setIsStreaming(true);
+    setStreamSlides([]);
+    setStreamTotal(0);
+    setStreamCurrentTitle('');
+    setStreamComplete(false);
+    setStreamError(null);
+
+    const es = new EventSource(`/api/proposals/${proposalId}/generate-slides-stream`);
+    sseRef.current = es;
+
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'start') {
+          setStreamTotal(data.total);
+        } else if (data.type === 'progress') {
+          setStreamCurrentTitle(data.title);
+          setStreamCurrentStatus(data.status);
+        } else if (data.type === 'slide') {
+          setStreamSlides(prev => [...prev, {
+            index: data.index,
+            slideId: data.slideId,
+            slideType: data.slideType,
+            title: data.title,
+            html: data.html,
+          }]);
+        } else if (data.type === 'complete') {
+          setStreamComplete(true);
+          setIsStreaming(false);
+          es.close();
+          sseRef.current = null;
+          toast.success(`${data.slideCount} slides generated successfully!`);
+          refetchRef.current?.();
+        } else if (data.type === 'error') {
+          setStreamError(data.message);
+          setIsStreaming(false);
+          es.close();
+          sseRef.current = null;
+          toast.error(`Generation failed: ${data.message}`);
+        }
+      } catch (e) {
+        console.error('SSE parse error:', e);
+      }
+    };
+
+    es.onerror = () => {
+      setStreamError('Connection lost. Please try again.');
+      setIsStreaming(false);
+      es.close();
+      sseRef.current = null;
+    };
+  }, [proposalId]);
+
+  // Cleanup SSE on unmount
+  useEffect(() => {
+    return () => {
+      if (sseRef.current) {
+        sseRef.current.close();
+      }
+    };
+  }, []);
+
   const { data: proposal, isLoading, refetch } = trpc.proposals.get.useQuery({ id: proposalId });
+  // Keep refetchRef in sync so startStreamGeneration can call it
+  refetchRef.current = refetch;
   const { data: slidesData, isLoading: slidesLoading } = trpc.proposals.getSlideHtml.useQuery(
     { proposalId },
-    { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') }
+    { enabled: !!proposal && (proposal.status === 'generated' || proposal.status === 'exported') && !isStreaming && streamSlides.length === 0 }
   );
   
   const calculateMutation = trpc.proposals.calculate.useMutation({
@@ -715,7 +805,10 @@ export default function ProposalDetailPage() {
   
   const customerName = (proposal as any).customer?.fullName || 'Customer';
   const customerAddress = (proposal as any).customer?.address || '';
-  const slides = slidesData?.slides || [];
+  // Use streaming slides if available (during or after stream), otherwise fall back to DB slides
+  const slides = streamSlides.length > 0
+    ? streamSlides.map(s => ({ id: s.slideId, type: s.slideType, title: s.title, html: s.html }))
+    : (slidesData?.slides || []);
   const hasSlides = slides.length > 0;
   
   return (
@@ -824,12 +917,12 @@ export default function ProposalDetailPage() {
                       Recalculate
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => generateMutation.mutate({ proposalId })}
-                      disabled={generateMutation.isPending}
+                      onClick={startStreamGeneration}
+                      disabled={isStreaming}
                       className="text-[#4A6B8A] hover:text-white focus:text-white cursor-pointer"
                     >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Regenerate Slides
+                      <Zap className="mr-2 h-4 w-4" />
+                      Regenerate Slides (AI)
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -838,39 +931,138 @@ export default function ProposalDetailPage() {
           </div>
         </div>
         
-        {/* If no slides yet, show generation actions */}
-        {!hasSlides && (
+        {/* ── STREAMING: Live generation banner ── */}
+        {isStreaming && (
+          <div className="rounded-xl border border-[#00EAD3]/30 bg-[#00EAD3]/5 p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-[#00EAD3] animate-pulse" />
+                <span
+                  className="text-sm font-semibold text-[#00EAD3] uppercase tracking-widest"
+                  style={{ fontFamily: "'Next Sphere', sans-serif" }}
+                >
+                  Generating Slides with AI
+                </span>
+              </div>
+              <div className="ml-auto text-sm text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                {streamSlides.length} / {streamTotal || '?'} slides
+              </div>
+            </div>
+            {/* Progress bar */}
+            <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 mb-4">
+              <div
+                className="bg-[#00EAD3] h-1.5 rounded-full transition-all duration-500"
+                style={{ width: streamTotal > 0 ? `${(streamSlides.length / streamTotal) * 100}%` : '0%' }}
+              />
+            </div>
+            {/* Current slide being generated */}
+            {streamCurrentTitle && (
+              <div className="flex items-center gap-2 text-sm">
+                {streamCurrentStatus === 'generating' ? (
+                  <Loader2 className="h-3.5 w-3.5 text-[#00EAD3] animate-spin flex-shrink-0" />
+                ) : (
+                  <CheckCircle className="h-3.5 w-3.5 text-[#46B446] flex-shrink-0" />
+                )}
+                <span className="text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                  {streamCurrentStatus === 'generating' ? 'Generating' : 'Completed'}:{' '}
+                  <span className="text-white">{streamCurrentTitle}</span>
+                </span>
+              </div>
+            )}
+            {/* Slide list progress */}
+            {streamTotal > 0 && (
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {Array.from({ length: streamTotal }).map((_, i) => {
+                  const done = i < streamSlides.length;
+                  const active = i === streamSlides.length && streamCurrentStatus === 'generating';
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs border transition-all duration-300 ${
+                        done
+                          ? 'border-[#46B446]/40 bg-[#46B446]/10 text-[#46B446]'
+                          : active
+                          ? 'border-[#00EAD3]/40 bg-[#00EAD3]/10 text-[#00EAD3]'
+                          : 'border-[#1a1a1a] bg-[#0a0a0a] text-[#4A6B8A]/40'
+                      }`}
+                      style={{ fontFamily: "'General Sans', sans-serif" }}
+                    >
+                      {done ? (
+                        <CheckCircle className="h-3 w-3 flex-shrink-0" />
+                      ) : active ? (
+                        <Loader2 className="h-3 w-3 flex-shrink-0 animate-spin" />
+                      ) : (
+                        <div className="h-3 w-3 rounded-full border border-current flex-shrink-0" />
+                      )}
+                      <span className="truncate">
+                        {done && streamSlides[i]
+                          ? streamSlides[i].title
+                          : active
+                          ? streamCurrentTitle
+                          : `Slide ${i + 1}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── STREAM ERROR ── */}
+        {streamError && !isStreaming && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-5 text-center">
+            <p className="text-red-400 text-sm mb-3" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              {streamError}
+            </p>
+            <Button
+              onClick={startStreamGeneration}
+              className="bg-[#46B446] text-white hover:bg-[#46B446]/90 font-semibold"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {/* ── NO SLIDES: show generation CTA ── */}
+        {!hasSlides && !isStreaming && !streamError && (
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-8 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-[#4A6B8A]/50" />
-            <h3 
+            <div className="p-4 rounded-full bg-[#00EAD3]/10 border border-[#00EAD3]/20 w-fit mx-auto mb-4">
+              <Zap className="h-10 w-10 text-[#00EAD3]" />
+            </div>
+            <h3
               className="text-xl text-white mb-2 uppercase"
               style={{ fontFamily: "'Next Sphere', sans-serif" }}
             >
               No Slides Generated Yet
             </h3>
-            <p className="text-[#4A6B8A] mb-6" style={{ fontFamily: "'General Sans', sans-serif" }}>
-              Click below to automatically calculate and generate the bill analysis slides.
+            <p className="text-[#4A6B8A] mb-6 max-w-md mx-auto" style={{ fontFamily: "'General Sans', sans-serif" }}>
+              Generate a full AI-powered bill analysis proposal. Each slide is crafted with personalised
+              narrative and financial insights — takes approximately 5–8 minutes.
             </p>
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                onClick={() => generateMutation.mutate({ proposalId })}
-                disabled={generateMutation.isPending || calculateMutation.isPending}
-                className="bg-[#46B446] text-white hover:bg-[#46B446]/90 font-semibold"
-              >
-                {(generateMutation.isPending || calculateMutation.isPending) ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Generate Slides
-              </Button>
-            </div>
+            <Button
+              onClick={startStreamGeneration}
+              className="bg-[#00EAD3] text-[#0a0a0a] hover:bg-[#00EAD3]/90 font-bold px-8"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Generate AI Proposal
+            </Button>
           </div>
         )}
-        
-        {/* Slide Preview - Clean scaled slide cards without scrollbars */}
+
+        {/* ── SLIDE PREVIEW: streamed or DB slides ── */}
         {hasSlides && (
           <div className="space-y-4">
+            {/* Complete banner */}
+            {streamComplete && (
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#46B446]/30 bg-[#46B446]/5">
+                <CheckCircle className="h-5 w-5 text-[#46B446] flex-shrink-0" />
+                <span className="text-sm text-[#46B446] font-semibold" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                  {slides.length} slides generated successfully
+                </span>
+              </div>
+            )}
             {slides.map((slide: any, index: number) => (
               <SlidePreview
                 key={slide.id || index}
@@ -881,9 +1073,9 @@ export default function ProposalDetailPage() {
             ))}
           </div>
         )}
-        
-        {/* Loading state for slides */}
-        {slidesLoading && (
+
+        {/* Loading state for slides from DB */}
+        {slidesLoading && !isStreaming && (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-[#46B446]" />
             <span className="ml-3 text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>

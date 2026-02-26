@@ -7,6 +7,7 @@ import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerPdfUploadRoute } from "server/pdfUpload";
+import { registerSlideStreamRoute } from "server/slideStreamGenerator";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -52,6 +53,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // PDF upload route
   registerPdfUploadRoute(app);
+  // Real-time slide stream SSE route
+  registerSlideStreamRoute(app);
   // tRPC API
   app.use(
     "/api/trpc",

@@ -366,6 +366,7 @@ export interface ProposalCalculations {
   
   // ========== TOTAL SUMMARY ==========
   totalAnnualSavings: number;
+  electricitySavings?: number;
   totalInvestment: number;
   totalRebates: number;
   netInvestment: number;
