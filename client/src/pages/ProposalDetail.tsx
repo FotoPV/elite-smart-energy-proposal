@@ -329,121 +329,9 @@ function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { pro
   );
 }
 
-// Update & Publish - recalculates, regenerates, then downloads
-function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { proposalId: number; customerName: string; onComplete: () => void }) {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState('');
-  const [progress, setProgress] = useState(0);
-  
-  const calculateMutation = trpc.proposals.calculate.useMutation();
-  const generateMutation = trpc.proposals.generate.useMutation();
-  const utils = trpc.useUtils();
-  
-  const handleUpdateAndPublish = async () => {
-    setIsProcessing(true);
-    setProgress(0);
-    try {
-      setCurrentStep('Recalculating...');
-      setProgress(10);
-      await calculateMutation.mutateAsync({ proposalId });
-      setProgress(20);
-      
-      setCurrentStep('Generating slides...');
-      setProgress(30);
-      await generateMutation.mutateAsync({ proposalId });
-      setProgress(40);
-      
-      setCurrentStep('Fetching slide data...');
-      setProgress(45);
-      const slidesResult = await utils.proposals.getSlideHtml.fetch({ proposalId });
-      
-      if (!slidesResult?.slides || slidesResult.slides.length === 0) {
-        throw new Error('No slides generated');
-      }
-      setProgress(50);
-      
-      setCurrentStep('Creating PDF...');
-      const slideHtmlArray = slidesResult.slides.map((s: any) => s.html);
-      
-      const pdfBlob = await generatePdfClientSide(slideHtmlArray, (step, pct) => {
-        setCurrentStep(step);
-        setProgress(50 + Math.round(pct * 0.45));
-      });
-      
-      setProgress(95);
-      setCurrentStep('Uploading PDF...');
-      const fileName = `Bill_Analysis_${customerName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-      
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onloadend = () => {
-          const base64data = (reader.result as string).split(',')[1];
-          resolve(base64data);
-        };
-        reader.readAsDataURL(pdfBlob);
-      });
-      
-      const uploadResponse = await fetch('/api/upload-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pdfData: base64,
-          fileName,
-          proposalId: proposalId.toString(),
-        }),
-      });
-      
-      // Always download
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      setProgress(100);
-      toast.success('Proposal updated and PDF generated!');
-      onComplete();
-    } catch (error: any) {
-      toast.error(`Failed: ${error.message}`);
-    } finally {
-      setIsProcessing(false);
-      setCurrentStep('');
-      setProgress(0);
-    }
-  };
-  
-  return (
-    <div className="space-y-2">
-      <Button 
-        onClick={handleUpdateAndPublish}
-        disabled={isProcessing}
-        variant="outline"
-        className="border-[#46B446]/30 text-[#46B446] hover:bg-[#46B446]/10 hover:border-[#46B446] font-semibold"
-      >
-        {isProcessing ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {currentStep} ({progress}%)
-          </>
-        ) : (
-          <>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Update & Publish
-          </>
-        )}
-      </Button>
-      {isProcessing && (
-        <div className="space-y-1">
-          <Progress value={progress} className="h-1.5" />
-          <p className="text-xs text-[#4A6B8A] text-center">{progress}% Complete</p>
-        </div>
-      )}
-    </div>
-  );
-}
+// UpdateAndPublishButton is now integrated directly into ProposalDetailPage
+// (kept as a no-op export to avoid import errors from other files if any)
+function _UpdateAndPublishButton_unused() { return null; }
 
 
 // Export dropdown with PDF, PPTX, and HTML PDF options
@@ -775,7 +663,22 @@ export default function ProposalDetailPage() {
       toast.error(`Generation failed: ${error.message}`);
     }
   });
-  
+
+  const [isRecalculating, setIsRecalculating] = useState(false);
+
+  const handleUpdateAndPublish = useCallback(async () => {
+    setIsRecalculating(true);
+    try {
+      await calculateMutation.mutateAsync({ proposalId });
+    } catch (e: any) {
+      toast.error(`Recalculation failed: ${e.message}`);
+      setIsRecalculating(false);
+      return;
+    }
+    setIsRecalculating(false);
+    startStreamGeneration();
+  }, [proposalId, calculateMutation, startStreamGeneration]);
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -890,11 +793,34 @@ export default function ProposalDetailPage() {
                 </Button>
               )}
               
+              {/* Update & Publish — always visible, recalculates then streams new slides */}
+              <Button
+                onClick={handleUpdateAndPublish}
+                disabled={isRecalculating || isStreaming}
+                className="bg-[#00EAD3] text-[#0a0a0a] hover:bg-[#00EAD3]/90 font-semibold"
+              >
+                {isRecalculating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Recalculating...
+                  </>
+                ) : isStreaming ? (
+                  <>
+                    <Zap className="mr-2 h-4 w-4 animate-pulse" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Update &amp; Publish
+                  </>
+                )}
+              </Button>
+
               {/* Export dropdown - PDF, PPTX, HTML PDF */}
               {hasSlides && (
                 <ExportDropdown proposalId={proposalId} customerName={customerName} />
               )}
-
               {/* More options dropdown for admin actions */}
               {hasSlides && (
                 <DropdownMenu>
