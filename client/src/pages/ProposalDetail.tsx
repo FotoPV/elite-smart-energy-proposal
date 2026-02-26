@@ -729,16 +729,16 @@ export default function ProposalDetailPage() {
           </Button>
         </div>
         
-        {/* Page Title - BILL ANALYSIS in Montserrat */}
+        {/* Page Title - PROPOSAL in Montserrat */}
         <div>
           <h1 
             className="text-4xl md:text-5xl tracking-tight text-white uppercase"
             style={{ fontFamily: "'Next Sphere', sans-serif" }}
           >
-            Bill Analysis
+            Proposal
           </h1>
           <p className="text-[#4A6B8A] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
-            View and download your electricity bill analysis
+            View and publish your solar &amp; battery proposal
           </p>
         </div>
         
@@ -754,10 +754,10 @@ export default function ProposalDetailPage() {
                   className="text-lg text-white uppercase tracking-wide"
                   style={{ fontFamily: "'Next Sphere', sans-serif" }}
                 >
-                  Bill Analysis
+                  Proposal Slides
                 </h2>
                 <p className="text-sm text-[#4A6B8A]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-                  Bill Analysis.pdf
+                  {customerName} — {slides.length > 0 ? `${slides.length} slides` : 'Not yet generated'}
                 </p>
               </div>
             </div>
@@ -774,7 +774,7 @@ export default function ProposalDetailPage() {
                       win.document.write(`
                         <!DOCTYPE html>
                         <html>
-                        <head><title>Bill Analysis - ${customerName}</title></head>
+                        <head><title>Proposal - ${customerName}</title></head>
                         <body style="margin:0;background:#000;display:flex;flex-direction:column;align-items:center;">
                           ${slides.map((s: any, i: number) => `
                             <div style="width:1120px;max-width:100%;margin:0 auto;${i > 0 ? 'margin-top:4px;' : ''}">
@@ -964,7 +964,7 @@ export default function ProposalDetailPage() {
               No Slides Generated Yet
             </h3>
             <p className="text-[#4A6B8A] mb-6 max-w-md mx-auto" style={{ fontFamily: "'General Sans', sans-serif" }}>
-              Generate a full AI-powered bill analysis proposal. Each slide is crafted with personalised
+              Generate a full AI-powered solar &amp; battery proposal. Each slide is crafted with personalised
               narrative and financial insights — takes approximately 5–8 minutes.
             </p>
             <Button

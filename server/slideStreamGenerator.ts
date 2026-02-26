@@ -501,9 +501,13 @@ export function registerSlideStreamRoute(app: Express): void {
           "conclusion",
         ]);
 
+         // Minimum 10 seconds per slide for a polished real-time experience
+        const MIN_SLIDE_MS = 10_000;
+        const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
         for (let i = 0; i < slides.length; i++) {
           const slide = slides[i];
-
+          const slideStart = Date.now();
           // Emit "generating" progress event
           sendEvent(res, {
             type: "progress",
@@ -516,7 +520,7 @@ export function registerSlideStreamRoute(app: Express): void {
           let html = "";
 
           if (narrativeSlideTypes.has(slide.type)) {
-            // Generate LLM narrative first (15-25s per slide)
+            // Generate LLM narrative first (10-20s per slide)
             const narrative = await generateNarrative(
               slide.type,
               slide.title,
@@ -571,6 +575,11 @@ export function registerSlideStreamRoute(app: Express): void {
             html,
           });
 
+          // Enforce minimum 10-second delay per slide
+          const elapsed = Date.now() - slideStart;
+          if (elapsed < MIN_SLIDE_MS) {
+            await sleep(MIN_SLIDE_MS - elapsed);
+          }
           // Emit "done" progress event
           sendEvent(res, {
             type: "progress",
