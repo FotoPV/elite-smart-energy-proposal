@@ -1355,3 +1355,9 @@
 - [x] David's stored calculations are stale — proposal needs regeneration to pick up new formula
 - [x] 145 tests passing, 0 TypeScript errors
 - [ ] Regenerate David Theochari's proposal to verify final slide shows ~$2,291 electricity savings
+
+## Bulk Proposal Regeneration & Verification (Feb 27)
+- [ ] Verify David Theochari proposal — check final slide shows ~$2,291 electricity savings
+- [ ] Verify Anastasios Adgemis proposal — check VPP slide displays correctly
+- [ ] Bulk regenerate all 28 customer proposals to apply: VPP engine, battery savings fix, ESES branding
+- [ ] Confirm all proposals regenerated successfully with no errors
