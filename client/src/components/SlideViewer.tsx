@@ -18,8 +18,8 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96 bg-black/50 rounded-lg">
-        <Loader2 className="h-8 w-8 animate-spin text-[#00EAD3]" />
+      <div className="flex items-center justify-center h-96 bg-background/50 rounded-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-[#46B446]" />
         <span className="ml-2 text-white">Loading slides...</span>
       </div>
     );
@@ -27,7 +27,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
   
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96 bg-black/50 rounded-lg border border-red-500/50">
+      <div className="flex items-center justify-center h-96 bg-background/50 rounded-lg border border-red-500/50">
         <p className="text-red-400">{error.message}</p>
       </div>
     );
@@ -35,7 +35,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
   
   if (!data || !data.slides || data.slides.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96 bg-black/50 rounded-lg border border-gray-700">
+      <div className="flex items-center justify-center h-96 bg-background/50 rounded-lg border border-gray-700">
         <p className="text-gray-400">No slides generated yet. Run calculations first.</p>
       </div>
     );
@@ -55,7 +55,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
   return (
     <div className="space-y-4">
       {/* Slide Preview */}
-      <div className="relative bg-black rounded-lg overflow-hidden border border-gray-800">
+      <div className="relative bg-background rounded-lg overflow-hidden border border-gray-800">
         {/* Slide Content */}
         <div 
           className="aspect-video w-full"
@@ -81,7 +81,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
             size="icon"
             onClick={goToPrevious}
             disabled={currentSlide === 0}
-            className="pointer-events-auto bg-black/80 border-gray-700 hover:bg-black hover:border-[#00EAD3]"
+            className="pointer-events-auto bg-background/80 border-gray-700 hover:bg-background hover:border-[#46B446]"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
@@ -90,7 +90,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
             size="icon"
             onClick={goToNext}
             disabled={currentSlide === slides.length - 1}
-            className="pointer-events-auto bg-black/80 border-gray-700 hover:bg-black hover:border-[#00EAD3]"
+            className="pointer-events-auto bg-background/80 border-gray-700 hover:bg-background hover:border-[#46B446]"
           >
             <ChevronRight className="h-6 w-6" />
           </Button>
@@ -102,12 +102,12 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
             <Button
               variant="outline"
               size="icon"
-              className="absolute top-4 right-4 bg-black/80 border-gray-700 hover:bg-black hover:border-[#00EAD3]"
+              className="absolute top-4 right-4 bg-background/80 border-gray-700 hover:bg-background hover:border-[#46B446]"
             >
               <Maximize2 className="h-4 w-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black border-gray-800">
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background border-gray-800">
             <iframe
               srcDoc={currentSlideData.html}
               className="w-full h-[90vh] border-0"
@@ -122,7 +122,7 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
         <div>
           <h3 className="text-lg font-semibold text-white">{currentSlideData.title}</h3>
           {(currentSlideData as any).subtitle && (
-            <p className="text-sm text-[#00EAD3]">{(currentSlideData as any).subtitle}</p>
+            <p className="text-sm text-[#46B446]">{(currentSlideData as any).subtitle}</p>
           )}
         </div>
         <div className="flex items-center gap-4">
@@ -140,11 +140,11 @@ export function SlideViewer({ proposalId }: SlideViewerProps) {
             onClick={() => setCurrentSlide(index)}
             className={`flex-shrink-0 w-32 h-20 rounded border-2 overflow-hidden transition-all ${
               index === currentSlide
-                ? 'border-[#00EAD3] ring-2 ring-[#00EAD3]/30'
+                ? 'border-[#46B446] ring-2 ring-[#46B446]/30'
                 : 'border-gray-700 hover:border-gray-500'
             }`}
           >
-            <div className="w-full h-full bg-black flex items-center justify-center">
+            <div className="w-full h-full bg-background flex items-center justify-center">
               <span className="text-xs text-gray-400 text-center px-1">{slide.title}</span>
             </div>
           </button>

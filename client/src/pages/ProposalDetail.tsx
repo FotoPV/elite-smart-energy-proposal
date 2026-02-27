@@ -116,13 +116,13 @@ async function generatePdfClientSide(
         (url: string) => {
           // Font files (any extension)
           if (url.match(/\.(ttf|otf|woff2?|eot)/i)) {
-            if (/nextsphere|jmxTHIS|BoSrlwm|VKaRCb/i.test(url)) return '/fonts/NextSphere-ExtraBold.ttf';
-            if (/generalsans|JAbOMT|KuYDlP|cDkISn|CbDNMz/i.test(url)) return '/fonts/GeneralSans-Regular.otf';
-            if (/urbanist.*italic|CVAUXs|yTZAvA|SgyKyT|ekiXxR/i.test(url)) return '/fonts/Urbanist-SemiBoldItalic.ttf';
-            if (/urbanist|gqxvhf|qDbgEG|KovhlD|OTIdJM/i.test(url)) return '/fonts/Urbanist-SemiBold.ttf';
-            // Fallback: any unknown .otf is GeneralSans, any unknown .ttf is Urbanist
-            if (url.endsWith('.otf')) return '/fonts/GeneralSans-Regular.otf';
-            return '/fonts/Urbanist-SemiBold.ttf';
+            if (/nextsphere|jmxTHIS|BoSrlwm|VKaRCb/i.test(url)) return '/fonts/Montserrat-ExtraBold.ttf';
+            if (/generalsans|JAbOMT|KuYDlP|cDkISn|CbDNMz/i.test(url)) return '/fonts/Open Sans-Regular.otf';
+            if (/urbanist.*italic|CVAUXs|yTZAvA|SgyKyT|ekiXxR/i.test(url)) return '/fonts/Montserrat-SemiBoldItalic.ttf';
+            if (/urbanist|gqxvhf|qDbgEG|KovhlD|OTIdJM/i.test(url)) return '/fonts/Montserrat-SemiBold.ttf';
+            // Fallback: any unknown .otf is Open Sans, any unknown .ttf is Montserrat
+            if (url.endsWith('.otf')) return '/fonts/Open Sans-Regular.otf';
+            return '/fonts/Montserrat-SemiBold.ttf';
           }
           // Image files — only replace known branding assets, preserve customer photos
           if (url.match(/\.(png|jpg|jpeg|webp|svg)/i)) {
@@ -201,7 +201,7 @@ async function generatePdfClientSide(
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#000000',
+        backgroundColor: '#1B3A5C',
         width: slideW,
         height: slideH,
         windowWidth: slideW,
@@ -431,7 +431,7 @@ function DownloadPDFButton({ proposalId, customerName, size = 'default' }: { pro
       <Button 
         onClick={handleDownload}
         disabled={isGenerating}
-        className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+        className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
         size={size}
       >
         {isGenerating ? (
@@ -546,7 +546,7 @@ function UpdateAndPublishButton({ proposalId, customerName, onComplete }: { prop
         onClick={handleUpdateAndPublish}
         disabled={isProcessing}
         variant="outline"
-        className="border-[#00EAD3]/30 text-[#00EAD3] hover:bg-[#00EAD3]/10 hover:border-[#00EAD3] font-semibold"
+        className="border-[#46B446]/30 text-[#46B446] hover:bg-[#46B446]/10 hover:border-[#46B446] font-semibold"
       >
         {isProcessing ? (
           <>
@@ -747,7 +747,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
     return (
       <div className="flex items-center gap-3">
         <div className="space-y-1.5 min-w-[180px]">
-          <Button disabled className="bg-[#00EAD3] text-black font-semibold w-full">
+          <Button disabled className="bg-[#46B446] text-black font-semibold w-full">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {currentStep || 'Exporting...'}
           </Button>
@@ -760,7 +760,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold">
+        <Button className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold">
           <Download className="mr-2 h-4 w-4" />
           Export
           <ChevronDown className="ml-2 h-3 w-3" />
@@ -771,9 +771,9 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handleExportNativePdf}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <FileDown className="mr-3 h-4 w-4 text-[#f36710]" />
+          <FileDown className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PDF</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PDF</div>
             <div className="text-[10px] text-[#808285]">Full proposal with all slides</div>
           </div>
         </DropdownMenuItem>
@@ -781,9 +781,9 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handleExportPptx}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>PowerPoint</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>PowerPoint</div>
             <div className="text-[10px] text-[#808285]">Editable .pptx file</div>
           </div>
         </DropdownMenuItem>
@@ -793,7 +793,7 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
         >
           <FileText className="mr-3 h-4 w-4 text-[#808285]" />
           <div>
-            <div className="font-medium" style={{ fontFamily: "'Urbanist', sans-serif" }}>HTML PDF</div>
+            <div className="font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>HTML PDF</div>
             <div className="text-[10px] text-[#808285]">Browser-rendered slides</div>
           </div>
         </DropdownMenuItem>
@@ -802,9 +802,9 @@ function ExportDropdown({ proposalId, customerName }: { proposalId: number; cust
           onClick={handlePrepareSlides}
           className="text-white hover:text-white focus:text-white cursor-pointer py-2.5"
         >
-          <Presentation className="mr-3 h-4 w-4 text-[#00EAD3]" />
+          <Presentation className="mr-3 h-4 w-4 text-[#46B446]" />
           <div>
-            <div className="font-medium text-[#00EAD3]" style={{ fontFamily: "'Urbanist', sans-serif" }}>Manus Slides</div>
+            <div className="font-medium text-[#46B446]" style={{ fontFamily: "'Montserrat', sans-serif" }}>Manus Slides</div>
             <div className="text-[10px] text-[#808285]">Pixel-perfect image slides</div>
           </div>
         </DropdownMenuItem>
@@ -851,10 +851,10 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
       <button
         onClick={() => setShowModal(true)}
         disabled={isRegenerating}
-        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#111] p-4 transition-all hover:border-[#f36710] hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50"
+        className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#111] p-4 transition-all hover:border-[#46B446] hover:bg-[#1a1a1a] cursor-pointer disabled:opacity-50"
       >
-        <RefreshCw className={`h-5 w-5 text-[#f36710] ${isRegenerating ? 'animate-spin' : ''}`} />
-        <span className="text-sm font-medium text-white" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+        <RefreshCw className={`h-5 w-5 text-[#46B446] ${isRegenerating ? 'animate-spin' : ''}`} />
+        <span className="text-sm font-medium text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>
           {isRegenerating ? 'Regenerating...' : 'Regenerate'}
         </span>
         <span className="text-[10px] text-[#808285]">Recalculate & rebuild</span>
@@ -876,12 +876,12 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
 
           {/* Persistent Notes Summary */}
           {proposalNotes && proposalNotes.trim() && (
-            <div className="rounded-lg border border-[#00EAD3]/20 bg-[#00EAD3]/5 p-4">
+            <div className="rounded-lg border border-[#46B446]/20 bg-[#46B446]/5 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <StickyNote className="h-4 w-4 text-[#00EAD3]" />
+                <StickyNote className="h-4 w-4 text-[#46B446]" />
                 <span
-                  className="text-xs uppercase tracking-wider text-[#00EAD3]"
-                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  className="text-xs uppercase tracking-wider text-[#46B446]"
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
                 >
                   Saved Proposal Notes (auto-included)
                 </span>
@@ -899,7 +899,7 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
                 <Camera className="h-4 w-4 text-[#808285]" />
                 <span
                   className="text-xs uppercase tracking-wider text-[#808285]"
-                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
                 >
                   Site Photos ({sitePhotos.length})
                 </span>
@@ -912,8 +912,8 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
                       alt={photo.documentType.replace(/_/g, ' ')}
                       className="h-16 w-16 rounded-md object-cover border border-[#2a2a2a]"
                     />
-                    <div className="absolute inset-0 rounded-md bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-[8px] text-white text-center px-1 leading-tight" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                    <div className="absolute inset-0 rounded-md bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-[8px] text-white text-center px-1 leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                         {photo.documentType.replace(/_/g, ' ').replace(/photo|pdf/gi, '').trim()}
                       </span>
                     </div>
@@ -929,10 +929,10 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
           {/* One-off Prompt */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <MessageSquarePlus className="h-4 w-4 text-[#f36710]" />
+              <MessageSquarePlus className="h-4 w-4 text-[#46B446]" />
               <label
-                className="text-xs uppercase tracking-wider text-[#f36710]"
-                style={{ fontFamily: "'Urbanist', sans-serif" }}
+                className="text-xs uppercase tracking-wider text-[#46B446]"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
                 Additional Instructions (one-off)
               </label>
@@ -941,7 +941,7 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
               value={oneOffPrompt}
               onChange={(e) => setOneOffPrompt(e.target.value)}
               placeholder="e.g. Look at switchboard photos and identify additional works required. Emphasise VPP income in executive summary. Focus on AC coupling approach..."
-              className="w-full h-28 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/50 resize-none focus:border-[#f36710] focus:outline-none"
+              className="w-full h-28 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/50 resize-none focus:border-[#46B446] focus:outline-none"
               style={{ fontFamily: "'General Sans', sans-serif" }}
             />
             <p className="text-[10px] text-[#808285] mt-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
@@ -960,7 +960,7 @@ function RegenerateButton({ proposalId, proposalNotes, customerId }: { proposalI
             <Button
               onClick={handleRegenerate}
               disabled={isRegenerating}
-              className="bg-[#f36710] hover:bg-[#f36710]/80 text-white"
+              className="bg-[#46B446] hover:bg-[#46B446]/80 text-white"
             >
               {isRegenerating ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Regenerating...</>
@@ -995,8 +995,8 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
   const proxyImage = useImageProxy();
   
   const colorMap = {
-    aqua: { bg: 'bg-[#00EAD3]', hover: 'hover:bg-[#00EAD3]/90', text: 'text-black', border: 'border-[#00EAD3]/30', iconColor: 'text-[#00EAD3]' },
-    orange: { bg: 'bg-[#f36710]', hover: 'hover:bg-[#f36710]/90', text: 'text-white', border: 'border-[#f36710]/30', iconColor: 'text-[#f36710]' },
+    aqua: { bg: 'bg-[#46B446]', hover: 'hover:bg-[#46B446]/90', text: 'text-black', border: 'border-[#46B446]/30', iconColor: 'text-[#46B446]' },
+    orange: { bg: 'bg-[#46B446]', hover: 'hover:bg-[#46B446]/90', text: 'text-white', border: 'border-[#46B446]/30', iconColor: 'text-[#46B446]' },
     grey: { bg: 'bg-[#808285]/20', hover: 'hover:bg-[#808285]/30', text: 'text-white', border: 'border-[#808285]/30', iconColor: 'text-[#808285]' },
   };
   const c = colorMap[color];
@@ -1110,7 +1110,7 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
           <div className={`${c.iconColor}`}>{icon}</div>
           <span 
             className="text-sm text-white font-semibold uppercase tracking-wide"
-            style={{ fontFamily: "'Urbanist', sans-serif" }}
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
             {label}
           </span>
@@ -1126,7 +1126,7 @@ function ExportButton({ type, label, description, icon, color, proposalId, custo
 /**
  * Manual Cable Run Distance Input.
  * Allows installer to enter cable run distance and phase type when no photo analysis is available,
- * or to override the AI-extracted distance. Auto-calculates cost using Lightning Energy T&Cs:
+ * or to override the AI-extracted distance. Auto-calculates cost using Elite Smart Energy T&Cs:
  * - Single phase: first 10m free, then $33/m
  * - Three phase: first 5m free, then $55/m
  */
@@ -1194,7 +1194,7 @@ function CableRunInput({ proposalId, proposal }: { proposalId: number; proposal:
           <Ruler className="h-4 w-4 text-[#F5A623]" />
           <h3
             className="text-sm uppercase tracking-wider text-[#F5A623]"
-            style={{ fontFamily: "'Urbanist', sans-serif" }}
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
             Cable Run Distance
           </h3>
@@ -1208,7 +1208,7 @@ function CableRunInput({ proposalId, proposal }: { proposalId: number; proposal:
       </div>
       <div className="flex items-center gap-3">
         <div className="flex-1">
-          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Urbanist', sans-serif" }}>Distance (metres)</label>
+          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Montserrat', sans-serif" }}>Distance (metres)</label>
           <input
             type="number"
             step="0.1"
@@ -1221,7 +1221,7 @@ function CableRunInput({ proposalId, proposal }: { proposalId: number; proposal:
           />
         </div>
         <div className="w-40">
-          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Urbanist', sans-serif" }}>Phase Type</label>
+          <label className="text-[10px] uppercase tracking-wider text-[#808285] mb-1 block" style={{ fontFamily: "'Montserrat', sans-serif" }}>Phase Type</label>
           <select
             value={phase}
             onChange={(e) => setPhase(e.target.value as 'single' | 'three')}
@@ -1254,7 +1254,7 @@ function CableRunInput({ proposalId, proposal }: { proposalId: number; proposal:
         </div>
       )}
       <p className="text-[10px] text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
-        Enter the measured cable run distance. Cost is auto-calculated per Lightning Energy T&Cs. This overrides any AI-extracted distance from cable run photos. Clear the field and save to remove.
+        Enter the measured cable run distance. Cost is auto-calculated per Elite Smart Energy T&Cs. This overrides any AI-extracted distance from cable run photos. Clear the field and save to remove.
       </p>
     </div>
   );
@@ -1343,10 +1343,10 @@ function CostOverrideEditor({ proposalId }: { proposalId: number }) {
     <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-[#f36710]" />
+          <DollarSign className="h-4 w-4 text-[#46B446]" />
           <h3
-            className="text-sm uppercase tracking-wider text-[#f36710]"
-            style={{ fontFamily: "'Urbanist', sans-serif" }}
+            className="text-sm uppercase tracking-wider text-[#46B446]"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
           >
             Electrical Works Cost Estimates
           </h3>
@@ -1363,17 +1363,17 @@ function CostOverrideEditor({ proposalId }: { proposalId: number }) {
           const key = getKey(item.item);
           const isOverridden = !!localOverrides[key];
           const displayCost = localOverrides[key] || item.estimatedCost || '$TBC';
-          const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#00EAD3';
+          const priorityColor = item.priority === 'required' ? '#FF4444' : item.priority === 'recommended' ? '#F5A623' : '#46B446';
           return (
             <div key={key} className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-[#111] group transition-colors">
               <span
                 className="text-[10px] font-bold uppercase tracking-wider min-w-[80px]"
-                style={{ color: priorityColor, fontFamily: "'Urbanist', sans-serif" }}
+                style={{ color: priorityColor, fontFamily: "'Montserrat', sans-serif" }}
               >
                 {item.priority}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate" style={{ fontFamily: "'Urbanist', sans-serif" }}>{item.item}</p>
+                <p className="text-sm text-white truncate" style={{ fontFamily: "'Montserrat', sans-serif" }}>{item.item}</p>
               </div>
               {editingKey === key ? (
                 <div className="flex items-center gap-1">
@@ -1382,11 +1382,11 @@ function CostOverrideEditor({ proposalId }: { proposalId: number }) {
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSave(key); if (e.key === 'Escape') setEditingKey(null); }}
-                    className="w-28 px-2 py-1 text-sm bg-[#1a1a1a] border border-[#f36710]/50 rounded text-[#f36710] focus:outline-none focus:border-[#f36710]"
+                    className="w-28 px-2 py-1 text-sm bg-[#1a1a1a] border border-[#46B446]/50 rounded text-[#46B446] focus:outline-none focus:border-[#46B446]"
                     style={{ fontFamily: "'General Sans', sans-serif" }}
                     autoFocus
                   />
-                  <button onClick={() => handleSave(key)} className="p-1 text-[#00EAD3] hover:bg-[#00EAD3]/10 rounded"><Check className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => handleSave(key)} className="p-1 text-[#46B446] hover:bg-[#46B446]/10 rounded"><Check className="h-3.5 w-3.5" /></button>
                   <button onClick={() => setEditingKey(null)} className="p-1 text-[#808285] hover:bg-[#808285]/10 rounded"><X className="h-3.5 w-3.5" /></button>
                 </div>
               ) : (
@@ -1396,13 +1396,13 @@ function CostOverrideEditor({ proposalId }: { proposalId: number }) {
                     className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[#1a1a1a] transition-colors"
                   >
                     <span
-                      className={`text-sm font-semibold ${isOverridden ? 'text-[#f36710]' : 'text-[#F5A623]'}`}
+                      className={`text-sm font-semibold ${isOverridden ? 'text-[#46B446]' : 'text-[#F5A623]'}`}
                       style={{ fontFamily: "'General Sans', sans-serif" }}
                     >
                       {displayCost}
                     </span>
                     {isOverridden && (
-                      <span className="text-[8px] uppercase tracking-wider text-[#f36710] bg-[#f36710]/10 px-1.5 py-0.5 rounded" style={{ fontFamily: "'Urbanist', sans-serif" }}>Custom</span>
+                      <span className="text-[8px] uppercase tracking-wider text-[#46B446] bg-[#46B446]/10 px-1.5 py-0.5 rounded" style={{ fontFamily: "'Montserrat', sans-serif" }}>Custom</span>
                     )}
                     <Pencil className="h-3 w-3 text-[#808285] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
@@ -1422,9 +1422,9 @@ function CostOverrideEditor({ proposalId }: { proposalId: number }) {
         })}
       </div>
       {totalRange && (
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#00EAD3]/30">
-          <span className="text-xs uppercase tracking-wider text-[#00EAD3] font-bold" style={{ fontFamily: "'Urbanist', sans-serif" }}>Estimated Total</span>
-          <span className="text-lg font-bold text-[#00EAD3]" style={{ fontFamily: "'General Sans', sans-serif" }}>{totalRange}</span>
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#46B446]/30">
+          <span className="text-xs uppercase tracking-wider text-[#46B446] font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>Estimated Total</span>
+          <span className="text-lg font-bold text-[#46B446]" style={{ fontFamily: "'General Sans', sans-serif" }}>{totalRange}</span>
         </div>
       )}
       <p className="text-[10px] text-[#808285] mt-2" style={{ fontFamily: "'General Sans', sans-serif" }}>
@@ -1567,7 +1567,7 @@ export default function ProposalDetailPage() {
           </Button>
         </div>
         
-        {/* Page Title - BILL ANALYSIS in NextSphere */}
+        {/* Page Title - BILL ANALYSIS in Montserrat */}
         <div>
           <h1 
             className="text-4xl md:text-5xl tracking-tight text-white uppercase"
@@ -1584,8 +1584,8 @@ export default function ProposalDetailPage() {
         <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-[#00EAD3]/10 border border-[#00EAD3]/20">
-                <FileText className="h-6 w-6 text-[#00EAD3]" />
+              <div className="p-3 rounded-lg bg-[#46B446]/10 border border-[#46B446]/20">
+                <FileText className="h-6 w-6 text-[#46B446]" />
               </div>
               <div>
                 <h2 
@@ -1605,7 +1605,7 @@ export default function ProposalDetailPage() {
               {hasSlides && (
                 <Button
                   variant="ghost"
-                  className="text-[#00EAD3] hover:text-[#00EAD3] hover:bg-[#00EAD3]/10 font-semibold"
+                  className="text-[#46B446] hover:text-[#46B446] hover:bg-[#46B446]/10 font-semibold"
                   onClick={() => {
                     const win = window.open('', '_blank');
                     if (win && slides[0]) {
@@ -1668,10 +1668,10 @@ export default function ProposalDetailPage() {
         <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <StickyNote className="h-4 w-4 text-[#00EAD3]" />
+              <StickyNote className="h-4 w-4 text-[#46B446]" />
               <h3
-                className="text-sm uppercase tracking-wider text-[#00EAD3]"
-                style={{ fontFamily: "'Urbanist', sans-serif" }}
+                className="text-sm uppercase tracking-wider text-[#46B446]"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
                 Proposal Notes
               </h3>
@@ -1680,9 +1680,9 @@ export default function ProposalDetailPage() {
               {notesSaving ? (
                 <><Loader2 className="h-3 w-3 animate-spin text-[#808285]" /><span className="text-[#808285]">Saving...</span></>
               ) : notes !== ((proposal as any)?.proposalNotes || '') ? (
-                <><span className="h-1.5 w-1.5 rounded-full bg-[#f36710] inline-block" /><span className="text-[#f36710]">Unsaved changes</span></>
+                <><span className="h-1.5 w-1.5 rounded-full bg-[#46B446] inline-block" /><span className="text-[#46B446]">Unsaved changes</span></>
               ) : notes ? (
-                <><CheckCircle className="h-3 w-3 text-[#00EAD3]" /><span className="text-[#00EAD3]">Saved</span></>
+                <><CheckCircle className="h-3 w-3 text-[#46B446]" /><span className="text-[#46B446]">Saved</span></>
               ) : null}
             </span>
           </div>
@@ -1690,7 +1690,7 @@ export default function ProposalDetailPage() {
             value={notes}
             onChange={(e) => handleNotesChange(e.target.value)}
             placeholder="Add notes about this install... e.g. Switchboard needs upgrade, 3-phase system, competitor quoted $8,900 for 10kW, customer wants pool heat pump prioritised..."
-            className="w-full h-24 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/40 resize-none focus:border-[#00EAD3]/50 focus:outline-none"
+            className="w-full h-24 rounded-lg border border-[#2a2a2a] bg-[#111] p-3 text-sm text-white placeholder-[#808285]/40 resize-none focus:border-[#46B446]/50 focus:outline-none"
             style={{ fontFamily: "'General Sans', sans-serif" }}
           />
           <p className="text-[10px] text-[#808285] mt-1.5" style={{ fontFamily: "'General Sans', sans-serif" }}>
@@ -1708,10 +1708,10 @@ export default function ProposalDetailPage() {
         {sitePhotos.length > 0 && (
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Camera className="h-4 w-4 text-[#00EAD3]" />
+              <Camera className="h-4 w-4 text-[#46B446]" />
               <h3
-                className="text-sm uppercase tracking-wider text-[#00EAD3]"
-                style={{ fontFamily: "'Urbanist', sans-serif" }}
+                className="text-sm uppercase tracking-wider text-[#46B446]"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
                 Site Photos ({sitePhotos.length})
               </h3>
@@ -1726,7 +1726,7 @@ export default function ProposalDetailPage() {
                 return (
                   <div
                     key={photo.id || i}
-                    className="relative group rounded-lg overflow-hidden border border-[#2a2a2a] hover:border-[#00EAD3]/50 transition-colors"
+                    className="relative group rounded-lg overflow-hidden border border-[#2a2a2a] hover:border-[#46B446]/50 transition-colors"
                   >
                     <div
                       className="cursor-pointer"
@@ -1737,7 +1737,7 @@ export default function ProposalDetailPage() {
                         alt={typeLabel}
                         className="w-full h-28 object-cover"
                       />
-                      <div className="absolute inset-0 bg-[#00EAD3]/0 group-hover:bg-[#00EAD3]/10 transition-colors flex items-center justify-center pointer-events-none">
+                      <div className="absolute inset-0 bg-[#46B446]/0 group-hover:bg-[#46B446]/10 transition-colors flex items-center justify-center pointer-events-none">
                         <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
@@ -1753,17 +1753,17 @@ export default function ProposalDetailPage() {
                         }}
                         className="bg-transparent text-[10px] uppercase tracking-wide border-none outline-none cursor-pointer appearance-none pr-3"
                         style={{
-                          fontFamily: "'Urbanist', sans-serif",
-                          color: photo.documentType === 'switchboard_photo' ? '#00EAD3'
-                            : photo.documentType === 'meter_photo' ? '#f36710'
+                          fontFamily: "'Montserrat', sans-serif",
+                          color: photo.documentType === 'switchboard_photo' ? '#46B446'
+                            : photo.documentType === 'meter_photo' ? '#46B446'
                             : '#808285',
                           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23808285' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
                           backgroundRepeat: 'no-repeat',
                           backgroundPosition: 'right 0 center',
                         }}
                       >
-                        <option value="switchboard_photo" style={{ background: '#111', color: '#00EAD3' }}>SWITCHBOARD</option>
-                        <option value="meter_photo" style={{ background: '#111', color: '#f36710' }}>METER</option>
+                        <option value="switchboard_photo" style={{ background: '#111', color: '#46B446' }}>SWITCHBOARD</option>
+                        <option value="meter_photo" style={{ background: '#111', color: '#46B446' }}>METER</option>
                         <option value="roof_photo" style={{ background: '#111', color: '#808285' }}>ROOF</option>
                         <option value="property_photo" style={{ background: '#111', color: '#808285' }}>PROPERTY</option>
                         <option value="cable_run_photo" style={{ background: '#111', color: '#FFD700' }}>CABLE RUN</option>
@@ -1784,8 +1784,8 @@ export default function ProposalDetailPage() {
             <DialogContent className="max-w-4xl bg-[#0a0a0a] border-[#1a1a1a] p-2">
               <DialogHeader>
                 <DialogTitle
-                  className="text-sm uppercase tracking-wider text-[#00EAD3]"
-                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  className="text-sm uppercase tracking-wider text-[#46B446]"
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
                 >
                   {lightboxLabel}
                 </DialogTitle>
@@ -1880,7 +1880,7 @@ export default function ProposalDetailPage() {
               <Button
                 onClick={() => setShowLiveGeneration(true)}
                 disabled={calculateMutation.isPending}
-                className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+                className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Generate Slides
@@ -1906,14 +1906,14 @@ export default function ProposalDetailPage() {
         {/* Loading state for slides */}
         {slidesLoading && (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-[#00EAD3]" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#46B446]" />
             <span className="ml-3 text-[#808285]" style={{ fontFamily: "'General Sans', sans-serif" }}>Loading slides...</span>
           </div>
         )}
         
         {/* Footer */}
         <div className="text-center text-xs text-[#808285]/60 pt-4 border-t border-[#1a1a1a]" style={{ fontFamily: "'General Sans', sans-serif" }}>
-          COPYRIGHT Lightning Energy — Architect George Fotopoulos
+          © Elite Smart Energy Solutions
         </div>
       </div>
     </DashboardLayout>

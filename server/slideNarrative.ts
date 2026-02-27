@@ -13,7 +13,7 @@
 import { invokeLLM } from './_core/llm';
 import type { ProposalData } from './slideGenerator';
 
-const SYSTEM_PROMPT = `You are a senior energy consultant at Lightning Energy, Australia's premier solar and battery advisory firm. You write concise, authoritative analysis for high-net-worth residential customers considering solar + battery investments.
+const SYSTEM_PROMPT = `You are a senior energy consultant at Elite Smart Energy, Australia's premier solar and battery advisory firm. You write concise, authoritative analysis for high-net-worth residential customers considering solar + battery investments.
 
 WRITING STYLE:
 - Write ULTRA-CONCISE text — maximum 2 sentences per section
@@ -83,7 +83,7 @@ CO2 Reduction: ${data.co2ReductionTonnes.toFixed(1)} tonnes/year
 Has EV: ${data.hasEV}${data.hasEV ? ` (${data.evAnnualKm?.toLocaleString()} km/year, saves $${data.evAnnualSavings}/year)` : ''}
 Has Pool: ${data.hasPoolPump}${data.hasPoolPump ? ` (saves $${data.poolPumpSavings}/year)` : ''}
 Monthly Usage Data: ${data.monthlyUsageData?.map(m => `${m.month}: ${m.kwh}kWh`).join(', ') || 'Not available'}
-Existing Solar: ${data.existingSolar || 'none'}${data.proposalNotes ? `\n\n--- CONSULTANT NOTES ---\nThe following notes have been added by the Lightning Energy consultant. Incorporate these observations and requirements into your analysis where relevant:\n${data.proposalNotes}` : ''}${data.regeneratePrompt ? `\n\n--- SPECIAL INSTRUCTIONS ---\nThe consultant has provided the following specific instructions for this regeneration. Follow these closely:\n${data.regeneratePrompt}` : ''}${data.sitePhotos && data.sitePhotos.length > 0 ? `\n\n--- SITE PHOTOS ---\nThe following site photos have been uploaded for this customer:\n${data.sitePhotos.map(p => `- ${p.caption}: ${p.url}`).join('\n')}\nReference these photos in your analysis where relevant (e.g., switchboard condition, meter type, roof orientation).` : ''}`;
+Existing Solar: ${data.existingSolar || 'none'}${data.proposalNotes ? `\n\n--- CONSULTANT NOTES ---\nThe following notes have been added by the Elite Smart Energy consultant. Incorporate these observations and requirements into your analysis where relevant:\n${data.proposalNotes}` : ''}${data.regeneratePrompt ? `\n\n--- SPECIAL INSTRUCTIONS ---\nThe consultant has provided the following specific instructions for this regeneration. Follow these closely:\n${data.regeneratePrompt}` : ''}${data.sitePhotos && data.sitePhotos.length > 0 ? `\n\n--- SITE PHOTOS ---\nThe following site photos have been uploaded for this customer:\n${data.sitePhotos.map(p => `- ${p.caption}: ${p.url}`).join('\n')}\nReference these photos in your analysis where relevant (e.g., switchboard condition, meter type, roof orientation).` : ''}`;
 }
 
 // ============================================================
@@ -359,7 +359,7 @@ export async function narrativeSystemSpecs(data: ProposalData): Promise<string> 
 export async function narrativeWarrantyMaintenance(data: ProposalData): Promise<string> {
   const ctx = buildDataContext(data);
   return generateNarrative('Warranty & Maintenance', ctx,
-    `Write 1-2 sentences (under 40 words) on warranty: 25-year panel warranty, 10-year ${data.batteryBrand} battery warranty (6,000 cycles), 10-year inverter warranty. Minimal maintenance — annual cleaning and Lightning Energy monitoring included.`);
+    `Write 1-2 sentences (under 40 words) on warranty: 25-year panel warranty, 10-year ${data.batteryBrand} battery warranty (6,000 cycles), 10-year inverter warranty. Minimal maintenance — annual cleaning and Elite Smart Energy monitoring included.`);
 }
 
 // Export all narrative generators as a map for easy lookup

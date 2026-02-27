@@ -1,4 +1,4 @@
-// Lightning Energy PDF Generator
+// Elite Smart Energy PDF Generator
 // Generates native PDF with embedded brand fonts using PDFKit
 // Bypasses HTML entirely — pixel-perfect control
 
@@ -21,8 +21,8 @@ const CW = W - PAD.l - PAD.r; // Content width
 // Colors
 const C = {
   black: '#000000',
-  aqua: '#00EAD3',
-  orange: '#f36710',
+  aqua: '#46B446',
+  orange: '#46B446',
   white: '#FFFFFF',
   ash: '#808285',
   darkGrey: '#1a1a1a',
@@ -40,10 +40,10 @@ const FONT_CDN = {
 
 const FONT_DIR = path.join(__dirname, 'fonts');
 const FONTS = {
-  heading: path.join(FONT_DIR, 'NextSphere-ExtraBold.ttf'),
-  body: path.join(FONT_DIR, 'GeneralSans-Regular.otf'),
-  label: path.join(FONT_DIR, 'Urbanist-SemiBold.ttf'),
-  labelItalic: path.join(FONT_DIR, 'Urbanist-SemiBoldItalic.ttf'),
+  heading: path.join(FONT_DIR, 'Montserrat-ExtraBold.ttf'),
+  body: path.join(FONT_DIR, 'Open Sans-Regular.otf'),
+  label: path.join(FONT_DIR, 'Montserrat-SemiBold.ttf'),
+  labelItalic: path.join(FONT_DIR, 'Montserrat-SemiBoldItalic.ttf'),
 };
 
 // Download fonts from CDN if not available locally
@@ -95,10 +95,10 @@ class SlideBuilder {
     });
 
     // Register fonts
-    if (fs.existsSync(FONTS.heading)) this.doc.registerFont('NextSphere', FONTS.heading);
-    if (fs.existsSync(FONTS.body)) this.doc.registerFont('GeneralSans', FONTS.body);
-    if (fs.existsSync(FONTS.label)) this.doc.registerFont('Urbanist', FONTS.label);
-    if (fs.existsSync(FONTS.labelItalic)) this.doc.registerFont('UrbanistItalic', FONTS.labelItalic);
+    if (fs.existsSync(FONTS.heading)) this.doc.registerFont('Montserrat', FONTS.heading);
+    if (fs.existsSync(FONTS.body)) this.doc.registerFont('Open Sans', FONTS.body);
+    if (fs.existsSync(FONTS.label)) this.doc.registerFont('Montserrat', FONTS.label);
+    if (fs.existsSync(FONTS.labelItalic)) this.doc.registerFont('MontserratItalic', FONTS.labelItalic);
   }
 
   private newSlide(): void {
@@ -115,18 +115,18 @@ class SlideBuilder {
   }
 
   private addCopyright(): void {
-    this.doc.font('Urbanist').fontSize(11).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(11).fillColor(C.ash);
     this.doc.text(BRAND.contact.copyright, PAD.l, H - 40, { width: CW });
   }
 
   private addHeader(title: string, subtitle?: string): void {
     // Title
-    this.doc.font('NextSphere').fontSize(48).fillColor(C.white);
+    this.doc.font('Montserrat').fontSize(48).fillColor(C.white);
     this.doc.text(title.toUpperCase(), PAD.l, PAD.t, { width: CW * 0.65 });
 
     // Subtitle
     if (subtitle) {
-      this.doc.font('UrbanistItalic').fontSize(18).fillColor(C.aqua);
+      this.doc.font('MontserratItalic').fontSize(18).fillColor(C.aqua);
       this.doc.text(subtitle, PAD.l + CW * 0.65, PAD.t + 10, { width: CW * 0.35, align: 'right' });
     }
 
@@ -149,7 +149,7 @@ class SlideBuilder {
     this.doc.rect(x, y, w, rowH).fill(C.darkGrey);
     let cx = x;
     for (let i = 0; i < cols; i++) {
-      this.doc.font('Urbanist').fontSize(10).fillColor(C.aqua);
+      this.doc.font('Montserrat').fontSize(10).fillColor(C.aqua);
       this.doc.text(headers[i], cx + 8, y + 9, { width: cw[i] - 16, align: i === 0 ? 'left' : 'right' });
       cx += cw[i];
     }
@@ -163,7 +163,7 @@ class SlideBuilder {
       cx = x;
       for (let i = 0; i < cols; i++) {
         const color = row.colors?.[i] || C.white;
-        this.doc.font('GeneralSans').fontSize(13).fillColor(color);
+        this.doc.font('Open Sans').fontSize(13).fillColor(color);
         this.doc.text(row.cells[i], cx + 8, ry + 8, { width: cw[i] - 16, align: i === 0 ? 'left' : 'right' });
         cx += cw[i];
       }
@@ -187,29 +187,29 @@ class SlideBuilder {
     if (fs.existsSync(logoPath)) {
       this.doc.image(logoPath, 80, 50, { width: 60, height: 60 });
     }
-    this.doc.font('NextSphere').fontSize(24).fillColor(C.white);
-    this.doc.text('LIGHTNING ENERGY', 160, 65, { width: 400 });
+    this.doc.font('Montserrat').fontSize(24).fillColor(C.white);
+    this.doc.text('ELITE SMART ENERGY', 160, 65, { width: 400 });
 
     // Main title
-    this.doc.font('NextSphere').fontSize(44).fillColor(C.white);
+    this.doc.font('Montserrat').fontSize(44).fillColor(C.white);
     this.doc.text('IN-DEPTH BILL ANALYSIS\n& SOLAR BATTERY PROPOSAL', 80, 250, { width: 700, lineGap: 10 });
 
     // Orange accent bar
     this.doc.rect(80, 480, 6, 100).fill(C.orange);
 
     // Customer details
-    this.doc.font('Urbanist').fontSize(11).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(11).fillColor(C.ash);
     this.doc.text('PREPARED FOR', 110, 480, { width: 400 });
-    this.doc.font('GeneralSans').fontSize(26).fillColor(C.white);
+    this.doc.font('Open Sans').fontSize(26).fillColor(C.white);
     this.doc.text(this.data.customerName, 110, 500, { width: 500 });
-    this.doc.font('GeneralSans').fontSize(14).fillColor(C.ash);
+    this.doc.font('Open Sans').fontSize(14).fillColor(C.ash);
     this.doc.text(this.data.address, 110, 535, { width: 500 });
 
     // Aqua line
     this.doc.moveTo(80, 650).lineTo(600, 650).strokeColor(C.aqua).lineWidth(2).stroke();
 
     // Prepared by
-    this.doc.font('Urbanist').fontSize(11).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(11).fillColor(C.ash);
     this.doc.text(`Prepared by ${BRAND.contact.name} — ${BRAND.contact.company}`, 80, H - 60, { width: 600 });
   }
 
@@ -236,19 +236,19 @@ class SlideBuilder {
       const cy = y + row * (cardH + 20);
 
       this.drawCard(cx, cy, cardW, cardH, i === 1 || i === 3 ? C.aqua : C.cardBorder);
-      this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+      this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
       this.doc.text(m.label, cx + 20, cy + 15, { width: cardW - 40 });
-      this.doc.font('GeneralSans').fontSize(36).fillColor(m.color);
+      this.doc.font('Open Sans').fontSize(36).fillColor(m.color);
       this.doc.text(m.value, cx + 20, cy + 45, { width: cardW - 40 });
     });
 
     // System recommendation
     const sysY = y + 2 * (cardH + 20) + 20;
-    this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
     this.doc.text('RECOMMENDED SYSTEM', PAD.l, sysY, { width: CW });
-    this.doc.font('GeneralSans').fontSize(22).fillColor(C.white);
+    this.doc.font('Open Sans').fontSize(22).fillColor(C.white);
     this.doc.text(`${this.data.solarSizeKw}kW Solar + ${this.data.batterySizeKwh}kWh Battery`, PAD.l, sysY + 25, { width: CW });
-    this.doc.font('GeneralSans').fontSize(13).fillColor(C.ash);
+    this.doc.font('Open Sans').fontSize(13).fillColor(C.ash);
     this.doc.text(`${this.data.panelBrand} Panels  ·  ${this.data.batteryBrand}  ·  ${this.data.vppProvider} VPP`, PAD.l, sysY + 55, { width: CW });
 
     this.addCopyright();
@@ -332,7 +332,7 @@ class SlideBuilder {
     const totalUsage = (d.billPeakUsageKwh || 0) + (d.billOffPeakUsageKwh || 0) + (d.billShoulderUsageKwh || 0);
     if (totalUsage > 0) {
       const barY = y + 10 * 32;
-      this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+      this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
       this.doc.text('USAGE DISTRIBUTION', PAD.l, barY - 25, { width: CW });
 
       let barX = PAD.l;
@@ -345,19 +345,19 @@ class SlideBuilder {
 
       if (peakPct > 0) {
         this.doc.rect(barX, barY, barW * peakPct, barH).fill(C.orange);
-        this.doc.font('GeneralSans').fontSize(10).fillColor(C.black);
+        this.doc.font('Open Sans').fontSize(10).fillColor(C.black);
         this.doc.text(`Peak ${fmt(peakPct * 100)}%`, barX + 5, barY + 10, { width: barW * peakPct - 10 });
         barX += barW * peakPct;
       }
       if (offPeakPct > 0) {
         this.doc.rect(barX, barY, barW * offPeakPct, barH).fill(C.aqua);
-        this.doc.font('GeneralSans').fontSize(10).fillColor(C.black);
+        this.doc.font('Open Sans').fontSize(10).fillColor(C.black);
         this.doc.text(`Off-Peak ${fmt(offPeakPct * 100)}%`, barX + 5, barY + 10, { width: barW * offPeakPct - 10 });
         barX += barW * offPeakPct;
       }
       if (shoulderPct > 0) {
         this.doc.rect(barX, barY, barW * shoulderPct, barH).fill(C.ash);
-        this.doc.font('GeneralSans').fontSize(10).fillColor(C.white);
+        this.doc.font('Open Sans').fontSize(10).fillColor(C.white);
         this.doc.text(`Shoulder ${fmt(shoulderPct * 100)}%`, barX + 5, barY + 10, { width: barW * shoulderPct - 10 });
       }
     }
@@ -397,9 +397,9 @@ class SlideBuilder {
     ].forEach((item, i) => {
       const cx = PAD.l + i * (cardW + 30);
       this.drawCard(cx, summaryY, cardW, 100, i < 2 ? C.aqua : C.cardBorder);
-      this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+      this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
       this.doc.text(item.label, cx + 15, summaryY + 12, { width: cardW - 30 });
-      this.doc.font('GeneralSans').fontSize(32).fillColor(item.color);
+      this.doc.font('Open Sans').fontSize(32).fillColor(item.color);
       this.doc.text(item.value, cx + 15, summaryY + 40, { width: cardW - 30 });
     });
 
@@ -492,33 +492,33 @@ class SlideBuilder {
     }
 
     // Thank You
-    this.doc.font('NextSphere').fontSize(52).fillColor(C.white);
+    this.doc.font('Montserrat').fontSize(52).fillColor(C.white);
     this.doc.text('THANK YOU', 0, 240, { width: W, align: 'center' });
 
-    this.doc.font('UrbanistItalic').fontSize(18).fillColor(C.aqua);
+    this.doc.font('MontserratItalic').fontSize(18).fillColor(C.aqua);
     this.doc.text("Let's power your future together", 0, 310, { width: W, align: 'center' });
 
     // Contact details
     const contactY = 420;
     const colW = CW / 3;
 
-    this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
     this.doc.text('PREPARED BY', PAD.l, contactY, { width: colW });
-    this.doc.font('GeneralSans').fontSize(14).fillColor(C.white);
+    this.doc.font('Open Sans').fontSize(14).fillColor(C.white);
     this.doc.text(BRAND.contact.name, PAD.l, contactY + 20, { width: colW });
-    this.doc.font('GeneralSans').fontSize(11).fillColor(C.aqua);
+    this.doc.font('Open Sans').fontSize(11).fillColor(C.aqua);
     this.doc.text(`${BRAND.contact.title}\n${BRAND.contact.company}`, PAD.l, contactY + 40, { width: colW });
 
-    this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
     this.doc.text('CONTACT', PAD.l + colW, contactY, { width: colW });
-    this.doc.font('GeneralSans').fontSize(14).fillColor(C.white);
+    this.doc.font('Open Sans').fontSize(14).fillColor(C.white);
     this.doc.text(`${BRAND.contact.phone}\n${BRAND.contact.email}`, PAD.l + colW, contactY + 20, { width: colW });
-    this.doc.font('GeneralSans').fontSize(11).fillColor(C.aqua);
+    this.doc.font('Open Sans').fontSize(11).fillColor(C.aqua);
     this.doc.text(BRAND.contact.website, PAD.l + colW, contactY + 55, { width: colW });
 
-    this.doc.font('Urbanist').fontSize(10).fillColor(C.ash);
+    this.doc.font('Montserrat').fontSize(10).fillColor(C.ash);
     this.doc.text('LOCATION', PAD.l + colW * 2, contactY, { width: colW });
-    this.doc.font('GeneralSans').fontSize(14).fillColor(C.white);
+    this.doc.font('Open Sans').fontSize(14).fillColor(C.white);
     this.doc.text(BRAND.contact.address, PAD.l + colW * 2, contactY + 20, { width: colW });
 
     this.addCopyright();

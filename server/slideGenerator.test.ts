@@ -165,7 +165,7 @@ describe("generateSlideHTML", () => {
     const html = generateSlideHTML(coverSlide!);
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain("Paul Stokes");
-    expect(html).toContain("Lightning Energy");
+    expect(html).toContain("Elite Smart Energy");
   });
 
   it("generates valid HTML for financial impact analysis slide", () => {
@@ -183,7 +183,7 @@ describe("generateSlideHTML", () => {
     const html = generateSlideHTML(slides[0]);
     
     // Check for brand colors
-    expect(html).toContain("#00EAD3"); // Aqua
+    expect(html).toContain("#46B446"); // Aqua
     expect(html).toContain("#1a1a1a"); // Dark charcoal background
   });
 
@@ -191,8 +191,8 @@ describe("generateSlideHTML", () => {
     const slides = generateSlides(sampleProposalData);
     const html = generateSlideHTML(slides[0]);
     
-    expect(html).toContain("Lightning Energy");
-    expect(html).toContain("George Fotopoulos");
+    expect(html).toContain("Elite Smart Energy");
+    expect(html).toContain("Elite Smart Energy");
   });
 });
 

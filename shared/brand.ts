@@ -1,63 +1,84 @@
-// Lightning Energy Brand Assets
-// All assets uploaded to permanent S3 CDN — FIXATED Feb 10 2026
-// These URLs are permanent and will not expire.
-
+// ============================================================
+// ELITE SMART ENERGY SOLUTIONS — BRAND SYSTEM
+// ============================================================
 export const BRAND = {
-  // Logo — Aqua starburst icon (transparent PNG)
+  // ── COMPANY IDENTITY ───────────────────────────────────────
+  name: "Elite Smart Energy Solutions",
+  shortName: "Elite",
+  tagline: "Smart Energy Solutions",
+  website: "www.elitesmartenergy.com.au",
+  email: "info@elitesmartenergy.com.au",
+  address: "South Australia",
+  // ── LOGOS & ICONS ──────────────────────────────────────────
   logo: {
-    aqua: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/UpIyfevGqUVmUwSM.png',
+    full: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/HjYyMQuvAHbASIiI.jpg",
+    iconTransparent: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vkYTXfpVJByJjaGo.png",
+    iconNavy: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/NDYOCRwnFOhisDUR.png",
+    iconWhite: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/OOvYOULsnTCxOyIC.png",
+    aqua: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/GJRgQViiKCZlLYpq.png",
   },
-  
-  // Cover page background image
-  coverBg: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/efFUlWSUSNJuclEL.png',
-  
-  // Colors (exact hex values from brand palette guide)
+  coverBg: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/nrpNEXOsUzYPUqQn.png",
   colors: {
-    aqua: '#00EAD3',      // Primary accent - Pantone 3265C — USE SPARINGLY (logo + graph bars only)
-    orange: '#f36710',    // Burnt Orange - costs, alerts, accent borders (MINIMAL usage)
-    white: '#FFFFFF',     // Body text - Pantone White
-    ash: '#808285',       // Secondary text, labels - Pantone 443C
-    black: '#000000',     // Background - DARKEST BLACK always
+    eliteNavy:    "#1B3A5C",
+    solarGreen:   "#46B446",
+    pureWhite:    "#FFFFFF",
+    skyMist:      "#E8F0F7",
+    steelBlue:    "#4A6B8A",
+    charcoal:     "#2C3E50",
+    lightGrey:    "#F5F7FA",
+    midnightNavy: "#0F172A",
+    slideCard:    "#2C3E50",
+    slideBorder:  "#1B3A5C",
+    aqua:   "#46B446",
+    orange: "#1B3A5C",
+    white:  "#FFFFFF",
+    ash:    "#4A6B8A",
+    black:  "#0F172A",
+    navy:   "#1B3A5C",
+    green:  "#46B446",
   },
-  
-  // Fonts
   fonts: {
-    heading: 'NextSphere',      // Main headings (ALL CAPS, bold) - HEADINGS ONLY
-    label: 'Urbanist',          // Section labels, subtitles (ALL CAPS, letter-spaced)
-    body: 'GeneralSans',        // Body text, numbers, all other content
+    primary:   "Montserrat",
+    secondary: "Open Sans",
+    googleFontsUrl: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@300;400;600&display=swap",
+    heading: "Montserrat",
+    label:   "Montserrat",
+    body:    "Open Sans",
   },
-  
-  // Font CDN URLs — PERMANENT S3 uploads (Feb 10 2026)
   fontUrls: {
-    nextSphere: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/jmxTHISRcyijUzGl.ttf',
-    generalSans: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/JAbOMTUQjuZZbAXv.otf',
-    generalSansEot: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/kjkHiNqiZOvWVAjc.eot',
-    urbanist: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/gqxvhforGGNrTmlD.ttf',
-    urbanistItalic: 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/CVAUXsQZHITdJIew.ttf',
+    nextSphere:     "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/XLvCZoRXlaNhuTRv.ttf",
+    generalSans:    "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/lpXejyRuPwRXRmiM.otf",
+    generalSansEot: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/lpXejyRuPwRXRmiM.otf",
+    urbanist:       "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vvMzinSFcwhDxjjZ.ttf",
+    urbanistItalic: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/vvMzinSFcwhDxjjZ.ttf",
   },
-
-  // Same-origin font paths (served from /fonts/ — no CORS issues for PDF capture)
   localFontPaths: {
-    nextSphere: '/fonts/NextSphere-ExtraBold.ttf',
-    generalSans: '/fonts/GeneralSans-Regular.otf',
-    urbanist: '/fonts/Urbanist-SemiBold.ttf',
+    nextSphere:   '/fonts/NextSphere-ExtraBold.ttf',
+    generalSans:  '/fonts/GeneralSans-Regular.otf',
+    urbanist:     '/fonts/Urbanist-SemiBold.ttf',
     urbanistItalic: '/fonts/Urbanist-SemiBoldItalic.ttf',
-    logoAqua: '/fonts/LightningEnergy_Logo_Icon_Aqua.png',
-    coverBg: '/fonts/cover-bg.jpg',
+    logoAqua:     '/fonts/LightningEnergy_Logo_Icon_Aqua.png',
+    coverBg:      '/fonts/cover-bg.jpg',
   },
-  
-  // Contact Info (as per Lightning Energy specifications)
+  slide: {
+    bgColor:      "#1B3A5C",
+    cardColor:    "#2C3E50",
+    borderColor:  "#4A6B8A",
+    accentColor:  "#46B446",
+    headingColor: "#FFFFFF",
+    bodyColor:    "#CBD5E1",
+    mutedColor:   "#94A3B8",
+  },
   contact: {
-    name: 'George Fotopoulos',
-    title: 'Renewables Strategist & Designer',
-    company: 'Lightning Energy',
-    address: 'Showroom 1, Waverley Road, Malvern East VIC 3145',
-    phone: '1300 009 272 | 0419 574 520',
-    email: 'george.f@lightning-energy.com.au',
-    website: 'www.lightning-energy.com.au',
-    copyright: '© Lightning Energy — Architect George Fotopoulos',
+    name:      "",
+    title:     "Energy Solutions Consultant",
+    company:   "Elite Smart Energy Solutions",
+    address:   "South Australia",
+    phone:     "",
+    email:     "",
+    website:   "www.elitesmartenergy.com.au",
+    copyright: "© Elite Smart Energy Solutions",
   },
 } as const;
-
 export type BrandColors = typeof BRAND.colors;
 export type BrandFonts = typeof BRAND.fonts;

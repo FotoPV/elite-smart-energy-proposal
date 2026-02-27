@@ -63,7 +63,7 @@ export async function generatePdfFromSlides(
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#000000',
+        backgroundColor: '#1B3A5C',
         width: 1120,
         height: 630,
         logging: false,

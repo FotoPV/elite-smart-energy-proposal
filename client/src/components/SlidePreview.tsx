@@ -1,6 +1,6 @@
 /**
  * Slide Preview Component
- * Renders individual proposal slides with Lightning Energy branding
+ * Renders individual proposal slides with Elite Smart Energy branding
  */
 
 import { SlideData } from "../../../drizzle/schema";
@@ -22,7 +22,7 @@ export function SlidePreview({ slide, isActive, onClick }: SlidePreviewProps) {
         ${!slide.isIncluded ? 'opacity-50' : ''}
       `}
     >
-      <div className="w-full h-full bg-black p-4 flex flex-col">
+      <div className="w-full h-full bg-background p-4 flex flex-col">
         {/* Slide Header */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] text-muted-foreground">{slide.title}</span>
@@ -103,7 +103,7 @@ export function FullSlideRenderer({ slide }: { slide: SlideData }) {
   const content = {} as Record<string, unknown>;
   
   return (
-    <div className="w-full aspect-video bg-black relative overflow-hidden">
+    <div className="w-full aspect-video bg-background relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
       
@@ -118,7 +118,7 @@ export function FullSlideRenderer({ slide }: { slide: SlideData }) {
       
       {/* Footer */}
       <div className="absolute bottom-4 left-8 right-8 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Lightning Energy</span>
+        <span>Elite Smart Energy</span>
         <span>Slide {slide.type}</span>
       </div>
     </div>
@@ -131,7 +131,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
       return (
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           <Zap className="w-16 h-16 text-primary mb-6" />
-          <h1 className="text-4xl font-bold text-primary mb-2" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h1 className="text-4xl font-bold text-primary mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             ELECTRIFICATION PROPOSAL
           </h1>
           <p className="text-xl text-foreground mb-8">{content.customerName as string}</p>
@@ -143,7 +143,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
     case 'executive_summary':
       return (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {title}
           </h2>
           <div className="grid grid-cols-2 gap-6">
@@ -158,7 +158,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
     case 'bill_analysis':
       return (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {title}
           </h2>
           <div className="grid grid-cols-2 gap-6">
@@ -174,7 +174,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
       const providers = content.providers as Array<{ provider: string; estimatedAnnualValue: number }>;
       return (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-primary mb-6" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-6" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {title}
           </h2>
           <div className="space-y-3">
@@ -195,7 +195,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
     case 'financial_summary':
       return (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {title}
           </h2>
           <div className="grid grid-cols-2 gap-6">
@@ -216,7 +216,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
       return (
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           <Zap className="w-12 h-12 text-primary mb-6" />
-          <h2 className="text-2xl font-bold text-primary mb-2" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             GET STARTED TODAY
           </h2>
           <p className="text-lg text-foreground mb-6">Prepared by {content.preparedBy as string}</p>
@@ -246,7 +246,7 @@ function renderSlideContent(slideType: string, title: string, content: Record<st
     default:
       return (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'NextSphere, sans-serif' }}>
+          <h2 className="text-2xl font-bold text-primary mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {title}
           </h2>
           <div className="text-muted-foreground">

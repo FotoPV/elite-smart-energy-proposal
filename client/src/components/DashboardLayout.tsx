@@ -26,16 +26,18 @@ import {
   LogOut, 
   FileText, 
   PlusCircle,
-  Zap,
   ChevronRight,
-  Trash2
+  Trash2,
+  Upload,
+  Zap
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/maXyrLOUeJCvTJgW.png";
+// Elite brand icons — hosted on Manus CDN
+const LOGO_ICON_WHITE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663031440910/GJRgQViiKCZlLYpq.png"; // ESES sun + leaf icon (white/transparent)
 
 const menuItems = [
   { icon: PlusCircle, label: "New Proposal", path: "/proposals/new" },
@@ -69,24 +71,25 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#1B3A5C' }}>
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-4">
             <img 
-              src={LOGO_URL} 
-              alt="Lightning Energy" 
+              src={LOGO_ICON_WHITE} 
+              alt="Elite Smart Energy" 
               className="h-20 w-20"
+              style={{ filter: 'drop-shadow(0 0 12px rgba(70,180,70,0.4))' }}
             />
-            <h1 className="text-3xl tracking-tight text-center" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
-              <span style={{ color: '#00EAD3' }}>Lightning Energy</span>
+            <h1 className="text-3xl tracking-tight text-center" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#FFFFFF' }}>
+              <span style={{ color: '#46B446' }}>Elite Smart Energy</span>
             </h1>
-            <p className="text-sm uppercase tracking-[0.2em] text-center" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+            <p className="text-sm uppercase tracking-[0.2em] text-center" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
               Proposal Generator
             </p>
           </div>
           
           <div className="flex flex-col items-center gap-4 w-full">
-            <p className="text-sm text-center max-w-sm" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+            <p className="text-sm text-center max-w-sm" style={{ fontFamily: "'Open Sans', sans-serif", color: '#94A3B8' }}>
               Sign in to create professional electrification proposals for your customers.
             </p>
             <Button
@@ -96,10 +99,10 @@ export default function DashboardLayout({
               size="lg"
               className="w-full font-semibold"
               style={{
-                fontFamily: "'Urbanist', sans-serif",
-                backgroundColor: '#00EAD3',
-                color: '#000000',
-                boxShadow: '0 0 20px rgba(0,234,211,0.3)'
+                fontFamily: "'Montserrat', sans-serif",
+                backgroundColor: '#46B446',
+                color: '#FFFFFF',
+                boxShadow: '0 0 20px rgba(70,180,70,0.3)'
               }}
             >
               <Zap className="mr-2 h-5 w-5" />
@@ -107,8 +110,8 @@ export default function DashboardLayout({
             </Button>
           </div>
           
-          <p className="text-[10px] text-center mt-8" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
-            © Lightning Energy — Architect George Fotopoulos
+          <p className="text-[10px] text-center mt-8" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
+            © Elite Smart Energy Solutions
           </p>
         </div>
       </div>
@@ -203,16 +206,17 @@ function DashboardLayoutContent({
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity focus:outline-none"
               >
                 <img 
-                  src={LOGO_URL} 
-                  alt="Lightning Energy" 
+                  src={LOGO_ICON_WHITE} 
+                  alt="Elite Smart Energy" 
                   className="h-8 w-8 shrink-0"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(70,180,70,0.4))' }}
                 />
                 {!isCollapsed && (
                   <div className="flex flex-col min-w-0">
-                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#00EAD3' }}>
-                      Lightning Energy
+                    <span className="text-sm tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#46B446' }}>
+                      Elite Smart Energy
                     </span>
-                    <span className="text-[10px] truncate" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+                    <span className="text-[10px] truncate" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#4A6B8A' }}>
                       Proposal Generator
                     </span>
                   </div>
@@ -238,7 +242,7 @@ function DashboardLayoutContent({
                           ? "bg-primary/10 text-primary border-l-2 border-primary" 
                           : "hover:bg-muted"
                       }`}
-                      style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}
+                      style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`}
@@ -259,15 +263,15 @@ function DashboardLayoutContent({
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <Avatar className="h-9 w-9 border border-primary/30 shrink-0">
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
                       {user?.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm truncate leading-none" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#FFFFFF' }}>
+                    <p className="text-sm truncate leading-none" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#FFFFFF' }}>
                       {user?.name || "User"}
                     </p>
-                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs truncate mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
                       {user?.email || "-"}
                     </p>
                   </div>
@@ -275,14 +279,14 @@ function DashboardLayoutContent({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-2">
-                  <p className="text-sm" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>{user?.name}</p>
-                  <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>{user?.email}</p>
+                  <p className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>{user?.name}</p>
+                  <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
-                  style={{ fontFamily: "'Urbanist', sans-serif" }}
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>
@@ -291,8 +295,8 @@ function DashboardLayoutContent({
             </DropdownMenu>
             
             {!isCollapsed && (
-              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
-                © Lightning Energy
+              <p className="text-[9px] text-center mt-3 px-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#4A6B8A' }}>
+                © Elite Smart Energy Solutions
               </p>
             )}
           </SidebarFooter>
@@ -314,11 +318,11 @@ function DashboardLayoutContent({
               <SidebarTrigger className="h-9 w-9 rounded-lg" />
               <div className="flex items-center gap-2">
                 <img 
-                  src={LOGO_URL} 
-                  alt="Lightning Energy" 
+                  src={LOGO_ICON_WHITE} 
+                  alt="Elite Smart Energy" 
                   className="h-6 w-6"
                 />
-                <span className="text-sm" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#00EAD3' }}>
+                <span className="text-sm" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#46B446' }}>
                   {activeMenuItem?.label ?? "Bills and Photos"}
                 </span>
               </div>

@@ -1,6 +1,6 @@
 /**
  * Proposal Export Service
- * Generates PDF and PPT exports with Lightning Energy branding
+ * Generates PDF and PPT exports with Elite Smart Energy branding
  */
 
 import { SlideData, ProposalCalculations } from "../drizzle/schema";
@@ -65,7 +65,7 @@ const SLIDE_STYLES = `
   .slide-title {
     font-size: 48px;
     font-weight: 700;
-    color: #00EAD3;
+    color: #46B446;
     text-transform: uppercase;
     letter-spacing: 2px;
   }
@@ -91,7 +91,7 @@ const SLIDE_STYLES = `
   }
   
   .stat-box.accent {
-    border-color: #00EAD3;
+    border-color: #46B446;
     background: rgba(0, 234, 211, 0.1);
   }
   
@@ -108,7 +108,7 @@ const SLIDE_STYLES = `
   }
   
   .stat-box.accent .stat-value {
-    color: #00EAD3;
+    color: #46B446;
   }
   
   .slide-footer {
@@ -124,7 +124,7 @@ const SLIDE_STYLES = `
   }
   
   .logo-text {
-    color: #00EAD3;
+    color: #46B446;
     font-weight: 600;
   }
   
@@ -143,7 +143,7 @@ const SLIDE_STYLES = `
   .cover-title {
     font-size: 72px;
     font-weight: 700;
-    color: #00EAD3;
+    color: #46B446;
     margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 4px;
@@ -186,7 +186,7 @@ const SLIDE_STYLES = `
   .vpp-rank {
     font-size: 24px;
     font-weight: 700;
-    color: #00EAD3;
+    color: #46B446;
     margin-right: 24px;
   }
   
@@ -208,7 +208,7 @@ const SLIDE_STYLES = `
   .vpp-value {
     font-size: 28px;
     font-weight: 600;
-    color: #00EAD3;
+    color: #46B446;
   }
   
   /* Contact slide */
@@ -220,7 +220,7 @@ const SLIDE_STYLES = `
   .contact-cta {
     font-size: 48px;
     font-weight: 700;
-    color: #00EAD3;
+    color: #46B446;
     margin-bottom: 40px;
   }
   
@@ -238,7 +238,7 @@ const SLIDE_STYLES = `
   
   .contact-company {
     font-size: 24px;
-    color: #00EAD3;
+    color: #46B446;
     font-weight: 600;
     margin-bottom: 40px;
   }
@@ -290,7 +290,7 @@ export function generateSlideHtml(slide: SlideData): string {
         <div class="cover-slide">
           <div class="slide-body">
             <svg class="cover-logo" viewBox="0 0 100 100" fill="none">
-              <path d="M50 5L60 40H95L65 60L75 95L50 75L25 95L35 60L5 40H40L50 5Z" fill="#00EAD3"/>
+              <path d="M50 5L60 40H95L65 60L75 95L50 75L25 95L35 60L5 40H40L50 5Z" fill="#46B446"/>
             </svg>
             <h1 class="cover-title">Electrification Proposal</h1>
             <p class="cover-customer">${content.customerName}</p>
@@ -457,7 +457,7 @@ export function generateSlideHtml(slide: SlideData): string {
         ${bodyHtml}
       </div>
       <div class="slide-footer">
-        <span class="logo-text">Lightning Energy</span>
+        <span class="logo-text">Elite Smart Energy</span>
         <span>${slide.title}</span>
       </div>
     </div>

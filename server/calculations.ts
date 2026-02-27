@@ -1,5 +1,5 @@
 /**
- * Lightning Energy Proposal Calculation Engine
+ * Elite Smart Energy Proposal Calculation Engine
  * All formulas for usage projections, conversions, savings, and payback calculations
  */
 
@@ -411,7 +411,7 @@ export function calculatePoolHeatPump(
 
 // ============================================
 // VPP INCOME ESTIMATION
-// Matches Lightning Energy VPP Calculator model
+// Matches Elite Smart Energy VPP Calculator model
 // Formula: annualRevenue = (dailyExport × baseRate/100 × 365) - (monthlyFee × 12)
 // ============================================
 

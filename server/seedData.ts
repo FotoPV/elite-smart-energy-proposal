@@ -1,5 +1,5 @@
 /**
- * Seed Data for Lightning Energy Proposal Generator
+ * Seed Data for Elite Smart Energy Proposal Generator
  * Contains VPP providers and state rebates
  * 
  * NOTE: VPP provider seeding is now primarily done via the admin mutation

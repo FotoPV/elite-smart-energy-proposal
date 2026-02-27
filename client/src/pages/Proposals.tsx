@@ -162,10 +162,10 @@ export default function Proposals() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
                Bills and Photos
              </h1>
-            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
               All uploaded customer bills and photos
             </p>
           </div>
@@ -175,10 +175,10 @@ export default function Proposals() {
                 onClick={handleRegenerateAll}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
                 style={{ 
-                  fontFamily: "'Urbanist', sans-serif",
+                  fontFamily: "'Montserrat', sans-serif",
                   fontWeight: 600,
                   backgroundColor: 'rgba(0,234,211,0.1)',
-                  color: '#00EAD3',
+                  color: '#46B446',
                   border: '1px solid rgba(0,234,211,0.3)'
                 }}
               >
@@ -190,9 +190,9 @@ export default function Proposals() {
               onClick={() => setLocation("/proposals/new")}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm transition-all"
               style={{ 
-                fontFamily: "'Urbanist', sans-serif",
+                fontFamily: "'Montserrat', sans-serif",
                 fontWeight: 600,
-                backgroundColor: '#00EAD3',
+                backgroundColor: '#46B446',
                 color: '#000000'
               }}
             >
@@ -211,11 +211,11 @@ export default function Proposals() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
-              style={{ fontFamily: "'GeneralSans', sans-serif" }}
+              style={{ fontFamily: "'Open Sans', sans-serif" }}
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]" style={{ fontFamily: "'Urbanist', sans-serif" }}>
+            <SelectTrigger className="w-[180px]" style={{ fontFamily: "'Montserrat', sans-serif" }}>
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -256,19 +256,19 @@ export default function Proposals() {
               >
                 <div className="flex items-center gap-4">
                   <div className="h-11 w-11 rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(0,234,211,0.3)' }}>
-                    <FileText className="h-5 w-5" style={{ color: '#00EAD3' }} />
+                    <FileText className="h-5 w-5" style={{ color: '#46B446' }} />
                   </div>
                   <div>
-                    <p className="text-sm text-white" style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                    <p className="text-sm text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {proposal.title}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      <span className="flex items-center gap-1 text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                         <Calendar className="h-3 w-3" />
                         {new Date(proposal.createdAt).toLocaleDateString('en-AU')}
                       </span>
                       {proposal.slideCount && (
-                        <span className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                        <span className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                           {proposal.slideCount} slides
                         </span>
                       )}
@@ -291,7 +291,7 @@ export default function Proposals() {
                       <DropdownMenuItem onClick={(e) => {
                         e.stopPropagation();
                         setLocation(`/proposals/${proposal.id}`);
-                      }} style={{ fontFamily: "'Urbanist', sans-serif" }}>
+                      }} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                         <Eye className="mr-2 h-4 w-4" />
                         View
                       </DropdownMenuItem>
@@ -303,7 +303,7 @@ export default function Proposals() {
                             deleteProposal.mutate({ id: proposal.id });
                           }
                         }}
-                        style={{ fontFamily: "'Urbanist', sans-serif" }}
+                        style={{ fontFamily: "'Montserrat', sans-serif" }}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Move to Bin
@@ -317,10 +317,10 @@ export default function Proposals() {
         ) : (
           <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
             <FileText className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
-            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               {searchTerm || statusFilter !== "all" ? "No matching proposals" : "No proposals yet"}
             </h3>
-            <p className="text-sm text-center mb-6" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+            <p className="text-sm text-center mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
               {searchTerm || statusFilter !== "all" 
                 ? "Try adjusting your filters" 
                 : "Create your first proposal to get started"}
@@ -329,7 +329,7 @@ export default function Proposals() {
               <button 
                 onClick={() => setLocation("/proposals/new")} 
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
               >
                 <PlusCircle className="mr-1 h-4 w-4" />
                 NEW PROPOSAL
@@ -339,8 +339,8 @@ export default function Proposals() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
-          © Lightning Energy — Architect George Fotopoulos
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+          © Elite Smart Energy Solutions
         </div>
       </div>
 
@@ -357,14 +357,14 @@ export default function Proposals() {
           <DialogHeader>
             <DialogTitle 
               className="text-xl uppercase tracking-tight text-white flex items-center gap-2"
-              style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}
+              style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}
             >
-              <Zap className="h-5 w-5" style={{ color: '#00EAD3' }} />
+              <Zap className="h-5 w-5" style={{ color: '#46B446' }} />
               Regenerate All Proposals
             </DialogTitle>
             <DialogDescription 
               className="text-sm mt-2"
-              style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}
+              style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}
             >
               {batchStep === 'confirm' && (
                 <>This will re-process all photos with correct rotation, recalculate all proposals, and regenerate all slides with the latest fixes. This process runs in the background and may take several minutes.</>
@@ -389,19 +389,19 @@ export default function Proposals() {
                     recompressResult ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
                 }}>
                   {batchStep === 'recompressing' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#46B446' }} />
                   ) : recompressResult ? (
-                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#46B446' }} />
                   ) : (
                     <ImageIcon className="h-4 w-4" style={{ color: '#808285' }} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                  <p className="text-sm text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
                     Fix Photo Rotation
                   </p>
                   {recompressResult && (
-                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                       {recompressResult.processed} of {recompressResult.total} photos re-processed
                       {recompressResult.failed > 0 && ` (${recompressResult.failed} failed)`}
                     </p>
@@ -418,19 +418,19 @@ export default function Proposals() {
                     resetResult ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
                 }}>
                   {batchStep === 'resetting' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#46B446' }} />
                   ) : resetResult ? (
-                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#46B446' }} />
                   ) : (
                     <RefreshCw className="h-4 w-4" style={{ color: '#808285' }} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                  <p className="text-sm text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
                     Reset Proposals
                   </p>
                   {resetResult && (
-                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                       {resetResult.resetCount} of {resetResult.eligibleProposals} proposals reset to draft
                     </p>
                   )}
@@ -446,24 +446,24 @@ export default function Proposals() {
                     batchStep === 'complete' ? 'rgba(0,234,211,0.3)' : 'rgba(128,130,133,0.2)'}`
                 }}>
                   {batchStep === 'generating' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#00EAD3' }} />
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#46B446' }} />
                   ) : batchStep === 'complete' ? (
-                    <CheckCircle2 className="h-4 w-4" style={{ color: '#00EAD3' }} />
+                    <CheckCircle2 className="h-4 w-4" style={{ color: '#46B446' }} />
                   ) : (
                     <Zap className="h-4 w-4" style={{ color: '#808285' }} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-white" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600 }}>
+                  <p className="text-sm text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
                     Generate All Slides
                   </p>
                   {batchProgress && batchStep === 'generating' && (
                     <div className="mt-1">
-                      <div className="flex items-center justify-between text-xs mb-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                      <div className="flex items-center justify-between text-xs mb-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                         <span>
                           {batchProgress.completed + batchProgress.failed} of {batchProgress.total} proposals
                           {batchProgress.current && (
-                            <span style={{ color: '#00EAD3' }}> — {batchProgress.current.title}</span>
+                            <span style={{ color: '#46B446' }}> — {batchProgress.current.title}</span>
                           )}
                         </span>
                         <span>{Math.round(((batchProgress.completed + batchProgress.failed) / Math.max(batchProgress.total, 1)) * 100)}%</span>
@@ -473,14 +473,14 @@ export default function Proposals() {
                           className="h-full rounded-full transition-all duration-500"
                           style={{ 
                             width: `${((batchProgress.completed + batchProgress.failed) / Math.max(batchProgress.total, 1)) * 100}%`,
-                            backgroundColor: '#00EAD3'
+                            backgroundColor: '#46B446'
                           }}
                         />
                       </div>
                     </div>
                   )}
                   {batchStep === 'complete' && batchProgress && (
-                    <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                       {batchProgress.completed} succeeded, {batchProgress.failed} failed
                     </p>
                   )}
@@ -492,7 +492,7 @@ export default function Proposals() {
             {batchStep === 'error' && batchError && (
               <div className="p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
                 <XCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#ef4444' }} />
-                <p className="text-xs" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#ef4444' }}>
+                <p className="text-xs" style={{ fontFamily: "'Open Sans', sans-serif", color: '#ef4444' }}>
                   {batchError}
                 </p>
               </div>
@@ -502,16 +502,16 @@ export default function Proposals() {
             {batchStep === 'confirm' && (
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(128,130,133,0.08)', border: '1px solid rgba(128,130,133,0.15)' }}>
-                  <p className="text-lg text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>{totalCount}</p>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Total</p>
+                  <p className="text-lg text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>{totalCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Montserrat', sans-serif", color: '#808285' }}>Total</p>
                 </div>
                 <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(0,234,211,0.05)', border: '1px solid rgba(0,234,211,0.15)' }}>
-                  <p className="text-lg" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#00EAD3' }}>{generatedCount}</p>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Generated</p>
+                  <p className="text-lg" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#46B446' }}>{generatedCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Montserrat', sans-serif", color: '#808285' }}>Generated</p>
                 </div>
                 <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.15)' }}>
-                  <p className="text-lg" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800, color: '#FFA500' }}>{draftCount}</p>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Urbanist', sans-serif", color: '#808285' }}>Draft</p>
+                  <p className="text-lg" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, color: '#FFA500' }}>{draftCount}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "'Montserrat', sans-serif", color: '#808285' }}>Draft</p>
                 </div>
               </div>
             )}
@@ -523,14 +523,14 @@ export default function Proposals() {
                 <Button 
                   variant="outline" 
                   onClick={closeDialog}
-                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
                 >
                   Cancel
                 </Button>
                 <button 
                   onClick={startBatchProcess}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
                 >
                   <RefreshCw className="h-4 w-4" />
                   Start Regeneration
@@ -541,7 +541,7 @@ export default function Proposals() {
               <button 
                 onClick={closeDialog}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
               >
                 <CheckCircle2 className="h-4 w-4" />
                 Done
@@ -552,14 +552,14 @@ export default function Proposals() {
                 <Button 
                   variant="outline" 
                   onClick={closeDialog}
-                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, borderColor: 'rgba(128,130,133,0.3)', color: '#808285' }}
                 >
                   Close
                 </Button>
                 <button 
                   onClick={startBatchProcess}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm"
-                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, backgroundColor: '#00EAD3', color: '#000000' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, backgroundColor: '#46B446', color: '#000000' }}
                 >
                   <RefreshCw className="h-4 w-4" />
                   Retry
@@ -567,7 +567,7 @@ export default function Proposals() {
               </>
             )}
             {isProcessing && (
-              <p className="text-xs w-full text-center" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+              <p className="text-xs w-full text-center" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                 Please keep this window open. Processing in background...
               </p>
             )}

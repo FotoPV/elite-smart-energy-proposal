@@ -168,8 +168,8 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
     return (
       <div className="rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-8">
         <div className="text-center max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-full bg-[#00EAD3]/10 border border-[#00EAD3]/30 flex items-center justify-center mx-auto mb-6">
-            <Zap className="h-8 w-8 text-[#00EAD3]" />
+          <div className="w-16 h-16 rounded-full bg-[#46B446]/10 border border-[#46B446]/30 flex items-center justify-center mx-auto mb-6">
+            <Zap className="h-8 w-8 text-[#46B446]" />
           </div>
           <h3 
             className="text-2xl text-white uppercase mb-3"
@@ -183,7 +183,7 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
           <div className="flex items-center justify-center gap-3">
             <Button
               onClick={handleStart}
-              className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold px-8 py-3 text-base"
+              className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold px-8 py-3 text-base"
             >
               <Play className="mr-2 h-5 w-5" />
               Start Generation
@@ -207,9 +207,9 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
       <div className="px-5 py-3 border-b border-[#1a1a1a] flex items-center justify-between">
         <div className="flex items-center gap-3">
           {displayStatus === 'generating' ? (
-            <Loader2 className="h-4 w-4 animate-spin text-[#00EAD3]" />
+            <Loader2 className="h-4 w-4 animate-spin text-[#46B446]" />
           ) : displayStatus === 'complete' ? (
-            <CheckCircle2 className="h-4 w-4 text-[#00EAD3]" />
+            <CheckCircle2 className="h-4 w-4 text-[#46B446]" />
           ) : displayStatus === 'partial' ? (
             <AlertCircle className="h-4 w-4 text-yellow-500" />
           ) : (
@@ -235,7 +235,7 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
           <div className="w-32">
             <Progress value={progressPercent} className="h-1.5" />
           </div>
-          <span className="text-xs font-semibold text-[#00EAD3]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+          <span className="text-xs font-semibold text-[#46B446]" style={{ fontFamily: "'General Sans', sans-serif" }}>
             {progressPercent}%
           </span>
         </div>
@@ -260,9 +260,9 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
                 onClick={() => slide.status === 'complete' && setSelectedSlideIndex(index)}
                 className={`
                   w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all flex items-center gap-3
-                  ${selectedSlideIndex === index ? 'bg-[#00EAD3]/10 border border-[#00EAD3]/30' : 'hover:bg-[#111] border border-transparent'}
+                  ${selectedSlideIndex === index ? 'bg-[#46B446]/10 border border-[#46B446]/30' : 'hover:bg-[#111] border border-transparent'}
                   ${slide.status === 'complete' ? 'cursor-pointer' : 'cursor-default'}
-                  ${slide.status === 'generating' ? 'bg-[#00EAD3]/5' : ''}
+                  ${slide.status === 'generating' ? 'bg-[#46B446]/5' : ''}
                 `}
               >
                 {/* Status icon */}
@@ -271,10 +271,10 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
                     <Circle className="h-4 w-4 text-[#333]" />
                   )}
                   {slide.status === 'generating' && (
-                    <Loader2 className="h-4 w-4 animate-spin text-[#00EAD3]" />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#46B446]" />
                   )}
                   {slide.status === 'complete' && (
-                    <CheckCircle2 className="h-4 w-4 text-[#00EAD3]" />
+                    <CheckCircle2 className="h-4 w-4 text-[#46B446]" />
                   )}
                   {slide.status === 'error' && (
                     <AlertCircle className="h-4 w-4 text-orange-500" />
@@ -335,11 +335,11 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
               <SlideIframePreview html={selectedSlide.html} />
             ) : selectedSlide?.status === 'generating' ? (
               <div className="text-center">
-                <Loader2 className="h-12 w-12 animate-spin text-[#00EAD3] mx-auto mb-4" />
+                <Loader2 className="h-12 w-12 animate-spin text-[#46B446] mx-auto mb-4" />
                 <p className="text-[#808285] text-sm" style={{ fontFamily: "'General Sans', sans-serif" }}>
                   Generating slide {selectedSlideIndex + 1}...
                 </p>
-                <p className="text-[#00EAD3] text-xs mt-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
+                <p className="text-[#46B446] text-xs mt-1" style={{ fontFamily: "'General Sans', sans-serif" }}>
                   {selectedSlide.title}
                 </p>
               </div>
@@ -369,8 +369,8 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
       
       {/* Bottom bar - show for complete OR mostly complete */}
       {(displayStatus === 'complete' || displayStatus === 'partial') && (
-        <div className="px-5 py-3 border-t border-[#1a1a1a] flex items-center justify-between bg-[#00EAD3]/5">
-          <p className="text-sm text-[#00EAD3]" style={{ fontFamily: "'General Sans', sans-serif" }}>
+        <div className="px-5 py-3 border-t border-[#1a1a1a] flex items-center justify-between bg-[#46B446]/5">
+          <p className="text-sm text-[#46B446]" style={{ fontFamily: "'General Sans', sans-serif" }}>
             {displayStatus === 'complete' 
               ? `All ${totalCount} slides generated successfully`
               : `${completedCount} of ${totalCount} slides generated (${errorCount} had errors)`
@@ -378,7 +378,7 @@ export function LiveSlideGeneration({ proposalId, onComplete, onCancel, autoStar
           </p>
           <Button
             onClick={onComplete}
-            className="bg-[#00EAD3] text-black hover:bg-[#00EAD3]/90 font-semibold"
+            className="bg-[#46B446] text-black hover:bg-[#46B446]/90 font-semibold"
           >
             <CheckCircle2 className="mr-2 h-4 w-4" />
             View Full Presentation

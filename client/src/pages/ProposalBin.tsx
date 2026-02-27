@@ -60,10 +60,10 @@ export default function ProposalBin() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+            <h1 className="text-3xl uppercase tracking-tight text-white" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               Bin
             </h1>
-            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, color: '#808285' }}>
+            <p className="text-xs uppercase tracking-[0.15em] mt-1" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#808285' }}>
               Deleted proposals — restore or permanently remove
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function ProposalBin() {
               <AlertDialogTrigger asChild>
                 <button
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all"
-                  style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444' }}
                   disabled={emptyBinMutation.isPending}
                 >
                   {emptyBinMutation.isPending ? (
@@ -86,20 +86,20 @@ export default function ProposalBin() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'NextSphere', sans-serif" }}>
+                  <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                     <AlertTriangle className="h-5 w-5 text-destructive" />
                     Empty Bin?
                   </AlertDialogTitle>
-                  <AlertDialogDescription style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                  <AlertDialogDescription style={{ fontFamily: "'Open Sans', sans-serif" }}>
                     This will permanently delete all {binItems.length} proposal(s). This cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel style={{ fontFamily: "'Urbanist', sans-serif" }}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel style={{ fontFamily: "'Montserrat', sans-serif" }}>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => emptyBinMutation.mutate()}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    style={{ fontFamily: "'Urbanist', sans-serif" }}
+                    style={{ fontFamily: "'Montserrat', sans-serif" }}
                   >
                     Permanently Delete All
                   </AlertDialogAction>
@@ -119,10 +119,10 @@ export default function ProposalBin() {
         ) : !binItems || binItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 rounded-xl" style={{ border: '1px solid rgba(128,130,133,0.15)' }}>
             <Trash2 className="h-16 w-16 mb-4" style={{ color: '#808285', opacity: 0.3 }} />
-            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'NextSphere', sans-serif", fontWeight: 800 }}>
+            <h3 className="text-base text-white mb-2" style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800 }}>
               Bin is empty
             </h3>
-            <p className="text-sm text-center" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+            <p className="text-sm text-center" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
               Deleted proposals will appear here
             </p>
           </div>
@@ -137,10 +137,10 @@ export default function ProposalBin() {
                     <FileText className="h-5 w-5" style={{ color: '#808285' }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm text-white truncate" style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                    <p className="text-sm text-white truncate" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                       {item.title || `Proposal #${item.id}`}
                     </p>
-                    <p className="text-xs mt-1" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285' }}>
+                    <p className="text-xs mt-1" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285' }}>
                       {item.customerName || "Unknown"} · Deleted {formatDate(item.deletedAt)}
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export default function ProposalBin() {
                     onClick={() => restoreMutation.mutate({ id: item.id })}
                     disabled={restoreMutation.isPending}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                    style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#00EAD3' }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(0,234,211,0.3)', color: '#46B446' }}
                   >
                     {restoreMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                     Restore
@@ -162,7 +162,7 @@ export default function ProposalBin() {
                       <button
                         disabled={permanentDeleteMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                        style={{ fontFamily: "'Urbanist', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}
+                        style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}
                       >
                         {permanentDeleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                         Delete
@@ -170,20 +170,20 @@ export default function ProposalBin() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'NextSphere', sans-serif" }}>
+                        <AlertDialogTitle className="flex items-center gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                           <AlertTriangle className="h-5 w-5 text-destructive" />
                           Permanently Delete?
                         </AlertDialogTitle>
-                        <AlertDialogDescription style={{ fontFamily: "'GeneralSans', sans-serif" }}>
+                        <AlertDialogDescription style={{ fontFamily: "'Open Sans', sans-serif" }}>
                           This will permanently delete "{item.title || `Proposal #${item.id}`}". This cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel style={{ fontFamily: "'Urbanist', sans-serif" }}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel style={{ fontFamily: "'Montserrat', sans-serif" }}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => permanentDeleteMutation.mutate({ id: item.id })}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          style={{ fontFamily: "'Urbanist', sans-serif" }}
+                          style={{ fontFamily: "'Montserrat', sans-serif" }}
                         >
                           Permanently Delete
                         </AlertDialogAction>
@@ -197,8 +197,8 @@ export default function ProposalBin() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'GeneralSans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
-          © Lightning Energy — Architect George Fotopoulos
+        <div className="text-center text-[10px] pt-4" style={{ fontFamily: "'Open Sans', sans-serif", color: '#808285', borderTop: '1px solid rgba(128,130,133,0.2)' }}>
+          © Elite Smart Energy Solutions
         </div>
       </div>
     </DashboardLayout>

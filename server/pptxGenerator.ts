@@ -1,4 +1,4 @@
-// Lightning Energy PowerPoint Generator
+// Elite Smart Energy PowerPoint Generator
 // Generates native .pptx files with embedded brand fonts and full data tables
 // Uses pptxgenjs for pixel-perfect control
 
@@ -27,8 +27,8 @@ const CONTENT_H = SLIDE_H - PAD_T - PAD_B;
 // Colors (no # prefix for pptxgenjs)
 const C = {
   black: '000000',
-  aqua: '00EAD3',
-  orange: 'f36710',
+  aqua: '46B446',
+  orange: '46B446',
   white: 'FFFFFF',
   ash: '808285',
   darkGrey: '1a1a1a',
@@ -41,9 +41,9 @@ const FONT_DIR = path.join(__dirname, 'fonts');
 
 // Font names (pptxgenjs uses system fonts or embedded)
 const F = {
-  heading: 'NextSphere',
-  body: 'GeneralSans',
-  label: 'Urbanist',
+  heading: 'Montserrat',
+  body: 'Open Sans',
+  label: 'Montserrat',
 };
 
 // CDN URLs for assets needed at runtime
@@ -107,7 +107,7 @@ function addCopyright(slide: PptxGenJS.Slide) {
 }
 
 function addSlideHeader(slide: PptxGenJS.Slide, title: string, subtitle?: string) {
-  // Title (NextSphere, large, white, ALL CAPS)
+  // Title (Montserrat, large, white, ALL CAPS)
   slide.addText(title.toUpperCase(), {
     x: PAD_L,
     y: PAD_T,
@@ -119,7 +119,7 @@ function addSlideHeader(slide: PptxGenJS.Slide, title: string, subtitle?: string
     bold: true,
   });
 
-  // Subtitle (Urbanist Italic, aqua, right-aligned)
+  // Subtitle (Montserrat Italic, aqua, right-aligned)
   if (subtitle) {
     slide.addText(subtitle, {
       x: PAD_L + CONTENT_W * 0.6,
@@ -201,7 +201,7 @@ function slideCover(pptx: PptxGenJS, d: ProposalData) {
   if (fs.existsSync(logoPath)) {
     slide.addImage({ path: logoPath, x: 0.8, y: 0.5, w: 0.7, h: 0.7 });
   }
-  slide.addText('LIGHTNING ENERGY', {
+  slide.addText('ELITE SMART ENERGY', {
     x: 1.7, y: 0.55, w: 4, h: 0.6,
     fontSize: 22, fontFace: F.heading, color: C.white, bold: true,
   });
@@ -1202,7 +1202,7 @@ function slideContact(pptx: PptxGenJS, d: ProposalData) {
 
   const nextSteps = [
     'Review this proposal and discuss with your household',
-    'Schedule a site assessment with Lightning Energy',
+    'Schedule a site assessment with Elite Smart Energy',
     'Confirm system configuration and financing options',
     'Installation and activation within 6-8 weeks',
   ];

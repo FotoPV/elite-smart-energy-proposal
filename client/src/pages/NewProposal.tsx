@@ -566,11 +566,11 @@ export default function NewProposal() {
               <div className="border-t border-border pt-6">
                 <div className="flex items-center justify-between mb-1">
                   <Label className="flex items-center gap-2">
-                    <Sun className="h-4 w-4 text-[#f36710]" />
+                    <Sun className="h-4 w-4 text-[#46B446]" />
                     Solar Proposal (Optional)
                   </Label>
                   {solarProposalSpecs && (
-                    <span className="text-[10px] text-[#00EAD3] flex items-center gap-1">
+                    <span className="text-[10px] text-[#46B446] flex items-center gap-1">
                       <CheckCircle className="h-3 w-3" />
                       Specs extracted
                     </span>
@@ -599,7 +599,7 @@ export default function NewProposal() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-[#f36710] hover:text-[#f36710]/80 hover:bg-[#f36710]/10 shrink-0 h-7 text-xs"
+                          className="text-[#46B446] hover:text-[#46B446]/80 hover:bg-[#46B446]/10 shrink-0 h-7 text-xs"
                           onClick={() => solarProposalRef.current?.click()}
                           disabled={isUploadingSolarProposal || isAnalysingSolarProposal}
                         >
@@ -636,14 +636,14 @@ export default function NewProposal() {
                   <div
                     className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
                       isUploadingSolarProposal || isAnalysingSolarProposal
-                        ? 'border-[#f36710]/50 bg-[#f36710]/5'
-                        : 'border-border hover:border-[#f36710]/50'
+                        ? 'border-[#46B446]/50 bg-[#46B446]/5'
+                        : 'border-border hover:border-[#46B446]/50'
                     }`}
                     onClick={() => !isUploadingSolarProposal && !isAnalysingSolarProposal && solarProposalRef.current?.click()}
                   >
                     {isUploadingSolarProposal || isAnalysingSolarProposal ? (
                       <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-[#f36710]" />
+                        <Loader2 className="h-6 w-6 animate-spin text-[#46B446]" />
                         <p className="text-sm text-muted-foreground">
                           {isAnalysingSolarProposal ? 'Analysing system specs...' : 'Uploading solar proposal...'}
                         </p>
@@ -666,7 +666,7 @@ export default function NewProposal() {
                   <span className="text-amber-400 font-semibold text-sm">Cable Run Distance</span>
                   <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
                 </Label>
-                <p className="text-xs text-muted-foreground mb-3">Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per Lightning Energy T&Cs.</p>
+                <p className="text-xs text-muted-foreground mb-3">Enter the measured cable run distance from the site design. First 10m free (single phase) or 5m free (3-phase) per ESES T&Cs.</p>
                 <div className="flex items-end gap-3">
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground mb-1 block">Distance (metres)</Label>
@@ -702,9 +702,9 @@ export default function NewProposal() {
                   return (
                     <p className="text-xs mt-2 text-muted-foreground">
                       {chargeable > 0 ? (
-                        <><span className="text-amber-400 font-medium">{chargeable.toFixed(1)}m chargeable at ${ratePerM}/m (first {freeMetres}m free)</span> = <span className="text-[#00EAD3] font-semibold">${cost}</span></>
+                        <><span className="text-amber-400 font-medium">{chargeable.toFixed(1)}m chargeable at ${ratePerM}/m (first {freeMetres}m free)</span> = <span className="text-[#46B446] font-semibold">${cost}</span></>
                       ) : (
-                        <span className="text-[#00EAD3]">Within free allowance ({freeMetres}m) — no cable run charge</span>
+                        <span className="text-[#46B446]">Within free allowance ({freeMetres}m) — no cable run charge</span>
                       )}
                     </p>
                   );
@@ -826,7 +826,7 @@ export default function NewProposal() {
               {/* Proposal Notes */}
               <div className="border-t border-border pt-4 mt-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-[#00EAD3]" />
+                  <FileText className="h-4 w-4 text-[#46B446]" />
                   <h3 className="text-sm font-semibold text-muted-foreground">PROPOSAL NOTES (Optional)</h3>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -836,7 +836,7 @@ export default function NewProposal() {
                   value={proposalNotes}
                   onChange={(e) => setProposalNotes(e.target.value)}
                   placeholder="e.g. Switchboard needs upgrade — old style with ceramic fuses. 3-phase supply confirmed. Customer wants pool heat pump prioritised..."
-                  className="w-full min-h-[100px] p-3 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-[#00EAD3]/50 resize-y"
+                  className="w-full min-h-[100px] p-3 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-[#46B446]/50 resize-y"
                 />
               </div>
 
@@ -941,7 +941,7 @@ export default function NewProposal() {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border">
-          COPYRIGHT Lightning Energy - Architect George Fotopoulos
+          © Elite Smart Energy Solutions
         </div>
       </div>
 
